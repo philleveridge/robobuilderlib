@@ -2,7 +2,7 @@
 
 = Introduction =
 
-A replacement operating system for the humaoid robor Robobuilder
+A replacement operating system for the humaoid robot Robobuilder
 
 
 = Features: =
