@@ -289,6 +289,7 @@ void Read_and_Do(void)
 		//flash lights
 		for (i=0; i<20; i++)
 		{
+			_delay_ms(250);
 			PF1_LED1_OFF;
 			_delay_ms(250);
 			PF1_LED1_ON;
