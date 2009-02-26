@@ -1,0 +1,34 @@
+#summary This page is the title page for the Robobuilder library project.
+
+= Introduction =
+
+A replacement operating system for the humaoid robor Robobuilder
+
+
+= Features: =
+
+After initialisation Red Button on IR - and then type h for help (on terminal) !!
+
+{{{
+Help
+L left
+R right
+F forward
+B back
+z tilt on/off - to try the autobalance hit z (and turn it off z again!) - don't do near edge of table - suggest have 'r' in off mode as well in case you trigger a behaviour
+i ADC test (PSD, Mic, Bat Level) - good for test and debugging
+t Tilt test (loop showing accelerometer values until IR pressed
+p Basic pose - set him upright
+w lean fwd
+s lean back
+a lean left [not implemented yet]
+d lean right [not implmented yet]
+v version number (say 0.5)
+m modify param [n][+|-|=] [nn]
+r respond to event on/off - Robo will start behaving (or is that misbehaving !) - try a clap or push your hand in its face and see what happens !
+l light flash test (this doesn't work - anyone tell me why??
+nn action nn (two digits) - try 17 for a wave (18 motions built in including soccer kicks (10,11) and side step (12,13)
+
+}}}
+
+*Have fun !!*
