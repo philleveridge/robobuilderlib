@@ -35,7 +35,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
 ## Objects that must be built in order to link
-OBJECTS = main.o uart.o buffer.o Comm.o dio.o rprintf.o adc.o ir.o accelerometer.o
+OBJECTS = main.o uart.o buffer.o Comm.o dio.o rprintf.o adc.o ir.o accelerometer.o battery.o
 
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 
@@ -45,8 +45,11 @@ all: $(TARGET) RobobuilderIR.hex RobobuilderIR.eep RobobuilderIR.lss size
 
 ## Compile
 main.o: main.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
+	$(CC) $(INCLUDES) $(CFLAGS) -DPSD_SENSOR -c  $<
 
+battery.o: battery.c
+	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
+	
 uart.o: uart.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
 
