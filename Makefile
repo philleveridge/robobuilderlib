@@ -3,9 +3,9 @@
 ###############################################################################
 
 ## General Flags
-PROJECT = RobobuilderIR
+PROJECT = Robobuilderlib
 MCU = atmega128
-TARGET = RobobuilderIR.elf
+TARGET = Robobuilderlib.elf
 CC = avr-gcc.exe
 
 ## Options common to compile, link and assembly rules
@@ -41,7 +41,7 @@ OBJECTS = main.o uart.o buffer.o Comm.o dio.o rprintf.o adc.o ir.o accelerometer
 LINKONLYOBJECTS = 
 
 ## Build
-all: $(TARGET) RobobuilderIR.hex RobobuilderIR.eep RobobuilderIR.lss size
+all: $(TARGET) Robobuilderlib.hex Robobuilderlib.eep Robobuilderlib.lss size
 
 ## Compile
 main.o: main.c
@@ -94,7 +94,7 @@ size: ${TARGET}
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf $(OBJECTS) RobobuilderIR.elf dep/* RobobuilderIR.hex RobobuilderIR.eep RobobuilderIR.lss RobobuilderIR.map
+	-rm -rf $(OBJECTS) Robobuilderlib.elf dep/* Robobuilderlib.hex Robobuilderlib.eep Robobuilderlib.lss Robobuilderlib.map
 
 
 ## Other dependencies
