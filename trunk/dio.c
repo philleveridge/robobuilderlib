@@ -437,7 +437,7 @@ void Read_and_Do(void)
 		"a  lean left\r\n"
 		"d  lean right\r\n"
 		"s  lean back\r\n"
-		"V  version number\r\n"
+		"v  version number\r\n"
 		"m  modify param [n][+|-|=] [nn]\r\n"
 		"r  respond to event on/off\r\n"
 		"l  light flash test\r\n"
