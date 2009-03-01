@@ -354,9 +354,17 @@ void initparams()
     params[TIMR] = 20;    // t seconds
 	params[TLT]  = 4;     // tlt
 	params[TORQ] = 2;     // -
+	
+#ifdef PSD_SENSOR
 	params[PSDL] = 0x40;  // Distance -
 	params[PSDL2]= 0x60;  // -
 	params[PSDL3]= 0x80;  // -
+#else
+	params[PSDL] = 0x00;  // Distance -
+	params[PSDL2]= 0x00;  // -
+	params[PSDL3]= 0x00;  // -
+#endif
+	
 	params[MICL] = 0x79;  // -
 	params[MICL2]= 0x99;  // -
 	params[MICL2]= 0x99;  // -
@@ -369,7 +377,7 @@ void initparams()
 void pversion()
 {
 
-	rprintf("Robos 0.5 23rd Feb 2009\r\n");
+	rprintf("Robos 0.6 2nd March 2009\r\n");
 }
 
 	

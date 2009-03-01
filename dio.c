@@ -11,6 +11,7 @@
 #include "Macro.h"
 #include "dio.h"
 #include "comm.h"
+#include "battery.h"
 #include "rprintf.h"
 #include "adc.h"
 #include "ir.h"
@@ -41,6 +42,35 @@ extern prog_char *version;
 void ptime()
 {
 	rprintf("%d:%d:%d-%d ",gHOUR,gMIN,gSEC,gMSEC);
+}
+
+int getDec(int d)
+{
+	int n=0;
+	int ch;
+	
+	for (int i=0; i<d; i++)
+	{
+			while ((ch = uartGetByte())<0) ;
+			rprintf("%c", ch);	
+			if ((ch>=0x30) && (ch<=0x39)) { n = n*10 + (ch-0x30); }
+	}
+	return n;
+}
+
+int getHex(int d)
+{
+	int n=0;
+	int ch;
+	
+	for (int i=0; i<d; i++)
+	{
+			while ((ch = uartGetByte())<0) ;
+			rprintf("%c", ch);	
+			if ((ch>=0x30) && (ch<=0x39)) { n = n*16 + (ch-0x30); }
+			if ((ch>=0x41) && (ch<=0x46)) { n = n*16 + (ch-0x41+10); }
+	}
+	return n;
 }
 
 
@@ -105,7 +135,7 @@ void Read_and_Do(void)
 	// Simple behaviour
 	// -------------------------------------------------------------------------------------------------------
 	
-	if (adc_psd()>params[PSDL])  // if PSD sensor goes off
+	if (params[PSDL]!=0 && adc_psd()>params[PSDL])  // if PSD sensor goes off
 	{
 		ptime(); rprintf("PSD event %x\r\n", psd_value);	
 		if (response) 
@@ -177,41 +207,59 @@ void Read_and_Do(void)
 		if (ch==0x6c) Action=0x30;       //'l' pressed			
 		if (ch==0x69) Action=0x40;       //'i' pressed		
 		if (ch==0x74) Action=0x50;       //'t' pressed
+		
 
 		if (ch==0x76) Action=0x80;       //'v' pressed
 		
-		if (ch==0x68) Action=0xEE;       //'h' pressed
-		
-		if ((ch>=0x30) && (ch<=0x31)) 	  //digit [0|1][0|9]
+		if (ch==0x78)       			  //'x' pressed
 		{
-			int nn = ch - 0x30;
-			while ((ch = uartGetByte())<0) ;
-			rprintf("%c", ch);	
+			// PC control mode
+			// 2 hex digits = length
+			int c;
+			int l=getHex(2);
+			int buff[10];
+			// foreach byte
+			for (c=0; (c<l && c<10); c++)
+			{			
+			//  read each hex digit into buffer
+				buff[c]=getHex(2);
+			}
+						
+			// transmit  buffer
+			for (c=0; (c<l && c<10); c++)
+			{	
+				sciTx0Data(buff[c]&0xFF);
+			}		
+			// get response (or timeout)
 			
-			if ((ch>=0x30) && (ch<=0x39)) { nn = 10*nn + (ch-0x30); }
-			
-			Action=nn;       				//Action code
+			BYTE b1 = sciRx0Ready();
+			BYTE b2 = sciRx0Ready();
+			// echo response
+			rprintf ("=%x%x\r\n", b1,b2);
+		
+			Action=0xFF;       
+		}
+		
+		if (ch==0x68 || ch==0x48) Action=0xEE; //'h' pressed
+		
+		if (ch==0x65) 	  						//'e' pressed 
+		{			
+			Action=getHex(2);      				//Action code
 			rprintf(" Special event [%x]\r\n", Action);	
 		}
 
-		if (ch==0x6D) // modify param command (for tuning only)
+		if (ch==0x6D) 							// 'm' pressed
 		{
+			//modify param command (for tuning only)
 			int op;
-			int pn=0;
-			int pv=0;
-			while ((ch = uartGetByte())<0) ;
-			rprintf("%c", ch);	
-			if ((ch>=0x30) && (ch<=0x39)) { pn = (ch-0x30); }
+			int pv;
+			int pn=getDec(1);
+
 			while ((op = uartGetByte())<0) ;
 			rprintf("%c", ch);	
 			if (op != '?')
 			{
-				while ((ch = uartGetByte())<0) ;
-				if ((ch>=0x30) && (ch<=0x39)) { pv = (ch-0x30); }
-				rprintf("%c", ch);	
-				while ((ch = uartGetByte())<0) ;	
-				if ((ch>=0x30) && (ch<=0x39)) { pv = 10*pv + (ch-0x30); }		
-				rprintf("%c", ch);	
+				pv = getHex(2);
 			}
 			
 			if ( (pn>=0) && (pn<10))
@@ -365,6 +413,13 @@ void Read_and_Do(void)
 		//version
 		rprintf("Ver=0.5\r\n");
 		break;
+		
+	case 0xD0:
+		//experimental
+		rprintf("Battery charging\r\n");
+		batt_charge();
+		break;
+
 	case 0xEE:
 		//help
 		
@@ -386,8 +441,8 @@ void Read_and_Do(void)
 		"m  modify param [n][+|-|=] [nn]\r\n"
 		"r  respond to event on/off\r\n"
 		"l  light flash test\r\n"
-		"nn action nn (two digits)\r\n");	
-	
+		"e	[nn] set action event nn (two digits)\r\n"	
+		"x	[nn][...] transmit to wCK bus [nn] bytes\r\n");	
 		break;	
 		
 	case 0xFF:

@@ -278,7 +278,7 @@ WORD PosMove(BYTE ID, BYTE torq, BYTE target)
         }
 		else if((gMSEC-startT)>RX_T_OUT) return 446;
 	}
-	return gRx0Buf[RX0_BUF_SIZE-1];
+	//return gRx0Buf[RX0_BUF_SIZE-1];
 
 	WORD res = (gRx0Buf[0] << 8) | (gRx0Buf[1]);
 	return res;
