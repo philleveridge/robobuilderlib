@@ -30,7 +30,7 @@ volatile extern int		gFrameIdx;	    // frame counter
 extern WORD	   	TxInterval;				// Timer 1 interval
 extern WORD		gNumOfFrame;
 
-prog_char version[] = "0.5 - 19/02/09";
+prog_char version[] = "0.6 - 2/03/09";
 
 
 // software states----------------------------------------------------------------------
