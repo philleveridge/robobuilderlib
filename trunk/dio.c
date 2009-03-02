@@ -215,18 +215,21 @@ void Read_and_Do(void)
 		{
 			// PC control mode
 			// 2 hex digits = length
+			
+			#define MAX_INP_BUF 32
+		
 			int c;
 			int l=getHex(2);
-			int buff[10];
+			int buff[MAX_INP_BUF];
 			// foreach byte
-			for (c=0; (c<l && c<10); c++)
+			for (c=0; (c<l && c<MAX_INP_BUF); c++)
 			{			
 			//  read each hex digit into buffer
 				buff[c]=getHex(2);
 			}
 						
 			// transmit  buffer
-			for (c=0; (c<l && c<10); c++)
+			for (c=0; (c<l && c<MAX_INP_BUF); c++)
 			{	
 				sciTx0Data(buff[c]&0xFF);
 			}
@@ -415,7 +418,7 @@ void Read_and_Do(void)
 		
 	case 0x80:
 		//version
-		rprintf("er=0.5\r\n");
+		rprintf("er=0.6\r\n");
 		break;
 		
 	case 0xD0:
