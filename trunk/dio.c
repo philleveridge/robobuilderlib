@@ -211,7 +211,7 @@ void Read_and_Do(void)
 
 		if (ch==0x76) Action=0x80;       //'v' pressed
 		
-		if (ch==0x78)       			  //'x' pressed
+		if (ch==0x78 || ch==0x58)        //'x' or 'X' pressed
 		{
 			// PC control mode
 			// 2 hex digits = length
@@ -229,18 +229,22 @@ void Read_and_Do(void)
 			for (c=0; (c<l && c<10); c++)
 			{	
 				sciTx0Data(buff[c]&0xFF);
-			}		
-			// get response (or timeout)
-			
-			BYTE b1 = sciRx0Ready();
-			BYTE b2 = sciRx0Ready();
-			// echo response
-			rprintf ("=%x%x\r\n", b1,b2);
+			}
+
+			if (ch==0x78)
+			{
+				// get response (or timeout)					
+				BYTE b1 = sciRx0Ready();
+				BYTE b2 = sciRx0Ready();
+				// echo response
+				rprintf ("=%x%x\r\n", b1,b2);
+			}
 		
 			Action=0xFF;       
 		}
 		
-		if (ch==0x68 || ch==0x48) Action=0xEE; //'h' pressed
+		if (ch==0x68 || ch==0x48) 				//'h' pressed
+			Action=0xEE; 
 		
 		if (ch==0x65) 	  						//'e' pressed 
 		{			
@@ -252,7 +256,7 @@ void Read_and_Do(void)
 		{
 			//modify param command (for tuning only)
 			int op;
-			int pv;
+			int pv=0;
 			int pn=getDec(1);
 
 			while ((op = uartGetByte())<0) ;
@@ -337,10 +341,10 @@ void Read_and_Do(void)
 		//flash lights
 		for (i=0; i<20; i++)
 		{
+			PF1_LED1_ON;
 			_delay_ms(250);
 			PF1_LED1_OFF;
 			_delay_ms(250);
-			PF1_LED1_ON;
 		}
 		break;
 	case 0x40:
@@ -411,7 +415,7 @@ void Read_and_Do(void)
 		
 	case 0x80:
 		//version
-		rprintf("Ver=0.5\r\n");
+		rprintf("er=0.5\r\n");
 		break;
 		
 	case 0xD0:
@@ -442,7 +446,8 @@ void Read_and_Do(void)
 		"r  respond to event on/off\r\n"
 		"l  light flash test\r\n"
 		"e	[nn] set action event nn (two digits)\r\n"	
-		"x	[nn][...] transmit to wCK bus [nn] bytes\r\n");	
+		"x	[nn][...] transmit to wCK bus [nn] bytes ans wait for 2 nyte response\r\n"
+		"X	as above but no reponse packets\r\n");	
 		break;	
 		
 	case 0xFF:
