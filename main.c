@@ -401,6 +401,9 @@ int main(void)
 	
 	pversion();
 	
+	PWR_LED2_ON; 				// Power red light on ( PC7 High ) 
+
+	
 	BasicPose();  				// stand up and be counted
 	adc_init();		
 	tilt_setup();				// initialise acceleromter

@@ -79,8 +79,7 @@ ISR(ADC_vect)
 			psd_value = ADCH;   	
 			break;
 		case 1:
-			volts = ADCL;   	
-			volts += (ADCH<<8);	
+			volts = ADCH*57;	
 			break;
 		case 15:
 			mic_value = ADCH;  
@@ -160,7 +159,7 @@ int adc_test(BYTE debug){
 	_delay_ms(50);	
 	if (debug) rprintf(" VOLT=");
 	adc_volt();
-	if (debug) rprintf("%x", volts);
+	if (debug) rprintf("%dmV", volts);
 
 	//read MIC	
 	_delay_ms(50);	
