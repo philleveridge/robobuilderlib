@@ -30,7 +30,7 @@ volatile extern int		gFrameIdx;	    // frame counter
 extern WORD	   	TxInterval;				// Timer 1 interval
 extern WORD		gNumOfFrame;
 
-prog_char version[] = "0.6 - 2/03/09";
+const prog_char version[] = "0.6 - $REV$\r\n";
 
 
 // software states----------------------------------------------------------------------
@@ -376,8 +376,8 @@ void initparams()
 
 void pversion()
 {
-
-	rprintf("Robos 0.6 2nd March 2009\r\n");
+	rprintf("Robos ");
+	rprintfProgStr(version);
 }
 
 	
@@ -390,11 +390,9 @@ int main(void)
 	uartInit();					// initialize UART (serial port)
 	uartSetBaudRate(115200);	// set UART speed to 115200 baud
 	rprintfInit(uartSendByte);  // configure rprintf to use UART for output
-		
-	
+			
 	sei();						// enable interrupts
 	TIMSK |= 0x01;				// Timer0 Overflow Interrupt enable
-
 	
 	while (!(gIRReady && gIRData == 7));  // WAIT FOR Red [sq] TO BE PRESSED on IR controller
 	gIRReady = FALSE;

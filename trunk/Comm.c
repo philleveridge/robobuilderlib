@@ -284,6 +284,18 @@ WORD PosMove(BYTE ID, BYTE torq, BYTE target)
 	return res;
 } 
 
+void set_break_mode()
+{
+	sciTx0Data(HEADER);
+	sciTx0Data(0xDF);
+	sciTx0Data(0x20);		
+	sciTx0Data((0xDF^0x20)&0x7f);
+	
+	sciRx0Ready();
+	sciRx0Ready();
+	return;
+}
+
 
 
 //------------------------------------------------------------------------------

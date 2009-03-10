@@ -15,6 +15,7 @@
 #include "Macro.h"
 #include "adc.h"
 #include "main.h"
+#include "Comm.h"
 
 #include <util/delay.h>
 
@@ -27,46 +28,109 @@ extern BYTE    gSEC;				//
 extern BYTE    gMIN;				// 
 extern BYTE    gHOUR;				// 
 
+void  test_voltage(WORD volts);
+int ov_flag ;
 
-void batt_charge()
+void battery_charge()
 {
-//	The basic pseudo code is some thing like this
-//
-	PWR_LED2_OFF;				//Power red light off  (PC7 low)
+	WORD volts=0;
+
+	set_break_mode();   		// Power off servos
 	
-	int not_charged=1;
+	ov_flag=FALSE ;
+	
+	PWR_LED2_OFF;				//Power red light off  (PC7 low)
 
-	while (not_charged)
+	while (gMIN < 5 && !ov_flag)  //5 mins
 	{
-		WORD v=adc_volt(); 		//   read voltage  (ADC1)
-		rprintf("%d:%d:%d-%d ",gHOUR,gMIN,gSEC,gMSEC);
-		rprintf("Volts = %d - ", v);
+		PWR_LED1_ON;			//   green LED  on (Port G )
+		
+		volts = adc_volt();
 
-		if (v > (WORD)U_T_OF_POWER) 
-			not_charged=0;
-		else
-		{
+		test_voltage(volts);
+		
+		if (ov_flag) break;
+
+		CHARGE_ENABLE; 			//   set charging on  (PB4 high)
+
+		_delay_ms(40); 			//   wait 40ms
+
+		CHARGE_DISABLE;			//   set charging off   (PB4 Low)
+
+		_delay_ms(460); 		//   wait 460 ms
+		PWR_LED1_OFF; 			//   green LED  on (Port G)
+		
+		volts = adc_volt();
+
+		test_voltage(volts);
+
+		_delay_ms(500);			//   wait 500ms		
+	}
+	
+	PWR_LED2_ON;				//Power red light on (fast charge)
+	
+	int f2=0;
+	CHARGE_ENABLE; 
+	
+	while (gMIN < 55 && !ov_flag)  // 55mins
+	{
+		if (f2)
 			PWR_LED1_ON;			//   green LED  on (Port G )
-
-			//CHARGE_ENABLE; 		//   set charging on  (PB4 high)
-
-			_delay_ms(40); 			//   wait 40ms
-
-			//CHARGE_DISABLE;		//   set charging off   (PB4 Low)
-
-			_delay_ms(460); 		//   wait 460 ms
+		else
 			PWR_LED1_OFF; 			//   green LED  on (Port G)
 
-			v=adc_volt(); 			//   read voltage  (ADC1)
-			rprintf(" %d\r\n", v);
+		f2 = !f2;
 
-			if (v > (WORD)U_T_OF_POWER) not_charged=0;
+		_delay_ms(500); 			//   wait 1/2 s
 
-			_delay_ms(500);			//   wait 500ms
+		volts = adc_volt();
+
+		test_voltage(volts);
+	}	
+	CHARGE_DISABLE;	
+	rprintf("Charging complete - %dmV\r\n", volts);
+}
+
+
+void  test_voltage(WORD volts)
+{
+	static int lowCount, highCount;  
+
+	if (ov_flag)
+	{
+		// if battery was full...
+		if (volts > U_T_OF_POWER)
+		{
+			lowCount = 0;
+		}
+		else
+		{
+			lowCount += 1;
+		}
+		if (lowCount > 7)
+		{
+			ov_flag = FALSE;            // "battery not full"
+			lowCount = 0;
 		}
 	}
-
-	PWR_LED2_ON; 				// Power red light on ( PC7 High ) 
-	rprintf("Charging complete\r\n");
+	else   
+	{
+		// if battery was not full..
+		if (volts > U_T_OF_POWER )
+		{
+			lowCount = 0;
+			highCount += 1;
+		}
+		else
+		{
+			highCount = 0;
+		}
+		if (highCount > 3)
+		{
+			ov_flag = TRUE  ;           // "battery full"
+			highCount = 0;
+		}
+	} 
 }
+
 

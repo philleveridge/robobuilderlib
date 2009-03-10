@@ -2,4 +2,4 @@
 // include file for battery.c
 //==============================================================================
 
-void batt_charge(void);
+void battery_charge(void);

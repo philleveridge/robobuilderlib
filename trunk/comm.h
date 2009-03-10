@@ -56,7 +56,7 @@ void SendFrame(void);
 void M_BasicPose(BYTE PF, WORD NOF, WORD RT, BYTE TQ);
 void SampleMotion(int);
 void BasicPose();
-
+void set_break_mode();
 WORD PosMove(BYTE ID, BYTE torq, BYTE target);
 
 

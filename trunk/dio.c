@@ -17,6 +17,7 @@
 #include "ir.h"
 #include "uart.h"
 #include "accelerometer.h"
+#include "battery.h"
 
 #include <util/delay.h>
 
@@ -37,7 +38,10 @@ extern int    gZ;				//
 extern int 	autobalance;
 extern int 	response;
 extern int  params[];
-extern prog_char *version;
+
+extern const prog_char version[];
+
+
 
 void ptime()
 {
@@ -418,13 +422,14 @@ void Read_and_Do(void)
 		
 	case 0x80:
 		//version
-		rprintf("er=0.6\r\n");
+		rprintf("er=");
+		rprintfProgStr(version);
 		break;
 		
 	case 0xD0:
 		//experimental
 		rprintf("Battery charging\r\n");
-		batt_charge();
+		battery_charge();
 		break;
 
 	case 0xEE:
