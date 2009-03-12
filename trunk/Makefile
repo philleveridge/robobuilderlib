@@ -6,7 +6,15 @@
 PROJECT = Robobuilderlib
 MCU = atmega128
 TARGET = Robobuilderlib.elf
-CC = avr-gcc.exe
+
+## Attempt to tell what platform we're on, to pick the right avr-gcc
+ifdef SHELL
+	# looks like Unix (inc. Mac) or Linux
+	CC = avr-gcc
+else
+	# must be Windows
+	CC = avr-gcc.exe
+endif
 
 ## Options common to compile, link and assembly rules
 COMMON = -mmcu=$(MCU)
