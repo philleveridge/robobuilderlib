@@ -1,13 +1,9 @@
-// Standard Input/Output functions
-#include <stdio.h>
+// ir.c
+//
+//	Routines for receiving data from the IR controller
 
-#include <avr/pgmspace.h>
 #include <avr/interrupt.h>
-#include "global.h"
-#include "Macro.h"
-#include "math.h"
-#include "uart.h"
-#include "rprintf.h"
+#include "avrlibtypes.h"
 #include "ir.h"
 
 
@@ -20,8 +16,9 @@ volatile BYTE	gIRAddr;				// Data from IR
 BYTE	IRTemp[4];
 BYTE	IRState;						// state or IR receive
 BYTE	IRBit;							// bit counter for IR
-BYTE	IRByte;							// byte counter for IR
+BYTE	IRByte;							// byte counter for IR (address receipt)
 BYTE	pulse_width;
+
 
 //------------------------------------------------------------------------------
 // Timer2 IR Timeout interrupt routine
@@ -37,8 +34,6 @@ ISR(TIMER2_OVF_vect)
 //------------------------------------------------------------------------------
 ISR(INT6_vect) 
 {
-
-
 	switch(IRState) {
 
 	case IR_IDLE: 
@@ -100,4 +95,12 @@ ISR(INT6_vect)
 	
 } // end int
 
-
+//------------------------------------------------------------------------------
+// get the next char from the IR receiver, or -1 if none (getchar-style)
+//------------------------------------------------------------------------------
+int irGetByte(void)
+{
+	if (!gIRReady) return -1;
+	gIRReady = FALSE;
+	return gIRData;
+}
