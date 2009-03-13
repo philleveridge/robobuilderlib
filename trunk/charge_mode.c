@@ -1,5 +1,5 @@
 //*****************************************************************************//
-// File Name	: 'battery.c'
+// File Name	: 'charge_mode.c'
 // Title		: Battery charging routines
 //
 //*****************************************************************************
@@ -15,7 +15,10 @@
 #include "Macro.h"
 #include "adc.h"
 #include "main.h"
-#include "Comm.h"
+#include "comm.h"
+#include "majormodes.h"
+#include "uart.h"
+
 
 #include <util/delay.h>
 
@@ -134,3 +137,27 @@ void  test_voltage(WORD volts)
 }
 
 
+static void handle_serial(int cmd) {
+	switch (cmd) {
+	case '?':
+		rprintf("\nCharge mode\n");
+		break;
+	case 'v':
+		rprintf("\nBattery voltage: %d mV\n", adc_volt());
+		break;
+	}
+}
+
+void charge_mainloop(void) {
+
+	int cmd;
+
+	while (kIdleMode == gNextMode) {
+
+		cmd = uartGetByte();
+		if (cmd >= 0) handle_serial(cmd);
+
+		// Meanwhile... continue charging the battery?
+		// Not entirely sure how to integrate this with the above.
+	}
+}

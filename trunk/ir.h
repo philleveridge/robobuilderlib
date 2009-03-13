@@ -1,6 +1,9 @@
 //==============================================================================
 // Interface to the IR controller
 //==============================================================================
+
+#include "avrlibtypes.h"
+
 extern volatile BYTE	gIRReady;				// IR message received
 extern volatile BYTE	gIRData;				// Data from IR
 extern volatile BYTE	gIRAddr;				// Data from IR
