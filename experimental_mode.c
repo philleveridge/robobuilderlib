@@ -1,6 +1,8 @@
-//==============================================================================
-//						Digital Input Output Routines
-//==============================================================================
+// experimental_mode.c
+//
+//	This is our "experimental" mode where we feel free to hack and try
+//	things that may or may not work.  It consists mainly of a lot of little
+//	routines that the user can access via the serial interface.
 
 #include <avr/io.h>
 #include <stdio.h>
@@ -9,15 +11,13 @@
 #include "global.h"
 #include "Main.h"
 #include "Macro.h"
-#include "dio.h"
 #include "comm.h"
-#include "battery.h"
 #include "rprintf.h"
 #include "adc.h"
 #include "ir.h"
 #include "uart.h"
 #include "accelerometer.h"
-#include "battery.h"
+#include "majormodes.h"
 
 #include <util/delay.h>
 
@@ -214,6 +214,10 @@ void Read_and_Do(void)
 		
 
 		if (ch==0x76) Action=0x80;       //'v' pressed
+		
+		if ('?' == ch) {
+			rprintf("\nExperimental Mode ('h' for help)\n");
+		}
 		
 		if (ch==0x78 || ch==0x58)        //'x' or 'X' pressed
 		{
@@ -424,12 +428,13 @@ void Read_and_Do(void)
 		//version
 		rprintf("er=");
 		rprintfProgStr(version);
+		rprintf("Built: " __DATE__);
 		break;
 		
 	case 0xD0:
 		//experimental
 		rprintf("Battery charging\r\n");
-		battery_charge();
+		gNextMode = kChargeMode;
 		break;
 
 	case 0xEE:
@@ -465,3 +470,14 @@ void Read_and_Do(void)
 } 
 
 
+void experimental_mainloop()
+{
+	WORD lMSEC;
+	while (kExperimentalMode == gNextMode) {
+		lMSEC = gMSEC;
+		
+		Read_and_Do();
+		
+		while(lMSEC==gMSEC);
+	}
+}

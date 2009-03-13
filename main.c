@@ -16,13 +16,13 @@
 #include "global.h"
 #include "Macro.h"
 #include "Comm.h"
-#include "Dio.h"
 #include "math.h"
 #include "uart.h"
 #include "rprintf.h"
 #include "adc.h"
 #include "ir.h"
 #include "accelerometer.h"
+#include "majormodes.h"
 
 #include <util/delay.h>
 
@@ -32,10 +32,14 @@ extern WORD		gNumOfFrame;
 
 const prog_char version[] = "0.6 - $REV$\r\n";
 
-
 // software states----------------------------------------------------------------------
 volatile BYTE 	F_PLAYING;				// state: playing from Flash
 
+
+// "major mode" state machine-----------------------------------------------------
+int		gNextMode;
+extern void idle_mainloop(void);
+extern void experimental_mainloop(void);
 
 // global variables------------------------------------------------------------
 WORD    gBtnCnt;						// counter for PF button press
@@ -383,8 +387,6 @@ void pversion()
 	
 int main(void) 
 {
-	WORD   lMSEC;
-
 	HW_init();					// Initialise ATMega Ports
 	SW_init();					// Initialise software states
 	uartInit();					// initialize UART (serial port)
@@ -393,28 +395,36 @@ int main(void)
 			
 	sei();						// enable interrupts
 	TIMSK |= 0x01;				// Timer0 Overflow Interrupt enable
-	
-	while (!(gIRReady && gIRData == 7));  // WAIT FOR Red [sq] TO BE PRESSED on IR controller
-	gIRReady = FALSE;
-	
+		
 	pversion();
 	
-	PWR_LED2_ON; 				// Power red light on ( PC7 High ) 
-
+	PWR_LED1_ON; 				// Power green light on
 	
-	BasicPose();  				// stand up and be counted
 	adc_init();		
 	tilt_setup();				// initialise acceleromter
 	_delay_ms(200);
 	
-
-	initparams();	
-
-	while(1){
-		lMSEC = gMSEC;
-		
-		Read_and_Do();	    	// perform sample motions based on input received (dio.c)
-
-		while(lMSEC==gMSEC);
-    }
+	initparams();
+	
+	gNextMode = kIdleMode;
+	while (1) {
+		switch (gNextMode) {
+			case kIdleMode:
+				idle_mainloop();
+				break;
+			case kExperimentalMode:
+				experimental_mainloop();
+				break;
+			case kChargeMode:
+				charge_mainloop();
+				break;
+/*			case kSerialSlaveMode:
+				slave_mainloop();
+				break;
+			case kClassicMode:
+				classic_mainloop();
+				break;
+*/
+		}
+	}
 }
