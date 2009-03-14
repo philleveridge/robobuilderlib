@@ -1,8 +1,7 @@
-#summary Details Of idlemode
+#summary Details Of Idle Mode
 = Introduction =
 
-Add your content here.
-
+This is idle mode - the default state the robot enters on power up. On exit of this mode the robot will take up basic pose and enter experimental mode
 
 = Details =
 
