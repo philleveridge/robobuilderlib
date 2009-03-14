@@ -6,7 +6,8 @@ This mode is intended to offer a range of test features.
 
 
 {{{
-Help
+? This will identify as being in Experimental Mode
+h Help 
 L left
 R right
 F forward
