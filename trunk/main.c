@@ -372,7 +372,7 @@ void initparams()
 	params[MICL] = 0x79;  // -
 	params[MICL2]= 0x99;  // -
 	params[MICL2]= 0x99;  // -
-	params[VOLT]=  0x6000;// -voltage level
+	params[VOLT]=  8100;// -voltage level
 	
 	autobalance=0;	//dynamic blance off
 	response=0;		//event response off
