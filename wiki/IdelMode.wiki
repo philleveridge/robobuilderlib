@@ -1,0 +1,11 @@
+#summary Details Of idlemode
+= Introduction =
+
+Add your content here.
+
+
+= Details =
+
+Options
+P or p    Exit (Pause)
+?         Query - output in Ascii to serial port the mode its in (in this Idle Mode)
