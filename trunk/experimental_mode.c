@@ -210,7 +210,10 @@ void Read_and_Do(void)
 		if (ch==0x70) Action=0x20;       //'p' pressed
 		if (ch==0x6c) Action=0x30;       //'l' pressed			
 		if (ch==0x69) Action=0x40;       //'i' pressed		
-		if (ch==0x74) Action=0x50;       //'t' pressed
+
+		if (ch==0x74) Action=0x50;       //'query mode
+		if (ch=='q' || ch == 'Q' ) 
+			Action=0x90;       
 		
 
 		if (ch==0x76) Action=0x80;       //'v' pressed
@@ -249,6 +252,10 @@ void Read_and_Do(void)
 				BYTE b2 = sciRx0Ready();
 				// echo response
 				rprintf ("=%x%x\r\n", b1,b2);
+			}
+			else
+			{
+				rprintf (" ok\r\n");
 			}
 		
 			Action=0xFF;       
@@ -399,8 +406,8 @@ void Read_and_Do(void)
 		ptime(); rprintf("Dynamic Balance Test F/B (%x)\r\n", Action);	
 		
 		// Knees ID7, ID2
-		UCSR0B &= 0xBF;
-		UCSR0B |= 0x80;   		// UART0 RxInterrupt enable	
+		//UCSR0B &= 0xBF;
+		//UCSR0B |= 0x80;   		// UART0 RxInterrupt enable	
 	
 		ptmpB = PosRead(0x02);
 		ptmpA = PosRead(0x07);
@@ -409,6 +416,9 @@ void Read_and_Do(void)
 		
 		if (Action == 0x70) tlt = params[TLT];
 		if (Action == 0x71) tlt = -params[TLT];
+		
+		ptmpA &= 0xFF;
+		ptmpB &= 0xFF;
 		
 		ptmpA = ((ptmpA+tlt) & 0xFF); // must be 0-254
 		ptmpB = ((ptmpB-tlt) & 0xFF); // must be 0-254
@@ -436,7 +446,15 @@ void Read_and_Do(void)
 		rprintf("Battery charging\r\n");
 		gNextMode = kChargeMode;
 		break;
-
+		
+	case 0x90:
+		//query mode
+		for (BYTE id=0; id<16; id++)
+		{
+				ptmpA = PosRead(id);
+				ptime(); rprintf("ReadPos (%d) %x\r\n ", id, ptmpA);	
+		}
+		break;
 	case 0xEE:
 		//help
 		
@@ -450,6 +468,7 @@ void Read_and_Do(void)
 		"i  ADC test (PSD, Mic, Bat Level)\r\n"
 		"t  Tilt test (loop showing accelerometer values until IR pressed\r\n"
 		"p  Basic pose\r\n"
+		"q  Read all servo positions\r\n"
 		"w  lean fwd\r\n"
 		"a  lean left\r\n"
 		"d  lean right\r\n"
