@@ -260,7 +260,8 @@ WORD PosMove(BYTE ID, BYTE torq, BYTE target)
 {
 	BYTE	Data1;
 	BYTE	CheckSum; 
-	WORD	startT;
+	BYTE 	c;
+	WORD 	res;
 		
 	Data1 = (torq<<5) | ID;
 	gRx0Cnt = 0;			// clear Rx pointer
@@ -269,7 +270,22 @@ WORD PosMove(BYTE ID, BYTE torq, BYTE target)
 	sciTx0Data(Data1);
 	sciTx0Data(target);
 	sciTx0Data(CheckSum);
+		
+
 	
+	c= sciRx0Ready();
+	
+	res = c;
+	
+	c= sciRx0Ready();
+	
+	res <<= 8;
+	
+	res  |= c;
+	
+	return res;
+	
+	/*
 	startT = gMSEC;
 	while(gRx0Cnt<2){
         if(gMSEC<startT){ 	// wait for response packet or timeout
@@ -279,9 +295,9 @@ WORD PosMove(BYTE ID, BYTE torq, BYTE target)
 		else if((gMSEC-startT)>RX_T_OUT) return 446;
 	}
 	//return gRx0Buf[RX0_BUF_SIZE-1];
-
 	WORD res = (gRx0Buf[0] << 8) | (gRx0Buf[1]);
 	return res;
+	*/
 } 
 
 void set_break_mode()
