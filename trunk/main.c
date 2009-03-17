@@ -40,6 +40,9 @@ volatile BYTE 	F_PLAYING;				// state: playing from Flash
 int		gNextMode;
 extern void idle_mainloop(void);
 extern void experimental_mainloop(void);
+extern void slave_mainloop(void);
+extern void charge_mainloop(void);
+
 
 // global variables------------------------------------------------------------
 WORD    gBtnCnt;						// counter for PF button press
