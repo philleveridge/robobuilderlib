@@ -30,7 +30,7 @@ volatile extern int		gFrameIdx;	    // frame counter
 extern WORD	   	TxInterval;				// Timer 1 interval
 extern WORD		gNumOfFrame;
 
-const prog_char version[] = "0.6 - $REV$\r\n";
+const prog_char version[] = "0.7 - $REV$\r\n";
 
 // software states----------------------------------------------------------------------
 volatile BYTE 	F_PLAYING;				// state: playing from Flash
@@ -418,10 +418,10 @@ int main(void)
 			case kChargeMode:
 				charge_mainloop();
 				break;
-/*			case kSerialSlaveMode:
+			case kSerialSlaveMode:
 				slave_mainloop();
 				break;
-			case kClassicMode:
+/*			case kClassicMode:
 				classic_mainloop();
 				break;
 */

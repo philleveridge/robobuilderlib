@@ -218,8 +218,14 @@ void Read_and_Do(void)
 
 		if (ch==0x76) Action=0x80;       //'v' pressed
 		
+		if (ch==27 || ch == 'P') 		// exit to idleMode
+		{
+			Action=0xFF;       			
+			gNextMode = kIdleMode;		
+		}
+		
 		if ('?' == ch) {
-			rprintf("\nExperimental Mode ('h' for help)\n");
+			rprintf("Experimental Mode ('h' for help)\r\n");
 		}
 		
 		if (ch==0x78 || ch==0x58)        //'x' or 'X' pressed
@@ -452,8 +458,20 @@ void Read_and_Do(void)
 		for (BYTE id=0; id<16; id++)
 		{
 				ptmpA = PosRead(id);
-				ptime(); rprintf("ReadPos (%d) %x\r\n ", id, ptmpA);	
+				rprintf("%x", ptmpA);	
 		}
+		lbtmp=adc_psd();
+		rprintf("%x", lbtmp);	
+		lbtmp=adc_mic();
+		rprintf("%x", lbtmp);	
+		ptmpA=adc_volt();
+		rprintf("%x", ptmpA);
+		tilt_read(0);
+		rprintf("%x", x_value);
+		rprintf("%x", y_value);
+		rprintf("%x  ", z_value);
+		ptime(); 
+		rprintf("\r\n");	
 		break;
 	case 0xEE:
 		//help
