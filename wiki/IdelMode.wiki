@@ -7,9 +7,10 @@ This is idle mode - the default state the robot enters on power up. On exit of t
 
 {{{
 Options (serial)
-P or p    Exit (Pause)
+P or p    Exit to Experimental Mode
+S or s    Exit to SlaveSerial Mode
 ?         Query - output in Ascii to serial port the mode its in (in this Idle Mode)
 
 Options (IR)
-[]        Exit (Red Button)
+[]        Exit to Experimental mode (Red Button)
 }}}
