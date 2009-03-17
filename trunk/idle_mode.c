@@ -15,10 +15,17 @@ static void exitToExperimental(void) {
 	BasicPose();
 	gNextMode = kExperimentalMode;
 }
+
+static void exitToSlaveSerial(void) {
+	// Go to basic pose, and then switch to experimental mode
+	BasicPose();
+	gNextMode = kSerialSlaveMode;
+}
 	
 
 static void handle_serial(int cmd) {
 	if ('p' == cmd || 'P' == cmd) exitToExperimental();
+	if ('s' == cmd || 'S' == cmd) exitToSlaveSerial();
 	if ('?' == cmd) {
 		rprintf("\nIdle mode\n");
 	}
