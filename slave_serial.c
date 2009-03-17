@@ -21,24 +21,10 @@
 
 #include <util/delay.h>
 
-extern WORD    gBtnCnt;				// counter for PF button press
-extern WORD    gTltFwd;				// Tilt 
-extern WORD    gTltLft;				// Tilt
-
 extern WORD    gMSEC;				// 
 extern BYTE    gSEC;				// 
 extern BYTE    gMIN;				// 
 extern BYTE    gHOUR;				// 
-
-extern int    gX;				// 
-extern int    gY;				// 
-extern int    gZ;				// 
-
-extern int 	autobalance;
-extern int 	response;
-extern int  params[];
-
-extern const prog_char version[];
 
 extern int getHex(int d);
 
@@ -54,7 +40,7 @@ void Do_Serial(void)
 	WORD	ptmpA;
 	
 	// -------------------------------------------------------------------------------------------------------
-	// terminal input get input and  set Action state
+	// terminal input get input and  send to cooms and display response
 	// -------------------------------------------------------------------------------------------------------
 
 	int ch = uartGetByte();
@@ -137,11 +123,12 @@ void Do_Serial(void)
 void slave_mainloop()
 {
 	WORD lMSEC;
+	rprintf ("SlaveSerialMode\r\n");
 	while (kSerialSlaveMode == gNextMode) {
 		lMSEC = gMSEC;
 		
 		Do_Serial();
-		
-		while(lMSEC==gMSEC);
+			
+		_delay_ms(10);
 	}
 }
