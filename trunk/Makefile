@@ -43,7 +43,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
 ## Objects that must be built in order to link
-OBJECTS = main.o uart.o buffer.o Comm.o rprintf.o adc.o ir.o accelerometer.o idle_mode.o experimental_mode.o charge_mode.o slave_serial.o
+OBJECTS = main.o uart.o buffer.o Comm.o rprintf.o adc.o ir.o accelerometer.o idle_mode.o experimental_mode.o charge_mode.o serialslave_mode.o
 
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 
@@ -55,7 +55,7 @@ all: $(TARGET) Robobuilderlib.hex Robobuilderlib.eep Robobuilderlib.lss size
 main.o: main.c
 	$(CC) $(INCLUDES) $(CFLAGS) -DPSD_SENSOR -c  $<
 	
-slave_serial.o: slave_serial.c
+serialslave_mode.o: serialslave_mode.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
 
 battery.o: battery.c

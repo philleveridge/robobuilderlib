@@ -40,7 +40,7 @@ volatile BYTE 	F_PLAYING;				// state: playing from Flash
 int		gNextMode;
 extern void idle_mainloop(void);
 extern void experimental_mainloop(void);
-extern void slave_mainloop(void);
+extern void serialslave_mainloop(void);
 extern void charge_mainloop(void);
 
 
@@ -422,7 +422,7 @@ int main(void)
 				charge_mainloop();
 				break;
 			case kSerialSlaveMode:
-				slave_mainloop();
+				serialslave_mainloop();
 				break;
 /*			case kClassicMode:
 				classic_mainloop();

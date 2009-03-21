@@ -127,7 +127,7 @@ void Do_Serial(void)
 } 
 
 
-void slave_mainloop()
+void serialslave_mainloop()
 {
 	WORD lMSEC;
 	rprintf ("Serial Slave mode\r\n");
