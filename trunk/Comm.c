@@ -211,7 +211,7 @@ void SyncPosSend(void)
 
 
 //------------------------------------------------------------------------------
-// Position Move command. also reads the curremnt position
+// Position Move command. also reads the current position
 // Input	: ID, SpeedLevel, Position
 // Output	: Current Position ( 0~254) (444 if no response)
 // 
@@ -251,7 +251,7 @@ WORD PosRead(BYTE ID)
 
 
 //------------------------------------------------------------------------------
-// Position Move command. also reads the curremnt position
+// Position Move command. also reads the current position
 // Input	: ID, SpeedLevel, Position
 // Output	: Current Position ( 0~254) (444 if no response)
 // 

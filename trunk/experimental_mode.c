@@ -510,7 +510,7 @@ void Read_and_Do(void)
 void experimental_mainloop()
 {
 	WORD lMSEC;
-	rprintf ("ExperimentalMode\r\n");
+	rprintf ("Experimental mode\r\n");
 	while (kExperimentalMode == gNextMode) {
 		lMSEC = gMSEC;
 		
