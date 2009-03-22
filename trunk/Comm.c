@@ -141,7 +141,7 @@ BYTE sciRx1Ready(void)
 
 
 //------------------------------------------------------------------------------
-// Send a set command to wCK
+// Load a set command to wCK into our transmit buffer (gTx0Buf).
 // Input	: ID, Data1, Data2, Data3
 // Output	: None
 //------------------------------------------------------------------------------
@@ -172,7 +172,10 @@ void SendSetCmd(BYTE ID, BYTE Data1, BYTE Data2, BYTE Data3)
 
 
 //------------------------------------------------------------------------------
-// Send a Synchronized Position Send Command
+// Send a Synchronized Position Send Command for the scene and frame defined
+// by our Scene global, gFrameIdx, and gUnitD.
+// (Actually, just stuff such a command into our transmit buffer, gTx0Buf;
+// the actual sending of this buffer is done elsewhere.)
 //------------------------------------------------------------------------------
 void SyncPosSend(void) 
 {
@@ -480,7 +483,8 @@ void CalcUnitMove(void)
 
 
 //------------------------------------------------------------------------------
-// Build a frame to send
+// Build a frame to send: that is, stuff the next frame into our transmit
+// buffer.
 //------------------------------------------------------------------------------
 void MakeFrame(void)
 {
@@ -491,7 +495,8 @@ void MakeFrame(void)
 
 
 //------------------------------------------------------------------------------
-// Start sending the frame
+// Start sending the frame (or whatever else happens to be in our transmit
+// buffer, gTx0Buf).
 //------------------------------------------------------------------------------
 void SendFrame(void)
 {
