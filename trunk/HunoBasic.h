@@ -24,7 +24,7 @@ unsigned char flash HunoBasicPose[16]={
 // Motion Name : HunoBasic_PunchLeft
 //=========================================================
 
-#define HUNOBASIC_PUNCHLEFT_NUM_ACTION 5
+#define HUNOBASIC_PUNCHLEFT_NUM_SCENES 5
 #define HUNOBASIC_PUNCHLEFT_NUM_MOTORS 16
 unsigned char flash HunoBasic_PunchLeft_Torque[5][16]={
 /* ID
@@ -78,7 +78,7 @@ unsigned char flash HunoBasic_PunchLeft_Position[6][16]={
 // Motion Name : HunoBasic_PunchRight
 //=========================================================
 
-#define HUNOBASIC_PUNCHRIGHT_NUM_ACTION 5
+#define HUNOBASIC_PUNCHRIGHT_NUM_SCENES 5
 #define HUNOBASIC_PUNCHRIGHT_NUM_MOTORS 16
 unsigned char flash HunoBasic_PunchRight_Torque[5][16]={
 /* ID
@@ -132,7 +132,7 @@ unsigned char flash HunoBasic_PunchRight_Position[6][16]={
 // Motion Name : HunoBasic_SidewalkLeft
 //=========================================================
 
-#define HUNOBASIC_SIDEWALKLEFT_NUM_ACTION 6
+#define HUNOBASIC_SIDEWALKLEFT_NUM_SCENES 6
 #define HUNOBASIC_SIDEWALKLEFT_NUM_MOTORS 16
 unsigned char flash HunoBasic_SidewalkLeft_Torque[6][16]={
 /* ID
@@ -189,7 +189,7 @@ unsigned char flash HunoBasic_SidewalkLeft_Position[7][16]={
 // Motion Name : HunoBasic_SidewalkRight
 //=========================================================
 
-#define HUNOBASIC_SIDEWALKRIGHT_NUM_ACTION 6
+#define HUNOBASIC_SIDEWALKRIGHT_NUM_SCENES 6
 #define HUNOBASIC_SIDEWALKRIGHT_NUM_MOTORS 16
 unsigned char flash HunoBasic_SidewalkRight_Torque[6][16]={
 /* ID
@@ -246,7 +246,7 @@ unsigned char flash HunoBasic_SidewalkRight_Position[7][16]={
 // Motion Name : HunoBasic_TurnLeft
 //=========================================================
 
-#define HUNOBASIC_TURNLEFT_NUM_ACTION 6
+#define HUNOBASIC_TURNLEFT_NUM_SCENES 6
 #define HUNOBASIC_TURNLEFT_NUM_MOTORS 16
 unsigned char flash HunoBasic_TurnLeft_Torque[6][16]={
 /* ID
@@ -303,7 +303,7 @@ unsigned char flash HunoBasic_TurnLeft_Position[7][16]={
 // Motion Name : HunoBasic_TurnRight
 //=========================================================
 
-#define HUNOBASIC_TURNRIGHT_NUM_ACTION 6
+#define HUNOBASIC_TURNRIGHT_NUM_SCENES 6
 #define HUNOBASIC_TURNRIGHT_NUM_MOTORS 16
 unsigned char flash HunoBasic_TurnRight_Torque[6][16]={
 /* ID
@@ -360,7 +360,7 @@ unsigned char flash HunoBasic_TurnRight_Position[7][16]={
 // Motion Name : HunoBasic_GetupBack
 //=========================================================
 
-#define HUNOBASIC_GETUPBACK_NUM_ACTION 10
+#define HUNOBASIC_GETUPBACK_NUM_SCENES 10
 #define HUNOBASIC_GETUPBACK_NUM_MOTORS 16
 unsigned char flash HunoBasic_GetupBack_Torque[10][16]={
 /* ID
@@ -429,7 +429,7 @@ unsigned char flash HunoBasic_GetupBack_Position[11][16]={
 // Motion Name : HunoBasic_GetupFront
 //=========================================================
 
-#define HUNOBASIC_GETUPFRONT_NUM_ACTION 9
+#define HUNOBASIC_GETUPFRONT_NUM_SCENES 9
 #define HUNOBASIC_GETUPFRONT_NUM_MOTORS 16
 unsigned char flash HunoBasic_GetupFront_Torque[9][16]={
 /* ID
@@ -495,7 +495,7 @@ unsigned char flash HunoBasic_GetupFront_Position[10][16]={
 // Motion Name : HunoBasic_WalkForward
 //=========================================================
 
-#define HUNOBASIC_WALKFORWARD_NUM_ACTION 40
+#define HUNOBASIC_WALKFORWARD_NUM_SCENES 40
 #define HUNOBASIC_WALKFORWARD_NUM_MOTORS 16
 unsigned char flash HunoBasic_WalkForward_Torque[40][16]={
 /* ID
@@ -658,7 +658,7 @@ unsigned char flash HunoBasic_WalkForward_Position[41][16]={
 // Motion Name : HunoBasic_WalkBackward
 //=========================================================
 
-#define HUNOBASIC_WALKBACKWARD_NUM_ACTION 42
+#define HUNOBASIC_WALKBACKWARD_NUM_SCENES 42
 #define HUNOBASIC_WALKBACKWARD_NUM_MOTORS 16
 unsigned char flash HunoBasic_WalkBackward_Torque[42][16]={
 /* ID

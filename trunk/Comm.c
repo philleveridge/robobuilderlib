@@ -27,7 +27,7 @@ volatile WORD	gSIdx;				// Scene counter(0~65535)
 WORD	gNumOfFrame;
 
 // Program Memory pointers ------------------------------------------------------------------------
-
+// (All are unsigned char*, except where noted below)
 
 PGM_P			gpT_Table;		// Pointer to flash torque table
 PGM_P			gpE_Table;		// Pointer to flash Port table
@@ -35,8 +35,8 @@ PGM_P			gpPg_Table;		// Pointer to flash runtime P table
 PGM_P			gpDg_Table;		// Pointer to flash runtime D table
 PGM_P			gpIg_Table;		// Pointer to flash runtime I table
 PGM_P			gpZero_Table;	// Pointer to flash zero table
-PGM_P			gpFN_Table;		// Pointer to flash frames table
-PGM_P			gpRT_Table;		// Pointer to flash transition time table
+PGM_P			gpFN_Table;		// Pointer to flash frames table (int*)
+PGM_P			gpRT_Table;		// Pointer to flash transition time table (int*)
 PGM_P			gpPos_Table;	// Pointer to flash position table
 //--------------------------------------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ struct TwCK_in_Motion{      // Structure for each wCK in a motion
 	BYTE	RDgain;			// Runtime D setting
 	BYTE	RIgain;			// Runtime I setting
 	BYTE	PortEn;			// (0 = disable, 1 = enable)
-	BYTE	InitPos;		// Initial wCK position
+	BYTE	InitPos;		// Initial wCK position (apparently ignored)
 };
 
 struct TwCK_in_Scene{		// Structure for each wCK in a scene
@@ -318,8 +318,11 @@ void set_break_mode()
 
 
 //------------------------------------------------------------------------------
-// Fill the motion data structure from flash
-//	
+// Fill the motion data structure from flash.  Uses:
+//		gpPg_Table: pointer to array of P gain component for each servo in flash
+//		gpDp_Table: pointer to array of D gain component for each servo in flash
+//		gpIg_Table: pointer to array of I gain component for each servo in flash
+//		gpZero_Table: pointer to servo initial positions (ultimately ignored)
 //------------------------------------------------------------------------------
 void GetMotionFromFlash(void)
 {
@@ -345,7 +348,7 @@ void GetMotionFromFlash(void)
 
 
 //------------------------------------------------------------------------------
-// Runtime P,D,I setting
+// Set P,D,I parameters of each servo's PID loop from current Motion data.
 // 	
 //------------------------------------------------------------------------------
 void SendTGain(void)
@@ -397,7 +400,13 @@ void SendExPortD(void)
 
 //------------------------------------------------------------------------------
 // Fill the scene data structure with the scene data from flash pointed to by gSIdx
-//
+// Uses:
+//		gSIdx;			// current scene index
+//		gpT_Table;		// Pointer to flash torque table
+//		gpE_Table;		// Pointer to flash Port table
+//		gpFN_Table;		// Pointer to flash frames table (int*)
+//		gpRT_Table;		// Pointer to flash transition time table (int*)
+//		gpPos_Table;	// Pointer to flash position table
 //------------------------------------------------------------------------------
 void GetSceneFromFlash(void)
 {
@@ -507,7 +516,10 @@ void SendFrame(void)
 
 
 //------------------------------------------------------------------------------
-// 
+// Load and play a motion that's already partially loaded into our Motion
+// global data (Motion.NumOfScene and Motion.NumOfwCK), and partially defined
+// by a bunch of global pointers into flash data (gpPos_Table, gpT_Table, etc.).
+// This method blocks until the whole motion is done playing.
 //------------------------------------------------------------------------------
 void M_PlayFlash(void)
 {
@@ -582,20 +594,20 @@ void BasicPose()
 // 
 //------------------------------------------------------------------------------
 
-struct motiondata {
-char *TT;
-char *ET;
-char *PT;
-char *DT;
-char *IT;
-char *FT;
-char *RT;
-char *PoT;
-int NoS;
-int Now;
+struct FlashMotionData {
+	PGM_P TT;
+	PGM_P ET;
+	PGM_P PT;
+	PGM_P DT;
+	PGM_P IT;
+	PGM_P FT;
+	PGM_P RT;
+	PGM_P PoT;
+	int NoS;
+	int Now;
 };
 
-struct motiondata mlist[] = 
+struct FlashMotionData mlist[] = 
 {
 	{ // 0. PunchLeft
 		(PGM_P) HunoBasic_PunchLeft_Torque,
@@ -606,7 +618,7 @@ struct motiondata mlist[] =
 		(PGM_P) HunoBasic_PunchLeft_Frames,
 		(PGM_P) HunoBasic_PunchLeft_TrTime,
 		(PGM_P) HunoBasic_PunchLeft_Position,
-		HUNOBASIC_PUNCHLEFT_NUM_ACTION,
+		HUNOBASIC_PUNCHLEFT_NUM_SCENES,
 		HUNOBASIC_PUNCHLEFT_NUM_MOTORS
 	},	
 	{ // 1. PunchRight
@@ -618,7 +630,7 @@ struct motiondata mlist[] =
 		(PGM_P) HunoBasic_PunchRight_Frames,
 		(PGM_P) HunoBasic_PunchRight_TrTime,
 		(PGM_P) HunoBasic_PunchRight_Position,
-		HUNOBASIC_PUNCHRIGHT_NUM_ACTION,
+		HUNOBASIC_PUNCHRIGHT_NUM_SCENES,
 		HUNOBASIC_PUNCHRIGHT_NUM_MOTORS
 	},
 	// 2. SidewalkLeft
@@ -631,7 +643,7 @@ struct motiondata mlist[] =
 		(PGM_P) HunoBasic_SidewalkLeft_Frames,
 		(PGM_P) HunoBasic_SidewalkLeft_TrTime,
 		(PGM_P) HunoBasic_SidewalkLeft_Position,
-		HUNOBASIC_SIDEWALKLEFT_NUM_ACTION,
+		HUNOBASIC_SIDEWALKLEFT_NUM_SCENES,
 		HUNOBASIC_SIDEWALKLEFT_NUM_MOTORS
 	},
 	// 3. SidewalkRight
@@ -644,7 +656,7 @@ struct motiondata mlist[] =
 		(PGM_P) HunoBasic_SidewalkRight_Frames,
 		(PGM_P) HunoBasic_SidewalkRight_TrTime,
 		(PGM_P) HunoBasic_SidewalkRight_Position,
-		HUNOBASIC_SIDEWALKRIGHT_NUM_ACTION,
+		HUNOBASIC_SIDEWALKRIGHT_NUM_SCENES,
 		HUNOBASIC_SIDEWALKRIGHT_NUM_MOTORS
 	},
 	// 4. TurnLeft
@@ -657,7 +669,7 @@ struct motiondata mlist[] =
 		(PGM_P) HunoBasic_TurnLeft_Frames,
 		(PGM_P) HunoBasic_TurnLeft_TrTime,
 		(PGM_P) HunoBasic_TurnLeft_Position,
-		HUNOBASIC_TURNLEFT_NUM_ACTION,
+		HUNOBASIC_TURNLEFT_NUM_SCENES,
 		HUNOBASIC_TURNLEFT_NUM_MOTORS
 	},	
 	// 5. TurnRight
@@ -670,7 +682,7 @@ struct motiondata mlist[] =
 		(PGM_P) HunoBasic_TurnRight_Frames,
 		(PGM_P) HunoBasic_TurnRight_TrTime,
 		(PGM_P) HunoBasic_TurnRight_Position,
-		HUNOBASIC_TURNRIGHT_NUM_ACTION,
+		HUNOBASIC_TURNRIGHT_NUM_SCENES,
 		HUNOBASIC_TURNRIGHT_NUM_MOTORS
 	},
 	// 6. GetupBack
@@ -683,7 +695,7 @@ struct motiondata mlist[] =
 		(PGM_P) HunoBasic_GetupBack_Frames,
 		(PGM_P) HunoBasic_GetupBack_TrTime,
 		(PGM_P) HunoBasic_GetupBack_Position,
-		HUNOBASIC_GETUPBACK_NUM_ACTION,
+		HUNOBASIC_GETUPBACK_NUM_SCENES,
 		HUNOBASIC_GETUPBACK_NUM_MOTORS
 	},
 	// 7. GetupFront
@@ -696,7 +708,7 @@ struct motiondata mlist[] =
 		(PGM_P) HunoBasic_GetupFront_Frames,
 		(PGM_P) HunoBasic_GetupFront_TrTime,
 		(PGM_P) HunoBasic_GetupFront_Position,
-		HUNOBASIC_GETUPFRONT_NUM_ACTION,
+		HUNOBASIC_GETUPFRONT_NUM_SCENES,
 		HUNOBASIC_GETUPFRONT_NUM_MOTORS
 	},
 	// 8. WalkForward
@@ -709,7 +721,7 @@ struct motiondata mlist[] =
 		(PGM_P) HunoBasic_WalkForward_Frames,
 		(PGM_P) HunoBasic_WalkForward_TrTime,
 		(PGM_P) HunoBasic_WalkForward_Position,
-		HUNOBASIC_WALKFORWARD_NUM_ACTION,
+		HUNOBASIC_WALKFORWARD_NUM_SCENES,
 		HUNOBASIC_WALKFORWARD_NUM_MOTORS
 	},
 	// 9. WalkBackward
@@ -722,7 +734,7 @@ struct motiondata mlist[] =
 		(PGM_P) HunoBasic_WalkBackward_Frames,
 		(PGM_P) HunoBasic_WalkBackward_TrTime,
 		(PGM_P) HunoBasic_WalkBackward_Position,
-		HUNOBASIC_WALKBACKWARD_NUM_ACTION,
+		HUNOBASIC_WALKBACKWARD_NUM_SCENES,
 		HUNOBASIC_WALKBACKWARD_NUM_MOTORS
 	},
 	
