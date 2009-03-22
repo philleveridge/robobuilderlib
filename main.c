@@ -130,10 +130,9 @@ ISR(TIMER0_OVF_vect)
 //------------------------------------------------------------------------------
 ISR(TIMER1_OVF_vect) 
 {
-	if( gFrameIdx == gNumOfFrame )
-{   // are we at the end of the scene ?
-   	    gFrameIdx = 0;
-    	RUN_LED1_OFF;
+	if (gFrameIdx == gNumOfFrame) {   // are we at the end of the scene ?
+		gFrameIdx = 0;
+		RUN_LED1_OFF;
 		F_PLAYING=0;						// clear F_PLAYING state
 		TIMSK &= 0xfb;  					// Timer1 Overflow Interrupt disable
 		TCCR1B=0x00;
