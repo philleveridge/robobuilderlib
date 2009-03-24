@@ -65,9 +65,9 @@ struct TwCK_in_Scene{		// Structure for each wCK in a scene
 };
 
 struct TMotion{			    // Structure for a motion
-	BYTE	PF;				//  ?
-	BYTE	RIdx;			//  ?
-	DWORD	AIdx;			//  ?
+	BYTE	PF;				//  ? (not used)
+	BYTE	RIdx;			//  ? (not used)
+	DWORD	AIdx;			//  ? (not used)
 	WORD	NumOfScene;		// number of scenes in motion
 	WORD	NumOfwCK;		// number of wCK included
 	struct	TwCK_in_Motion  wCK[MAX_wCK];	// Motion data for each wCK
@@ -81,6 +81,34 @@ struct TScene{			    // Structure for a scene
 	struct	TwCK_in_Scene   wCK[MAX_wCK];	// scene data for each wCK
 }Scene;
 
+//------------------------------------------------------------------------------
+//  Motion Buffer Layout (where C is number of wCK)
+//  
+//  Offset  Length  Description
+//  ------  ------  -----------
+//  0       1       number of scenes
+//  1       1       number of wCK servos (C)
+//  2       C       P gain for each wCK
+//  C+2     C       D gain for each wCK
+//  2*C+2   C       I gain for each wCK
+//  3*C+2   3*C+4   data for first scene (scene 0)
+//  6*C+6   3*C+4   data for scene 1
+//  9*C+10  3*C+4   data for scene 2
+//  (3+3*i)*C+(4*i)+2		start of data for scene i
+//  (etc.)
+//  
+//  For each scene, the data has the following structure:
+//  
+//  Offset  Length  Description
+//  ------  ------  -----------
+//  0       2       scene transition (run) time, in milliseconds
+//  2       2       desired number of interpolation frames (1-100)
+//  4       C       destination position for each wCK
+//  C+4     C       torque (0-4) for each wCK
+//  2*C+4   C       external port data (LEDs?) for each wCK
+//  3*C+4	(end)
+//------------------------------------------------------------------------------
+
 
 // external variables
 
@@ -91,6 +119,10 @@ volatile extern BYTE		gTx0BufIdx;		// UART0 transmit pointer
 volatile extern BYTE		gRx0Cnt;		// UART0 receive length
 volatile extern BYTE		gRx0Buf[];		// UART0 receive buffer
 volatile extern BYTE 		F_PLAYING;		// state: playing from Flash
+
+// internal method declarations
+static void ClearMotionData(void);
+
 
 //------------------------------------------------------------------------------
 // Transmit char to UART when UART is ready
@@ -316,6 +348,19 @@ void set_break_mode()
 }
 
 
+void ClearMotionData(void)
+{
+	WORD i;
+	for (i = 0; i < MAX_wCK; i++) {				// clear the wCK motion data
+		Motion.wCK[i].Exist		= 0;
+		Motion.wCK[i].RPgain	= 0;
+		Motion.wCK[i].RDgain	= 0;
+		Motion.wCK[i].RIgain	= 0;
+		Motion.wCK[i].PortEn	= 0;
+		Motion.wCK[i].InitPos	= 0;
+	}
+}
+
 
 //------------------------------------------------------------------------------
 // Fill the motion data structure from flash.  Uses:
@@ -328,21 +373,44 @@ void GetMotionFromFlash(void)
 {
 	WORD i;
 
-	for(i=0;i<MAX_wCK;i++){				// clear the wCK motion data
-		Motion.wCK[i].Exist		= 0;
-		Motion.wCK[i].RPgain	= 0;
-		Motion.wCK[i].RDgain	= 0;
-		Motion.wCK[i].RIgain	= 0;
-		Motion.wCK[i].PortEn	= 0;
-		Motion.wCK[i].InitPos	= 0;
-	}
+	ClearMotionData();
+	
 	for(i=0;i<Motion.NumOfwCK;i++){		// fill the wCK motion data
-		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].Exist		= 1;
+		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].Exist	= 1;
 		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].RPgain	= pgm_read_byte(gpPg_Table+i);
 		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].RDgain	= pgm_read_byte(gpDg_Table+i);
 		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].RIgain	= pgm_read_byte(gpIg_Table+i);
 		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].PortEn	= 1;
-		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].InitPos	= pgm_read_byte(gpZero_Table+i);
+		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].InitPos = pgm_read_byte(gpZero_Table+i);
+	}
+}
+
+//------------------------------------------------------------------------------
+// Fill the motion data structure from a buffer in RAM.
+//------------------------------------------------------------------------------
+void GetMotionFromBuffer(unsigned char *motionBuf)
+{
+	WORD i;
+	unsigned char *pGains;
+	unsigned char *dGains;
+	unsigned char *iGains;
+	
+	ClearMotionData();
+	
+	Motion.NumOfScene = motionBuf[0];  // (See "Motion Buffer Layout" at top of file)
+	Motion.NumOfwCK = motionBuf[1];
+
+	pGains = motionBuf + 2;
+	dGains = pGains + Motion.NumOfwCK;
+	iGains = dGains + Motion.NumOfwCK;
+	
+	for (i = 0; i < Motion.NumOfwCK; i++) {		// fill the wCK motion data
+		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].Exist	= 1;
+		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].RPgain	= pGains[i];
+		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].RDgain	= dGains[i];
+		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].RIgain	= iGains[i];
+		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].PortEn	= 1;
+		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].InitPos = pgm_read_byte(gpZero_Table+i);
 	}
 }
 
@@ -436,6 +504,55 @@ void GetSceneFromFlash(void)
 
 	_delay_us(1300);
 }
+
+//------------------------------------------------------------------------------
+// Fill the scene data structure with scene data from the given motion buffer.
+// Uses:
+//		gSIdx;			// current scene index
+//------------------------------------------------------------------------------
+void GetSceneFromBuffer(unsigned char *motionBuffer)
+{
+	WORD i, NumOfwCK;
+	unsigned char *sceneBuffer;
+	unsigned char *prevScene;
+
+	NumOfwCK = motionBuffer[1];	// (See "Motion Buffer Layout" at top of file)
+	sceneBuffer = motionBuffer + (3 + 3 * gSIdx) * NumOfwCK + (4 * gSIdx) + 2;
+		
+	Scene.NumOfFrame = *((WORD*)(sceneBuffer+2));	// get the number of frames in scene
+	gNumOfFrame = Scene.NumOfFrame;
+	Scene.RTime = *((WORD*)(sceneBuffer+0));		// get the run time of scene[msec]
+
+	// Get the starting position for each wCK -- this will be the previous
+	// scene destination, unless we're on scene 0, in which case we'll
+	// just take whatever destination was last set.
+	if (gSIdx > 0) {
+		prevScene = motionBuffer + (3 * gSIdx) * NumOfwCK + (3 * gSIdx) + 2;
+		for (i = 0; i < Motion.NumOfwCK; i++) {						
+			Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos = prevScene[ 4 + i ];
+		}		
+	} else {
+		for (i = 0; i < Motion.NumOfwCK; i++) {						
+			Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos 
+					= Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos;
+		}	
+	}
+
+	// Now get rest of the scene data for each wCK, including the destination position.
+	for (i = 0; i < Motion.NumOfwCK; i++) {						
+		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Exist	= 1;
+		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos	= sceneBuffer[ 4 + i ];
+		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Torq	= sceneBuffer[ NumOfwCK + 4 + i ];
+		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].ExPortD	= sceneBuffer[ 2 * NumOfwCK + 4 + i ];
+	}
+	
+	// Serial port preparations (?).
+	UCSR0B &= 0x7F;   		// UART0 RxInterrupt disable
+	UCSR0B |= 0x40;   		// UART0 TxInterrupt enable
+	
+	_delay_us(1300);
+}
+
 
 
 //------------------------------------------------------------------------------
@@ -539,11 +656,33 @@ void M_PlayFlash(void)
 	}
 }
 
+//------------------------------------------------------------------------------
+// Load a motion from a buffer in RAM, and return immediately.
+//------------------------------------------------------------------------------
+void LoadMotionFromBuffer(unsigned char *motionBuf)
+{
+	GetMotionFromBuffer( motionBuf );	// Load motion data into our Motion global
+	SendTGain();						// set the runtime PID gain from motion structure
+}
+
+//------------------------------------------------------------------------------
+// Begin playing one scene of the motion previously loaded with
+// LoadMotionFromBuffer.  Return immediately, without waiting for it to finish.
+//------------------------------------------------------------------------------
+void PlaySceneFromBuffer(unsigned char *motionBuf, WORD sceneIndex)
+{
+	gSIdx = sceneIndex;
+	GetSceneFromBuffer( motionBuf );	// Load scene into global structure
+	SendExPortD();						// Set external port data
+	CalcFrameInterval();				// Set the interrupt for the frames
+	CalcUnitMove();						// Calculate the interpolation steps
+	MakeFrame();						// build a frame to send
+	SendFrame();						// start sending frame
+}
 
 //------------------------------------------------------------------------------
 // 
 //------------------------------------------------------------------------------
-
 void BasicPose()
 {
 	PF1_LED1_ON;
