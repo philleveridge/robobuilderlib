@@ -29,8 +29,8 @@ extern BYTE    gHOUR;				//
 extern int getHex(int d);
 
 // Buffer for handling Motion commands
-//#define kMaxMotionBufSize 466  // enough for 8 scenes
-#define kMaxMotionBufSize 102  // enough for 1 scene
+#define kMaxMotionBufSize 466  // enough for 8 scenes
+//#define kMaxMotionBufSize 102  // enough for 1 scene
 static unsigned char motionBuf[kMaxMotionBufSize];
 
 //------------------------------------------------------------------------------
@@ -40,15 +40,29 @@ void handle_motion_cmd(void)
 {
 	u08 b0, b1;
 	WORD bufSize;
+	int pos = 0, i;
+	WORD startSec = gSEC;
 	
 	// next two bytes are the buffer size, in little-endian order
 	while (!uartReceiveByte(&b0));
 	while (!uartReceiveByte(&b1));
 	bufSize = b0 + ((WORD)b1 << 8);
 	
-	rprintf("Expecting buffer size: %d\r\n", bufSize);
-	
-	// To-do... read that buffer here, then kick things off with the Comm module.
+	// now, read that buffer (To-do: time out after a while)
+	while (pos < bufSize) {
+		while (!uartReceiveByte(motionBuf+pos));
+		pos++;
+		if (gSEC > startSec+1) break;
+	}
+
+	rprintf("Got %d bytes... ", pos);
+//	for (i=0; i<pos; i++) rprintf("%x ", motionBuf[i]);
+	rprintf("\r\n");
+
+	// OK, now we have data in our buffer, we need to start the
+	// motion via the Comm module.
+	LoadMotionFromBuffer(motionBuf);
+	PlaySceneFromBuffer(motionBuf, 0);
 	
 }
 
