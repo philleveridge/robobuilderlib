@@ -75,7 +75,7 @@
 //! Number of bytes for uart receive buffer.
 /// Do not change this value in uart.h, but rather override
 /// it with the desired value defined in your project's global.h
-#define UART_RX_BUFFER_SIZE		0x0040
+#define UART_RX_BUFFER_SIZE		0x0080
 #endif
 
 // define this key if you wish to use
