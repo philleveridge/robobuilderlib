@@ -508,7 +508,8 @@ void GetSceneFromFlash(void)
 //------------------------------------------------------------------------------
 // Fill the scene data structure with scene data from the given motion buffer.
 // Uses:
-//		gSIdx;			// current scene index
+//		Motion			current motion header data
+//		gSIdx			current scene index
 //------------------------------------------------------------------------------
 void GetSceneFromBuffer(unsigned char *motionBuffer)
 {
@@ -516,7 +517,7 @@ void GetSceneFromBuffer(unsigned char *motionBuffer)
 	unsigned char *sceneBuffer;
 	unsigned char *prevScene;
 
-	NumOfwCK = motionBuffer[1];	// (See "Motion Buffer Layout" at top of file)
+	NumOfwCK = Motion.NumOfwCK;
 	sceneBuffer = motionBuffer + (3 + 3 * gSIdx) * NumOfwCK + (4 * gSIdx) + 2;
 		
 	Scene.NumOfFrame = *((WORD*)(sceneBuffer+2));	// get the number of frames in scene
@@ -539,7 +540,7 @@ void GetSceneFromBuffer(unsigned char *motionBuffer)
 	}
 
 	// Now get rest of the scene data for each wCK, including the destination position.
-	for (i = 0; i < Motion.NumOfwCK; i++) {						
+	for (i = 0; i < NumOfwCK; i++) {						
 		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Exist	= 1;
 		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos	= sceneBuffer[ 4 + i ];
 		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Torq	= sceneBuffer[ NumOfwCK + 4 + i ];

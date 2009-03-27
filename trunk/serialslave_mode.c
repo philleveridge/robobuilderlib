@@ -33,37 +33,107 @@ extern int getHex(int d);
 //#define kMaxMotionBufSize 102  // enough for 1 scene
 static unsigned char motionBuf[kMaxMotionBufSize];
 
+// Communications protocol constant: the base of our set of
+// commands for sending motion header and scenes
+#define kMotionCmdBase 199
+
 //------------------------------------------------------------------------------
-// Handle a motion buffer command.
+// Receive the header (i.e. everything up to the first scene) of a motion
+// buffer.  Send an acknowledgement, which triggers the host to send the
+// first scene.
 //------------------------------------------------------------------------------
-void handle_motion_cmd(void)
+void handle_motion_header()
 {
-	u08 b0, b1;
-	WORD bufSize;
-	int pos = 0, i;
-	WORD startSec = gSEC;
+	int i;
+	int NumOfwCK;
 	
-	// next two bytes are the buffer size, in little-endian order
-	while (!uartReceiveByte(&b0));
-	while (!uartReceiveByte(&b1));
-	bufSize = b0 + ((WORD)b1 << 8);
+	// Get the first two bytes, which are the number of scenes and 
+	// the number of wCK servos.
+	while (!uartReceiveByte(motionBuf));
+	while (!uartReceiveByte(motionBuf+1));
+	NumOfwCK = motionBuf[1];
 	
-	// now, read that buffer (To-do: time out after a while)
-	while (pos < bufSize) {
-		while (!uartReceiveByte(motionBuf+pos));
-		pos++;
-		if (gSEC > startSec+1) break;
+	// Get the P gains, D gains, and I gains for the servos
+	for (i = 0; i < NumOfwCK*3; i++) {
+		while (!uartReceiveByte(motionBuf+2+i));
+	}
+	
+	// Send an acknowledgement that we got the header data.
+	uartSendByte('M');
+	
+	// Load the motion header into our motion-control code.
+	LoadMotionFromBuffer(motionBuf);
+}
+
+//------------------------------------------------------------------------------
+// Receive one scene of a motion buffer.  Send an acknowledgement, which
+// triggers the host to send the next scene (if any).  If this is scene 0,
+// then start the motion (trusting that we'll get the rest of the scenes
+// before they're needed).
+//------------------------------------------------------------------------------
+void handle_scene(int sceneNum)
+{
+	// Calculate where this scene fits into our motion buffer
+	int NumOfwCK = motionBuf[1];
+	int sceneSize = 3 * NumOfwCK + 4;
+	int startPos = 3 * NumOfwCK + 2 + sceneNum * sceneSize;
+	int i;
+	
+	// Read the required number of bytes
+	for (i = 0; i < sceneSize; i++) {
+		while (!uartReceiveByte(motionBuf + startPos + i));
+	}
+	
+	// Send an acknowledgement that we got the scene.
+	uartSendByte('0' + sceneNum);
+	
+	// If this is scene 0, then start the motion.
+	PlaySceneFromBuffer(motionBuf, 0);
+
+/*	// Dump our buffer for debugging
+	rprintf("buffer: ");
+	const unsigned char *hexDigits = "0123456789ABCDEF";
+	for (i = 0; i < startPos + sceneSize; i++) {
+		unsigned char b = motionBuf[i];
+		uartSendByte( hexDigits[ b >> 4 ] );
+		uartSendByte( hexDigits[ b & 0x0F ] );
+		uartSendByte( ' ' );
+	}
+*/
+
+}
+
+
+void handle_direct_ctl(BOOL showResponse)
+{
+	// PC control mode
+	// 2 hex digits = length
+	
+	#define MAX_INP_BUF 32
+
+	int c;
+	int l=getHex(2);
+	int buff[MAX_INP_BUF];
+	// foreach byte
+	for (c=0; (c<l && c<MAX_INP_BUF); c++) {			
+		// read each hex digit into buffer
+		buff[c]=getHex(2);
+	}
+				
+	// transmit  buffer
+	for (c=0; (c<l && c<MAX_INP_BUF); c++) {	
+		sciTx0Data(buff[c]&0xFF);
 	}
 
-	rprintf("Got %d bytes... ", pos);
-//	for (i=0; i<pos; i++) rprintf("%x ", motionBuf[i]);
-	rprintf("\r\n");
-
-	// OK, now we have data in our buffer, we need to start the
-	// motion via the Comm module.
-	LoadMotionFromBuffer(motionBuf);
-	PlaySceneFromBuffer(motionBuf, 0);
-	
+	if (showResponse) {
+		// get response (or timeout)					
+		BYTE b1 = sciRx0Ready();
+		BYTE b2 = sciRx0Ready();
+		// echo response
+		rprintf ("=%x%x\r\n", b1,b2);
+	} else {
+		rprintf (" ok\r\n");
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -81,9 +151,18 @@ void Do_Serial(void)
 	if (ch < 0) return;
 
 	rprintf("%c [%d]\r\n", ch, ch);	
+
+	if (ch == kMotionCmdBase) {
+		handle_motion_header();
+		return;
+	} else if (ch > kMotionCmdBase && ch <= kMotionCmdBase+8) {
+		handle_scene(ch - kMotionCmdBase - 1);
+		return;
+	}
 	
-	if (ch=='q' || ch == 'Q' ) 
-	{
+	switch (ch) {
+	case 'q':
+	case 'Q':
 		// Query mode
 		
 		// Servo positions
@@ -114,57 +193,27 @@ void Do_Serial(void)
 		// clock
 		rprintf("  %d:%d:%d-%d ",gHOUR,gMIN,gSEC,gMSEC);
 		rprintf("\r\n");			
-	}
-
-	if (ch == '?') {
-		rprintf("Serial Slave mode\r\n");
-	}
+		break;
 	
-	if (ch == 'p' || ch == 27 ) {
+	case '?':
+		rprintf("Serial Slave mode\r\n");
+		break;
+	
+	case 'p':
+	case 'P':
+		rprintf("Basic pose\r\n");
+		BasicPose();
+		break;
+	
+	case 27:  // Esc
 		rprintf("Exit SlaveSerial Mode\r\n");
 		gNextMode = kIdleMode;
-	}
-	
-	if (ch == 'M') {
-		handle_motion_cmd();
-	}
-	
-	if (ch =='x' || ch=='X')        //'x' or 'X' pressed
-	{
-		// PC control mode
-		// 2 hex digits = length
-		
-		#define MAX_INP_BUF 32
-	
-		int c;
-		int l=getHex(2);
-		int buff[MAX_INP_BUF];
-		// foreach byte
-		for (c=0; (c<l && c<MAX_INP_BUF); c++)
-		{			
-		//  read each hex digit into buffer
-			buff[c]=getHex(2);
-		}
-					
-		// transmit  buffer
-		for (c=0; (c<l && c<MAX_INP_BUF); c++)
-		{	
-			sciTx0Data(buff[c]&0xFF);
-		}
+		break;
 
-		if (ch==0x78)
-		{
-			// get response (or timeout)					
-			BYTE b1 = sciRx0Ready();
-			BYTE b2 = sciRx0Ready();
-			// echo response
-			rprintf ("=%x%x\r\n", b1,b2);
-		}
-		else
-		{
-			rprintf (" ok\r\n");
-		}
-	
+	case 'x':
+	case 'X':
+		handle_direct_ctl(ch=='x');
+		break;
 	}
 } 
 
