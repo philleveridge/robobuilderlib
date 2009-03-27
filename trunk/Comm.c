@@ -526,17 +526,12 @@ void GetSceneFromBuffer(unsigned char *motionBuffer)
 
 	// Get the starting position for each wCK -- this will be the previous
 	// scene destination, unless we're on scene 0, in which case we'll
-	// just take whatever destination was last set.
+	// assume the starting positions have been set by LoadMotionFromBuffer.
 	if (gSIdx > 0) {
 		prevScene = motionBuffer + (3 * gSIdx) * NumOfwCK + (3 * gSIdx) + 2;
 		for (i = 0; i < Motion.NumOfwCK; i++) {						
 			Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos = prevScene[ 4 + i ];
 		}		
-	} else {
-		for (i = 0; i < Motion.NumOfwCK; i++) {						
-			Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos 
-					= Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos;
-		}	
 	}
 
 	// Now get rest of the scene data for each wCK, including the destination position.
@@ -663,6 +658,15 @@ void M_PlayFlash(void)
 void LoadMotionFromBuffer(unsigned char *motionBuf)
 {
 	GetMotionFromBuffer( motionBuf );	// Load motion data into our Motion global
+	
+	// Initialize the starting positions of the first scene
+	// to the current servo positions
+	for (int i = 0; i < Motion.NumOfwCK; i++) {
+		BYTE id = pgm_read_byte(&(wCK_IDs[i]));
+		Scene.wCK[id].SPos = PosRead(id);
+		rprintf("SPos %d = %d\r\n", id, Scene.wCK[id].SPos);
+	}
+	
 	SendTGain();						// set the runtime PID gain from motion structure
 }
 
