@@ -26,10 +26,6 @@
 // M_T_OF_POWER		8600 (0x2198)	- middle  charge voltage[mV]
 // L_T_OF_POWER		8100 (0x1FA4)	- lowest  charge voltage[mV]
 
-extern WORD    gMSEC;				// 
-extern BYTE    gSEC;				// 
-extern BYTE    gMIN;				// 
-extern BYTE    gHOUR;				// 
 
 void  test_voltage(WORD volts);
 int ov_flag ;
