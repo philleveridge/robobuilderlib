@@ -21,17 +21,14 @@
 
 #include <util/delay.h>
 
-extern WORD    gMSEC;				// 
-extern BYTE    gSEC;				// 
-extern BYTE    gMIN;				// 
-extern BYTE    gHOUR;				// 
-
 extern int getHex(int d);
 
 // Buffer for handling Motion commands
 #define kMaxMotionBufSize 466  // enough for 8 scenes
 //#define kMaxMotionBufSize 102  // enough for 1 scene
 static unsigned char motionBuf[kMaxMotionBufSize];
+static WORD scenesReceived;		// number of scenes received
+static BOOL inMotion = FALSE;	// TRUE when we're playing a motion
 
 // Communications protocol constant: the base of our set of
 // commands for sending motion header and scenes
@@ -59,7 +56,9 @@ void handle_motion_header()
 	}
 	
 	// Send an acknowledgement that we got the header data.
+	uartFlushReceiveBuffer();
 	uartSendByte('M');
+	rprintf("Got motion with %d scenes for %d wCK\r\n", motionBuf[0], motionBuf[1]);
 	
 	// Load the motion header into our motion-control code.
 	LoadMotionFromBuffer(motionBuf);
@@ -68,8 +67,7 @@ void handle_motion_header()
 //------------------------------------------------------------------------------
 // Receive one scene of a motion buffer.  Send an acknowledgement, which
 // triggers the host to send the next scene (if any).  If this is scene 0,
-// then start the motion (trusting that we'll get the rest of the scenes
-// before they're needed).
+// or some other scene we've been waiting for, then start the motion.
 //------------------------------------------------------------------------------
 void handle_scene(int sceneNum)
 {
@@ -80,15 +78,30 @@ void handle_scene(int sceneNum)
 	int i;
 	
 	// Read the required number of bytes
+	BYTE startSec = gSEC;
 	for (i = 0; i < sceneSize; i++) {
-		while (!uartReceiveByte(motionBuf + startPos + i));
+		while (!uartReceiveByte(motionBuf + startPos + i)) {
+			if (gSEC - startSec > 5) {  // this will fail for startSec > 54...  Doh!  :(
+				rprintf("Timed out receiving scene %d on byte %d\r\n", sceneNum, i);
+				return;
+			}
+		}
 	}
 	
+	// Remember how many scenes we've received.
+	scenesReceived = sceneNum + 1;		// (we require that they arrive in order)
+
 	// Send an acknowledgement that we got the scene.
+	uartFlushReceiveBuffer();
 	uartSendByte('0' + sceneNum);
 	
-	// If this is scene 0, then start the motion.
-	PlaySceneFromBuffer(motionBuf, 0);
+	// If this is scene 0, or it's the next scene and we're already
+	// done with the one playing, then start the motion.
+	if (sceneNum == 0 || (sceneNum == gSceneIndex+1 && !F_PLAYING)) {
+		rprintf("Starting scene %d\r\n", sceneNum);
+		PlaySceneFromBuffer(motionBuf, sceneNum);
+		inMotion = TRUE;
+	}
 
 /*	// Dump our buffer for debugging
 	rprintf("buffer: ");
@@ -103,7 +116,38 @@ void handle_scene(int sceneNum)
 
 }
 
+//------------------------------------------------------------------------------
+// continue_motion: keep our motion going by noticing when the current scene
+// is done playing, and starting the next one (if any).
+//------------------------------------------------------------------------------
+void continue_motion()
+{
+	static BOOL noRepeatLatch = FALSE;
+	
+	if (!inMotion) return;		// not playing a motion
+	if (F_PLAYING) return;		// in the middle of a scene
+	
+	if (gSceneIndex+1 >= motionBuf[0]) {
+		// all done with the motion
+		rprintf("Done with %d-scene motion\r\n", motionBuf[0]);
+		gSceneIndex = -1;
+		inMotion = FALSE;
+		noRepeatLatch = FALSE;
+		return;
+	}
 
+	// Start the next scene (if we've received it)
+	if (gSceneIndex+1 < scenesReceived) {
+		rprintf("Starting scene %d of %d\r\n", gSceneIndex+1, motionBuf[0]);
+		PlaySceneFromBuffer(motionBuf, gSceneIndex+1);
+		noRepeatLatch = FALSE;
+	} else if (!noRepeatLatch) {
+		rprintf("still waiting for scene %d of %d\r\n", gSceneIndex+1, motionBuf[0]);
+		noRepeatLatch = TRUE;
+	}
+}
+
+//------------------------------------------------------------------------------
 void handle_direct_ctl(BOOL showResponse)
 {
 	// PC control mode
@@ -150,7 +194,7 @@ void Do_Serial(void)
 	int ch = uartGetByte();
 	if (ch < 0) return;
 
-	rprintf("%c [%d]\r\n", ch, ch);	
+	rprintf(" %c [%d]\r\n", ch, ch);	
 
 	if (ch == kMotionCmdBase) {
 		handle_motion_header();
@@ -196,7 +240,7 @@ void Do_Serial(void)
 		break;
 	
 	case '?':
-		rprintf("Serial Slave mode\r\n");
+		rprintf("Serial Slave mode: inMotion=%d, F_PLAYING=%d\r\n", inMotion, F_PLAYING);
 		break;
 	
 	case 'p':
@@ -218,15 +262,16 @@ void Do_Serial(void)
 } 
 
 
+//------------------------------------------------------------------------------
 void serialslave_mainloop()
 {
-	WORD lMSEC;
-	rprintf ("Serial Slave mode\r\n");
+	//WORD lMSEC;
+	rprintf ("Serial Slave mode");
 	while (kSerialSlaveMode == gNextMode) {
-		lMSEC = gMSEC;
+		//lMSEC = gMSEC;
 		
 		Do_Serial();
-			
-		_delay_ms(10);
+		continue_motion();
+		//_delay_ms(10);  // why should we delay here?
 	}
 }

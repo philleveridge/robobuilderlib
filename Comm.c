@@ -6,9 +6,9 @@
 #include <avr/pgmspace.h>
 #include <string.h>
 #include "global.h"
-#include "Main.h"
+#include "main.h"
 #include "Macro.h"
-#include "Comm.h"
+#include "comm.h"
 #include "rprintf.h"
 #include "HunoBasic.h"
 #include "e-motion.h"    //extra-motions (gedit??)
@@ -21,9 +21,9 @@ unsigned char PROGMEM wCK_IDs[16]={
 
 // Frame variables-----------------------------------------------------------------
 volatile WORD	gFrameIdx=0;	    // Frame counter
-WORD	TxInterval=0;		// Timer1 interval
-float	gUnitD[MAX_wCK];	// interpolation values
-volatile WORD	gSIdx;				// Scene counter(0~65535)
+WORD	TxInterval=0;				// Timer1 interval
+float	gUnitD[MAX_wCK];			// interpolation values
+volatile WORD	gSceneIndex = -1;	// current scene playing, or -1 if none
 WORD	gNumOfFrame;
 
 // Program Memory pointers ------------------------------------------------------------------------
@@ -110,15 +110,6 @@ struct TScene{			    // Structure for a scene
 //------------------------------------------------------------------------------
 
 
-// external variables
-
-volatile extern WORD		gMSEC;
-volatile extern BYTE		gTx0Buf[];		// UART0 transmit buffer
-volatile extern BYTE		gTx0Cnt;		// UART0 transmit length
-volatile extern BYTE		gTx0BufIdx;		// UART0 transmit pointer
-volatile extern BYTE		gRx0Cnt;		// UART0 receive length
-volatile extern BYTE		gRx0Buf[];		// UART0 receive buffer
-volatile extern BYTE 		F_PLAYING;		// state: playing from Flash
 
 // internal method declarations
 static void ClearMotionData(void);
@@ -467,9 +458,9 @@ void SendExPortD(void)
 
 
 //------------------------------------------------------------------------------
-// Fill the scene data structure with the scene data from flash pointed to by gSIdx
+// Fill the scene data structure with the scene data from flash pointed to by gSceneIndex
 // Uses:
-//		gSIdx;			// current scene index
+//		gSceneIndex;			// current scene index
 //		gpT_Table;		// Pointer to flash torque table
 //		gpE_Table;		// Pointer to flash Port table
 //		gpFN_Table;		// Pointer to flash frames table (int*)
@@ -480,9 +471,9 @@ void GetSceneFromFlash(void)
 {
 	WORD i;
 	
-	Scene.NumOfFrame = pgm_read_word(gpFN_Table+(gSIdx * 2));	// get the number of frames in scene
+	Scene.NumOfFrame = pgm_read_word(gpFN_Table+(gSceneIndex * 2));	// get the number of frames in scene
 	gNumOfFrame = Scene.NumOfFrame;
-	Scene.RTime = pgm_read_word(gpRT_Table+(gSIdx * 2));		// get the run time of scene[msec]
+	Scene.RTime = pgm_read_word(gpRT_Table+(gSceneIndex * 2));		// get the run time of scene[msec]
 	for(i=0;i<Motion.NumOfwCK;i++){			// clear the data for the wCK in scene
 		Scene.wCK[i].Exist		= 0;
 		Scene.wCK[i].SPos		= 0;
@@ -492,10 +483,10 @@ void GetSceneFromFlash(void)
 	}
 	for(i=0;i<Motion.NumOfwCK;i++){			// get the flash data for the wCK
 		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Exist		= 1;
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos		= pgm_read_byte(gpPos_Table+(Motion.NumOfwCK*gSIdx+i));
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos		= pgm_read_byte(gpPos_Table+(Motion.NumOfwCK*(gSIdx+1)+i));
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Torq		= pgm_read_byte(gpT_Table+(Motion.NumOfwCK*gSIdx+i));
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].ExPortD		= pgm_read_byte(gpE_Table+(Motion.NumOfwCK*gSIdx+i));
+		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos		= pgm_read_byte(gpPos_Table+(Motion.NumOfwCK*gSceneIndex+i));
+		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos		= pgm_read_byte(gpPos_Table+(Motion.NumOfwCK*(gSceneIndex+1)+i));
+		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Torq		= pgm_read_byte(gpT_Table+(Motion.NumOfwCK*gSceneIndex+i));
+		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].ExPortD		= pgm_read_byte(gpE_Table+(Motion.NumOfwCK*gSceneIndex+i));
 	}
 	UCSR0B &= 0x7F;   		// UART0 RxInterrupt disable
 	UCSR0B |= 0x40;   		// UART0 TxInterrupt enable
@@ -509,7 +500,7 @@ void GetSceneFromFlash(void)
 // Fill the scene data structure with scene data from the given motion buffer.
 // Uses:
 //		Motion			current motion header data
-//		gSIdx			current scene index
+//		gSceneIndex			current scene index
 //------------------------------------------------------------------------------
 void GetSceneFromBuffer(unsigned char *motionBuffer)
 {
@@ -518,7 +509,7 @@ void GetSceneFromBuffer(unsigned char *motionBuffer)
 	unsigned char *prevScene;
 
 	NumOfwCK = Motion.NumOfwCK;
-	sceneBuffer = motionBuffer + (3 + 3 * gSIdx) * NumOfwCK + (4 * gSIdx) + 2;
+	sceneBuffer = motionBuffer + (3 + 3 * gSceneIndex) * NumOfwCK + (4 * gSceneIndex) + 2;
 		
 	Scene.NumOfFrame = *((WORD*)(sceneBuffer+2));	// get the number of frames in scene
 	gNumOfFrame = Scene.NumOfFrame;
@@ -527,8 +518,8 @@ void GetSceneFromBuffer(unsigned char *motionBuffer)
 	// Get the starting position for each wCK -- this will be the previous
 	// scene destination, unless we're on scene 0, in which case we'll
 	// assume the starting positions have been set by LoadMotionFromBuffer.
-	if (gSIdx > 0) {
-		prevScene = motionBuffer + (3 * gSIdx) * NumOfwCK + (3 * gSIdx) + 2;
+	if (gSceneIndex > 0) {
+		prevScene = motionBuffer + (3 * gSceneIndex) * NumOfwCK + (3 * gSceneIndex) + 2;
 		for (i = 0; i < Motion.NumOfwCK; i++) {						
 			Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos = prevScene[ 4 + i ];
 		}		
@@ -641,7 +632,7 @@ void M_PlayFlash(void)
 	GetMotionFromFlash();		// Get the motion data from flash
 	SendTGain();				// set the runtime P,D and I from motion structure
 	for(i=0;i<Motion.NumOfScene;i++){
-		gSIdx = i;
+		gSceneIndex = i;
 		GetSceneFromFlash();	// Get the scene data from flash
 		SendExPortD();			// Set external port data
 		CalcFrameInterval();	// Set the interrupt for the frames
@@ -664,7 +655,7 @@ void LoadMotionFromBuffer(unsigned char *motionBuf)
 	for (int i = 0; i < Motion.NumOfwCK; i++) {
 		BYTE id = pgm_read_byte(&(wCK_IDs[i]));
 		Scene.wCK[id].SPos = PosRead(id);
-		rprintf("SPos %d = %d\r\n", id, Scene.wCK[id].SPos);
+		//rprintf("SPos %d = %d\r\n", id, Scene.wCK[id].SPos);
 	}
 	
 	SendTGain();						// set the runtime PID gain from motion structure
@@ -676,7 +667,7 @@ void LoadMotionFromBuffer(unsigned char *motionBuf)
 //------------------------------------------------------------------------------
 void PlaySceneFromBuffer(unsigned char *motionBuf, WORD sceneIndex)
 {
-	gSIdx = sceneIndex;
+	gSceneIndex = sceneIndex;
 	GetSceneFromBuffer( motionBuf );	// Load scene into global structure
 	SendExPortD();						// Set external port data
 	CalcFrameInterval();				// Set the interrupt for the frames
@@ -718,7 +709,7 @@ void BasicPose()
 		gTx0Cnt++;						// put into transmit buffer
 		CheckSum = CheckSum^tmp;
 		
-		rprintf ("%d %x, ", i, tmp);
+		rprintf (" %d %x,", i, tmp);
 	}
 	CheckSum = CheckSum & 0x7f;
 

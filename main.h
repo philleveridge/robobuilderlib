@@ -1,10 +1,11 @@
 //==============================================================================
 // include file for main.c
 //==============================================================================
+
+#include "avrlibtypes.h"
+
 //#define			EXT_INT0_ENABLE		SET_BIT6(GICR)
 //#define			EXT_INT0_DISABLE	CLR_BIT6(GICR)
-
-
 
 #define	PF1_LED1_ON			CLR_BIT2(PORTA)     // BLUE
 #define	PF1_LED1_OFF		SET_BIT2(PORTA)
@@ -56,8 +57,18 @@
 #define VOLT  9
 
 
+// software states----------------------------------------------------------------------
+extern volatile BYTE 	F_PLAYING;				// state: playing from Flash
 
- 
+// timer variables----------------------------------------------------------------
+extern volatile WORD    gMSEC;
+extern volatile BYTE    gSEC;
+extern volatile BYTE    gMIN;
+extern volatile BYTE    gHOUR;
 
-
-
+// UART variables-----------------------------------------------------------------
+extern volatile BYTE	gTx0Buf[TX0_BUF_SIZE];		// UART0 transmit buffer
+extern volatile BYTE	gTx0Cnt;					// UART0 transmit length
+extern volatile BYTE	gRx0Cnt;					// UART0 receive length
+extern volatile BYTE	gTx0BufIdx;					// UART0 transmit pointer
+extern volatile BYTE	gRx0Buf[RX0_BUF_SIZE];		// UART0 receive buffer

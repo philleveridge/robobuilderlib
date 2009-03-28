@@ -26,11 +26,6 @@ extern WORD    gBtnCnt;				// counter for PF button press
 extern WORD    gTltFwd;				// Tilt 
 extern WORD    gTltLft;				// Tilt
 
-extern WORD    gMSEC;				// 
-extern BYTE    gSEC;				// 
-extern BYTE    gMIN;				// 
-extern BYTE    gHOUR;				// 
-
 extern int    gX;				// 
 extern int    gY;				// 
 extern int    gZ;				// 

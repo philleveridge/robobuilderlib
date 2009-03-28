@@ -61,3 +61,4 @@ WORD PosMove(BYTE ID, BYTE torq, BYTE target);
 void LoadMotionFromBuffer(unsigned char *motionBuf);
 void PlaySceneFromBuffer(unsigned char *motionBuf, WORD sceneIndex);
 
+extern volatile WORD gSceneIndex;
