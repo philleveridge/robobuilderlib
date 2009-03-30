@@ -41,6 +41,8 @@ XACT       Call any Experimental action using literal code i.e. XACT 0, would do
 
 // Standard Input/Output functions
 #include <stdio.h>
+
+#include <string.h>
 #include "Main.h"
 
 //#include <util/delay.h>
@@ -64,10 +66,24 @@ enum {
 	
 const  prog_char *error_msgs[] = {
 	"",
-	"Syntax error"
+	"Syntax error",
+	"Invalid Command",
+	"Illegal var",
 	};
 	
-const prog_char tokens[] = "LET:IF:THEN:ELSE:GOTO:PRINT:SET:END:SCENE:GET:XACT";
+const prog_char *tokens[] ={"LET", 
+							"IF",
+							"THEN", 
+							"ELSE",
+							"GOTO",
+							"PRINT",
+							"SET",
+							"END",
+							"SCENE",
+							"GET",
+							"XACT" 
+							};
+							
 const prog_char opers[]  = "+-*\()";
 
 struct basic_line {
@@ -79,6 +95,21 @@ struct basic_line {
 	struct basic_line *next;
 };
 
+// Read vriable - 
+// Simple def - must be A-Z
+// More complex later
+char getVar(char *line, int *i) 
+{
+	char c1=*(line+*i);
+	char c2=*(line+*i+1);
+	if (c1>='A' && c1<= 'Z' && c2 == ' ')
+	{
+		*i=*i+2;
+		return c1;
+	}
+	else
+	return '\0';
+}
 
 void basic_load()
 {
@@ -106,6 +137,7 @@ void basic_load()
 			rprintf ("Error - '" );
 			rprintfProgStr (error_msgs[errno]);
 			rprintf ("'\r\n" );
+			rprintf ("Pos=%d\r\n", i);
 			errno=0;
 		}
 		
@@ -144,18 +176,78 @@ void basic_load()
 			// read in digit up to a space
 			while (line[i] != ' ')
 			{
-				if (line[i]>= '0' && line[i] <=9)  ln=ln*10 + line[i]-'0';
+				if (line[i]>= '0' && line[i] <= '9')  
+					ln=ln*10 + line[i]-'0';
 				else 
 				{
 					errno=1; // Syntax error
 					break;
 				}
+				i++;
 			}
 		}
 		
 		newline.lineno = ln++;
 		
-		if (i>=n || errno != 0) continue;		
+		rprintf("Line No=%d\r\n", newline.lineno); //DEBUG
+		
+		if (i>=n || errno != 0) continue;	
+
+		int p=++i; // remember where we are
+		
+		while (line[i] != ' ')
+		{
+			if (!(line[i]>= 'A' && line[i] <='Z') ) 
+			{
+				errno=1; // Syntax error
+				break;
+			}
+			i++;
+		}	
+		line[i]='\0';
+		if (i>=n || errno != 0) continue;	
+		
+		//Look up token
+		int t;
+		
+		for (t=0; t<sizeof(tokens); t++)
+		{
+			if (!strcmp(&line[p], tokens[t]))
+				break;
+		}
+		
+		rprintf ("token="); 				//DEBUG
+		rprintfStrLen(line,p,i-p);			//DEBUG
+		rprintf(" [%d]\r\n", t);			//DEBUG
+		
+		if (t==sizeof(tokens))
+		{
+			errno=2;
+			continue;
+		}
+		
+		newline.token=t;
+		
+		switch (t)
+		{
+		case 0: // LET command
+			// read Variable
+			newline.var = getVar(line,&i);
+			if (newline.var=='\0')
+			{
+				errno=3;
+			}
+			// '='
+			// expression
+			break;
+		case 4: // GOTO command
+			// read line
+			break;
+		default:
+			errno=2;
+			break;
+		}
+		
 		
 		// store struct in eeprom
 	}
@@ -169,17 +261,34 @@ void basic_run()
 	//   Execute action
 	//	 Move to next line
 	// Loop
+	rprintf("Run Program \r\n");
+	struct basic_line *top=0;
+	
+	//point top at EEPROM
+	
+	while (top !=0)
+	{
+		/* execute code */
+		
+		rprintf (": %d\n", top->lineno); // DEBUG
+		
+		top = top->next;
+	}
+	
 }
 
 void basic_clear()
 {
 	// TBD
 	// Set Init pointer to Zero
+	rprintf("Clear Program \r\n");
+
 }
 
 void basic_list()
 {
 	// TBD
 	// 
+	rprintf("List Program \r\n");
 }
 
