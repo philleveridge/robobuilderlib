@@ -33,6 +33,8 @@ int ov_flag ;
 void battery_charge()
 {
 	WORD volts=0;
+	
+	rprintf("Battery charging\r\n");
 
 	set_break_mode();   		// Power off servos
 	

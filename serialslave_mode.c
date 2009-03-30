@@ -279,7 +279,7 @@ void Do_Serial(void)
 void serialslave_mainloop()
 {
 	//WORD lMSEC;
-	rprintf ("Serial Slave mode");
+	rprintf ("Serial Slave mode\r\n");
 	while (kSerialSlaveMode == gNextMode) {
 		//lMSEC = gMSEC;
 		

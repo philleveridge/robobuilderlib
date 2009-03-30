@@ -43,7 +43,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
 ## Objects that must be built in order to link
-OBJECTS = main.o uart.o buffer.o Comm.o rprintf.o adc.o ir.o accelerometer.o idle_mode.o experimental_mode.o charge_mode.o serialslave_mode.o
+OBJECTS = main.o uart.o buffer.o Comm.o rprintf.o adc.o ir.o accelerometer.o idle_mode.o experimental_mode.o charge_mode.o serialslave_mode.o basic.o
 
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 
@@ -83,6 +83,9 @@ ir.o: ir.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
 
 accelerometer.o: accelerometer.c
+	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
+
+basic.o: basic.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
 	
 ##Link
