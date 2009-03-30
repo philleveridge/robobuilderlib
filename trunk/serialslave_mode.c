@@ -25,96 +25,102 @@ extern int getHex(int d);
 
 // Buffer for handling Motion commands
 #define kMaxMotionBufSize 466  // enough for 8 scenes
-//#define kMaxMotionBufSize 102  // enough for 1 scene
 static unsigned char motionBuf[kMaxMotionBufSize];
+static volatile int nextRxIndex;	// index of next byte to receive
 static WORD scenesReceived;		// number of scenes received
 static BOOL inMotion = FALSE;	// TRUE when we're playing a motion
 
-// Communications protocol constant: the base of our set of
-// commands for sending motion header and scenes
-#define kMotionCmdBase 199
-
 //------------------------------------------------------------------------------
-// Receive the header (i.e. everything up to the first scene) of a motion
-// buffer.  Send an acknowledgement, which triggers the host to send the
-// first scene.
+// ReceiveIntoMotionBuf: uart Rx routine that stuffs data into motionBuf.
 //------------------------------------------------------------------------------
-void handle_motion_header()
+void ReceiveIntoMotionBuf(unsigned char c)
 {
-	int i;
-	int NumOfwCK;
-	
-	// Get the first two bytes, which are the number of scenes and 
-	// the number of wCK servos.
-	while (!uartReceiveByte(motionBuf));
-	while (!uartReceiveByte(motionBuf+1));
-	NumOfwCK = motionBuf[1];
-	
-	// Get the P gains, D gains, and I gains for the servos
-	for (i = 0; i < NumOfwCK*3; i++) {
-		while (!uartReceiveByte(motionBuf+2+i));
-	}
-	
-	// Send an acknowledgement that we got the header data.
-	uartFlushReceiveBuffer();
-	uartSendByte('M');
-	rprintf("Got motion with %d scenes for %d wCK\r\n", motionBuf[0], motionBuf[1]);
-	
-	// Load the motion header into our motion-control code.
-	LoadMotionFromBuffer(motionBuf);
+	motionBuf[nextRxIndex++] = c;
 }
 
 //------------------------------------------------------------------------------
-// Receive one scene of a motion buffer.  Send an acknowledgement, which
-// triggers the host to send the next scene (if any).  If this is scene 0,
-// or some other scene we've been waiting for, then start the motion.
+// print_motionBuf: debugging routine to dump motionBuf to the uart.
 //------------------------------------------------------------------------------
-void handle_scene(int sceneNum)
+void print_motionBuf(int bytes)
 {
-	// Calculate where this scene fits into our motion buffer
-	int NumOfwCK = motionBuf[1];
-	int sceneSize = 3 * NumOfwCK + 4;
-	int startPos = 3 * NumOfwCK + 2 + sceneNum * sceneSize;
-	int i;
-	
-	// Read the required number of bytes
-	BYTE startSec = gSEC;
-	for (i = 0; i < sceneSize; i++) {
-		while (!uartReceiveByte(motionBuf + startPos + i)) {
-			if (gSEC - startSec > 5) {  // this will fail for startSec > 54...  Doh!  :(
-				rprintf("Timed out receiving scene %d on byte %d\r\n", sceneNum, i);
-				return;
-			}
-		}
-	}
-	
-	// Remember how many scenes we've received.
-	scenesReceived = sceneNum + 1;		// (we require that they arrive in order)
-
-	// Send an acknowledgement that we got the scene.
-	uartFlushReceiveBuffer();
-	uartSendByte('0' + sceneNum);
-	
-	// If this is scene 0, or it's the next scene and we're already
-	// done with the one playing, then start the motion.
-	if (sceneNum == 0 || (sceneNum == gSceneIndex+1 && !F_PLAYING)) {
-		rprintf("Starting scene %d\r\n", sceneNum);
-		PlaySceneFromBuffer(motionBuf, sceneNum);
-		inMotion = TRUE;
-	}
-
-/*	// Dump our buffer for debugging
-	rprintf("buffer: ");
+	// Print the bytes, for debugging purposes.
+	rprintf("motionBuf: ");
 	const unsigned char *hexDigits = "0123456789ABCDEF";
-	for (i = 0; i < startPos + sceneSize; i++) {
+	for (int i = 0; i < bytes; i++) {
 		unsigned char b = motionBuf[i];
 		uartSendByte( hexDigits[ b >> 4 ] );
 		uartSendByte( hexDigits[ b & 0x0F ] );
 		uartSendByte( ' ' );
 	}
-*/
-
 }
+
+//------------------------------------------------------------------------------
+// handle_load_motion: the host has sent a very small command indicating the
+// desire to send a motion block; the robot will prepare the buffer and uart,
+// respond that it is ready, and then receive the entire motion block at once,
+// directly into the motion buffer.
+//------------------------------------------------------------------------------
+void handle_load_motion()
+{
+	unsigned char b0, b1;
+	WORD startTicks;
+	WORD profileTicks1, profileTicks2, profileTicks3;
+	
+	// Let's start by getting the data size to expect, as a 2-byte LE integer.	
+	while (!uartReceiveByte(&b0));
+	while (!uartReceiveByte(&b1));
+	int bytes = ((int)b1 << 8) | b0;
+	
+	if (bytes > kMaxMotionBufSize) {
+		rprintf("Error: requested buffer size (%d) exceeds max (%d)\r\n", 
+				bytes, kMaxMotionBufSize);
+		return;
+	}
+	
+	// Initialize our buffer.
+	for (int i=0; i < kMaxMotionBufSize; i++) motionBuf[i] = 0xFF;
+	nextRxIndex = 0;
+	scenesReceived = 0;
+	
+	// Point the uart at our custom receive function.
+	uartSetRxHandler( ReceiveIntoMotionBuf );	// receive directly into motionBuf
+	
+	// Let the host know we're ready.
+	rprintf("Ready to receive %d bytes\r\n", bytes );
+	uartSendByte('^');
+	
+	// Now, we should be receiving data directly into motion buf via
+	// the interrupt handler.  So all we have to do is sit here and
+	// watch nextRxIndex, until we've gotten all the data we need, or
+	// we appear to have timed out.
+	startTicks = gTicks;
+	while (nextRxIndex < bytes) {
+		if (gTicks - startTicks > 50) {
+			// Timed out
+			uartSetRxHandler( NULL );
+			rprintf("Timed out after receiving %d bytes\r\n", nextRxIndex );
+			return;
+		}
+	}
+	profileTicks1 = gTicks - startTicks;
+	
+	// Reset the UART Rx handler, and acknowledge that we got the data.
+	uartSetRxHandler( NULL );
+	rprintf("Received %d bytes in %d ticks\r\n", nextRxIndex, profileTicks1 );
+
+	// Start the motion.
+	scenesReceived = motionBuf[0];  // To-do: calculate this from nextRxIndex
+	startTicks = gTicks;
+	LoadMotionFromBuffer( motionBuf );
+	profileTicks2 = gTicks - startTicks;
+	inMotion = TRUE;
+	startTicks = gTicks;
+	PlaySceneFromBuffer( motionBuf, 0 );
+	profileTicks3 = gTicks - startTicks;
+	
+	rprintf("Loaded in %d ticks; started in %d\r\n", profileTicks2, profileTicks3);
+}
+
 
 //------------------------------------------------------------------------------
 // continue_motion: keep our motion going by noticing when the current scene
@@ -195,16 +201,12 @@ void Do_Serial(void)
 	if (ch < 0) return;
 
 	rprintf(" %c [%d]\r\n", ch, ch);	
-
-	if (ch == kMotionCmdBase) {
-		handle_motion_header();
-		return;
-	} else if (ch > kMotionCmdBase && ch <= kMotionCmdBase+8) {
-		handle_scene(ch - kMotionCmdBase - 1);
-		return;
-	}
 	
 	switch (ch) {
+	case 'm':
+		handle_load_motion();
+		break;
+
 	case 'q':
 	case 'Q':
 		// Query mode
@@ -237,6 +239,17 @@ void Do_Serial(void)
 		// clock
 		rprintf("  %d:%d:%d-%d ",gHOUR,gMIN,gSEC,gMSEC);
 		rprintf("\r\n");			
+		break;
+	
+	case 'd':
+	case 'D':
+		// Query position, decimal mode
+		rprintf("Position: ");
+		for (BYTE id=0; id<16; id++) {
+			ptmpA = PosRead(id);
+			rprintf("%d", ptmpA);
+			if (id < 15) uartSendByte(','); else rprintf("\r\n");
+		}
 		break;
 	
 	case '?':
