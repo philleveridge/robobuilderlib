@@ -18,9 +18,7 @@
 #include "uart.h"
 #include "accelerometer.h"
 #include "majormodes.h"
-
 #include <util/delay.h>
-
 
 extern WORD    gBtnCnt;				// counter for PF button press
 extern WORD    gTltFwd;				// Tilt 
@@ -34,8 +32,15 @@ extern int 	autobalance;
 extern int 	response;
 extern int  params[];
 
+extern void basic_load();
+extern void basic_run();
+extern void basic_clear();
+extern void basic_list();
+
 extern const prog_char version[];
 
+void Perform_Action(BYTE action);
+BYTE Read_Events(void);
 
 
 void ptime()
@@ -72,68 +77,50 @@ int getHex(int d)
 	return n;
 }
 
-
-//------------------------------------------------------------------------------
-// Perform  Motion when event occurs
-// Read_and_Go   (or is it Read_and_WeEP?)
-//------------------------------------------------------------------------------
-
-
-void Read_and_Do(void)
+void check_buttons(BYTE *action)
 {
-	BYTE	lbtmp;
-	WORD	ptmpA, ptmpB;
-	
-	int i;
-	int tlt = 0;		
-	
-	// -------------------------------------------------------------------------------------------------------
-	// Check for event and set Action state
-	// -------------------------------------------------------------------------------------------------------
+	BYTE tmp;
 
-	BYTE Action=0xFF;				//No action
-
-	lbtmp = PINA & 0x03;			// buttons are bits 0 and 1 on port A
-	if((lbtmp!=0x03))
+	tmp = PINA & 0x03;			// buttons are bits 0 and 1 on port A
+	if((tmp!=0x03))
 	{								// low if a button is pressed
 		if(++gBtnCnt>100){   		// loop 100 times
-			if(lbtmp==0x02){		// if PF1 only is pressed
-				Action=0x00;
+			if(tmp==0x02){		// if PF1 only is pressed
+				*action=0x00;
 			}
 		}
 	}
 	else{
 	    gBtnCnt=0;
     }
-	
-	
-	// -------------------------------------------------------------------------------------------------------
-	// Check for IR event and set Action state
-	// -------------------------------------------------------------------------------------------------------
-	
+}
+
+
+void check_IR(BYTE *action)
+{
 	if ( gIRReady) 
 	{
 		gIRReady = FALSE;
 		ptime();
 		rprintf(" IR Received %x from %x\r\n", gIRData, gIRAddr);
-		if (gIRData==0x01) Action=0x00; // A pressed
-		if (gIRData==0x02) Action=0x01; // B pressed
-		if (gIRData==0x03) Action=0x04; // Turn left
-		if (gIRData==0x04) Action=0x08; // Forward
-		if (gIRData==0x05) Action=0x05; // Turn Right
-		if (gIRData==0x0A) Action=0x09; // Back
+		if (gIRData==0x01) *action=0x00; // A pressed
+		if (gIRData==0x02) *action=0x01; // B pressed
+		if (gIRData==0x03) *action=0x04; // Turn left
+		if (gIRData==0x04) *action=0x08; // Forward
+		if (gIRData==0x05) *action=0x05; // Turn Right
+		if (gIRData==0x0A) *action=0x09; // Back
 		
-		if (gIRData==0x07) Action=0x20; // [] pressed
-		if (gIRData==0x1c) Action=0x30; // * + [] pressed   (Flash Lights)
-		if (gIRData==0x3F) Action=0x40; // # + 0 pressed    (Run ADC test)
-		if (gIRData==0x34) Action=0x50; // # + V pressed    (Run tilt test)
+		if (gIRData==0x07) *action=0x20; // [] pressed
+		if (gIRData==0x1c) *action=0x30; // * + [] pressed   (Flash Lights)
+		if (gIRData==0x3F) *action=0x40; // # + 0 pressed    (Run ADC test)
+		if (gIRData==0x34) *action=0x50; // # + V pressed    (Run tilt test)
 		
 	}
-	
-	// -------------------------------------------------------------------------------------------------------
-	// Simple behaviour
-	// -------------------------------------------------------------------------------------------------------
-	
+}
+
+void check_behaviour(BYTE *action)
+{
+
 	if (params[PSDL]!=0 && adc_psd()>params[PSDL])  // if PSD sensor goes off
 	{
 		ptime(); rprintf("PSD event %x\r\n", psd_value);	
@@ -144,21 +131,21 @@ void Read_and_Do(void)
 			switch(mood)
 			{
 			case 0:
-				Action=0x00; //Punch left 
+				*action=0x00; //Punch left 
 				break;
 			case 1:
-				Action=0x01; //punch right
+				*action=0x01; //punch right
 				break;
 			case 2:
-				Action=0x12; //front kick !
+				*action=0x12; //front kick !
 				break;
 			case 3:
-				Action=0x09; //walk back
+				*action=0x09; //walk back
 				break;
 			}
 		}
 	}
-	
+		
 	if (adc_mic()>params[MICL])  //if mic semsor levl reached
 	{
 		ptime(); rprintf("MIC event %x\r\n", mic_vol);	
@@ -169,53 +156,51 @@ void Read_and_Do(void)
 			switch(mood)
 			{
 			case 0:
-				Action=0x10; //sit down
+				*action=0x10; //sit down
 				break;
 			case 1:
-				Action=0x11; //wave hi
+				*action=0x11; //wave hi
 				break;
 			}	
 		}
 	}
-	
-	
-	// -------------------------------------------------------------------------------------------------------
-	// terminal input get input and  set Action state
-	// -------------------------------------------------------------------------------------------------------
+}
 
+void check_serial(BYTE *action)
+{
 	int ch = uartGetByte();
 	if (ch >= 0)
 	{
 		rprintf("%c", ch);	
 		
-		if (ch==0x4C) Action=0x02;  	  //'L' pressed
-		if (ch==0x52) Action=0x03;       //'R' pressed
-		if (ch==0x46) Action=0x08;       //'F' pressed
-		if (ch==0x42) Action=0x09;       //'B' pressed
+		if (ch==0x4C) *action=0x02;  	  //'L' pressed
+		if (ch==0x52) *action=0x03;       //'R' pressed
+		if (ch==0x46) *action=0x08;       //'F' pressed
+		if (ch==0x42) *action=0x09;       //'B' pressed
 
 
-		if (ch==0x7a) Action=0x74;       //'z' pressed
-		if (ch==0x77) Action=0x70;       //'w' pressed
-		if (ch==0x73) Action=0x71;       //'s' pressed
-		if (ch==0x61) Action=0x72;       //'a' pressed
-		if (ch==0x64) Action=0x73;       //'d' pressed
+		if (ch==0x7a) *action=0x74;       //'z' pressed
+		if (ch==0x77) *action=0x70;       //'w' pressed
+		if (ch==0x73) *action=0x71;       //'s' pressed
+		if (ch==0x61) *action=0x72;       //'a' pressed
+		if (ch==0x64) *action=0x73;       //'d' pressed
 		
-		if (ch==0x72) Action=0x75;       //'r' pressed
+		if (ch==0x72) *action=0x75;       //'r' pressed
 
-		if (ch==0x70) Action=0x20;       //'p' pressed
-		if (ch==0x6c) Action=0x30;       //'l' pressed			
-		if (ch==0x69) Action=0x40;       //'i' pressed		
+		if (ch==0x70) *action=0x20;       //'p' pressed
+		if (ch==0x6c) *action=0x30;       //'l' pressed			
+		if (ch==0x69) *action=0x40;       //'i' pressed		
 
-		if (ch==0x74) Action=0x50;       //'query mode
+		if (ch==0x74) *action=0x50;       //'query mode
 		if (ch=='q' || ch == 'Q' ) 
-			Action=0x90;       
+			*action=0x90;       
 		
 
-		if (ch==0x76) Action=0x80;       //'v' pressed
+		if (ch==0x76) *action=0x80;       //'v' pressed
 		
 		if (ch==27 || ch == 'P') 		// exit to idleMode
 		{
-			Action=0xFF;       			
+			*action=0xFF;       			
 			gNextMode = kIdleMode;		
 		}
 		
@@ -259,16 +244,16 @@ void Read_and_Do(void)
 				rprintf (" ok\r\n");
 			}
 		
-			Action=0xFF;       
+			*action=0xFF;       
 		}
 		
 		if (ch==0x68 || ch==0x48) 				//'h' pressed
-			Action=0xEE; 
+			*action=0xEE; 
 		
 		if (ch==0x65) 	  						//'e' pressed 
 		{			
-			Action=getHex(2);      				//Action code
-			rprintf(" Special event [%x]\r\n", Action);	
+			*action=getHex(2);      				//Action code
+			rprintf(" Special event [%x]\r\n", *action);	
 		}
 
 		if (ch==0x6D) 							// 'm' pressed
@@ -293,39 +278,88 @@ void Read_and_Do(void)
 				rprintf(" P[%d]=%x\r\n", pn, params[pn]);
 			}
 		}
-
 	}
+}
+
+void check_balance(BYTE *action)
+{
+	if (autobalance)
+	{
+		int diff;
+		tilt_read(0);
+		if (abs(gX-x_value)>5)
+		{
+			diff = gX-x_value;
+			ptime(); rprintf("Tilt event X [%d] (%d,%d,%d)\r\n", diff, x_value, y_value, z_value);	
+		}
+		if (abs(gY-y_value)>5)
+		{
+			diff = gY-y_value;
+			ptime(); rprintf("Tilt event y [%d] (%d,%d,%d)\r\n", diff, x_value, y_value, z_value);	
+		}		
+		if (abs(gZ-z_value)>10)
+		{
+			diff = gZ-z_value;
+			ptime(); rprintf("Tilt event z [%d] (%d,%d,%d)\r\n", diff, x_value, y_value, z_value);	
+			
+			if (diff>0) *action=0x71; else *action=0x70;
+		}
+	}
+}
+
+//------------------------------------------------------------------------------
+// Check if an event has occured that causes an Action
+//------------------------------------------------------------------------------
+
+BYTE Read_Events(void)
+{
+	BYTE Action=0xFF;				//No action
+
+	// -------------------------------------------------------------------------------------------------------
+	// Check for event and set Action state
+	// -------------------------------------------------------------------------------------------------------
+
+	check_buttons(&Action);
+		
+	// -------------------------------------------------------------------------------------------------------
+	// Check for IR event and set Action state
+	// -------------------------------------------------------------------------------------------------------
+	
+	check_IR(&Action);
+	
+	// -------------------------------------------------------------------------------------------------------
+	// Simple behaviour
+	// -------------------------------------------------------------------------------------------------------
+	
+	check_behaviour(&Action);	
+	
+	// -------------------------------------------------------------------------------------------------------
+	// terminal input get input and  set Action state
+	// -------------------------------------------------------------------------------------------------------
+
+	check_serial(&Action);
 	
 	// -------------------------------------------------------------------------------------------------------
 	//tilt events (change in X,y,Z by certain limit)
 	// -------------------------------------------------------------------------------------------------------
 	
-	if (autobalance)
-	{
-			int diff;
-			tilt_read(0);
-			if (abs(gX-x_value)>5)
-			{
-				diff = gX-x_value;
-				ptime(); rprintf("Tilt event X [%d] (%d,%d,%d)\r\n", diff, x_value, y_value, z_value);	
-			}
-			if (abs(gY-y_value)>5)
-			{
-				diff = gY-y_value;
-				ptime(); rprintf("Tilt event y [%d] (%d,%d,%d)\r\n", diff, x_value, y_value, z_value);	
-			}		
-			if (abs(gZ-z_value)>10)
-			{
-				diff = gZ-z_value;
-				ptime(); rprintf("Tilt event z [%d] (%d,%d,%d)\r\n", diff, x_value, y_value, z_value);	
-				
-				if (diff>0) Action=0x71; else Action=0x70;
-			}
-	}
+	check_balance(&Action);
+
+	return Action;
+}
 	
-	// -------------------------------------------------------------------------------------------------------
-	// perfom action
-	// -------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------
+// perfom action
+// -------------------------------------------------------------------------------------------------------
+
+void Perform_Action (BYTE Action)
+{	
+
+	BYTE	lbtmp;
+	WORD	ptmpA, ptmpB;
+	
+	int i;
+	int tlt = 0;			
 	
 	switch (Action)
 	{
@@ -439,15 +473,10 @@ void Read_and_Do(void)
 		//version
 		rprintf("er=");
 		rprintfProgStr(version);
-		rprintf("Built: " __DATE__);
+		rprintf("Built: " __DATE__ "\r\n");  // Must have CR, else PC code hangs
 		break;
 		
-	case 0xD0:
-		//experimental
-		rprintf("Battery charging\r\n");
-		gNextMode = kChargeMode;
-		break;
-		
+
 	case 0x90:
 		//query mode
 		for (BYTE id=0; id<16; id++)
@@ -468,6 +497,39 @@ void Read_and_Do(void)
 		ptime(); 
 		rprintf("\r\n");	
 		break;
+		
+	case 0xB0:
+		//Put out a pulse on PSD to control Cylon eyes
+		//This is of course has no effect on standard hardware
+		//
+		PSD_ON;
+		_delay_ms(20);
+		PSD_OFF;
+		_delay_ms(20);
+		break;
+		
+	// very experimental - BASIC
+	// Short term aim - simple eprograms controlling motions
+	// long term aim  - to be compatible with Robonova basic
+	case 0xC0:
+		basic_load();
+		break;
+	case 0xC1:
+		basic_run();
+		break;		
+	case 0xC2:
+		basic_clear();
+		break;	
+	case 0xC3:
+		basic_list();
+		break;
+		
+		
+	case 0xD0:
+		//experimental
+		gNextMode = kChargeMode;
+		break;	
+
 	case 0xEE:
 		//help
 		
@@ -481,7 +543,7 @@ void Read_and_Do(void)
 		"i  ADC test (PSD, Mic, Bat Level)\r\n"
 		"t  Tilt test (loop showing accelerometer values until IR pressed\r\n"
 		"p  Basic pose\r\n"
-		"q  Read all servo positions\r\n"
+		"q  Display all servo positions\r\n"
 		"w  lean fwd\r\n"
 		"a  lean left\r\n"
 		"d  lean right\r\n"
@@ -491,13 +553,10 @@ void Read_and_Do(void)
 		"r  respond to event on/off\r\n"
 		"l  light flash test\r\n"
 		"e	[nn] set action event nn (two digits)\r\n"	
+		"?  Display current mode\r\n"
 		"x	[nn][...] transmit to wCK bus [nn] bytes ans wait for 2 nyte response\r\n"
 		"X	as above but no reponse packets\r\n");	
 		break;	
-		
-	case 0xFF:
-		//Do nothing
-		break;
 	}
 } 
 
@@ -509,7 +568,9 @@ void experimental_mainloop()
 	while (kExperimentalMode == gNextMode) {
 		lMSEC = gMSEC;
 		
-		Read_and_Do();
+		BYTE act = Read_Events();
+		
+		if (act != 0xFF) Perform_Action(act);
 		
 		while(lMSEC==gMSEC);
 	}
