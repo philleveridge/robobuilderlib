@@ -519,7 +519,7 @@ void GetSceneFromBuffer(unsigned char *motionBuffer)
 	// scene destination, unless we're on scene 0, in which case we'll
 	// assume the starting positions have been set by LoadMotionFromBuffer.
 	if (gSceneIndex > 0) {
-		prevScene = motionBuffer + (3 * gSceneIndex) * NumOfwCK + (3 * gSceneIndex) + 2;
+		prevScene = motionBuffer + (3 + 3 * (gSceneIndex-1)) * NumOfwCK + (4 * (gSceneIndex-1)) + 2;
 		for (i = 0; i < Motion.NumOfwCK; i++) {						
 			Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos = prevScene[ 4 + i ];
 		}		

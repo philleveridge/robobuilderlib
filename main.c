@@ -58,6 +58,7 @@ volatile WORD    gMSEC;
 volatile BYTE    gSEC;
 volatile BYTE    gMIN;
 volatile BYTE    gHOUR;
+volatile WORD	 gTicks = 0;			// cumulative 10ths of a second since startup
 
 // UART variables-----------------------------------------------------------------
 volatile BYTE	gTx0Buf[TX0_BUF_SIZE];		// UART0 transmit buffer
@@ -122,6 +123,8 @@ ISR(TIMER0_OVF_vect)
             }
         }
     }
+    
+    if (!(gMSEC % 100)) gTicks++;
 }
 
 
