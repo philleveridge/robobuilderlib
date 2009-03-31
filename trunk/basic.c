@@ -98,7 +98,7 @@ const struct tok tab = {
 
 */
 enum {
-	LET=0, FOR, IF, THEN, ELSE, GOTO, PRINT, SET, END, SCENE, GET, XACT,
+	LET=0, FOR, IF, THEN, ELSE, GOTO, PRINT, SET, END, SCENE, GET, XACT, WAIT,
 	PLUS, MINUS, MULT, DIV, OPAREN, CPAREN
 	};
 	
@@ -113,7 +113,8 @@ const prog_char *tokens[] ={"LET",
 							"END",
 							"SCENE",
 							"GET",
-							"XACT" 
+							"XACT",
+							"WAIT"
 							};
 							
 const prog_char opers[]  = "+-*\()";
@@ -221,6 +222,7 @@ void basic_load()
 					
 			if (ch==13 || (n==0 && ch=='.') )
 			{
+				line[n]='\0';
 				rprintf("\r\n");	
 				break;
 			}
@@ -328,6 +330,7 @@ void basic_load()
 			}
 			// expression
 			break;
+		case WAIT: 
 		case GOTO: 
 		case XACT:
 			// read line
@@ -415,10 +418,37 @@ void basic_run()
 			break;
 		case GOTO: 
 			rprintf ("goto line = %d\r\n", line.value); // DEBUG
+			// scan from top until match line no or hit end
+			int nl=1;
+			int lno=0;
+			while (lno != 0)
+			{
+				lno=eeprom_read_word(BASIC_PROG_SPACE+nl);	
+				
+				if (lno == line.value)
+					break;
+				
+				nl += 6;
+		
+				if (eeprom_read_byte(BASIC_PROG_SPACE+nl) == 0xCC)
+				{
+					rprintf("Goto line missing ??\r\n");
+					return;
+				}
+			}
+			if (lno!=0) 
+			{
+				rprintf("Line match %d\n", lno);
+				ptr=nl; // this is where happens
+			}			
 			break;		
 		case XACT: 
 			rprintf ("xact lit = %d\r\n", line.value); // DEBUG
 			Perform_Action (line.value);
+			break;
+		case WAIT: 
+			rprintf ("wait lit = %d\r\n", line.value); // DEBUG
+			_delay_ms(line.value);
 			break;
 		default:
 			rprintf ("Invalid command %x\r\n", line.token); // DEBUG
