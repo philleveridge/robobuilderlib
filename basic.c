@@ -19,10 +19,10 @@ EXPR   EXPR1 OPER EXPR1
 
 SYNTAX:
 [LINE no] LET  VAR '=' EXPR 
-[LINE no] IF  EXPR THEN LINE no ELSE Line No
 [LINE no] GOTO [Line No]
 [LINE no] PRINT LIST
 [LINE No] END
+[LINE no] IF  EXPR THEN LINE no ELSE Line No
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
 [LINE No] NEXT
 [LINE No] SET PORTA|B|C:0-7|ADC|PSD|IR|SERVO '=' EXPR
@@ -66,20 +66,44 @@ XACT       Call any Experimental action using literal code i.e. XACT 0, would do
 
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
+extern void Perform_Action(BYTE action);
 
-enum {
-	PLUS, MINUS, MULT, DIV, OPAREN, CPAREN, 
-	LET, FOR, IF, THEN, ELSE, GOTO, PRINT, SET, END, SCENE, GET, XACT
-	};
-	
 const  prog_char *error_msgs[] = {
 	"",
 	"Syntax error",
 	"Invalid Command",
 	"Illegal var",
+	"Bad number",
+	};
+	
+/*
+struct tok {
+	char *token;
+	char val;
+	};
+	
+const struct tok tab = { 
+	{ "LET",   LET },
+	{ "IF",    IF },
+	{ "THEN",  THEN },
+	{ "ELSE",  ELSE },
+	{ "GOTO",  GOTO },
+	{ "PRINT", PRINT },
+	{ "SET",   SET },
+	{ "END",   END },
+	{ "SCENE", SCENE },
+	{ "GET",   GET },
+	{ "XACT" , XACT }
+	};
+
+*/
+enum {
+	LET=0, FOR, IF, THEN, ELSE, GOTO, PRINT, SET, END, SCENE, GET, XACT,
+	PLUS, MINUS, MULT, DIV, OPAREN, CPAREN
 	};
 	
 const prog_char *tokens[] ={"LET", 
+							"FOR", 
 							"IF",
 							"THEN", 
 							"ELSE",
@@ -95,28 +119,60 @@ const prog_char *tokens[] ={"LET",
 const prog_char opers[]  = "+-*\()";
 
 struct basic_line {
-    int lineno;
+    uint16_t lineno;
 	unsigned char token;
 	unsigned char var;
 	int value;
-	char *text;
-	struct basic_line *next;
+	char *text; // rest of line - unproceesed
 };
 
-// Read vriable - 
+int errno;
+
+//next no space char
+char getNext(char *line, int *i) 
+{
+	char c1=*(line+*i);
+	
+	while (c1 == ' ' )
+	{
+		*i=*i+1;
+		c1=*(line+*i);
+	}
+	if (c1 != '\0') *i=*i+1;
+	return c1;
+}
+
+// Read variable - 
 // Simple def - must be A-Z
 // More complex later
 char getVar(char *line, int *i) 
 {
-	char c1=*(line+*i);
-	char c2=*(line+*i+1);
-	if (c1>='A' && c1<= 'Z' && c2 == ' ')
+	char c1=getNext(line, i);;
+	
+	if (c1>='A' && c1<= 'Z' )
 	{
-		*i=*i+2;
 		return c1;
 	}
 	else
 	return '\0';
+}
+
+// Read number  - 
+// Simple def - must be 0-9
+// More complex later (%/& etc)
+int getNum(char *line, int *i) 
+{
+	int num=0;
+	char c1=getNext(line, i);
+	
+	while (c1>='0' && c1<= '9' )
+	{
+		num = num*10 + c1-'0';
+		c1=*(line+*i);	
+		*i=*i+1;	
+	}
+	*i=*i-1;	
+	return num;
 }
 
 void basic_load()
@@ -133,8 +189,12 @@ void basic_load()
 	char line[80];
 	int n=0;
 	int ln=0;
+	int lc=0;
 	int i=0;
-	int errno=0;
+	
+	errno=0;
+	
+	uint16_t psize=0;
 	
 	while (1)
 	{
@@ -149,8 +209,8 @@ void basic_load()
 			errno=0;
 		}
 		
-		n=0;
-		
+		n=0;	
+	
 		while (1)
 		{
 			// foreach char entered
@@ -160,21 +220,36 @@ void basic_load()
 			rprintf("%c", ch);	
 					
 			if (ch==13 || (n==0 && ch=='.') )
+			{
+				rprintf("\r\n");	
 				break;
+			}
 				
 			if (ch >= 'a' && ch <= 'z') ch = ch-'a'+'A';  // Uppercase only
-
-			line[n++] = ch;
+			
+			if (ch==8) //Bsapce
+			{
+				if (n>0) n--;
+			}
+			else
+				line[n++] = ch;
 		}
 		if ( ch=='.' && n==0)
 		{
-			rprintf("\r\n%d lines entered\r\n", ln);
+			rprintf("\r\n%d lines entered\r\n", lc);
 			return;
 		}
 		
 		// convert to token
 		
 		struct basic_line newline;	
+		
+		newline.var=0;
+		newline.lineno=0;
+		newline.token=0;
+		newline.var=0;
+		newline.value=0;
+		newline.text=0;	
 			
 		i=0;
 		if (i>=n) break;
@@ -239,7 +314,7 @@ void basic_load()
 		
 		switch (t)
 		{
-		case 0: // LET command
+		case LET: 
 			// read Variable
 			newline.var = getVar(line,&i);
 			if (newline.var=='\0')
@@ -247,23 +322,45 @@ void basic_load()
 				errno=3;
 			}
 			// '='
+			if (getNext(line,&i) != '=')
+			{
+				errno=1;
+			}
 			// expression
 			break;
-		case 4: // GOTO command
+		case GOTO: 
+		case XACT:
 			// read line
+			newline.value = getNum(line,&i);			
+			rprintf ("val=%d\r\n", newline.value); 		//DEBUG
 			break;
 		default:
 			errno=2;
 			break;
-		}
-		
+		}		
 		
 		// store struct in eeprom
 		
-		uint8_t data= 0xAA; // start of program byte
-		
-		eeprom_write_byte(BASIC_PROG_SPACE, data);
-		
+		if (errno==0)
+		{	
+			lc++;
+			if (psize==0)
+			{
+				//write header
+				uint8_t data= 0xAA; // start of program byte		
+				eeprom_write_byte(BASIC_PROG_SPACE, data);
+				psize++;
+			}
+			eeprom_write_word(BASIC_PROG_SPACE+psize, newline.lineno);	
+			psize+=2;
+			eeprom_write_byte(BASIC_PROG_SPACE+psize, newline.token);	
+			psize++;		
+			eeprom_write_byte(BASIC_PROG_SPACE+psize, newline.var);	
+			psize++;	
+			eeprom_write_word(BASIC_PROG_SPACE+psize, newline.value);	
+			psize+=2;
+			eeprom_write_byte(BASIC_PROG_SPACE+psize, 0xCC);	// terminator character
+		}
 	}
 }
 
@@ -275,18 +372,58 @@ void basic_run()
 	//   Execute action
 	//	 Move to next line
 	// Loop
-	rprintf("Run Program \r\n");
-	struct basic_line *top=0;
+	
+	uint8_t data = eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE));
+
+	if (data==0xAA) {
+		rprintf("Run Program \r\n");
+	}
+	else
+	{
+		rprintf("No program loaded\r\n");
+		return;
+	}
 	
 	//point top at EEPROM
 	
-	while (top !=0)
+	int ptr=1;
+	uint8_t tmp=0;
+	
+	struct basic_line line;
+	
+	while (tmp != 0xCC && ptr < EEPROM_MEM_SZ )
 	{
+		line.lineno=eeprom_read_word(BASIC_PROG_SPACE+ptr);	
+		ptr+=2;
+		line.token=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
+		ptr++;		
+		line.var=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
+		ptr++;	
+		line.value=eeprom_read_word(BASIC_PROG_SPACE+ptr);	
+		ptr+=2;
+		
+		tmp = eeprom_read_byte(BASIC_PROG_SPACE+ptr);	// terminator character ?
+
 		/* execute code */
+	
+		rprintf (": %d - ", line.lineno); // DEBUG
 		
-		rprintf (": %d\n", top->lineno); // DEBUG
-		
-		top = top->next;
+		switch (line.token)
+		{
+		case LET: 
+			rprintf ("assign %c= value\r\n", line.var); // DEBUG
+			break;
+		case GOTO: 
+			rprintf ("goto line = %d\r\n", line.value); // DEBUG
+			break;		
+		case XACT: 
+			rprintf ("xact lit = %d\r\n", line.value); // DEBUG
+			Perform_Action (line.value);
+			break;
+		default:
+			rprintf ("Invalid command %x\r\n", line.token); // DEBUG
+			tmp=0xCC;
+		}		
 	}
 	
 }
