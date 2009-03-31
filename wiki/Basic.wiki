@@ -1,0 +1,52 @@
+#summary Simple Mini Basic complier/interpreter
+#labels Phase-Requirements
+= Introduction =
+
+This is still in a very early development stage - and almost NOTHING works !!!
+
+It can only be accessed via *experimental mode*, by typing the following:
+  * eC0 - program entry
+  * eC1 - program run 
+  * eC2 - program clear
+  * eC3 - program dump
+
+currently only XACT actually runs. More should follow soon.
+
+= Details =
+
+The ability to create simple actions in an elementary basic language
+
+{{{
+basic_load	read a program from the serial port and store in EEPROM
+basic_run	run the program in eeprom
+basic_clear	clear eeprom program(s)
+basic_list 	show contents of eeprom
+
+Language Spec:
+VAR    A-Z  INTEGER
+OPER   +-*\()=<>
+CMD    LET:FOR:NEXT:GOTO:IF:THEN:ELSE:PRINT:END:SET
+STRING " ... "
+EXPR1  VAR | LITERAL
+EXPR2  EXPR1 | STRING
+LIST   EXPR2 [,EXPR2]
+EXPR   EXPR1 OPER EXPR1  
+
+SYNTAX:
+[LINE no] LET  VAR '=' EXPR 
+[LINE no] GOTO [Line No]
+[LINE no] PRINT LIST
+[LINE No] END
+[LINE no] IF  EXPR THEN LINE no ELSE Line No
+[LINE No] FOR VAR '=' EXPR 'To' EXPR
+[LINE No] NEXT
+[LINE No] SET PORTA|B|C:0-7|ADC|PSD|IR|SERVO '=' EXPR
+[LINE No] GET VAR '=' PORTA|B|C:0-7|ADC|PSD|IR|SERVO
+[LINE No] SCENE LIST
+[LINE No] XACT EXPR
+
+Special Commands
+SET | GET  enable access to PORTS/SPECIAL REGISTER, IR, ADC, PSD etc ...
+SCENE      sends a Scene - 16 Servo Positions, Plus time, no frames
+XACT       Call any Experimental action using literal code i.e. XACT 0, does basic pose, XACT 17 a wave
+}}}
