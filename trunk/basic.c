@@ -39,6 +39,8 @@ XACT       Call any Experimental action using literal code i.e. XACT 0, would do
 */
 
 #include <avr/io.h>
+#include <avr/eeprom.h> 
+
 
 // Standard Input/Output functions
 #include <stdio.h>
@@ -59,6 +61,11 @@ XACT       Call any Experimental action using literal code i.e. XACT 0, would do
 #include "majormodes.h"
 
 #include <util/delay.h>
+
+#define EEPROM_MEM_SZ 64
+
+uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
+
 
 enum {
 	PLUS, MINUS, MULT, DIV, OPAREN, CPAREN, 
@@ -136,7 +143,7 @@ void basic_load()
 		
 		if (errno != 0) {
 			rprintf ("Error - '" );
-			rprintfProgStr (error_msgs[errno]);
+			rprintfStr (error_msgs[errno]);
 			rprintf ("'\r\n" );
 			rprintf ("Pos=%d\r\n", i);
 			errno=0;
@@ -228,6 +235,7 @@ void basic_load()
 		}
 		
 		newline.token=t;
+		i++;
 		
 		switch (t)
 		{
@@ -251,6 +259,11 @@ void basic_load()
 		
 		
 		// store struct in eeprom
+		
+		uint8_t data= 0xAA; // start of program byte
+		
+		eeprom_write_byte(BASIC_PROG_SPACE, data);
+		
 	}
 }
 
@@ -283,13 +296,33 @@ void basic_clear()
 	// TBD
 	// Set Init pointer to Zero
 	rprintf("Clear Program \r\n");
+			
+	uint8_t data= 0x00; // start of program byte		
+	eeprom_write_byte(BASIC_PROG_SPACE, data);
 
 }
 
 void basic_list()
 {
-	// TBD
-	// 
+	// TBD -  Dump EEprom for the Moment
+	int i;
+	
 	rprintf("List Program \r\n");
+	
+	for (i=0; i<EEPROM_MEM_SZ; i+=8) 	
+	{
+		int j;
+		char asciis[9];
+		rprintf ("%x ", i);
+		for (j=0; j<8;  j++)
+		{
+			uint8_t data = eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE+i+j));
+			rprintf ("%x ", data);
+			if (data>27 && data<127) asciis[j]=data; else asciis[j]='.';
+		}
+		asciis[8]='\0';
+		rprintfStr (asciis);
+		rprintf ("\r\n");	
+	}
 }
 
