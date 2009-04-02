@@ -10,7 +10,7 @@
 #include "comm.h"
 #include "rprintf.h"
 
-extern void basic_run();
+extern void basic_run(int);
 
 
 static void exitToExperimental(void) {
@@ -28,7 +28,7 @@ static void exitToSerialSlave(void) {
 static void handle_serial(int cmd) {
 	if ('p' == cmd || 'P' == cmd) exitToExperimental();
 	if ('s' == cmd || 'S' == cmd) exitToSerialSlave();
-	if ('r' == cmd || 'R' == cmd) basic_run();
+	if ('r' == cmd || 'R' == cmd) basic_run(0);
 	if ('?' == cmd) {
 		rprintf("\nIdle mode\n");
 	}

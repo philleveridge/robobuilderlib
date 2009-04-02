@@ -33,7 +33,7 @@ extern int 	response;
 extern int  params[];
 
 extern void basic_load();
-extern void basic_run();
+extern void basic_run(int);
 extern void basic_clear();
 extern void basic_list();
 
@@ -515,7 +515,7 @@ void Perform_Action (BYTE Action)
 		basic_load();
 		break;
 	case 0xC1:
-		basic_run();
+		basic_run(0);
 		break;		
 	case 0xC2:
 		basic_clear();
@@ -523,7 +523,10 @@ void Perform_Action (BYTE Action)
 	case 0xC3:
 		basic_list();
 		break;
-		
+	case 0xC4:
+		basic_list();
+		basic_run(1);
+		break;				
 		
 	case 0xD0:
 		//experimental

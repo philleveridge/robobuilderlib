@@ -25,7 +25,7 @@ SYNTAX:
 [LINE no] IF  EXPR THEN LINE no ELSE Line No
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
 [LINE No] NEXT
-[LINE No] SET PORTA|B|C:0-7|ADC|PSD|IR|SERVO '=' EXPR
+[LINE No] PUT VAR '=' PORTA|B|C:0-7
 [LINE No] GET VAR '=' PORTA|B|C:0-7|ADC|PSD|IR|SERVO
 [LINE No] SCENE LIST
 [LINE No] XACT EXPR
@@ -35,6 +35,16 @@ SET | GET  enable access to PORTS/SPECIAL REGISTER, IR, ADC, PSD etc ...
 SCENE      sends a Scene - 16 Servo Positions, Plus time, no frames
 XACT       Call any Experimental action using literal code i.e. XACT 0, would do basic pose, XACT 17 a wave
 
+
+Example Programs
+================
+
+10 LET A=1
+20 PRINT A
+30 LET A=A+1
+35 WAIT 500
+40 IF A<10 THEN 20 ELSE 50
+50 END
 
 */
 
@@ -62,7 +72,7 @@ XACT       Call any Experimental action using literal code i.e. XACT 0, would do
 
 #include <util/delay.h>
 
-#define EEPROM_MEM_SZ 64
+#define EEPROM_MEM_SZ 256
 
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
@@ -76,49 +86,20 @@ const  prog_char *error_msgs[] = {
 	"Bad number",
 	};
 	
-/*
-struct tok {
-	char *token;
-	char val;
-	};
-	
-const struct tok tab = { 
-	{ "LET",   LET },
-	{ "IF",    IF },
-	{ "THEN",  THEN },
-	{ "ELSE",  ELSE },
-	{ "GOTO",  GOTO },
-	{ "PRINT", PRINT },
-	{ "SET",   SET },
-	{ "END",   END },
-	{ "SCENE", SCENE },
-	{ "GET",   GET },
-	{ "XACT" , XACT }
-	};
-
-*/
 enum {
-	LET=0, FOR, IF, THEN, ELSE, GOTO, PRINT, SET, END, SCENE, GET, XACT, WAIT,
-	PLUS, MINUS, MULT, DIV, OPAREN, CPAREN
+	LET=0, FOR, IF, THEN, 
+	ELSE, GOTO, PRINT, GET, 
+	PUT, END, SCENE, XACT, 
+	WAIT
 	};
 	
-const prog_char *tokens[] ={"LET", 
-							"FOR", 
-							"IF",
-							"THEN", 
-							"ELSE",
-							"GOTO",
-							"PRINT",
-							"SET",
-							"END",
-							"SCENE",
-							"GET",
-							"XACT",
-							"WAIT"
-							};
+const prog_char *tokens[] ={
+	"LET", "FOR", "IF","THEN", 
+	"ELSE","GOTO","PRINT","GET",
+	"PUT", "END", "SCENE", "XACT",
+	"WAIT"
+};
 							
-const prog_char opers[]  = "+-*\()";
-
 struct basic_line {
     int lineno;
 	unsigned char token;
@@ -273,7 +254,7 @@ void basic_load()
 		
 		newline.lineno = ln++;
 		
-		rprintf("Line No=%d\r\n", newline.lineno); //DEBUG
+		// rprintf("Line No=%d\r\n", newline.lineno); //DEBUG
 		
 		if (i>=n || errno != 0) continue;	
 
@@ -300,9 +281,9 @@ void basic_load()
 				break;
 		}
 		
-		rprintf ("token="); 				//DEBUG
-		rprintfStrLen(line,p,i-p);			//DEBUG
-		rprintf(" [%d]\r\n", t);			//DEBUG
+		//rprintf ("token="); 				//DEBUG
+		//rprintfStrLen(line,p,i-p);			//DEBUG
+		//rprintf(" [%d]\r\n", t);			//DEBUG
 		
 		if (t==sizeof(tokens))
 		{
@@ -316,6 +297,8 @@ void basic_load()
 		switch (t)
 		{
 		case LET: 
+		case GET: 
+		case PUT: 
 			// read Variable
 			newline.var = getVar(line,&i);
 			if (newline.var=='\0')
@@ -335,12 +318,34 @@ void basic_load()
 		case PRINT:
 			newline.text=line+i;
 			break;
+		case IF:
+			newline.text=line+i;
+			// We should check for THEN and ELSE
+			// and handle error
+			// replace THEN with ? and ELSE with :
+			// IF A THEN B ELSE C =>  GOTO (A)?B:C
+			char *p_then = strstr(line+i, "THEN");
+			char *p_else = strstr(line+1, "ELSE");
+			if (p_then != 0) 
+				strncpy(p_then,"?   ",4);
+			else
+				errno=3;
+				
+			if (p_else != 0) 
+				strncpy(p_else,":   ",4);
+			else
+				strcat(line+1,":0");
+			
+			rprintfStr(newline.text);			//DEBUG		
+			break;
 		case WAIT: 
 		case GOTO: 
 		case XACT:
 			// read line
 			newline.value = getNum(line,&i);			
 			//rprintf ("val=%d\r\n", newline.value); 		//DEBUG
+			break;
+		case END:
 			break;
 		default:
 			errno=2;
@@ -386,33 +391,65 @@ void basic_load()
 
 int variable[26];
 
-enum {STRING, NUMBER, ERROR } ;
+enum {STRING, NUMBER, ERROR, CONDITION } ;
+
+int math(int n1, int n2, char op)
+{
+	switch (op) {
+	case '+': 
+		n1=n2+n1; break;
+	case '-':
+		n1=n2-n1; break;
+	case '*':
+		n1=n2*n1; break;
+	case '/':
+		n1=n2/n1; break;
+	case '>':
+		n1=(n2>n1)?1:0; break;		
+	case '<':
+		n1=(n2<n1)?1:0; break;	
+	case '=':
+		n1=(n2==n1)?1:0; break;		
+	}
+	return n1;
+}
+
+#define MAX_DEPTH 5
 
 unsigned char eval_expr(char *str, int *ptr, int *res)
 {
-	char c=*(str+*ptr);
+	char c;
 	
 	int n1=0;
-	int n2=0;
-	char op='\0';
+	int stack[MAX_DEPTH]; 
+	char ops[MAX_DEPTH];
 	
-	while (c != '\0')
+	int sp=0;
+	int op=0;
+	int tmp=0;
+	
+	while (str[*ptr] != '\0')
 	{
+		if ((c = str[(*ptr)++])==')')
+			break;
+
 		if (c>='0' && c<='9')
 		{
 			n1 = n1*10 + c - '0';
 		}
-		
+		else
 		if (c>='A' && c<='Z')
 		{
-			n1=variable[c-'A'];
+			n1 = variable[c-'A'];
 		}
+		else
 		switch (c)
 		{
 		case '(':
+			eval_expr(str, ptr, &tmp);
+			n1 = tmp;
 			break;
-		case ')':
-			break;
+		case '?' :
 		case '+' :
 		case '-' :
 		case '*' :
@@ -420,8 +457,9 @@ unsigned char eval_expr(char *str, int *ptr, int *res)
 		case '>' :
 		case '<' :
 		case '=' :
-			op=c;
-			n2=n1;
+		case ':' :
+			ops[op++]=c;
+			stack[sp++]=n1;
 			n1=0;
 			break;
 		case '"':
@@ -432,34 +470,65 @@ unsigned char eval_expr(char *str, int *ptr, int *res)
 		default:
 			return ERROR;
 		}
-		
-		*ptr = *ptr+1;	
-		c=*(str+*ptr);
 	}
-	if (op != '\0')
-	{
-		switch (op) {
-		case '+': 
-			n1=n2+n1; break;
-		case '-':
-			n1=n2-n1; break;
-		case '*':
-			n1=n2*n1; break;
-		case '/':
-			n1=n2/n1; break;
-		case '>':
-			n1=(n2>n1)?1:0; break;		
-		case '<':
-			n1=(n2<n1)?1:0; break;	
-		case '=':
-			n1=(n2==n1)?1:0; break;		
+
+	stack[sp++] = n1;
+
+	while (op>0) {
+		if (ops[op-1]==':')
+		{
+			if (op > 1 && ops[op - 2] == '?' && sp>2)
+			{
+				if (stack[sp - 3] == 0)
+					stack[sp - 3] = stack[sp - 1];
+				else
+					stack[sp - 3] = stack[sp - 2];
+			}
+			else
+			{
+				return ERROR; 
+			}
 		}
+		else
+		{
+			stack[sp-2] = math(stack[sp-2],stack[sp-1],ops[op-1]);
+			sp--;
+		}
+		op--;
 	}
-	*res = n1;
+
+	*res = stack[0];
 	return NUMBER;
 }
 
-void basic_run()
+int gotoln(int gl)
+{
+	int nl=1;
+	int lno=1;
+	rprintf ("goto line = %d\r\n", gl); // DEBUG
+	while (lno != 0)
+	{
+		lno=eeprom_read_byte(BASIC_PROG_SPACE+nl);					
+		if (lno == 0xCC)
+		{
+			rprintf("Goto line missing ??\r\n");
+			return -1;
+		}	
+		lno += (eeprom_read_byte(BASIC_PROG_SPACE+nl+1)<<8);	
+		
+		if (lno == gl)
+			break;				
+		uint8_t b=eeprom_read_word(BASIC_PROG_SPACE+nl+6);	
+		nl = nl + 6+ b +1;
+	}
+	if (lno!=0) 
+	{
+		return nl;
+	}
+	return -1;
+}
+		
+void basic_run(int dbf)
 {
 	// Repeat
 	//   Get token
@@ -511,10 +580,13 @@ void basic_run()
 
 		/* execute code */
 	
-		rprintf (": %d - ", line.lineno); // DEBUG
+		if (dbf) rprintf (": %d - ", line.lineno); // debug mode
 		
 		switch (line.token)
 		{
+		case GET: 
+		case PUT: 
+			break;
 		case LET: 
 			i=0; n=0;
 			if (eval_expr(line.text, &i, &n)==NUMBER)
@@ -524,37 +596,9 @@ void basic_run()
 			//rprintf ("assign %c= %d\r\n", line.var, n); // DEBUG
 			break;
 		case GOTO: 
-			rprintf ("goto line = %d\r\n", line.value); // DEBUG
-			// scan from top until match line no or hit end
-			int nl=1;
-			int lno=1;
-			while (lno != 0)
-			{
-				// rprintf ("%d", lno); // DEBUG
-				lno=eeprom_read_byte(BASIC_PROG_SPACE+nl);	
-				
-				if (lno == 0xCC)
-				{
-					rprintf("Goto line missing ??\r\n");
-					return;
-				}
-				
-				lno += (eeprom_read_byte(BASIC_PROG_SPACE+nl+1)<<8);	
-				//rprintf("test %d=%d\r\n", lno, line.value);
-				
-				if (lno == line.value)
-					break;
-				
-				uint8_t b=eeprom_read_word(BASIC_PROG_SPACE+nl+6);	
-
-				nl = nl + 6+ b +1;
-			}
-			if (lno!=0) 
-			{
-				//rprintf("Line match %d\n", lno); // DEBUG
-				ptr=nl; // this is where happens
-				tmp=0;
-			}			
+			if ((ptr = gotoln(line.value))<0)
+				return;			
+			tmp=0;
 			break;	
 		case PRINT: 
 			//rprintf ("xact lit = %d\r\n", line.value); // DEBUG
@@ -562,6 +606,19 @@ void basic_run()
 			if (eval_expr(line.text, &i, &n)==NUMBER)
 				rprintf ("%d\r\n", n);
 			break;	
+		case IF:		
+			i=0; n=0;
+			if (eval_expr(line.text, &i, &n)==NUMBER)
+			{
+				rprintf ("%d\r\n", n);
+				if (n != 0)
+				{
+					if ((ptr = gotoln(n))<0)
+						return;			
+					tmp=0;		
+				}
+			}
+			break;		
 		case XACT: 
 			//rprintf ("xact lit = %d\r\n", line.value); // DEBUG
 			Perform_Action (line.value);
@@ -570,6 +627,9 @@ void basic_run()
 			//rprintf ("wait lit = %d\r\n", line.value); // DEBUG
 			_delay_ms(line.value);
 			break;
+		case END: 
+			rprintf ("End of program\r\n"); 
+			return;
 		default:
 			rprintf ("Invalid command %x\r\n", line.token); // DEBUG
 			tmp=0xCC;
