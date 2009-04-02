@@ -121,6 +121,8 @@ void check_IR(BYTE *action)
 void check_behaviour(BYTE *action)
 {
 
+#ifdef PSD_SENSOR
+
 	if (params[PSDL]!=0 && adc_psd()>params[PSDL])  // if PSD sensor goes off
 	{
 		ptime(); rprintf("PSD event %x\r\n", psd_value);	
@@ -145,6 +147,8 @@ void check_behaviour(BYTE *action)
 			}
 		}
 	}
+	
+#endif
 		
 	if (adc_mic()>params[MICL])  //if mic semsor levl reached
 	{

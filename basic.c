@@ -69,10 +69,13 @@ Example Programs
 #include "uart.h"
 #include "rprintf.h"
 #include "majormodes.h"
+#include "adc.h"
+#include "accelerometer.h"
 
 #include <util/delay.h>
 
 #define EEPROM_MEM_SZ 256
+#define MAX_LINE 80 
 
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
@@ -157,6 +160,42 @@ int getNum(char *line, int *i)
 	return num;
 }
 
+//simple token match
+//i points to next char after toek
+//returns token ID or -1 if not found
+//
+int token_match(char *list[], char *tok, int *i, int n)
+{
+	int t;	
+	char c;
+	int p=*i; // remember where we are	
+	
+	while ( (c=*(tok+*i)) != ' ')  // must end with a space
+	{
+		if (!(c>= 'A' && c <='Z') )  //must be alpha
+		{
+			errno=1; // Syntax error
+			return -1;
+		}
+		(*i)++;
+	}	
+	*(tok+*i)='\0';
+
+	for (t=0; t<n; t++)
+	{
+		if (!strcmp(tok+p, list[t]))
+			break;
+	}
+	
+	if (t==sizeof(list))
+	{
+		errno=2;
+		return -1;
+	}
+	return t;
+}
+		
+
 void basic_load()
 {
 	rprintf("Enter Program '.' to Finish\r\n");
@@ -167,9 +206,8 @@ void basic_load()
 	//   Store in Eprom
 	// Loop
 	
-	char line[80];
+	char line[MAX_LINE];
 	int n=0;
-	int ln=0;
 	int lc=0;
 	int i=0;
 	
@@ -227,74 +265,26 @@ void basic_load()
 		struct basic_line newline;	
 		
 		newline.var=0;
-		newline.lineno=0;
-		newline.token=0;
-		newline.var=0;
 		newline.value=0;
-		newline.text=0;	
+		newline.text=0;
 			
 		i=0;
 		if (i>=n) break;
-		if (line[i]>='0' && line[i] <= '9') // test for optional line
+		
+		newline.lineno = getNum(line, &i) ;
+		
+		if (i>=n || line[i]!=' ') 
 		{
-			ln=0;
-			// read in digit up to a space
-			while (line[i] != ' ')
-			{
-				if (line[i]>= '0' && line[i] <= '9')  
-					ln=ln*10 + line[i]-'0';
-				else 
-				{
-					errno=1; // Syntax error
-					break;
-				}
-				i++;
-			}
-		}
-		
-		newline.lineno = ln++;
-		
-		// rprintf("Line No=%d\r\n", newline.lineno); //DEBUG
-		
-		if (i>=n || errno != 0) continue;	
-
-		int p=++i; // remember where we are
-		
-		while (line[i] != ' ')
-		{
-			if (!(line[i]>= 'A' && line[i] <='Z') ) 
-			{
-				errno=1; // Syntax error
-				break;
-			}
-			i++;
-		}	
-		line[i]='\0';
-		if (i>=n || errno != 0) continue;	
-		
-		//Look up token
-		int t;
-		
-		for (t=0; t<sizeof(tokens); t++)
-		{
-			if (!strcmp(&line[p], tokens[t]))
-				break;
-		}
-		
-		//rprintf ("token="); 				//DEBUG
-		//rprintfStrLen(line,p,i-p);			//DEBUG
-		//rprintf(" [%d]\r\n", t);			//DEBUG
-		
-		if (t==sizeof(tokens))
-		{
-			errno=2;
+			errno=1;
 			continue;
 		}
-		
-		newline.token=t;
+		i++;
+		if ( (newline.token=token_match(tokens, line, &i, sizeof(tokens)))<0)
+			continue;
+			
 		i++;
 		
-		switch (t)
+		switch (newline.token)
 		{
 		case LET: 
 		case GET: 
@@ -501,11 +491,12 @@ unsigned char eval_expr(char *str, int *ptr, int *res)
 	return NUMBER;
 }
 
+
 int gotoln(int gl)
 {
 	int nl=1;
 	int lno=1;
-	rprintf ("goto line = %d\r\n", gl); // DEBUG
+
 	while (lno != 0)
 	{
 		lno=eeprom_read_byte(BASIC_PROG_SPACE+nl);					
@@ -526,6 +517,53 @@ int gotoln(int gl)
 		return nl;
 	}
 	return -1;
+}
+
+char *specials[] = { "PF1", "MIC", "X", "Y", "Z", "PSD", "VOLT" };
+
+int get_special(char *str, int var)
+{
+	int i=0;
+	int t=token_match(specials, str, &i, sizeof(specials));
+	switch(t) {
+	case 0: // PF1
+		variable[var]=0;
+		break;
+	case 1: // MIC
+		variable[var]=adc_mic();
+		break;
+	case 2: // X
+		tilt_read(0);
+		variable[var]=x_value;
+		break;	
+	case 3: // Y
+		tilt_read(0);
+		variable[var]=y_value;
+		break;		
+	case 4: // Z
+		tilt_read(0);
+		variable[var]=z_value;
+		break;			
+	case 5: // Z
+		variable[var]=adc_psd();
+		break;
+	case 6: // VOLT
+		variable[var]=adc_volt();
+		break;
+	}
+	return 0;
+}
+
+int put_special(char *str, int var)
+{
+	int i=0;
+	int t=token_match(specials, str, &i, sizeof(specials));
+	switch(t) {
+	case 0: // PF1
+		if (variable[var]==0) PF1_LED1_ON; else PF1_LED1_OFF;
+		break;
+	}
+	return 0;
 }
 		
 void basic_run(int dbf)
@@ -585,7 +623,10 @@ void basic_run(int dbf)
 		switch (line.token)
 		{
 		case GET: 
+			get_special(line.text, line.var-'A');
+			break;
 		case PUT: 
+			put_special(line.text, line.var-'A');
 			break;
 		case LET: 
 			i=0; n=0;
