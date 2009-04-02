@@ -10,6 +10,9 @@
 #include "comm.h"
 #include "rprintf.h"
 
+extern void basic_run();
+
+
 static void exitToExperimental(void) {
 	// Go to basic pose, and then switch to experimental mode
 	BasicPose();
@@ -25,6 +28,7 @@ static void exitToSerialSlave(void) {
 static void handle_serial(int cmd) {
 	if ('p' == cmd || 'P' == cmd) exitToExperimental();
 	if ('s' == cmd || 'S' == cmd) exitToSerialSlave();
+	if ('r' == cmd || 'R' == cmd) basic_run();
 	if ('?' == cmd) {
 		rprintf("\nIdle mode\n");
 	}
