@@ -53,7 +53,8 @@ all: $(TARGET) Robobuilderlib.hex Robobuilderlib.eep Robobuilderlib.lss size
 
 ## Compile
 main.o: main.c
-	$(CC) $(INCLUDES) $(CFLAGS) -DPSD_SENSOR -c  $<
+#	$(CC) $(INCLUDES) $(CFLAGS) -DPSD_SENSOR -c  $<
+	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
 	
 serialslave_mode.o: serialslave_mode.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
