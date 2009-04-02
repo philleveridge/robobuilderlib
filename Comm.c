@@ -12,6 +12,7 @@
 #include "rprintf.h"
 #include "HunoBasic.h"
 #include "e-motion.h"    //extra-motions (gedit??)
+#include "wck.h"
 #include <util/delay.h>
 
 unsigned char PROGMEM wCK_IDs[16]={
@@ -190,7 +191,7 @@ void SendSetCmd(BYTE ID, BYTE Data1, BYTE Data2, BYTE Data3)
 	gTx0Cnt++;		
 
 	gTx0Buf[gTx0Cnt]=CheckSum;
-	gTx0Cnt++;		
+	gTx0Cnt++;
 }
 
 
@@ -244,6 +245,7 @@ void SyncPosSend(void)
 //------------------------------------------------------------------------------
 WORD PosRead(BYTE ID) 
 {
+	return wckPosRead(ID);
 /*	BYTE	Data1, Data2;
 	BYTE	CheckSum; 
 	WORD	startT;
@@ -284,6 +286,8 @@ WORD PosRead(BYTE ID)
 //------------------------------------------------------------------------------
 WORD PosMove(BYTE ID, BYTE torq, BYTE target) 
 {
+	return wckPosSend(ID, torq, target);
+/*
 	BYTE	Data1;
 	BYTE	CheckSum; 
 	BYTE 	c;
@@ -310,7 +314,7 @@ WORD PosMove(BYTE ID, BYTE torq, BYTE target)
 	res  |= c;
 	
 	return res;
-	
+*/	
 	/*
 	startT = gMSEC;
 	while(gRx0Cnt<2){
@@ -412,6 +416,21 @@ void GetMotionFromBuffer(unsigned char *motionBuf)
 //------------------------------------------------------------------------------
 void SendTGain(void)
 {
+	char reply1, reply2;
+	WORD TIME_OUT2 = 250;
+	for (int i=0; i<MAX_wCK;i++) {
+		if (Motion.wCK[i].Exist) {
+			char servoID = i;
+			wckSendSetCommand((7<<5)|servoID, 11, Motion.wCK[i].RPgain, Motion.wCK[i].RDgain);
+			reply1 = wckGetByte(TIME_OUT2);		// should match the P gain we just set
+			reply2 = wckGetByte(TIME_OUT2);		// should match the D gain we just set
+
+			wckSendSetCommand((7<<5)|servoID, 24, Motion.wCK[i].RIgain, Motion.wCK[i].RIgain);
+			reply1 = wckGetByte(TIME_OUT2);		// P gain again
+			reply2 = wckGetByte(TIME_OUT2);		// D gain again
+		}
+	}
+/*	
 	WORD i;
 
 	UCSR0B &= 0x7F;   		// UART0 Rx Interrupt disable
@@ -433,6 +452,7 @@ void SendTGain(void)
 	}
 	gTx0BufIdx++;
 	sciTx0Data(gTx0Buf[gTx0BufIdx-1]);		// Initiate the transmit
+*/
 }
 
 
@@ -532,6 +552,8 @@ void GetSceneFromBuffer(unsigned char *motionBuffer)
 		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Torq	= sceneBuffer[ NumOfwCK + 4 + i ];
 		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].ExPortD	= sceneBuffer[ 2 * NumOfwCK + 4 + i ];
 	}
+	rprintf("Servo 0: %d to %d\r\n", Scene.wCK[pgm_read_byte(&(wCK_IDs[0]))].SPos,
+		Scene.wCK[pgm_read_byte(&(wCK_IDs[0]))].DPos);
 	
 	// Serial port preparations (?).
 	UCSR0B &= 0x7F;   		// UART0 RxInterrupt disable
@@ -658,7 +680,7 @@ void LoadMotionFromBuffer(unsigned char *motionBuf)
 		//rprintf("SPos %d = %d\r\n", id, Scene.wCK[id].SPos);
 	}
 	
-	SendTGain();						// set the runtime PID gain from motion structure
+ 	SendTGain();						// set the runtime PID gain from motion structure
 }
 
 //------------------------------------------------------------------------------
@@ -669,7 +691,7 @@ void PlaySceneFromBuffer(unsigned char *motionBuf, WORD sceneIndex)
 {
 	gSceneIndex = sceneIndex;
 	GetSceneFromBuffer( motionBuf );	// Load scene into global structure
-	SendExPortD();						// Set external port data
+//	SendExPortD();						// Set external port data
 	CalcFrameInterval();				// Set the interrupt for the frames
 	CalcUnitMove();						// Calculate the interpolation steps
 	MakeFrame();						// build a frame to send

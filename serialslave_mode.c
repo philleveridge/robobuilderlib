@@ -112,6 +112,7 @@ void handle_load_motion()
 	scenesReceived = motionBuf[0];  // To-do: calculate this from nextRxIndex
 	startTicks = gTicks;
 	LoadMotionFromBuffer( motionBuf );
+
 	profileTicks2 = gTicks - startTicks;
 	inMotion = TRUE;
 	startTicks = gTicks;
@@ -260,6 +261,10 @@ void Do_Serial(void)
 	case 'P':
 		rprintf("Basic pose\r\n");
 		BasicPose();
+		break;
+	
+	case '.':
+		rprintf(" sciRx0Ready:%d\r\n", sciRx0Ready());
 		break;
 	
 	case 27:  // Esc
