@@ -73,19 +73,20 @@ void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
 }
 /*************************************************************************************************/
 /* Function that sends Position Move Command to wCK module */
-/* Input : ServoID, SpeedLevel, Position */
-/* Output : Current */
+/* Input : ServoID, Torque (0(Max) to 4 (Min)), Position */
+/* Output : Load * 256 + Position */
 /*************************************************************************************************/
-char wckPosSend(char ServoID, char SpeedLevel, char Position)
+WORD wckPosSend(char ServoID, char SpeedLevel, char Position)
 {
-	char Current;
+	WORD Load, curPosition;
 	wckSendOperCommand((SpeedLevel<<5)|ServoID, Position);
-	wckGetByte(TIME_OUT1);
-	Current = wckGetByte(TIME_OUT1);
-	return Current;
+	Load = wckGetByte(TIME_OUT1);
+	curPosition = wckGetByte(TIME_OUT1);
+	return (Load << 8) | curPosition;
 }
+
 /************************************************************************************************/
-/* Function that sends Position Read Command to wCK module */
+/* Function that sends Position Read Command to wCK module, and returns the Position. */
 /* Input : ServoID */
 /* Output : Position */
 /************************************************************************************************/
@@ -97,6 +98,23 @@ char wckPosRead(char ServoID)
 	Position = wckGetByte(TIME_OUT1);
 	return Position;
 }
+
+/************************************************************************************************/
+/* Function that sends Position Read Command to wCK module, and returns the Load and Position. */
+/* Input : ServoID */
+/* Output : Load * 256 + Position */
+/************************************************************************************************/
+WORD wckPosAndLoadRead(char ServoID)
+{
+	WORD Load, Position;
+	wckSendOperCommand(0xa0|ServoID, NULL);
+	Load = wckGetByte(TIME_OUT1);
+	Position = wckGetByte(TIME_OUT1);
+	return (Load << 8) | Position;
+}
+
+
+
 /******************************************************************************/
 /* Function that sends Passive wCK Command to wCK module */
 /* Input : ServoID */

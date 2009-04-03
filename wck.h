@@ -12,8 +12,9 @@ char wckGetByte(WORD timeout); // Receive 1 Byte from serial port
 /*------------------ other Basic Functions relating to wCK module--------------------------*/  
 void wckSendOperCommand(char Data1, char Data2);  
 void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4);  
-char wckPosSend(char ServoID, char SpeedLevel, char Position);  
-char wckPosRead(char ServoID);  
+WORD wckPosSend(char ServoID, char SpeedLevel, char Position);  
+char wckPosRead(char ServoID);
+WORD wckPosAndLoadRead(char ServoID);
 char wckActDown(char ServoID);  
 char wckPowerDown(void);  
 char wckRotation360(char ServoID, char SpeedLevel, char RotationDir);  

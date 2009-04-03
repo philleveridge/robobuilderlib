@@ -18,6 +18,7 @@
 #include "uart.h"
 #include "accelerometer.h"
 #include "majormodes.h"
+#include "wck.h"
 
 #include <util/delay.h>
 
@@ -215,7 +216,7 @@ void Do_Serial(void)
 		// Servo positions
 		for (BYTE id=0; id<16; id++)
 		{
-				ptmpA = PosRead(id);
+				ptmpA = wckPosAndLoadRead(id);
 				rprintf("%x", ptmpA);	
 		}
 
@@ -247,7 +248,7 @@ void Do_Serial(void)
 		// Query position, decimal mode
 		rprintf("Position: ");
 		for (BYTE id=0; id<16; id++) {
-			ptmpA = PosRead(id);
+			ptmpA = wckPosRead(id);
 			rprintf("%d", ptmpA);
 			if (id < 15) uartSendByte(','); else rprintf("\r\n");
 		}
