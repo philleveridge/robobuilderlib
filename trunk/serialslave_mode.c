@@ -201,10 +201,19 @@ void Do_Serial(void)
 
 	int ch = uartGetByte();
 	if (ch < 0) return;
-
-	rprintf(" %c [%d]\r\n", ch, ch);	
 	
 	switch (ch) {
+	case '?':
+		rprintf("Serial Slave mode: inMotion=%d, F_PLAYING=%d\r\n", inMotion, F_PLAYING);
+		rprintf("  m: load motion (binary)\r\n");
+		rprintf("  q: query robot status\r\n");
+		rprintf("  d: query servo positions in decimal form\r\n");
+		rprintf("  p: basic pose\r\n");
+		rprintf("  .: read one byte from wCK bus\r\n");
+		rprintf("  x: load data directly into wCK bus\r\n");
+		rprintf(" <ESC>: exit Serial Slave mode\r\n");
+		break;
+	
 	case 'm':
 		handle_load_motion();
 		break;
@@ -212,6 +221,7 @@ void Do_Serial(void)
 	case 'q':
 	case 'Q':
 		// Query mode
+		uartSendByte('Q');
 		
 		// Servo positions
 		for (BYTE id=0; id<16; id++)
@@ -254,13 +264,9 @@ void Do_Serial(void)
 		}
 		break;
 	
-	case '?':
-		rprintf("Serial Slave mode: inMotion=%d, F_PLAYING=%d\r\n", inMotion, F_PLAYING);
-		break;
-	
 	case 'p':
 	case 'P':
-		rprintf("Basic pose\r\n");
+		rprintf(" Basic pose\r\n");
 		BasicPose();
 		break;
 	
@@ -277,6 +283,9 @@ void Do_Serial(void)
 	case 'X':
 		handle_direct_ctl(ch=='x');
 		break;
+	
+	default:
+		rprintf(" Unknown command '%c' [%d]\r\n", ch, ch);
 	}
 } 
 
