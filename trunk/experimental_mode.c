@@ -18,6 +18,7 @@
 #include "uart.h"
 #include "accelerometer.h"
 #include "majormodes.h"
+#include "wck.h"
 #include <util/delay.h>
 
 extern WORD    gBtnCnt;				// counter for PF button press
@@ -448,8 +449,8 @@ void Perform_Action (BYTE Action)
 		//UCSR0B &= 0xBF;
 		//UCSR0B |= 0x80;   		// UART0 RxInterrupt enable	
 	
-		ptmpB = PosRead(0x02);
-		ptmpA = PosRead(0x07);
+		ptmpB = wckPosRead(0x02);
+		ptmpA = wckPosRead(0x07);
 		
 		ptime(); rprintf("ReadPos (2)(7) %x - %x, ", ptmpB, ptmpA);	
 		
@@ -464,8 +465,8 @@ void Perform_Action (BYTE Action)
 		
 		rprintf("MovePos (%d)  %x - %x\r\n", tlt, ptmpB, ptmpA);	
 		
-		PosMove(2, params[TORQ], ptmpB);			
-		PosMove(7, params[TORQ], ptmpA);
+		wckPosSend(2, params[TORQ], ptmpB);			
+		wckPosSend(7, params[TORQ], ptmpA);
 
 		break;
 	case 0x72:  //lean left
@@ -485,7 +486,7 @@ void Perform_Action (BYTE Action)
 		//query mode
 		for (BYTE id=0; id<16; id++)
 		{
-				ptmpA = PosRead(id);
+				ptmpA = wckPosAndLoadRead(id);
 				rprintf("%x", ptmpA);	
 		}
 		lbtmp=adc_psd();

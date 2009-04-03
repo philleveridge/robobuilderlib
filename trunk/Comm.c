@@ -171,27 +171,7 @@ BYTE sciRx1Ready(void)
 //------------------------------------------------------------------------------
 void SendSetCmd(BYTE ID, BYTE Data1, BYTE Data2, BYTE Data3)
 {
-	BYTE CheckSum; 
-	ID=(BYTE)(7<<5)|ID; 
-	CheckSum = (ID^Data1^Data2^Data3)&0x7f;
-
-	gTx0Buf[gTx0Cnt]=HEADER;
-	gTx0Cnt++;		
-
-	gTx0Buf[gTx0Cnt]=ID;
-	gTx0Cnt++;		
-
-	gTx0Buf[gTx0Cnt]=Data1;
-	gTx0Cnt++;		
-
-	gTx0Buf[gTx0Cnt]=Data2;
-	gTx0Cnt++;		
-
-	gTx0Buf[gTx0Cnt]=Data3;
-	gTx0Cnt++;		
-
-	gTx0Buf[gTx0Cnt]=CheckSum;
-	gTx0Cnt++;
+	wckSendSetCommand((7<<5)|ID, Data1, Data2, Data3);
 }
 
 
@@ -234,100 +214,6 @@ void SyncPosSend(void)
 
 	gTx0Buf[gTx0Cnt]=CheckSum;
 	gTx0Cnt++;			// put into transmit buffer
-} 
-
-
-//------------------------------------------------------------------------------
-// Position Move command. also reads the current position
-// Input	: ID, SpeedLevel, Position
-// Output	: Current Position ( 0~254) (444 if no response)
-// 
-//------------------------------------------------------------------------------
-WORD PosRead(BYTE ID) 
-{
-	return wckPosRead(ID);
-/*	BYTE	Data1, Data2;
-	BYTE	CheckSum; 
-	WORD	startT;
-	
-	
-	Data1 = (5<<5) | ID;
-	Data2 = 0;
-	gRx0Cnt = 0;			// clear Rx pointer
-	CheckSum = (Data1^Data2)&0x7f;
-	sciTx0Data(HEADER);
-	sciTx0Data(Data1);
-	sciTx0Data(Data2);
-	sciTx0Data(CheckSum);
-	
-	startT = gMSEC;
-	while(gRx0Cnt<2){
-        if(gMSEC<startT){ 	// wait for response packet or timeout
-            if((1000 - startT + gMSEC)>RX_T_OUT)
-            	return 448;	// return 444 if timeout
-        }
-		else if((gMSEC-startT)>RX_T_OUT) return 446;
-	}
-	
-	WORD res = (gRx0Buf[0] << 8) | (gRx0Buf[1]);
-	return res;
-	
-	*/
-	
-	return PosMove(ID, 5, 0);
-} 
-
-
-//------------------------------------------------------------------------------
-// Position Move command. also reads the current position
-// Input	: ID, SpeedLevel, Position
-// Output	: Current Position ( 0~254) (444 if no response)
-// 
-//------------------------------------------------------------------------------
-WORD PosMove(BYTE ID, BYTE torq, BYTE target) 
-{
-	return wckPosSend(ID, torq, target);
-/*
-	BYTE	Data1;
-	BYTE	CheckSum; 
-	BYTE 	c;
-	WORD 	res;
-		
-	Data1 = (torq<<5) | ID;
-	gRx0Cnt = 0;			// clear Rx pointer
-	CheckSum = (Data1^target)&0x7f;
-	sciTx0Data(HEADER);
-	sciTx0Data(Data1);
-	sciTx0Data(target);
-	sciTx0Data(CheckSum);
-		
-
-	
-	c= sciRx0Ready();
-	
-	res = c;
-	
-	c= sciRx0Ready();
-	
-	res <<= 8;
-	
-	res  |= c;
-	
-	return res;
-*/	
-	/*
-	startT = gMSEC;
-	while(gRx0Cnt<2){
-        if(gMSEC<startT){ 	// wait for response packet or timeout
-            if((1000 - startT + gMSEC)>RX_T_OUT)
-            	return 448;	// return 444 if timeout
-        }
-		else if((gMSEC-startT)>RX_T_OUT) return 446;
-	}
-	//return gRx0Buf[RX0_BUF_SIZE-1];
-	WORD res = (gRx0Buf[0] << 8) | (gRx0Buf[1]);
-	return res;
-	*/
 } 
 
 void set_break_mode()
@@ -430,29 +316,6 @@ void SendTGain(void)
 			reply2 = wckGetByte(TIME_OUT2);		// D gain again
 		}
 	}
-/*	
-	WORD i;
-
-	UCSR0B &= 0x7F;   		// UART0 Rx Interrupt disable
-	UCSR0B |= 0x40;   		// UART0 Tx Interrupt enable
-
-	while(gTx0Cnt);			// wait till buffer empty
-	for(i=0;i<MAX_wCK;i++){					// Runtime P,D gain set from Motion structure
-		if(Motion.wCK[i].Exist)				// set P,D if wCK exists
-			SendSetCmd(i, 11, Motion.wCK[i].RPgain, Motion.wCK[i].RDgain);
-	}
-	gTx0BufIdx++;
-	sciTx0Data(gTx0Buf[gTx0BufIdx-1]);		// Initiate the transmit
-
-
-	while(gTx0Cnt);			// wait till buffer empty
-	for(i=0;i<MAX_wCK;i++){					// Runtime I gain set from Motion structure
-		if(Motion.wCK[i].Exist)				// set I if wCK exists
-			SendSetCmd(i, 24, Motion.wCK[i].RIgain, Motion.wCK[i].RIgain);
-	}
-	gTx0BufIdx++;
-	sciTx0Data(gTx0Buf[gTx0BufIdx-1]);		// Initiate the transmit
-*/
 }
 
 
@@ -463,17 +326,23 @@ void SendTGain(void)
 void SendExPortD(void)
 {
 	WORD i;
+	WORD TIME_OUT2 = 250;
 
-	UCSR0B &= 0x7F;   		// UART0 Rx Interrupt disable
+/*	UCSR0B &= 0x7F;   		// UART0 Rx Interrupt disable
 	UCSR0B |= 0x40;   		// UART0 Tx Interrupt enable
 
 	while(gTx0Cnt);			// wait till buffer empty
+*/
 	for(i=0;i<MAX_wCK;i++){					// external data set from Motion structure
-		if(Scene.wCK[i].Exist)				// set external data if wCK exists
+		if(Scene.wCK[i].Exist) {			// set external data if wCK exists
 			SendSetCmd(i, 100, Scene.wCK[i].ExPortD, Scene.wCK[i].ExPortD);
+			wckGetByte(TIME_OUT2);
+			wckGetByte(TIME_OUT2);			
+		}
 	}
-	gTx0BufIdx++;
+/*	gTx0BufIdx++;
 	sciTx0Data(gTx0Buf[gTx0BufIdx-1]);		// Initiate the transmit
+*/
 }
 
 
@@ -676,7 +545,7 @@ void LoadMotionFromBuffer(unsigned char *motionBuf)
 	// to the current servo positions
 	for (int i = 0; i < Motion.NumOfwCK; i++) {
 		BYTE id = pgm_read_byte(&(wCK_IDs[i]));
-		Scene.wCK[id].SPos = PosRead(id);
+		Scene.wCK[id].SPos = wckPosRead(id);
 		//rprintf("SPos %d = %d\r\n", id, Scene.wCK[id].SPos);
 	}
 	
@@ -691,7 +560,7 @@ void PlaySceneFromBuffer(unsigned char *motionBuf, WORD sceneIndex)
 {
 	gSceneIndex = sceneIndex;
 	GetSceneFromBuffer( motionBuf );	// Load scene into global structure
-//	SendExPortD();						// Set external port data
+//	SendExPortD();						// Set external port data (commented out for now -- not needed)
 	CalcFrameInterval();				// Set the interrupt for the frames
 	CalcUnitMove();						// Calculate the interpolation steps
 	MakeFrame();						// build a frame to send
