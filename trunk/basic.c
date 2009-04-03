@@ -114,49 +114,50 @@ struct basic_line {
 int errno;
 
 //next no space char
-char getNext(char *line, int *i) 
+char getNext(char **p_line) 
 {
-	char c1=*(line+*i);
+	char c1=**p_line;
 	
 	while (c1 == ' ' )
 	{
-		*i=*i+1;
-		c1=*(line+*i);
+		(*p_line)++;
+		c1=**p_line;
 	}
-	if (c1 != '\0') *i=*i+1;
+	if (c1 != '\0') (*p_line)++;
+
 	return c1;
 }
 
 // Read variable - 
 // Simple def - must be A-Z
 // More complex later
-char getVar(char *line, int *i) 
+int getVar(char **p_line) 
 {
-	char c1=getNext(line, i);;
+	char c1=getNext(p_line);
 	
 	if (c1>='A' && c1<= 'Z' )
 	{
-		return c1;
+		return c1-'A';
 	}
 	else
-	return '\0';
+	return -1;
 }
 
 // Read number  - 
 // Simple def - must be 0-9
 // More complex later (%/& etc)
-int getNum(char *line, int *i) 
+int getNum(char **p_line) 
 {
 	int num=0;
-	char c1=getNext(line, i);
+	char c1=getNext(p_line);
 	
 	while (c1>='0' && c1<= '9' )
 	{
 		num = num*10 + c1-'0';
-		c1=*(line+*i);	
-		*i=*i+1;	
+		c1=**p_line;
+		(*p_line)++;	
 	}
-	*i=*i-1;	
+	(*p_line)--;	
 	return num;
 }
 
@@ -164,41 +165,76 @@ int getNum(char *line, int *i)
 //i points to next char after toek
 //returns token ID or -1 if not found
 //
-int token_match(char *list[], char *tok, int *i, int n)
+int token_match(char *list[], char **p_line, int n)
 {
 	int t;	
 	char c;
-	int p=*i; // remember where we are	
+	char *sp = *p_line;
 	
-	while ( (c=*(tok+*i)) != ' ')  // must end with a space
+	while ( (c=**p_line) != ' ')  // must end with a space
 	{
 		if (!(c>= 'A' && c <='Z') )  //must be alpha
 		{
 			errno=1; // Syntax error
 			return -1;
 		}
-		(*i)++;
+		(*p_line)++;
 	}	
-	*(tok+*i)='\0';
+	**p_line='\0';
 
 	for (t=0; t<n; t++)
 	{
-		if (!strcmp(tok+p, list[t]))
+		if (!strcmp(sp, list[t]))
 			break;
 	}
 	
-	if (t==sizeof(list))
+	if (t==n)
 	{
 		errno=2;
 		return -1;
 	}
 	return t;
 }
+
+int readLine(char *line)
+{
+	int ch;
+	char *start=line;
+	
+	rprintfStr ("> ");
+	
+	while (1)
+	{
+		// foreach char entered
+
+		while ((ch = uartGetByte())<0) ;
+			
+		rprintfChar(ch);	
+				
+		if (ch==13 || (start==line && ch=='.') )
+		{
+			if (ch=='.') *line++='.';
+			*line='\0'; 
+			rprintf("\r\n");	
+			break;
+		}
+			
+		if (ch >= 'a' && ch <= 'z') ch = ch-'a'+'A';  // Uppercase only
+		
+		if (ch==8) //Bsapce
+		{
+			if (line>start) line--;
+		}
+		else
+			*line++ = ch;
+	}
+	return (line-start);
+}
 		
 
 void basic_load()
 {
-	rprintf("Enter Program '.' to Finish\r\n");
+	rprintfStr("Enter Program '.' to Finish\r\n");
 	// Repeat
 	//   Read a line
 	//   If a '.' stop
@@ -209,7 +245,8 @@ void basic_load()
 	char line[MAX_LINE];
 	int n=0;
 	int lc=0;
-	int i=0;
+	//int i=0;
+	char *cp;
 	
 	errno=0;
 	
@@ -218,47 +255,24 @@ void basic_load()
 	while (1)
 	{
 		// for each line entered
-		int ch;
-		
+
 		if (errno != 0) {
 			rprintf ("Error - '" );
 			rprintfStr (error_msgs[errno]);
 			rprintf ("'\r\n" );
-			rprintf ("Pos=%d\r\n", i);
+			//rprintf ("Pos=%d\r\n", i);
 			errno=0;
 		}
-		
-		n=0;	
-	
-		while (1)
-		{
-			// foreach char entered
-
-			while ((ch = uartGetByte())<0) ;
-				
-			rprintf("%c", ch);	
-					
-			if (ch==13 || (n==0 && ch=='.') )
-			{
-				line[n]='\0';
-				rprintf("\r\n");	
-				break;
-			}
-				
-			if (ch >= 'a' && ch <= 'z') ch = ch-'a'+'A';  // Uppercase only
 			
-			if (ch==8) //Bsapce
-			{
-				if (n>0) n--;
-			}
-			else
-				line[n++] = ch;
-		}
-		if ( ch=='.' && n==0)
+		n=readLine(line);
+
+		if ( line[0] =='.' && n==1)
 		{
 			rprintf("\r\n%d lines entered\r\n", lc);
 			return;
 		}
+		
+		if (n==0) continue; //ignore blank lines
 		
 		// convert to token
 		
@@ -268,71 +282,67 @@ void basic_load()
 		newline.value=0;
 		newline.text=0;
 			
-		i=0;
-		if (i>=n) break;
+		cp=line;	
+		newline.lineno = getNum(&cp) ;
 		
-		newline.lineno = getNum(line, &i) ;
-		
-		if (i>=n || line[i]!=' ') 
+		if (cp>line+n || *cp  !=' ') 
 		{
 			errno=1;
 			continue;
 		}
-		i++;
-		if ( (newline.token=token_match(tokens, line, &i, sizeof(tokens)))<0)
+		cp++;
+		if ( (newline.token=token_match(tokens, &cp, sizeof(tokens)))<0)
 			continue;
 			
-		i++;
+		cp++;
 		
 		switch (newline.token)
 		{
 		case LET: 
 		case GET: 
 		case PUT: 
-			// read Variable
-			newline.var = getVar(line,&i);
-			if (newline.var=='\0')
+			// read Variable		
+			if ((newline.var = getVar(&cp))<0)
 			{
 				errno=3;
 			}
 			// '='
-			if (getNext(line,&i) != '=')
+			if (getNext(&cp) != '=')
 			{
 				errno=1;
 			}
 			// expression
-			newline.text=line+i;
-			//rprintfStr(newline.text);			//DEBUG
-
+			newline.text=cp;
 			break;
 		case PRINT:
-			newline.text=line+i;
+			newline.text=cp;
 			break;
 		case IF:
-			newline.text=line+i;
 			// We should check for THEN and ELSE
 			// and handle error
 			// replace THEN with ? and ELSE with :
 			// IF A THEN B ELSE C =>  GOTO (A)?B:C
-			char *p_then = strstr(line+i, "THEN");
-			char *p_else = strstr(line+1, "ELSE");
+			newline.text=cp-1;
+			*(cp-1)='(';
+			char *p_then = strstr(cp, "THEN");
+			char *p_else = strstr(cp, "ELSE");
 			if (p_then != 0) 
-				strncpy(p_then,"?   ",4);
+				strncpy(p_then, ")?  ",4);
 			else
 				errno=3;
 				
 			if (p_else != 0) 
 				strncpy(p_else,":   ",4);
 			else
-				strcat(line+1,":0");
+				strcat(cp,":0");
 			
-			rprintfStr(newline.text);			//DEBUG		
+			rprintf("["); rprintfStr(newline.text); rprintf("]\r\n"); //debug
 			break;
 		case WAIT: 
 		case GOTO: 
 		case XACT:
 			// read line
-			newline.value = getNum(line,&i);			
+			newline.value = getNum(&cp);			
 			//rprintf ("val=%d\r\n", newline.value); 		//DEBUG
 			break;
 		case END:
@@ -406,7 +416,7 @@ int math(int n1, int n2, char op)
 
 #define MAX_DEPTH 5
 
-unsigned char eval_expr(char *str, int *ptr, int *res)
+unsigned char eval_expr(char **str, int *res)
 {
 	char c;
 	
@@ -418,10 +428,12 @@ unsigned char eval_expr(char *str, int *ptr, int *res)
 	int op=0;
 	int tmp=0;
 	
-	while (str[*ptr] != '\0')
+	while (**str != '\0')
 	{
-		if ((c = str[(*ptr)++])==')')
+		if ((c = **str)==')')
 			break;
+		
+		(*str)++;
 
 		if (c>='0' && c<='9')
 		{
@@ -436,7 +448,7 @@ unsigned char eval_expr(char *str, int *ptr, int *res)
 		switch (c)
 		{
 		case '(':
-			eval_expr(str, ptr, &tmp);
+			eval_expr(str, &tmp);
 			n1 = tmp;
 			break;
 		case '?' :
@@ -470,9 +482,9 @@ unsigned char eval_expr(char *str, int *ptr, int *res)
 			if (op > 1 && ops[op - 2] == '?' && sp>2)
 			{
 				if (stack[sp - 3] == 0)
-					stack[sp - 3] = stack[sp - 1];
-				else
 					stack[sp - 3] = stack[sp - 2];
+				else
+					stack[sp - 3] = stack[sp - 1];
 			}
 			else
 			{
@@ -523,8 +535,7 @@ char *specials[] = { "PF1", "MIC", "X", "Y", "Z", "PSD", "VOLT" };
 
 int get_special(char *str, int var)
 {
-	int i=0;
-	int t=token_match(specials, str, &i, sizeof(specials));
+	int t=token_match(specials, &str, sizeof(specials));
 	switch(t) {
 	case 0: // PF1
 		variable[var]=0;
@@ -556,8 +567,7 @@ int get_special(char *str, int var)
 
 int put_special(char *str, int var)
 {
-	int i=0;
-	int t=token_match(specials, str, &i, sizeof(specials));
+	int t=token_match(specials, &str, sizeof(specials));
 	switch(t) {
 	case 0: // PF1
 		if (variable[var]==0) PF1_LED1_ON; else PF1_LED1_OFF;
@@ -577,11 +587,11 @@ void basic_run(int dbf)
 	uint8_t data = eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE));
 
 	if (data==0xAA) {
-		rprintf("Run Program \r\n");
+		rprintfStr("Run Program \r\n");
 	}
 	else
 	{
-		rprintf("No program loaded\r\n");
+		rprintfStr("No program loaded\r\n");
 		return;
 	}
 	
@@ -595,7 +605,6 @@ void basic_run(int dbf)
 	char buf[64];
 	line.text=buf;
 	int n;
-	int i;	
 	while (tmp != 0xCC && ptr < EEPROM_MEM_SZ )
 	{
 		line.lineno=eeprom_read_word(BASIC_PROG_SPACE+ptr);	
@@ -623,15 +632,15 @@ void basic_run(int dbf)
 		switch (line.token)
 		{
 		case GET: 
-			get_special(line.text, line.var-'A');
+			get_special(line.text, line.var);
 			break;
 		case PUT: 
-			put_special(line.text, line.var-'A');
+			put_special(line.text, line.var);
 			break;
 		case LET: 
-			i=0; n=0;
-			if (eval_expr(line.text, &i, &n)==NUMBER)
-				variable[line.var-'A'] = n;
+			n=0;
+			if (eval_expr(line.text, &n)==NUMBER)
+				variable[line.var] = n;
 			//else
 			//handle error
 			//rprintf ("assign %c= %d\r\n", line.var, n); // DEBUG
@@ -643,15 +652,15 @@ void basic_run(int dbf)
 			break;	
 		case PRINT: 
 			//rprintf ("xact lit = %d\r\n", line.value); // DEBUG
-			i=0; n=0;
-			if (eval_expr(line.text, &i, &n)==NUMBER)
+			n=0;
+			if (eval_expr(line.text, &n)==NUMBER)
 				rprintf ("%d\r\n", n);
 			break;	
 		case IF:		
-			i=0; n=0;
-			if (eval_expr(line.text, &i, &n)==NUMBER)
+			n=0;
+			if (eval_expr(line.text, &n)==NUMBER)
 			{
-				rprintf ("%d\r\n", n);
+				rprintf ("goto %d\r\n", n);
 				if (n != 0)
 				{
 					if ((ptr = gotoln(n))<0)
@@ -669,7 +678,7 @@ void basic_run(int dbf)
 			_delay_ms(line.value);
 			break;
 		case END: 
-			rprintf ("End of program\r\n"); 
+			rprintfStr ("End of program\r\n"); 
 			return;
 		default:
 			rprintf ("Invalid command %x\r\n", line.token); // DEBUG
@@ -682,19 +691,17 @@ void basic_run(int dbf)
 void basic_clear()
 {
 	// Set Init pointer to Zero
-	rprintf("Clear Program \r\n");
+	rprintfStr("Clear Program \r\n");
 			
 	uint8_t data= 0x00; // start of program byte		
 	eeprom_write_byte(BASIC_PROG_SPACE, data);
 
 }
 
-void basic_list()
+
+void dump()
 {
-	// TBD -  Dump EEprom for the Moment
 	int i;
-	
-	rprintf("List Program \r\n");
 	
 	for (i=0; i<EEPROM_MEM_SZ; i+=8) 	
 	{
@@ -709,7 +716,59 @@ void basic_list()
 		}
 		asciis[8]='\0';
 		rprintfStr (asciis);
-		rprintf ("\r\n");	
+		rprintfStr ("\r\n");	
 	}
+}
+
+
+void basic_list()
+{
+	// TBD -  Dump EEprom for the Moment
+	rprintfStr("List Program \r\n");
+	
+	int ptr=1;
+	uint8_t tmp=0;
+	
+	struct basic_line line;
+	char buf[64];
+	
+	line.text=buf;
+	while (tmp != 0xCC && ptr < EEPROM_MEM_SZ )
+	{
+		line.lineno=eeprom_read_word(BASIC_PROG_SPACE+ptr);	
+		ptr+=2;
+		line.token=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
+		ptr++;		
+		line.var=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
+		ptr++;	
+		line.value=eeprom_read_word(BASIC_PROG_SPACE+ptr);	
+		ptr+=2;
+		
+		uint8_t l=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
+
+		eeprom_read_block(line.text, BASIC_PROG_SPACE+ptr+1, l);	
+		line.text[l]='\0';
+		
+		ptr += (l+1);
+		
+		tmp = eeprom_read_byte(BASIC_PROG_SPACE+ptr);	// terminator character ?
+
+		/* list code */
+	
+		rprintf ("%d ", line.lineno); // debug mode
+		rprintfStr (tokens[line.token]);
+		
+		if (line.token==LET || line.token==GET || line.token==PUT)
+			rprintf (" %c = ", line.var+'A');
+
+		if (line.token==GOTO) 
+			rprintf (" %d", line.value);
+		else
+			rprintfStr (line.text);
+		rprintf ("\r\n");
+	}
+	
+	//dump(); //debug
+
 }
 
