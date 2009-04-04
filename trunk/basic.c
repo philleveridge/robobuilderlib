@@ -35,16 +35,28 @@ SET | GET  enable access to PORTS/SPECIAL REGISTER, IR, ADC, PSD etc ...
 SCENE      sends a Scene - 16 Servo Positions, Plus time, no frames
 XACT       Call any Experimental action using literal code i.e. XACT 0, would do basic pose, XACT 17 a wave
 
+Alt access (TBD)
+LET A=$IR  //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
 
 Example Programs
 ================
+
+A) simple loop
 
 10 LET A=1
 20 PRINT A
 30 LET A=A+1
 35 WAIT 500
-40 IF A<10 THEN 20 ELSE 50
+40 IF A<10 THEN 20 
 50 END
+
+B) read from console and IR port
+10 LET A = $KBD
+20 PRINT A
+30 LET A = $IR
+40 PRINT A
+50 GOTO 10
+
 
 */
 
@@ -74,8 +86,9 @@ Example Programs
 
 #include <util/delay.h>
 
-#define EEPROM_MEM_SZ 256
-#define MAX_LINE 80 
+#define EEPROM_MEM_SZ 	256
+#define MAX_LINE  		80 
+#define MAX_TOKEN 		6
 
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
@@ -93,14 +106,14 @@ enum {
 	LET=0, FOR, IF, THEN, 
 	ELSE, GOTO, PRINT, GET, 
 	PUT, END, SCENE, XACT, 
-	WAIT
+	WAIT, NEXT
 	};
 	
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
 	"ELSE","GOTO","PRINT","GET",
 	"PUT", "END", "SCENE", "XACT",
-	"WAIT"
+	"WAIT", "NEXT"
 };
 							
 struct basic_line {
@@ -165,40 +178,54 @@ int getNum(char **p_line)
 //i points to next char after toek
 //returns token ID or -1 if not found
 //
+
+int getToken(char *str, char *tok)
+{
+	//rprintf("dubug1: ["); rprintfStr(str); rprintf("] \r\n"); 
+
+	int n=0;
+	char c;
+	while (c=*str)
+	{
+		str++;
+		if (!(c>= 'A' && c <='Z') )  //must be alpha
+			break;
+		*tok++=c; //copy in dest buff
+		n++;
+	}	
+	*tok='\0';
+	return n;
+}
+
 int token_match(char *list[], char **p_line, int n)
 {
 	int t;	
 	char c;
 	char *sp = *p_line;
 	
-	while ( (c=**p_line) != ' ')  // must end with a space
-	{
-		if (!(c>= 'A' && c <='Z') )  //must be alpha
-		{
-			errno=1; // Syntax error
-			return -1;
-		}
-		(*p_line)++;
-	}	
-	**p_line='\0';
+	char buff[MAX_TOKEN];
+	
+	t=getToken(*p_line, buff);
+	
+	//rprintf("dubug2: ["); rprintfStr(buff); rprintf("] %d \r\n", t); 
+	
+	*p_line += t;
 
 	for (t=0; t<n; t++)
 	{
-		if (!strcmp(sp, list[t]))
+		if (!strcmp(buff, list[t]))
 			break;
 	}
 	
-	if (t==n)
-	{
-		errno=2;
-		return -1;
-	}
-	return t;
+	//rprintf("dubug: m=%d \r\n", t); 
+
+	return (t==n)? -1 : t; // no_match : match
 }
 
 int readLine(char *line)
 {
 	int ch;
+	int qf=1;
 	char *start=line;
 	
 	rprintfStr ("> ");
@@ -218,8 +245,10 @@ int readLine(char *line)
 			rprintf("\r\n");	
 			break;
 		}
+		
+		if (ch=='"') {qf=!qf;}
 			
-		if (ch >= 'a' && ch <= 'z') ch = ch-'a'+'A';  // Uppercase only
+		if (ch >= 'a' && ch <= 'z' && qf) ch = ch-'a'+'A';  // Uppercase only
 		
 		if (ch==8) //Bsapce
 		{
@@ -230,17 +259,17 @@ int readLine(char *line)
 	}
 	return (line-start);
 }
-		
 
+// Repeat
+//   Read a line
+//   If a '.' stop
+//   Convert into tokens
+//   Store in Eprom
+// Loop
+		
 void basic_load()
 {
 	rprintfStr("Enter Program '.' to Finish\r\n");
-	// Repeat
-	//   Read a line
-	//   If a '.' stop
-	//   Convert into tokens
-	//   Store in Eprom
-	// Loop
 	
 	char line[MAX_LINE];
 	int n=0;
@@ -255,12 +284,13 @@ void basic_load()
 	while (1)
 	{
 		// for each line entered
+		cp=line;	
 
 		if (errno != 0) {
 			rprintf ("Error - '" );
 			rprintfStr (error_msgs[errno]);
 			rprintf ("'\r\n" );
-			//rprintf ("Pos=%d\r\n", i);
+			rprintf ("Pos=%d\r\n", (cp-line));
 			errno=0;
 		}
 			
@@ -282,7 +312,6 @@ void basic_load()
 		newline.value=0;
 		newline.text=0;
 			
-		cp=line;	
 		newline.lineno = getNum(&cp) ;
 		
 		if (cp>line+n || *cp  !=' ') 
@@ -292,7 +321,10 @@ void basic_load()
 		}
 		cp++;
 		if ( (newline.token=token_match(tokens, &cp, sizeof(tokens)))<0)
+		{
+			errno=2;
 			continue;
+		}
 			
 		cp++;
 		
@@ -301,6 +333,7 @@ void basic_load()
 		case LET: 
 		case GET: 
 		case PUT: 
+		case FOR:
 			// read Variable		
 			if ((newline.var = getVar(&cp))<0)
 			{
@@ -336,7 +369,7 @@ void basic_load()
 			else
 				strcat(cp,":0");
 			
-			rprintf("["); rprintfStr(newline.text); rprintf("]\r\n"); //debug
+			//rprintf("["); rprintfStr(newline.text); rprintf("]\r\n"); //debug
 			break;
 		case WAIT: 
 		case GOTO: 
@@ -346,6 +379,12 @@ void basic_load()
 			//rprintf ("val=%d\r\n", newline.value); 		//DEBUG
 			break;
 		case END:
+			break;
+		case NEXT:
+			if ((newline.var = getVar(&cp))<0)
+			{
+				errno=3;
+			}
 			break;
 		default:
 			errno=2;
@@ -388,8 +427,58 @@ void basic_load()
 	}
 }
 
+/*************************************************************************************************************
 
-int variable[26];
+RUNTIME routines
+
+*************************************************************************************************************/
+
+int variable[26]; // only A-Z at moment
+
+char *specials[] = { "PF1", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD" };
+
+int get_special(char *str, int *res)
+{
+	int t=token_match(specials, &str, sizeof(specials));
+	int v;
+	switch(t) {
+	case 0: // PF1
+		v=0;
+		break;
+	case 1: // MIC
+		v=adc_mic();
+		break;
+	case 2: // X
+		tilt_read(0);
+		v=x_value;
+		break;	
+	case 3: // Y
+		tilt_read(0);
+		v=y_value;
+		break;		
+	case 4: // Z
+		tilt_read(0);
+		v=z_value;
+		break;			
+	case 5: // Z
+		v=adc_psd();
+		break;
+	case 6: // VOLT
+		v=adc_volt();
+		break;
+	case 7: // IR
+		while ((v= irGetByte())<0) ; //wait for IR
+		break;
+	case 8: // KBD 
+		while ((v= uartGetByte())<0) ; // wait for input
+		break;	
+	default:
+		return -1;
+	}
+	*res=v;
+	t=strlen(specials[t]);
+	return t;
+}
 
 enum {STRING, NUMBER, ERROR, CONDITION } ;
 
@@ -405,9 +494,9 @@ int math(int n1, int n2, char op)
 	case '/':
 		n1=n2/n1; break;
 	case '>':
-		n1=(n2>n1)?1:0; break;		
+		n1=(n1>n2)?1:0; break;		
 	case '<':
-		n1=(n2<n1)?1:0; break;	
+		n1=(n1<n2)?1:0; break;	
 	case '=':
 		n1=(n2==n1)?1:0; break;		
 	}
@@ -415,6 +504,16 @@ int math(int n1, int n2, char op)
 }
 
 #define MAX_DEPTH 5
+
+int str_expr(char *str)
+{
+	char *p=str;
+	while (*str != '"')
+	{
+		str++;
+	}
+	return str-p;
+}
 
 unsigned char eval_expr(char **str, int *res)
 {
@@ -450,6 +549,7 @@ unsigned char eval_expr(char **str, int *res)
 		case '(':
 			eval_expr(str, &tmp);
 			n1 = tmp;
+			(*str)++;
 			break;
 		case '?' :
 		case '+' :
@@ -468,6 +568,13 @@ unsigned char eval_expr(char **str, int *res)
 			return STRING;
 			break;
 		case ' ':
+			break; //ignore sp
+		case '$':
+			//special var?
+			if ((tmp=get_special(*str, &n1))>0) 
+			{
+				*str += tmp;
+			}
 			break;
 		default:
 			return ERROR;
@@ -479,15 +586,20 @@ unsigned char eval_expr(char **str, int *res)
 	while (op>0) {
 		if (ops[op-1]==':')
 		{
+			//rprintf("debug - cond test %d, %d, stack=%d,%d,%d ops=%d, %d\r\n", op, sp, stack[sp-3], stack[sp-2], stack[sp-1], ops[op-2], ops[op-1]);
+
 			if (op > 1 && ops[op - 2] == '?' && sp>2)
 			{
 				if (stack[sp - 3] == 0)
-					stack[sp - 3] = stack[sp - 2];
-				else
 					stack[sp - 3] = stack[sp - 1];
+				else
+					stack[sp - 3] = stack[sp - 2];
+				op--;
+				sp-=2;
 			}
 			else
 			{
+				rprintf("eval error %d, %d\r\n", op, sp);
 				return ERROR; 
 			}
 		}
@@ -531,39 +643,6 @@ int gotoln(int gl)
 	return -1;
 }
 
-char *specials[] = { "PF1", "MIC", "X", "Y", "Z", "PSD", "VOLT" };
-
-int get_special(char *str, int var)
-{
-	int t=token_match(specials, &str, sizeof(specials));
-	switch(t) {
-	case 0: // PF1
-		variable[var]=0;
-		break;
-	case 1: // MIC
-		variable[var]=adc_mic();
-		break;
-	case 2: // X
-		tilt_read(0);
-		variable[var]=x_value;
-		break;	
-	case 3: // Y
-		tilt_read(0);
-		variable[var]=y_value;
-		break;		
-	case 4: // Z
-		tilt_read(0);
-		variable[var]=z_value;
-		break;			
-	case 5: // Z
-		variable[var]=adc_psd();
-		break;
-	case 6: // VOLT
-		variable[var]=adc_volt();
-		break;
-	}
-	return 0;
-}
 
 int put_special(char *str, int var)
 {
@@ -599,8 +678,11 @@ void basic_run(int dbf)
 	
 	int ptr=1;
 	uint8_t tmp=0;
+	char *p;
 	
 	struct basic_line line;
+	
+	int forptr[3]; int fp=0; // Upto 3 nested for/next
 	
 	char buf[64];
 	line.text=buf;
@@ -631,15 +713,44 @@ void basic_run(int dbf)
 		
 		switch (line.token)
 		{
+		case FOR: 
+			// remember where next in struction is
+			forptr[fp++] = ptr;
+			// eval expr1 of line.text = "expr1 TO expr2"
+			// i.e var=expr1
+			n=0;
+			p=line.text;
+			if (eval_expr(&p, &n)==NUMBER)
+				variable[line.var] = n;					
+			break;
+		case NEXT: 
+			// increment var and check condiiton
+			if (fp>0) {
+				int t_ptr=forptr[--fp];
+				// increment var
+				variable[line.var]++;
+				// test against expr2 i.e var<=expr2
+				if (0) { 
+					// if true set ptr=stack; }
+					ptr = t_ptr; tmp=0 ;
+				} else {
+					rprintf ("Next without for\r\n"); 
+				}	
+			}
+			break;
 		case GET: 
-			get_special(line.text, line.var);
+			n=0;
+			if (get_special(line.text, &n)<0)
+				rprintf ("no recognised special\r\n"); 
+			variable[line.var]=n;	
 			break;
 		case PUT: 
 			put_special(line.text, line.var);
 			break;
 		case LET: 
 			n=0;
-			if (eval_expr(line.text, &n)==NUMBER)
+			p=line.text;
+			if (eval_expr(&p, &n)==NUMBER)
 				variable[line.var] = n;
 			//else
 			//handle error
@@ -653,14 +764,28 @@ void basic_run(int dbf)
 		case PRINT: 
 			//rprintf ("xact lit = %d\r\n", line.value); // DEBUG
 			n=0;
-			if (eval_expr(line.text, &n)==NUMBER)
-				rprintf ("%d\r\n", n);
+			p=line.text;
+			switch (eval_expr(&p, &n))
+			{
+			case NUMBER:
+				rprintf ("%d", n);
+				break;
+			case STRING:
+				n=str_expr(line.text+1);
+				rprintfStrLen(line.text,1,n);
+				break;
+			case ERROR:
+				break;
+			}
+			// check for more arguments (, or ;)
+			rprintfStr ("\r\n"); 			
 			break;	
 		case IF:		
 			n=0;
-			if (eval_expr(line.text, &n)==NUMBER)
+			p=line.text;
+
+			if (eval_expr(&p, &n)==NUMBER)
 			{
-				rprintf ("goto %d\r\n", n);
 				if (n != 0)
 				{
 					if ((ptr = gotoln(n))<0)
@@ -670,11 +795,9 @@ void basic_run(int dbf)
 			}
 			break;		
 		case XACT: 
-			//rprintf ("xact lit = %d\r\n", line.value); // DEBUG
 			Perform_Action (line.value);
 			break;
 		case WAIT: 
-			//rprintf ("wait lit = %d\r\n", line.value); // DEBUG
 			_delay_ms(line.value);
 			break;
 		case END: 
@@ -755,14 +878,15 @@ void basic_list()
 
 		/* list code */
 	
-		rprintf ("%d ", line.lineno); // debug mode
+		rprintf ("%d ", line.lineno); 
 		rprintfStr (tokens[line.token]);
+		rprintf (" "); 
 		
 		if (line.token==LET || line.token==GET || line.token==PUT)
-			rprintf (" %c = ", line.var+'A');
+			rprintf ("%c = ", line.var+'A');
 
 		if (line.token==GOTO) 
-			rprintf (" %d", line.value);
+			rprintf ("%d", line.value);
 		else
 			rprintfStr (line.text);
 		rprintf ("\r\n");
