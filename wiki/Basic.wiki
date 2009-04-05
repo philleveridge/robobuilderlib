@@ -62,11 +62,32 @@ LET A=$IR           //get char from IR and transfer to A
 LET A=$SERVO:id     //let A get position of servo id 
 
 Special Commands
-XACT          Call any action using code i.e. XACT 0, would do basic pose, XACT 17 a wave
 SERVO ID=POS  set servo id to position POS / @
 PUT 	      enable access to PORTS/SPECIAL REGISTER
 SCENE         sends a Scene - 16 Servo Positions, Plus time, no frames
 WAIT          Wait for a an amount of time in ms
+XACT          Call any action using code i.e. XACT 0, would punch left, XACT 17 a wave
+Built in motions:
+0x00:  PunchLeft
+0x01:  PunchRight
+0x02:  SidewalkLeft
+0x03:  SidewalkRight
+0x04:  TurnLeft
+0x05:  TurnRight
+0x06:  GetupBack
+0x07:  GetupFront
+0x08:  WalkForward
+0x09:  WalkBackward
+0x0A:  lshoot
+0x0B:  rshoot
+0x0C:  rsidewalk
+0x0D:  lsidewalk
+0x0E:  standupr
+0x0F:  standupf
+0x10:  sitdown
+0x11:  hi
+0x12:  kick left front turn
+0x20:  basic Pose
 }}}
 
 = Examples code that has been tested =
