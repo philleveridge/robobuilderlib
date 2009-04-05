@@ -48,7 +48,17 @@ SYNTAX:
 [Line No] RETURN
 
 Special register access ($)
-LET A=$IR           //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
+$X, $Y, $Z   accelerometer
+$SERVO:id    position of servo id 
+$IR          wait for OR input
+$KBD         wait for keyboard press
+$PSD         PSD sensor value
+$VOLT        Battery voltage
+$TICK        Number of tenths of a second
+$RND         Random number  - (not tested)
+$MIC         Microphone level
+Examples:
+LET A=$IR           //get char from IR and transfer to A 
 LET A=$SERVO:id     //let A get position of servo id 
 
 Special Commands
