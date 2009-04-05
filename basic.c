@@ -20,18 +20,17 @@ EXPR   EXPR1 OPER EXPR1
 SYNTAX:
 [LINE no] LET  VAR '=' EXPR 
 [LINE no] GOTO [Line No]
-[LINE no] PRINT LIST
+[LINE no] PRINT LIST [;]
 [LINE No] END
 [LINE no] IF  EXPR THEN LINE no ELSE Line No
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
 [LINE No] NEXT
 [LINE No] PUT VAR '=' PORTA|B|C:0-7
-[LINE No] GET VAR '=' PORTA|B|C:0-7|ADC|PSD|IR|SERVO
 [LINE No] SCENE LIST
 [LINE No] XACT EXPR
 
 Special Commands
-SET | GET  enable access to PORTS/SPECIAL REGISTER, IR, ADC, PSD etc ...
+PUT 	   enable access to PORTS/SPECIAL REGISTER, IR, ADC, PSD etc ...
 SCENE      sends a Scene - 16 Servo Positions, Plus time, no frames
 XACT       Call any Experimental action using literal code i.e. XACT 0, would do basic pose, XACT 17 a wave
 
@@ -41,8 +40,7 @@ LET A=$IR  //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
 Example Programs
 ================
 
-A) simple loop
-
+a) simple loop
 10 LET A=1
 20 PRINT A
 30 LET A=A+1
@@ -50,13 +48,22 @@ A) simple loop
 40 IF A<10 THEN 20 
 50 END
 
-B) read from console and IR port
+b) read from console and IR port
 10 LET A = $KBD
 20 PRINT A
 30 LET A = $IR
 40 PRINT A
 50 GOTO 10
 
+c) Loops
+10 FOR A=1 to 5
+20 PRINT A
+30 NEXT A
+
+d) compound PRINT
+10 LET A=(5+3)*(2+1)
+20 PRINT "The answer is ";A
+30 END
 
 */
 
@@ -100,6 +107,7 @@ const  prog_char *error_msgs[] = {
 	"Invalid Command",
 	"Illegal var",
 	"Bad number",
+	"Next without for",
 	};
 	
 enum {
@@ -281,6 +289,9 @@ void basic_load()
 	
 	uint16_t psize=0;
 	
+	char forbuf[3][20];
+	int fb=0;
+	
 	while (1)
 	{
 		// for each line entered
@@ -345,8 +356,21 @@ void basic_load()
 				errno=1;
 			}
 			// expression
-			newline.text=cp;
+			if (newline.token==FOR)
+			{
+				char *to = strstr(cp," TO ");
+				if (to==0) errno=1;
+				else
+				{
+					*to='\0'; // null terminate expr1
+					newline.text=cp;
+					strcpy(forbuf[fb++],to+4); // store expr2
+				}
+			}
+			else
+				newline.text=cp;
 			break;
+
 		case PRINT:
 			newline.text=cp;
 			break;
@@ -384,6 +408,12 @@ void basic_load()
 			if ((newline.var = getVar(&cp))<0)
 			{
 				errno=3;
+			}
+			if (fb>0) {
+				newline.text=forbuf[--fb];
+			} else {
+				// next without FOR
+				errno=5;
 			}
 			break;
 		default:
@@ -526,8 +556,9 @@ unsigned char eval_expr(char **str, int *res)
 	int sp=0;
 	int op=0;
 	int tmp=0;
+	int done=0;
 	
-	while (**str != '\0')
+	while (**str != '\0' && !done)
 	{
 		if ((c = **str)==')')
 			break;
@@ -566,7 +597,6 @@ unsigned char eval_expr(char **str, int *res)
 			break;
 		case '"':
 			return STRING;
-			break;
 		case ' ':
 			break; //ignore sp
 		case '$':
@@ -577,7 +607,8 @@ unsigned char eval_expr(char **str, int *res)
 			}
 			break;
 		default:
-			return ERROR;
+			done=1;
+			(*str)--;
 		}
 	}
 
@@ -711,6 +742,11 @@ void basic_run(int dbf)
 	
 		if (dbf) rprintf (": %d - ", line.lineno); // debug mode
 		
+		if (uartGetByte() == 27)  {
+			rprintf ("User Break on line %d\r\n", line.lineno); 
+			return;
+		}
+		
 		switch (line.token)
 		{
 		case FOR: 
@@ -726,16 +762,27 @@ void basic_run(int dbf)
 		case NEXT: 
 			// increment var and check condiiton
 			if (fp>0) {
-				int t_ptr=forptr[--fp];
+				int t_ptr=forptr[fp-1];
 				// increment var
 				variable[line.var]++;
 				// test against expr2 i.e var<=expr2
-				if (0) { 
-					// if true set ptr=stack; }
+				n=0;
+				p=line.text;
+				if (eval_expr(&p, &n)!=NUMBER)
+				{
+					rprintf ("Next synatx error\r\n"); 
+					break; //need to handle error	
+				}			
+				if (variable[line.var] <= n) { 
+					// if true set ptr=stack; 
 					ptr = t_ptr; tmp=0 ;
-				} else {
-					rprintf ("Next without for\r\n"); 
+					//rprintf ("T dbg %d %d %d\r\n", n, variable[line.var], ptr ); 
 				}	
+				else
+				{
+					//rprintf ("F dbg %d %d %d\r\n", n, variable[line.var], ptr ); 
+					fp--;
+				}
 			}
 			break;
 		case GET: 
@@ -762,23 +809,34 @@ void basic_run(int dbf)
 			tmp=0;
 			break;	
 		case PRINT: 
-			//rprintf ("xact lit = %d\r\n", line.value); // DEBUG
 			n=0;
 			p=line.text;
-			switch (eval_expr(&p, &n))
+			while (1)
 			{
-			case NUMBER:
-				rprintf ("%d", n);
-				break;
-			case STRING:
-				n=str_expr(line.text+1);
-				rprintfStrLen(line.text,1,n);
-				break;
-			case ERROR:
-				break;
+				switch (eval_expr(&p, &n))
+				{
+				case NUMBER:
+					rprintf ("%d", n);
+					break;
+				case STRING:
+					n=str_expr(p);
+					rprintfStrLen(p,0,n);
+					p=p+n+1;
+					break;
+				}
+				if (*p=='\0') break; // done
+				
+				if (*p!=';' && *p!=',') {
+					rprintf ("synatx prob= [%d]\r\n", *p); // DEBUG
+					break;
+				}
+				if (*p==';' && *(p+1)=='\0') // last one
+					break;
+				p++;
 			}
-			// check for more arguments (, or ;)
-			rprintfStr ("\r\n"); 			
+			// check for last ; (no crlf)
+			if (*p!=';')	
+				rprintfStr ("\r\n"); 			
 			break;	
 		case IF:		
 			n=0;
@@ -818,7 +876,6 @@ void basic_clear()
 			
 	uint8_t data= 0x00; // start of program byte		
 	eeprom_write_byte(BASIC_PROG_SPACE, data);
-
 }
 
 
@@ -882,9 +939,12 @@ void basic_list()
 		rprintfStr (tokens[line.token]);
 		rprintf (" "); 
 		
-		if (line.token==LET || line.token==GET || line.token==PUT)
+		if (line.token==LET || line.token==GET || line.token==PUT || line.token==FOR)
 			rprintf ("%c = ", line.var+'A');
 
+		if (line.token==NEXT) 
+			rprintf ("%c", line.var+'A');
+		else
 		if (line.token==GOTO) 
 			rprintf ("%d", line.value);
 		else
