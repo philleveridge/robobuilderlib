@@ -26,9 +26,11 @@ SYNTAX:
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
 [LINE No] NEXT
 [LINE No] XACT EXPR
---------------------------
+--------------------------TBD ---------------------------
 [LINE No] PUT VAR '=' $PORTA|B|C:0-7
 [LINE No] SCENE LIST
+[Line No] GOSUB [Line No]
+[Line No] RETURN
 
 Special Commands
 XACT       Call any Experimental action using literal code i.e. XACT 0, would do basic pose, XACT 17 a wave
@@ -39,7 +41,7 @@ LET A=$SERVO:id  let A get position of servo id
 SCENE            sends a Scene - 16 Servo Positions, Plus time, no frames
 
 
-Alt access (TBD)
+Special register access ($)
 LET A=$IR  //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
 
 Example Programs
@@ -81,7 +83,7 @@ e) read accelerometer values
 20 wait 500
 30 goto 10
 
-f) When fwd button pressed on IR do built in motion "walk forward"
+f) When fwd button pressed on IR do built in motion (8) - "walk forward"
 10 let A=$IR
 20 print "Received=";A
 30 if a=4 then 40 else 10
@@ -129,7 +131,6 @@ extern void Perform_Action(BYTE action);
 extern char wckPosRead(char ServoID);
 extern WORD wckPosSend(char ServoID, char SpeedLevel, char Position);
 extern char wckActDown(char ServoID);
-extern WORD	 gTicks;
 
 
 const  prog_char *error_msgs[] = {
@@ -582,6 +583,12 @@ int math(int n1, int n2, char op)
 		n1=(n1>n2)?1:0; break;		
 	case '<':
 		n1=(n1<n2)?1:0; break;	
+	case 'l':
+		n1=(n1<=n2)?1:0; break;	
+	case 'g':
+		n1=(n1>=n2)?1:0; break;	
+	case 'n':
+		n1=(n1!=n2)?1:0; break;	
 	case '=':
 		n1=(n2==n1)?1:0; break;		
 	}
@@ -651,6 +658,9 @@ unsigned char eval_expr(char **str, int *res)
 		case '=' :
 		case '%' :
 		case ':' :
+			if (c=='>' && *str=='=') {c='g'; (*str)++;}
+			if (c=='<' && *str=='=') {c='l'; (*str)++;}
+			if (c=='<' && *str=='>') {c='n'; (*str)++;}
 			ops[op++]=c;
 			stack[sp++]=n1;
 			n1=0;
@@ -677,8 +687,6 @@ unsigned char eval_expr(char **str, int *res)
 	while (op>0) {
 		if (ops[op-1]==':')
 		{
-			//rprintf("debug - cond test %d, %d, stack=%d,%d,%d ops=%d, %d\r\n", op, sp, stack[sp-3], stack[sp-2], stack[sp-1], ops[op-2], ops[op-1]);
-
 			if (op > 1 && ops[op - 2] == '?' && sp>2)
 			{
 				if (stack[sp - 3] == 0)
