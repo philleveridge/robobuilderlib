@@ -2,7 +2,7 @@
 
 = Introduction =
 
-A bi-direction communications mode that allows a PC to directly control the motions of the robot either at a frame bt frame level using raw wCK commands or at a scene by scene level. The user can also query all sensors getting the result in either hex or decimal. This mode also will operate in either ascii mode or binary.
+A bi-direction communications mode that allows a PC to directly control the motions of the robot either at a frame by frame level using raw wCK commands or at a scene by scene level. The user can also query all sensors getting the result in either hex or decimal. This mode also will operate in either ascii mode or binary.
 
 = Details =
 
