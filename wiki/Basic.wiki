@@ -2,7 +2,7 @@
 #labels Phase-Requirements
 = Introduction =
 
-This is still in a very early development stage !!!
+This is still in an early development stage !!!
 
 It can only be accessed via *experimental mode*, by typing the following:
   * eC0 - program entry
@@ -12,21 +12,17 @@ It can only be accessed via *experimental mode*, by typing the following:
 
 Typing r in idle mode will run the stored program if it exists
 
-currently only XACT actually runs. More should follow soon.
+See examples below of programs that have been tested
 
 = Details =
 
 The ability to create simple actions in an elementary basic language
 
 {{{
-basic_load	read a program from the serial port and store in EEPROM
-basic_run	run the program in eeprom
-basic_clear	clear eeprom program(s)
-basic_list 	show contents of eeprom
 
 Language Spec:
 VAR    A-Z  (integer only)
-OPER   +-*\()=<>
+OPER   + - * \ ( ) = < > % <= >= <>
 CMD    LET:FOR:NEXT:GOTO:IF:THEN:ELSE:PRINT:END:SET:XACT:WAIT
 STRING " ... "
 EXPR1  VAR | LITERAL
@@ -37,32 +33,36 @@ EXPR   EXPR1 OPER EXPR1
 SYNTAX:
 [LINE no] LET  VAR '=' EXPR 
 [LINE no] GOTO [Line No]
-[LINE no] PRINT EXPR | STRING    (TBD: Allow lists)
+[LINE no] PRINT LIST [;]
 [LINE No] END
-[LINE no] IF  EXPR THEN LINE no [ELSE Line No]
-[LINE No] XACT EXPR
-
-ALMOST THERE
+[LINE no] IF  EXPR THEN LINE no ELSE Line No
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
-[LINE No] NEXT
-
-TBD
-[LINE No] SET PORTA|B|C:0-7|ADC|PSD|IR|SERVO '=' EXPR
-[LINE No] GET VAR '=' PORTA|B|C:0-7|ADC|PSD|IR|SERVO
+[LINE No] NEXT VAR
+[LINE No] XACT EXPR
+[LINE No] WAIT number
+[Line No] SERVO ID=EXPR | '@'
+--------------------------TBD ---------------------------
+[LINE No] PUT VAR '=' $PORTA|B|C:0-7
 [LINE No] SCENE LIST
+[Line No] GOSUB [Line No]
+[Line No] RETURN
+
+Special register access ($)
+LET A=$IR           //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
+LET A=$SERVO:id     //let A get position of servo id 
 
 Special Commands
-SET        enable write access to PORTS/SPECIAL REGISTER
-SCENE      sends a Scene - 16 Servo Positions, Plus time, no frames
-XACT       Call any Experimental action using literal code i.e. XACT 0, does basic pose, XACT 17 a wave
-WAIT       Will wait for a specified amount of time in ms
+XACT          Call any action using code i.e. XACT 0, would do basic pose, XACT 17 a wave
+SERVO ID=POS  set servo id to position POS / @
+PUT 	      enable access to PORTS/SPECIAL REGISTER
+SCENE         sends a Scene - 16 Servo Positions, Plus time, no frames
+WAIT          Wait for a an amount of time in ms
 }}}
 
-= Examples code that *should* work =
+= Examples code that has been tested =
 
 {{{
-A) simple loop
-
+a) simple loop
 10 LET A=1
 20 PRINT A
 30 LET A=A+1
@@ -70,10 +70,39 @@ A) simple loop
 40 IF A<10 THEN 20 
 50 END
 
-B) read from console and IR port
-10 LET A = $KBD
+b) read from console and IR port
+10 LET A=$KBD
 20 PRINT A
-30 LET A = $IR
+30 LET A=$IR
 40 PRINT A
 50 GOTO 10
+
+c) Loops
+10 FOR A=1 to 5
+20 PRINT A
+30 NEXT A
+
+d) compound PRINT
+10 LET A=(5+3)*(2+1)
+20 PRINT "The answer is ";A
+30 END
+
+d) read and set servo
+This reads current position of servo 12 and then moves and extra 5
+10 let a=$servo:12
+20 print "Pos=";a
+30 servo 12=a+5
+
+e) read accelerometer values
+10 print $TICK;" X=";$X;" Y=";$Y;" Z=";$Z
+20 wait 500
+30 goto 10
+
+f) When fwd button pressed on IR do built in motion (8) - "walk forward"
+10 let A=$IR
+20 print "Received=";A
+30 if a=4 then 40 else 10
+40 xact 8
+50 goto 10
+
 }}}
