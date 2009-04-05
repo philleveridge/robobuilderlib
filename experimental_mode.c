@@ -364,33 +364,38 @@ void Perform_Action (BYTE Action)
 	WORD	ptmpA, ptmpB;
 	
 	int i;
-	int tlt = 0;			
-	
-	switch (Action)
-	{
-	case 0x00:  //PunchLeft
-	case 0x01:  //PunchRight
-	case 0x02:  //SidewalkLeft
-	case 0x03:	//SidewalkRight
-	case 0x04:  //TurnLeft
-	case 0x05:  //TurnRight
-	case 0x06:  //GetupBack
-	case 0x07:  //GetupFront
-	case 0x08:  //WalkForward
-	case 0x09:  //WalkBackward
-	case 0x0A:  //lshoot
-	case 0x0B:  //rshoot
-	case 0x0C:  //rsidewalk
-	case 0x0D:  //lsidewalk
-	case 0x0E:  //standupr
-	case 0x0F:  //standupf
-	case 0x10:  //sitdown
-	case 0x11:  //hi
-	case 0x12:  //kick left front turn
+	int tlt = 0;		
 
+	if (Action>=0 && Action <=0x12)
+	{
+	/*
+		0x00:  //PunchLeft
+		0x01:  //PunchRight
+		0x02:  //SidewalkLeft
+		0x03:	//SidewalkRight
+		0x04:  //TurnLeft
+		0x05:  //TurnRight
+		0x06:  //GetupBack
+		0x07:  //GetupFront
+		0x08:  //WalkForward
+		0x09:  //WalkBackward
+		0x0A:  //lshoot
+		0x0B:  //rshoot
+		0x0C:  //rsidewalk
+		0x0D:  //lsidewalk
+		0x0E:  //standupr
+		0x0F:  //standupf
+		0x10:  //sitdown
+		0x11:  //hi
+		0x12:  //kick left front turn
+	*/
 		SampleMotion(Action);  					// comm.c: perform the sample motion
 		ptime(); rprintf("Do Motion %x\r\n", Action);
-		break;
+	}
+	else
+	switch (Action)
+	{
+
 	case 0x20:
 		ptime(); rprintf("Basic Pose\r\n");
 		BasicPose();

@@ -25,14 +25,19 @@ SYNTAX:
 [LINE no] IF  EXPR THEN LINE no ELSE Line No
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
 [LINE No] NEXT
-[LINE No] PUT VAR '=' PORTA|B|C:0-7
-[LINE No] SCENE LIST
 [LINE No] XACT EXPR
+--------------------------
+[LINE No] PUT VAR '=' $PORTA|B|C:0-7
+[LINE No] SCENE LIST
 
 Special Commands
-PUT 	   enable access to PORTS/SPECIAL REGISTER, IR, ADC, PSD etc ...
-SCENE      sends a Scene - 16 Servo Positions, Plus time, no frames
 XACT       Call any Experimental action using literal code i.e. XACT 0, would do basic pose, XACT 17 a wave
+PUT 	   enable access to PORTS/SPECIAL REGISTER
+
+SERVO    ID=POS  set servo id to positon POS / @
+LET A=$SERVO:id  let A get position of servo id 
+SCENE            sends a Scene - 16 Servo Positions, Plus time, no frames
+
 
 Alt access (TBD)
 LET A=$IR  //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
@@ -49,9 +54,9 @@ a) simple loop
 50 END
 
 b) read from console and IR port
-10 LET A = $KBD
+10 LET A=$KBD
 20 PRINT A
-30 LET A = $IR
+30 LET A=$IR
 40 PRINT A
 50 GOTO 10
 
@@ -65,6 +70,24 @@ d) compound PRINT
 20 PRINT "The answer is ";A
 30 END
 
+d) read and set servo
+This reads current position of servo 12 and then moves and extra 5
+10 let a=$servo:12
+20 print "Pos=";a
+30 servo 12=a+5
+
+e) read accelerometer values
+10 print $TICK;" X=";$X;" Y=";$Y;" Z=";$Z
+20 wait 500
+30 goto 10
+
+f) When fwd button pressed on IR do built in motion "walk forward"
+10 let A=$IR
+20 print "Received=";A
+30 if a=4 then 40 else 10
+40 xact 8
+50 goto 10
+
 */
 
 #include <avr/io.h>
@@ -73,13 +96,15 @@ d) compound PRINT
 
 // Standard Input/Output functions
 #include <stdio.h>
-
+#include <stdlib.h>
 #include <string.h>
 #include "Main.h"
 
 //#include <util/delay.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
+
+
 
 #include "global.h"
 #include "Macro.h"
@@ -89,6 +114,7 @@ d) compound PRINT
 #include "rprintf.h"
 #include "majormodes.h"
 #include "adc.h"
+#include "ir.h"
 #include "accelerometer.h"
 
 #include <util/delay.h>
@@ -100,6 +126,11 @@ d) compound PRINT
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
 extern void Perform_Action(BYTE action);
+extern char wckPosRead(char ServoID);
+extern WORD wckPosSend(char ServoID, char SpeedLevel, char Position);
+extern char wckActDown(char ServoID);
+extern WORD	 gTicks;
+
 
 const  prog_char *error_msgs[] = {
 	"",
@@ -114,14 +145,14 @@ enum {
 	LET=0, FOR, IF, THEN, 
 	ELSE, GOTO, PRINT, GET, 
 	PUT, END, SCENE, XACT, 
-	WAIT, NEXT
+	WAIT, NEXT, SERVO
 	};
 	
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
 	"ELSE","GOTO","PRINT","GET",
 	"PUT", "END", "SCENE", "XACT",
-	"WAIT", "NEXT"
+	"WAIT", "NEXT", "SERVO"
 };
 							
 struct basic_line {
@@ -208,14 +239,9 @@ int getToken(char *str, char *tok)
 int token_match(char *list[], char **p_line, int n)
 {
 	int t;	
-	char c;
-	char *sp = *p_line;
-	
 	char buff[MAX_TOKEN];
 	
 	t=getToken(*p_line, buff);
-	
-	//rprintf("dubug2: ["); rprintfStr(buff); rprintf("] %d \r\n", t); 
 	
 	*p_line += t;
 
@@ -224,9 +250,6 @@ int token_match(char *list[], char **p_line, int n)
 		if (!strcmp(buff, list[t]))
 			break;
 	}
-	
-	//rprintf("dubug: m=%d \r\n", t); 
-
 	return (t==n)? -1 : t; // no_match : match
 }
 
@@ -370,7 +393,19 @@ void basic_load()
 			else
 				newline.text=cp;
 			break;
-
+		case SERVO:
+			// read servo ID		
+			if ((newline.var = getNum(&cp))<0)
+			{
+				errno=3;
+			}
+			// '='
+			if (getNext(&cp) != '=')
+			{
+				errno=1;
+			}			
+			newline.text=cp;
+			break;
 		case PRINT:
 			newline.text=cp;
 			break;
@@ -465,10 +500,11 @@ RUNTIME routines
 
 int variable[26]; // only A-Z at moment
 
-char *specials[] = { "PF1", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD" };
+char *specials[] = { "PF1", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK" };
 
 int get_special(char *str, int *res)
 {
+	char *p=str;
 	int t=token_match(specials, &str, sizeof(specials));
 	int v;
 	switch(t) {
@@ -502,6 +538,23 @@ int get_special(char *str, int *res)
 	case 8: // KBD 
 		while ((v= uartGetByte())<0) ; // wait for input
 		break;	
+	case 9: // RND
+		v=rand();
+		break;	
+	case 10: // SERVO:nn
+		// get position of servo id=nn
+		v=0;
+		if (*str==':') {
+			str++;
+			v=getNum(&str);
+			v = wckPosRead(v); 			// get pos of servo id=v
+			*res=v;
+			return (str-p);
+		}
+		break;	
+	case 11: //TICK
+		v=gTicks;
+		break;
 	default:
 		return -1;
 	}
@@ -516,13 +569,15 @@ int math(int n1, int n2, char op)
 {
 	switch (op) {
 	case '+': 
-		n1=n2+n1; break;
+		n1=n1+n2; break;
 	case '-':
-		n1=n2-n1; break;
+		n1=n1-n2; break;
 	case '*':
 		n1=n2*n1; break;
 	case '/':
-		n1=n2/n1; break;
+		n1=n1/n2; break;
+	case '%':
+		n1=n1%n2; break;
 	case '>':
 		n1=(n1>n2)?1:0; break;		
 	case '<':
@@ -544,6 +599,10 @@ int str_expr(char *str)
 	}
 	return str-p;
 }
+
+/*
+
+*/
 
 unsigned char eval_expr(char **str, int *res)
 {
@@ -590,6 +649,7 @@ unsigned char eval_expr(char **str, int *res)
 		case '>' :
 		case '<' :
 		case '=' :
+		case '%' :
 		case ':' :
 			ops[op++]=c;
 			stack[sp++]=n1;
@@ -803,6 +863,25 @@ void basic_run(int dbf)
 			//handle error
 			//rprintf ("assign %c= %d\r\n", line.var, n); // DEBUG
 			break;
+		case SERVO:
+			n=0;
+			p=line.text;
+			if (*p=='@') // set passive mode
+			{
+				// set pass servo id=line.var
+				wckActDown(line.var);
+			}
+			else
+			{
+				eval_expr(&p, &n);
+				if (n>00 && n<=254)
+				{
+					// set pos servo id=line.var, n
+					// char SpeedLevel
+					wckPosSend(line.var, 2, n);
+				}
+			}
+			break;
 		case GOTO: 
 			if ((ptr = gotoln(line.value))<0)
 				return;			
@@ -941,6 +1020,9 @@ void basic_list()
 		
 		if (line.token==LET || line.token==GET || line.token==PUT || line.token==FOR)
 			rprintf ("%c = ", line.var+'A');
+
+		if (line.token==SERVO)
+			rprintf ("%d = ", line.var);
 
 		if (line.token==NEXT) 
 			rprintf ("%c", line.var+'A');
