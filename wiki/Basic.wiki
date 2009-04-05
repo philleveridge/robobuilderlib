@@ -97,18 +97,18 @@ d) compound PRINT
 20 PRINT "The answer is ";A
 30 END
 
-d) read and set servo
+e) read and set servo
 This reads current position of servo 12 and then moves and extra 5
 10 let a=$servo:12
 20 print "Pos=";a
 30 servo 12=a+5
 
-e) read accelerometer values
+f) read accelerometer values
 10 print $TICK;" X=";$X;" Y=";$Y;" Z=";$Z
 20 wait 500
 30 goto 10
 
-f) When fwd button pressed on IR do built in motion (8) - "walk forward"
+g) When fwd button pressed on IR do built in motion (8) - "walk forward"
 10 let A=$IR
 20 print "Received=";A
 30 if a=4 then 40 else 10
