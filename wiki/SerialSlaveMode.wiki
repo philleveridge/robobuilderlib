@@ -2,12 +2,17 @@
 
 = Introduction =
 
-Add your content here.
-
+A bi-direction communications mode that allows a PC to directly control the motions of the robot either at a frame bt frame level using raw wCK commands or at a scene by scene level. The user can also query all sensors getting the result in either hex or decimal. This mode also will operate in either ascii mode or binary.
 
 = Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+{{{
+Serial Slave mode: inMotion=%d, F_PLAYING=%d
+m: load motion (binary)
+q: query robot status
+d: query servo positions in decimal form
+p: basic pose
+.: read one byte from wCK bus
+x: load data directly into wCK bus
+<ESC>: exit Serial Slave mode
+}}}
