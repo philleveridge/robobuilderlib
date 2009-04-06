@@ -23,6 +23,7 @@
 #include <util/delay.h>
 
 extern int getHex(int d);
+extern int getDec(void);
 
 // Buffer for handling Motion commands
 #define kMaxMotionBufSize 466  // enough for 8 scenes
@@ -189,6 +190,25 @@ void handle_direct_ctl(BOOL showResponse)
 }
 
 //------------------------------------------------------------------------------
+void handle_goto_position(void)
+{
+	// three binary parameters, one byte each:
+	// Servo ID, torque (max. 0, min. 4), position (0-255)
+	// Note: send 0xFF for torque to set the servo to passive mode
+	
+	u08 servoID, torque, position;
+	while (!uartReceiveByte(&servoID)) ;
+	while (!uartReceiveByte(&torque)) ;
+	while (!uartReceiveByte(&position)) ;
+	
+	if (torque <= 4) {
+		wckPosSend(servoID, torque, position);
+	} else {
+		wckSetPassive(servoID);
+	}
+}
+
+//------------------------------------------------------------------------------
 // Do_Serial
 //
 //	Handle one command (if there is any) in serial slave mode.
@@ -208,6 +228,7 @@ void Do_Serial(void)
 		rprintf("  m: load motion (binary)\r\n");
 		rprintf("  q: query robot status\r\n");
 		rprintf("  d: query servo positions in decimal form\r\n");
+		rprintf("  g: Goto (set servo position and torque)\r\n");
 		rprintf("  p: basic pose\r\n");
 		rprintf("  .: read one byte from wCK bus\r\n");
 		rprintf("  x: load data directly into wCK bus\r\n");
@@ -218,6 +239,10 @@ void Do_Serial(void)
 		handle_load_motion();
 		break;
 
+	case 'g':
+		handle_goto_position();
+		break;
+		
 	case 'q':
 	case 'Q':
 		// Query mode

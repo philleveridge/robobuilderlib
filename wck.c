@@ -76,10 +76,10 @@ void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
 /* Input : ServoID, Torque (0(Max) to 4 (Min)), Position */
 /* Output : Load * 256 + Position */
 /*************************************************************************************************/
-WORD wckPosSend(char ServoID, char SpeedLevel, char Position)
+WORD wckPosSend(char ServoID, char Torque, char Position)
 {
 	WORD Load, curPosition;
-	wckSendOperCommand((SpeedLevel<<5)|ServoID, Position);
+	wckSendOperCommand((Torque<<5)|ServoID, Position);
 	Load = wckGetByte(TIME_OUT1);
 	curPosition = wckGetByte(TIME_OUT1);
 	return (Load << 8) | curPosition;
@@ -120,7 +120,7 @@ WORD wckPosAndLoadRead(char ServoID)
 /* Input : ServoID */
 /* Output : Position */
 /******************************************************************************/
-char wckActDown(char ServoID)
+char wckSetPassive(char ServoID)
 {
 	char Position;
 	wckSendOperCommand(0xc0|ServoID, 0x10);
@@ -128,6 +128,7 @@ char wckActDown(char ServoID)
 	Position = wckGetByte(TIME_OUT1);
 	return Position;
 }
+
 /*************************************************************************/
 /* Function that sends Break wCK Command to wCK module */
 /* Input : None */
