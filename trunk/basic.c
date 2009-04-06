@@ -26,11 +26,15 @@ SYNTAX:
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
 [LINE No] NEXT
 [LINE No] XACT EXPR
---------------------------TBD ---------------------------
-[LINE No] PUT VAR '=' $PORTA|B|C:0-7
-[LINE No] SCENE LIST
 [Line No] GOSUB [Line No]
 [Line No] RETURN
+[LINE No] SCENE LIST
+[LINE No] MOVE LIST
+
+--------------------------TBD ---------------------------
+[LINE No] PUT VAR '=' $PORTA|B|C:0-7
+
+
 
 Special Commands
 XACT       Call any Experimental action using literal code i.e. XACT 0, would do basic pose, XACT 17 a wave
@@ -38,7 +42,8 @@ PUT 	   enable access to PORTS/SPECIAL REGISTER
 
 SERVO    ID=POS  set servo id to positon POS / @
 LET A=$SERVO:id  let A get position of servo id 
-SCENE            sends a Scene - 16 Servo Positions, Plus time, no frames
+SCENE            set up a Scene - 16 Servo Positions
+MOVE             sends a loaded Scene  (time ms, no frames)
 
 
 Special register access ($)
@@ -72,23 +77,44 @@ d) compound PRINT
 20 PRINT "The answer is ";A
 30 END
 
-d) read and set servo
+e) read and set servo
 This reads current position of servo 12 and then moves and extra 5
 10 let a=$servo:12
 20 print "Pos=";a
 30 servo 12=a+5
 
-e) read accelerometer values
+f) read accelerometer values
 10 print $TICK;" X=";$X;" Y=";$Y;" Z=";$Z
 20 wait 500
 30 goto 10
 
-f) When fwd button pressed on IR do built in motion (8) - "walk forward"
+g) When fwd (4) button pressed on IR do built in motion (8) - "walk forward"
 10 let A=$IR
 20 print "Received=";A
 30 if a=4 then 40 else 10
 40 xact 8
 50 goto 10
+
+h) gosub/return - output:  Hello Here back
+10 print "Hello";
+20 gosub 50
+30 print " back";
+40 end
+50 print " Here";
+60 return
+
+i) TBD (Move/Scene)
+scene 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205
+move  10,500
+scene 125,179,199, 88,108,126, 72, 49,163,141,187, 58, 46,199,205,205
+move  40,1000
+scene 125,179,199, 88,108,126, 72, 49,163,141,186,103, 46,199,205,205
+move  10,500
+scene 125,179,199, 88,108,126, 72, 49,163,141,187, 58, 46,199,205,205
+move  10,500
+scene 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205
+move  40,1000
+
 
 */
 
@@ -106,8 +132,6 @@ f) When fwd button pressed on IR do built in motion (8) - "walk forward"
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
-
-
 #include "global.h"
 #include "Macro.h"
 #include "Comm.h"
@@ -121,9 +145,11 @@ f) When fwd button pressed on IR do built in motion (8) - "walk forward"
 
 #include <util/delay.h>
 
+#define DPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
+
 #define EEPROM_MEM_SZ 	256
 #define MAX_LINE  		80 
-#define MAX_TOKEN 		6
+#define MAX_TOKEN 		8
 
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
@@ -131,7 +157,9 @@ extern void Perform_Action(BYTE action);
 extern char wckPosRead(char ServoID);
 extern WORD wckPosSend(char ServoID, char SpeedLevel, char Position);
 extern char wckActDown(char ServoID);
-
+extern void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index);
+extern unsigned char *motionBuf;
+extern void print_motionBuf(int bytes);
 
 const  prog_char *error_msgs[] = {
 	"",
@@ -146,14 +174,16 @@ enum {
 	LET=0, FOR, IF, THEN, 
 	ELSE, GOTO, PRINT, GET, 
 	PUT, END, SCENE, XACT, 
-	WAIT, NEXT, SERVO
+	WAIT, NEXT, SERVO, MOVE,
+	GOSUB, RETURN
 	};
 	
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
 	"ELSE","GOTO","PRINT","GET",
 	"PUT", "END", "SCENE", "XACT",
-	"WAIT", "NEXT", "SERVO"
+	"WAIT", "NEXT", "SERVO", "MOVE",
+	"GOSUB", "RETURN"
 };
 							
 struct basic_line {
@@ -225,7 +255,7 @@ int getToken(char *str, char *tok)
 
 	int n=0;
 	char c;
-	while (c=*str)
+	while ((c=*str))
 	{
 		str++;
 		if (!(c>= 'A' && c <='Z') )  //must be alpha
@@ -282,7 +312,7 @@ int readLine(char *line)
 			
 		if (ch >= 'a' && ch <= 'z' && qf) ch = ch-'a'+'A';  // Uppercase only
 		
-		if (ch==8) //Bsapce
+		if (ch==8 || ch==127) //Bsapce ?
 		{
 			if (line>start) line--;
 		}
@@ -298,6 +328,8 @@ int readLine(char *line)
 //   Convert into tokens
 //   Store in Eprom
 // Loop
+
+//#define PAUSE  {rprintfStr("P> ");while (uartGetByte()<0);}
 		
 void basic_load()
 {
@@ -306,7 +338,7 @@ void basic_load()
 	char line[MAX_LINE];
 	int n=0;
 	int lc=0;
-	//int i=0;
+//	int i=0;
 	char *cp;
 	
 	errno=0;
@@ -319,21 +351,26 @@ void basic_load()
 	while (1)
 	{
 		// for each line entered
-		cp=line;	
 
-		if (errno != 0) {
-			rprintf ("Error - '" );
-			rprintfStr (error_msgs[errno]);
-			rprintf ("'\r\n" );
+		if (errno > 0 && errno<6) {
+			rprintfStr ("Error - '" );
+			rprintfProgStr (error_msgs[errno]);
+			rprintfStr ("'\r\n" );
 			rprintf ("Pos=%d\r\n", (cp-line));
 			errno=0;
 		}
-			
-		n=readLine(line);
+		else if (errno!=0)
+		{
+			rprintf ("Panic %d\r\n", errno);
+			return;
+		}
 
+		cp=&line[0];				
+		n=readLine(cp);
+		
 		if ( line[0] =='.' && n==1)
 		{
-			rprintf("\r\n%d lines entered\r\n", lc);
+			rprintf("\r\n%d lines entered, [%d/%d] Bytes\r\n", lc, psize, EEPROM_MEM_SZ);
 			return;
 		}
 		
@@ -355,7 +392,9 @@ void basic_load()
 			continue;
 		}
 		cp++;
-		if ( (newline.token=token_match(tokens, &cp, sizeof(tokens)))<0)
+		//int token_match(char *list[], char **p_line, int n)
+		//if ( (newline.token=token_match(tokens, &cp, sizeof(tokens)))<0)
+		if ( (newline.token=token_match((char **)tokens, &cp, sizeof(tokens)))<0)
 		{
 			errno=2;
 			continue;
@@ -408,6 +447,8 @@ void basic_load()
 			newline.text=cp;
 			break;
 		case PRINT:
+		case MOVE:
+		case SCENE:
 			newline.text=cp;
 			break;
 		case IF:
@@ -434,11 +475,14 @@ void basic_load()
 		case WAIT: 
 		case GOTO: 
 		case XACT:
+		case GOSUB:
 			// read line
 			newline.value = getNum(&cp);			
 			//rprintf ("val=%d\r\n", newline.value); 		//DEBUG
 			break;
 		case END:
+		case RETURN:
+			newline.text=0;
 			break;
 		case NEXT:
 			if ((newline.var = getVar(&cp))<0)
@@ -469,13 +513,13 @@ void basic_load()
 				eeprom_write_byte(BASIC_PROG_SPACE, data);
 				psize++;
 			}
-			eeprom_write_word(BASIC_PROG_SPACE+psize, newline.lineno);	
+			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+psize), newline.lineno);	
 			psize+=2;
 			eeprom_write_byte(BASIC_PROG_SPACE+psize, newline.token);	
 			psize++;		
 			eeprom_write_byte(BASIC_PROG_SPACE+psize, newline.var);	
 			psize++;	
-			eeprom_write_word(BASIC_PROG_SPACE+psize, newline.value);	
+			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+psize), newline.value);	
 			psize+=2;
 			
 			uint8_t l=0;
@@ -658,9 +702,9 @@ unsigned char eval_expr(char **str, int *res)
 		case '=' :
 		case '%' :
 		case ':' :
-			if (c=='>' && *str=='=') {c='g'; (*str)++;}
-			if (c=='<' && *str=='=') {c='l'; (*str)++;}
-			if (c=='<' && *str=='>') {c='n'; (*str)++;}
+			if (c=='>' && **str=='=') {c='g'; (*str)++;}
+			if (c=='<' && **str=='=') {c='l'; (*str)++;}
+			if (c=='<' && **str=='>') {c='n'; (*str)++;}
 			ops[op++]=c;
 			stack[sp++]=n1;
 			n1=0;
@@ -722,6 +766,9 @@ int gotoln(int gl)
 
 	while (lno != 0)
 	{
+		//rprintf("debug: %d,%d ??\r\n", lno, nl);
+		//DPAUSE
+
 		lno=eeprom_read_byte(BASIC_PROG_SPACE+nl);					
 		if (lno == 0xCC)
 		{
@@ -732,7 +779,7 @@ int gotoln(int gl)
 		
 		if (lno == gl)
 			break;				
-		uint8_t b=eeprom_read_word(BASIC_PROG_SPACE+nl+6);	
+		uint8_t b=eeprom_read_byte(BASIC_PROG_SPACE+nl+6);	
 		nl = nl + 6+ b +1;
 	}
 	if (lno!=0) 
@@ -776,28 +823,38 @@ void basic_run(int dbf)
 	//point top at EEPROM
 	
 	int ptr=1;
+	int tm;
+	int fm;
 	uint8_t tmp=0;
 	char *p;
 	
 	struct basic_line line;
 	
 	int forptr[3]; int fp=0; // Upto 3 nested for/next
+	int gosub[3]; int gp=0;  // 3 nested gosubs
 	
 	char buf[64];
+	char scene[16];
+	
 	line.text=buf;
 	int n;
 	while (tmp != 0xCC && ptr < EEPROM_MEM_SZ )
 	{
-		line.lineno=eeprom_read_word(BASIC_PROG_SPACE+ptr);	
+		if (errno !=0)
+		{
+			rprintf("Runtime error %d\r\n", errno);
+			return;
+		}
+		line.lineno=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
 		ptr+=2;
 		line.token=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
 		ptr++;		
 		line.var=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
 		ptr++;	
-		line.value=eeprom_read_word(BASIC_PROG_SPACE+ptr);	
+		line.value=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
 		ptr+=2;
 		
-		uint8_t l=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
+		uint8_t l=eeprom_read_byte((uint8_t *)(BASIC_PROG_SPACE+ptr));	
 
 		eeprom_read_block(line.text, BASIC_PROG_SPACE+ptr+1, l);	
 		line.text[l]='\0';
@@ -838,7 +895,7 @@ void basic_run(int dbf)
 				p=line.text;
 				if (eval_expr(&p, &n)!=NUMBER)
 				{
-					rprintf ("Next synatx error\r\n"); 
+					errno=1;
 					break; //need to handle error	
 				}			
 				if (variable[line.var] <= n) { 
@@ -856,7 +913,7 @@ void basic_run(int dbf)
 		case GET: 
 			n=0;
 			if (get_special(line.text, &n)<0)
-				rprintf ("no recognised special\r\n"); 
+				errno=2;
 			variable[line.var]=n;	
 			break;
 		case PUT: 
@@ -867,6 +924,8 @@ void basic_run(int dbf)
 			p=line.text;
 			if (eval_expr(&p, &n)==NUMBER)
 				variable[line.var] = n;
+			else
+				errno=1;
 			//else
 			//handle error
 			//rprintf ("assign %c= %d\r\n", line.var, n); // DEBUG
@@ -892,7 +951,9 @@ void basic_run(int dbf)
 			break;
 		case GOTO: 
 			if ((ptr = gotoln(line.value))<0)
-				return;			
+			{
+				errno=3; return;	
+			}		
 			tmp=0;
 			break;	
 		case PRINT: 
@@ -914,7 +975,7 @@ void basic_run(int dbf)
 				if (*p=='\0') break; // done
 				
 				if (*p!=';' && *p!=',') {
-					rprintf ("synatx prob= [%d]\r\n", *p); // DEBUG
+					errno=4; //rprintf ("synatx prob= [%d]\r\n", *p); // DEBUG
 					break;
 				}
 				if (*p==';' && *(p+1)=='\0') // last one
@@ -932,13 +993,71 @@ void basic_run(int dbf)
 			if (eval_expr(&p, &n)==NUMBER)
 			{
 				if (n != 0)
-				{
-					if ((ptr = gotoln(n))<0)
-						return;			
+				{	
+					if ((ptr = gotoln(n))<0) {errno=5; }			
 					tmp=0;		
 				}
 			}
 			break;		
+		case MOVE: 
+			// No args - send servo positions syncronously
+			// with args (No Frames / Time in Ms) - use MotionBuffer
+			fm=0; tm=0;
+			p=line.text;
+			if (p!=0) {
+				eval_expr(&p, &fm);
+				if (*p++ != ',') { errno=5; break;}
+				eval_expr(&p, &tm);
+				rprintf ("Move %d, %d\r\n", fm, tm); // DEBUG
+				if (!dbf)
+				{
+				//now do synch move
+				//C=16; PGAIN=20; DGAIN=30; IGAIN=0
+				//motionBuf private !!
+				
+				#define C 16
+				#define PGAIN 20
+				#define DGAIN 30
+				#define IGAIN 0
+				#define S 2+3*C
+				motionBuf[0]= 1; //number of scenes
+				motionBuf[1]= C; //number of servos
+				for (n=0;n<C;n++) { motionBuf[2+n]= PGAIN; } //PGAIN
+				for (n=0;n<C;n++) { motionBuf[2+C+n]=DGAIN; } //DGAIN
+				for (n=0;n<C;n++) { motionBuf[2+2*C+n]=IGAIN; } //IGAIN				
+				
+				motionBuf[S]  =(WORD)tm;
+				motionBuf[S+2]=(WORD)fm;
+				
+				for (n=0;n<C;n++) { motionBuf[S+4+n]=scene[n]; }
+				for (n=0;n<C;n++) { motionBuf[S+4+n+C]=3; } //torquw
+				for (n=0;n<C;n++) { motionBuf[S+4+n+C*2]=0; } //ext data
+		
+				print_motionBuf(66);//debug
+				//LoadMotionFromBuffer(motionBuf)
+				//PlaySceneFromBuffer(motionBuf, 1)
+				//wait for scene to play out
+				//continue_motion();
+				}
+			}
+			else
+			{
+				if(!dbf) wckSyncPosSend(15, 0, scene, 0);
+			}
+			//
+			break;
+		case SCENE: 
+			// read in 16 servo position values and store
+			p=line.text;
+			for (int i=0;i<16;i++)
+			{
+				n=0;
+				eval_expr(&p, &n);
+				if (*p++ != ',') { errno=6;break; }
+				scene[i]=n;
+			}
+			//
+			break;
 		case XACT: 
 			Perform_Action (line.value);
 			break;
@@ -948,8 +1067,24 @@ void basic_run(int dbf)
 		case END: 
 			rprintfStr ("End of program\r\n"); 
 			return;
+		case GOSUB: 
+			//rprintfStr ("gosub\r\n");  //debug
+			gosub[gp++]=ptr;
+			if ((ptr = gotoln(line.value))<0)
+				return;	// this needs an error message		
+			tmp=0;		
+			break;
+		case RETURN: 
+			//rprintfStr ("return\r\n"); //debug
+			if (gp>0) {
+				ptr=gosub[--gp];
+				tmp=0;
+			} else {
+				errno=7;
+			}
+			break;
 		default:
-			rprintf ("Invalid command %x\r\n", line.token); // DEBUG
+			errno=8; // DEBUG
 			tmp=0xCC;
 		}		
 	}
@@ -1002,13 +1137,13 @@ void basic_list()
 	line.text=buf;
 	while (tmp != 0xCC && ptr < EEPROM_MEM_SZ )
 	{
-		line.lineno=eeprom_read_word(BASIC_PROG_SPACE+ptr);	
+		line.lineno=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
 		ptr+=2;
 		line.token=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
 		ptr++;		
 		line.var=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
 		ptr++;	
-		line.value=eeprom_read_word(BASIC_PROG_SPACE+ptr);	
+		line.value=eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
 		ptr+=2;
 		
 		uint8_t l=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
@@ -1035,14 +1170,14 @@ void basic_list()
 		if (line.token==NEXT) 
 			rprintf ("%c", line.var+'A');
 		else
-		if (line.token==GOTO) 
+		if (line.token==GOTO || line.token==WAIT ) 
 			rprintf ("%d", line.value);
 		else
 			rprintfStr (line.text);
 		rprintf ("\r\n");
 	}
 	
-	//dump(); //debug
+	dump(); //debug
 
 }
 

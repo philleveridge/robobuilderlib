@@ -27,7 +27,11 @@ extern int getDec(void);
 
 // Buffer for handling Motion commands
 #define kMaxMotionBufSize 466  // enough for 8 scenes
-static unsigned char motionBuf[kMaxMotionBufSize];
+
+//modified (removed static) to allow access from basic.c - 
+unsigned char motionBuf[kMaxMotionBufSize];
+
+
 static volatile int nextRxIndex;	// index of next byte to receive
 static WORD scenesReceived;		// number of scenes received
 static BOOL inMotion = FALSE;	// TRUE when we're playing a motion

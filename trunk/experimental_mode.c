@@ -126,10 +126,10 @@ void check_behaviour(BYTE *action)
 
 	if (params[PSDL]!=0 && adc_psd()>params[PSDL])  // if PSD sensor goes off
 	{
-		ptime(); rprintf("PSD event %x\r\n", psd_value);	
 		if (response) 
 		{
 			//depending on mood :)
+			ptime(); rprintf("PSD event %x\r\n", psd_value);	
 			int mood = rand()%4;
 			switch(mood)
 			{
@@ -153,9 +153,10 @@ void check_behaviour(BYTE *action)
 		
 	if (adc_mic()>params[MICL])  //if mic semsor levl reached
 	{
-		ptime(); rprintf("MIC event %x\r\n", mic_vol);	
 		if (response) 
 		{
+			ptime(); rprintf("MIC event %x\r\n", mic_vol);	
+
 			//depending on mood :)
 			int mood = rand()%2;
 			switch(mood)

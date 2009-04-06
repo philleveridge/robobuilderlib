@@ -1,0 +1,4 @@
+10 print $TICK;" X=";$X;" Y=";$Y;" Z=";$Z
+20 wait 500
+30 goto 10
+
