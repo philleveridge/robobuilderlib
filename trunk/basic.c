@@ -3,7 +3,7 @@
 The ability to create simple actions in an elemntry basic language
 
 basic_load		read a program from the serial port and store in EEPROM
-basic_run		run the program in eeprom
+basic_run		run the program in eeprom (option debuf flag for testing)
 basic_clear		clear eeprom program(s)
 basic_list 		show contents of eeprom
 
@@ -28,6 +28,9 @@ SYNTAX:
 [LINE No] XACT EXPR
 [Line No] GOSUB [Line No]
 [Line No] RETURN
+
+--------------------- UNDER TEST -----------------------
+
 [LINE No] SCENE LIST
 [LINE No] MOVE LIST
 
@@ -49,71 +52,7 @@ MOVE             sends a loaded Scene  (time ms, no frames)
 Special register access ($)
 LET A=$IR  //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
 
-Example Programs
-================
-
-a) simple loop
-10 LET A=1
-20 PRINT A
-30 LET A=A+1
-35 WAIT 500
-40 IF A<10 THEN 20 
-50 END
-
-b) read from console and IR port
-10 LET A=$KBD
-20 PRINT A
-30 LET A=$IR
-40 PRINT A
-50 GOTO 10
-
-c) Loops
-10 FOR A=1 to 5
-20 PRINT A
-30 NEXT A
-
-d) compound PRINT
-10 LET A=(5+3)*(2+1)
-20 PRINT "The answer is ";A
-30 END
-
-e) read and set servo
-This reads current position of servo 12 and then moves and extra 5
-10 let a=$servo:12
-20 print "Pos=";a
-30 servo 12=a+5
-
-f) read accelerometer values
-10 print $TICK;" X=";$X;" Y=";$Y;" Z=";$Z
-20 wait 500
-30 goto 10
-
-g) When fwd (4) button pressed on IR do built in motion (8) - "walk forward"
-10 let A=$IR
-20 print "Received=";A
-30 if a=4 then 40 else 10
-40 xact 8
-50 goto 10
-
-h) gosub/return - output:  Hello Here back
-10 print "Hello";
-20 gosub 50
-30 print " back";
-40 end
-50 print " Here";
-60 return
-
-i) TBD (Move/Scene)
-scene 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205
-move  10,500
-scene 125,179,199, 88,108,126, 72, 49,163,141,187, 58, 46,199,205,205
-move  40,1000
-scene 125,179,199, 88,108,126, 72, 49,163,141,186,103, 46,199,205,205
-move  10,500
-scene 125,179,199, 88,108,126, 72, 49,163,141,187, 58, 46,199,205,205
-move  10,500
-scene 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205
-move  40,1000
+Example Programs are now available from examples folder
 
 
 */
@@ -148,15 +87,32 @@ move  40,1000
 
 #define DPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
 
-#define EEPROM_MEM_SZ 	256
+#define EEPROM_MEM_SZ 	1024
 #define MAX_LINE  		80 
 #define MAX_TOKEN 		8
+#define MAX_FOR_NEST	3
+#define MAX_GOSUB_NEST	3
+#define MAX_FOR_EXPR	20 
+#define MAX_DEPTH 		5
+
+/***********************************/
+
+#define C 		16
+#define PGAIN 	(unsigned char)20
+#define DGAIN 	(unsigned char)30
+#define IGAIN 	(unsigned char)0
+#define S 		(2+3*C)
+
+/***********************************/
 
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
 extern void Perform_Action(BYTE action);
-extern unsigned char *motionBuf;
+
+extern unsigned char motionBuf[];
+
 extern void print_motionBuf(int bytes);
+extern void continue_motion();
 
 const  prog_char *error_msgs[] = {
 	"",
@@ -248,8 +204,6 @@ int getNum(char **p_line)
 
 int getToken(char *str, char *tok)
 {
-	//rprintf("dubug1: ["); rprintfStr(str); rprintf("] \r\n"); 
-
 	int n=0;
 	char c;
 	while ((c=*str))
@@ -305,6 +259,12 @@ int readLine(char *line)
 			break;
 		}
 		
+		if (start==line && ch=='?' )
+		{
+			rprintf("Program entry mode (. to exit)\r\n");	
+			break;
+		}
+		
 		if (ch=='"') {qf=!qf;}
 			
 		if (ch >= 'a' && ch <= 'z' && qf) ch = ch-'a'+'A';  // Uppercase only
@@ -326,8 +286,6 @@ int readLine(char *line)
 //   Store in Eprom
 // Loop
 
-//#define PAUSE  {rprintfStr("P> ");while (uartGetByte()<0);}
-		
 void basic_load()
 {
 	rprintfStr("Enter Program '.' to Finish\r\n");
@@ -342,7 +300,7 @@ void basic_load()
 	
 	uint16_t psize=0;
 	
-	char forbuf[3][20];
+	char forbuf[MAX_FOR_NEST][MAX_FOR_EXPR];
 	int fb=0;
 	
 	while (1)
@@ -636,8 +594,6 @@ int math(int n1, int n2, char op)
 	return n1;
 }
 
-#define MAX_DEPTH 5
-
 int str_expr(char *str)
 {
 	char *p=str;
@@ -827,8 +783,8 @@ void basic_run(int dbf)
 	
 	struct basic_line line;
 	
-	int forptr[3]; int fp=0; // Upto 3 nested for/next
-	int gosub[3]; int gp=0;  // 3 nested gosubs
+	int forptr[MAX_FOR_NEST]; int fp=0; // Upto 3 nested for/next
+	int gosub[MAX_GOSUB_NEST]; int gp=0;  // 3 nested gosubs
 	
 	char buf[64];
 	char scene[16];
@@ -1001,45 +957,45 @@ void basic_run(int dbf)
 			// with args (No Frames / Time in Ms) - use MotionBuffer
 			fm=0; tm=0;
 			p=line.text;
-			if (p!=0) {
+			if (p!=0)
+			{
 				eval_expr(&p, &fm);
 				if (*p++ != ',') { errno=5; break;}
 				eval_expr(&p, &tm);
-				rprintf ("Move %d, %d\r\n", fm, tm); // DEBUG
-				if (!dbf)
-				{
-				//now do synch move
-				//C=16; PGAIN=20; DGAIN=30; IGAIN=0
-				//motionBuf private !!
+				//rprintf ("Move %d, %d\r\n", fm, tm); // DEBUG
 				
-				#define C 16
-				#define PGAIN 20
-				#define DGAIN 30
-				#define IGAIN 0
-				#define S 2+3*C
-				motionBuf[0]= 1; //number of scenes
-				motionBuf[1]= C; //number of servos
+				motionBuf[0]= (unsigned char)1; //number of scenes
+				motionBuf[1]= (unsigned char)C; //number of servos
+				
 				for (n=0;n<C;n++) { motionBuf[2+n]= PGAIN; } //PGAIN
+
 				for (n=0;n<C;n++) { motionBuf[2+C+n]=DGAIN; } //DGAIN
-				for (n=0;n<C;n++) { motionBuf[2+2*C+n]=IGAIN; } //IGAIN				
+
+				for (n=0;n<C;n++) { motionBuf[2+2*C+n]=IGAIN; } //IGAIN		
 				
-				motionBuf[S]  =(WORD)tm;
-				motionBuf[S+2]=(WORD)fm;
+				motionBuf[S]   =(WORD)tm;
+				motionBuf[S+1] =(WORD)(tm)>>8;
+				motionBuf[S+2] =(WORD)fm;
+				motionBuf[S+3] =(WORD)(fm)>>8;
 				
 				for (n=0;n<C;n++) { motionBuf[S+4+n]=scene[n]; }
 				for (n=0;n<C;n++) { motionBuf[S+4+n+C]=3; } //torquw
 				for (n=0;n<C;n++) { motionBuf[S+4+n+C*2]=0; } //ext data
-		
-				print_motionBuf(66);//debug
-				//LoadMotionFromBuffer(motionBuf)
-				//PlaySceneFromBuffer(motionBuf, 1)
-				//wait for scene to play out
-				//continue_motion();
+				
+				LoadMotionFromBuffer(motionBuf);
+				
+				//rprintf ("Play? "); DPAUSE
+				PlaySceneFromBuffer(motionBuf, 0);
+				
+				while(F_PLAYING) 				//wait for scene to play out
+				{
+					continue_motion();
+					_delay_ms(1);
 				}
 			}
 			else
 			{
-				if(!dbf) wckSyncPosSend(15, 0, scene, 0);
+				wckSyncPosSend(15, 0, scene, 0);
 			}
 			//
 			break;
@@ -1050,7 +1006,7 @@ void basic_run(int dbf)
 			{
 				n=0;
 				eval_expr(&p, &n);
-				if (*p++ != ',') { errno=6;break; }
+				if (i!=15 && *p++ != ',') { errno=6;break; }
 				scene[i]=n;
 			}
 			//
