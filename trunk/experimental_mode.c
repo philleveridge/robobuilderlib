@@ -43,6 +43,11 @@ extern const prog_char version[];
 void Perform_Action(BYTE action);
 BYTE Read_Events(void);
 
+#define EPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
+extern unsigned char motionBuf[];
+extern void print_motionBuf(int bytes);
+extern void continue_motion();	
+
 
 void ptime()
 {
@@ -271,7 +276,7 @@ void check_serial(BYTE *action)
 			rprintf(" Special event [%x]\r\n", *action);	
 		}
 
-		if (ch==0x6D) 							// 'm' pressed
+		if (ch==0x4D) 							// 'M' pressed
 		{
 			//modify param command (for tuning only)
 			int op;
@@ -293,6 +298,41 @@ void check_serial(BYTE *action)
 				rprintf(" P[%d]=%x\r\n", pn, params[pn]);
 			}
 		}
+		
+	
+		if (ch==0x6D) 							// 'm' pressed
+		{
+			int nb=0;
+			int b0;
+			int b1;
+			
+			while ((b0=uartGetByte())<0);
+			while ((b1=uartGetByte())<0);
+			int bytes = ((int)b1 << 8) | b0;
+
+			rprintf("^");
+	
+			while (nb<bytes)
+			{				
+				while ((b0=uartGetByte())<0);
+				motionBuf[nb++] = b0;
+			}
+			rprintf("Received %d bytes\r\n", nb);
+
+			print_motionBuf(nb);
+			LoadMotionFromBuffer(motionBuf);			
+			PlaySceneFromBuffer(motionBuf, 0);
+			
+			while(F_PLAYING) 				//wait for scene to play out
+			{
+				continue_motion();
+				_delay_ms(1);
+			}
+			
+			rprintf("Done\r\n", nb);
+
+		}
+		
 	}
 }
 
