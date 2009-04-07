@@ -5,10 +5,11 @@
 This is still in an early development stage !!!
 
 It can only be accessed via *experimental mode*, by typing the following:
-  * eC0 - program entry
-  * eC1 - program run 
+  * & - program entry
+  * ! - program run 
   * eC2 - program clear
-  * eC3 - program dump
+  * eC3 - program dump  
+  * eC4 - program run in debug mode
 
 Typing r in idle mode will run the stored program if it exists
 
@@ -41,11 +42,12 @@ SYNTAX:
 [LINE No] XACT EXPR
 [LINE No] WAIT number
 [Line No] SERVO ID=EXPR | '@'
---------------------------TBD ---------------------------
-[LINE No] PUT VAR '=' $PORTA|B|C:0-7
 [LINE No] SCENE LIST
 [Line No] GOSUB [Line No]
 [Line No] RETURN
+
+--------------------------TBD ---------------------------
+[LINE No] PUT VAR '=' $PORTA|B|C:0-7
 
 Special register access ($)
 $X, $Y, $Z   accelerometer
@@ -90,7 +92,9 @@ Built in motions:
 0x20:  basic Pose
 }}}
 
-= Examples code that has been tested =
+= Examples  =
+
+These are available from examples sub- folder
 
 {{{
 a) simple loop
