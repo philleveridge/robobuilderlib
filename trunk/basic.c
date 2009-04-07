@@ -142,6 +142,7 @@ move  40,1000
 #include "adc.h"
 #include "ir.h"
 #include "accelerometer.h"
+#include "wck.h"
 
 #include <util/delay.h>
 
@@ -154,10 +155,6 @@ move  40,1000
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
 extern void Perform_Action(BYTE action);
-extern char wckPosRead(char ServoID);
-extern WORD wckPosSend(char ServoID, char SpeedLevel, char Position);
-extern char wckActDown(char ServoID);
-extern void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index);
 extern unsigned char *motionBuf;
 extern void print_motionBuf(int bytes);
 
@@ -936,7 +933,7 @@ void basic_run(int dbf)
 			if (*p=='@') // set passive mode
 			{
 				// set pass servo id=line.var
-				wckActDown(line.var);
+				wckSetPassive(line.var);
 			}
 			else
 			{
