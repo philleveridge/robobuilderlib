@@ -110,7 +110,6 @@ uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised c
 extern void Perform_Action(BYTE action);
 
 extern unsigned char motionBuf[];
-
 extern void print_motionBuf(int bytes);
 extern void continue_motion();
 
