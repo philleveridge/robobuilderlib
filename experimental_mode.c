@@ -115,6 +115,8 @@ void check_IR(BYTE *action)
 		if (gIRData==0x1c) *action=0x30; // * + [] pressed   (Flash Lights)
 		if (gIRData==0x3F) *action=0x40; // # + 0 pressed    (Run ADC test)
 		if (gIRData==0x34) *action=0x50; // # + V pressed    (Run tilt test)
+
+		if (gIRData==0x2A) *action=0xC1; // * + 0 pressed    (Run program)
 		
 	}
 }
@@ -196,8 +198,15 @@ void check_serial(BYTE *action)
 		if (ch==0x70) *action=0x20;       //'p' pressed
 		if (ch==0x6c) *action=0x30;       //'l' pressed			
 		if (ch==0x69) *action=0x40;       //'i' pressed		
-
+		
+		
 		if (ch==0x74) *action=0x50;       //'query mode
+
+
+		if (ch=='!') *action=0xC1;       //'program run mode
+		if (ch=='&') *action=0xC0;       //'program entry mode
+		
+		
 		if (ch=='q' || ch == 'Q' ) 
 			*action=0x90;       
 		
@@ -568,6 +577,8 @@ void Perform_Action (BYTE Action)
 		"l  light flash test\r\n"
 		"e	[nn] set action event nn (two digits)\r\n"	
 		"?  Display current mode\r\n"
+		"!  Run current program in memory\r\n"
+		"&  Enter a new program\r\n"
 		"x	[nn][...] transmit to wCK bus [nn] bytes ans wait for 2 nyte response\r\n"
 		"X	as above but no reponse packets\r\n");	
 		break;	

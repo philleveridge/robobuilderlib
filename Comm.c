@@ -280,6 +280,8 @@ void GetMotionFromBuffer(unsigned char *motionBuf)
 	
 	Motion.NumOfScene = motionBuf[0];  // (See "Motion Buffer Layout" at top of file)
 	Motion.NumOfwCK = motionBuf[1];
+	
+	//rprintf("GMBF: %d, %d\n", Motion.NumOfScene, Motion.NumOfwCK );
 
 	pGains = motionBuf + 2;
 	dGains = pGains + Motion.NumOfwCK;
@@ -402,8 +404,9 @@ void GetSceneFromBuffer(unsigned char *motionBuffer)
 		
 	Scene.NumOfFrame = *((WORD*)(sceneBuffer+2));	// get the number of frames in scene
 	gNumOfFrame = Scene.NumOfFrame;
+			
 	Scene.RTime = *((WORD*)(sceneBuffer+0));		// get the run time of scene[msec]
-
+	
 	// Get the starting position for each wCK -- this will be the previous
 	// scene destination, unless we're on scene 0, in which case we'll
 	// assume the starting positions have been set by LoadMotionFromBuffer.
@@ -420,9 +423,10 @@ void GetSceneFromBuffer(unsigned char *motionBuffer)
 		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos	= sceneBuffer[ 4 + i ];
 		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Torq	= sceneBuffer[ NumOfwCK + 4 + i ];
 		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].ExPortD	= sceneBuffer[ 2 * NumOfwCK + 4 + i ];
+
+	//rprintf("Servo %d: %d to %d\r\n", i, Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos,
+	//	Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos);
 	}
-	rprintf("Servo 0: %d to %d\r\n", Scene.wCK[pgm_read_byte(&(wCK_IDs[0]))].SPos,
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[0]))].DPos);
 	
 	// Serial port preparations (?).
 	UCSR0B &= 0x7F;   		// UART0 RxInterrupt disable
@@ -546,6 +550,7 @@ void LoadMotionFromBuffer(unsigned char *motionBuf)
 	for (int i = 0; i < Motion.NumOfwCK; i++) {
 		BYTE id = pgm_read_byte(&(wCK_IDs[i]));
 		Scene.wCK[id].SPos = wckPosRead(id);
+		
 		//rprintf("SPos %d = %d\r\n", id, Scene.wCK[id].SPos);
 	}
 	
