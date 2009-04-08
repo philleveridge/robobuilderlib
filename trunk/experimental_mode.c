@@ -627,13 +627,13 @@ void Perform_Action (BYTE Action)
 		
 		"x	[nn][...] transmit to wCK bus [nn] bytes ans wait for 2 nyte response\r\n"
 		"X	as above but no reponse packets\r\n"
-		"m  move - synchronous move - as serialslavee mode but waits"
+		"m  move - synchronous move - as serialslavee mode but waits\r\n"
 		
 		"&  Enter a new program\r\n"
 		"?  Display current mode\r\n"
 		"!  Run current program in memory\r\n"
 
-		"#  binary mode"
+		"#  binary mode\r\n"
 		);	
 		break;	
 	}

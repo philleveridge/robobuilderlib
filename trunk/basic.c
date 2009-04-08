@@ -28,22 +28,22 @@ SYNTAX:
 [LINE No] XACT EXPR
 [Line No] GOSUB [Line No]
 [Line No] RETURN
-
---------------------- UNDER TEST -----------------------
-
 [LINE No] SCENE LIST
 [LINE No] MOVE LIST
+--------------------- UNDER TEST -----------------------
 
---------------------------TBD ---------------------------
 [LINE No] PUT [Special] = [Expr]
 
+--------------------------TBD ---------------------------
+
+Nothing !
 
 
-Special Commands
-XACT       Call any Experimental action using literal code i.e. XACT 0, would do basic pose, XACT 17 a wave
-PUT 	   enable access to PORTS/SPECIAL REGISTER
-
-SERVO    ID=POS  set servo id to positon POS / @
+Rbas Cmd		 Description
+==============   ==============
+XACT       		 Call any Experimental action using literal code i.e. XACT 0, would do basic pose, XACT 17 a wave
+PUT PF1=1	   	 access to PORTS/SPECIAL REGISTER, This would set PF1_led1 on
+SERVO ID=POS     set servo id to positon POS / @
 LET A=$SERVO:id  let A get position of servo id 
 SCENE            set up a Scene - 16 Servo Positions
 MOVE             sends a loaded Scene  (time ms, no frames)
@@ -1138,8 +1138,14 @@ void basic_list()
 		rprintfStr (tokens[line.token]);
 		rprintf (" "); 
 		
-		if (line.token==LET || line.token==GET || line.token==PUT || line.token==FOR)
+		if (line.token==LET || line.token==GET || line.token==FOR)
 			rprintf ("%c = ", line.var+'A');
+			
+		if (line.token==PUT)
+		{
+			rprintfStr (specials[line.var]); 
+			rprintfStr (" = ");
+		}
 
 		if (line.token==SERVO)
 			rprintf ("%d = ", line.var);
