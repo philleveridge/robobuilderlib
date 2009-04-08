@@ -48,6 +48,9 @@ extern unsigned char motionBuf[];
 extern void print_motionBuf(int bytes);
 extern void continue_motion();	
 
+void experimental_binloop();
+
+#define MAX_INP_BUF 32
 
 void ptime()
 {
@@ -210,6 +213,7 @@ void check_serial(BYTE *action)
 
 		if (ch=='!') *action=0xC1;       //'program run mode
 		if (ch=='&') *action=0xC0;       //'program entry mode
+		if (ch=='#') *action=0xD8; 		// binary mode
 		
 		
 		if (ch=='q' || ch == 'Q' ) 
@@ -233,7 +237,6 @@ void check_serial(BYTE *action)
 			// PC control mode
 			// 2 hex digits = length
 			
-			#define MAX_INP_BUF 32
 		
 			int c;
 			int l=getHex(2);
@@ -592,6 +595,11 @@ void Perform_Action (BYTE Action)
 		//experimental
 		gNextMode = kChargeMode;
 		break;	
+		
+	case 0xD8:
+		//binary mode
+		experimental_binloop();
+		break;	
 
 	case 0xEE:
 		//help
@@ -612,15 +620,21 @@ void Perform_Action (BYTE Action)
 		"d  lean right\r\n"
 		"s  lean back\r\n"
 		"v  version number\r\n"
-		"m  modify param [n][+|-|=] [nn]\r\n"
+		"M  modify param [n][+|-|=] [nn]\r\n"
 		"r  respond to event on/off\r\n"
 		"l  light flash test\r\n"
 		"e	[nn] set action event nn (two digits)\r\n"	
+		
+		"x	[nn][...] transmit to wCK bus [nn] bytes ans wait for 2 nyte response\r\n"
+		"X	as above but no reponse packets\r\n"
+		"m  move - synchronous move - as serialslavee mode but waits"
+		
+		"&  Enter a new program\r\n"
 		"?  Display current mode\r\n"
 		"!  Run current program in memory\r\n"
-		"&  Enter a new program\r\n"
-		"x	[nn][...] transmit to wCK bus [nn] bytes ans wait for 2 nyte response\r\n"
-		"X	as above but no reponse packets\r\n");	
+
+		"#  binary mode"
+		);	
 		break;	
 	}
 } 
@@ -640,3 +654,10 @@ void experimental_mainloop()
 		while(lMSEC==gMSEC);
 	}
 }
+
+
+
+
+
+
+
