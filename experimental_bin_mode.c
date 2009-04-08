@@ -95,6 +95,11 @@ int bin_respond_query(int mt)
 	BYTE	tmpB;
 	WORD	tmpW;
 
+	
+	uartSendByte(MAGIC_RESPONSE);
+	uartSendByte(mt);
+	
+	
 	//query mode
 	int cs=mt;
 	for (BYTE id=0; id<16; id++)
