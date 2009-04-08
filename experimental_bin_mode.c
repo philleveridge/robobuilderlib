@@ -70,7 +70,7 @@ int bin_respond_error(int errno)
 
 /***************************
 
-q command response
+ver command response
 
 ***************************/
 
@@ -102,30 +102,30 @@ int bin_respond_query(int mt)
 			tmpW = wckPosAndLoadRead(id);
 			SendWord(tmpW);	
 			cs = cs | (tmpW & 0xff) | (tmpW >> 8) ;
-	}
+	} //32
 	
 	tmpB=adc_psd();
-	uartSendByte(tmpB);
+	uartSendByte(tmpB); //33
 	cs |= tmpB;	
 
 	tmpB=adc_mic();
-	uartSendByte(tmpB);
+	uartSendByte(tmpB); //34
 	cs |= tmpB;	
 	
 	tmpW=adc_volt();
-	SendWord(tmpW);	
+	SendWord(tmpW);	    //36
 	cs = cs | (tmpW & 0xff) | (tmpW >> 8) ;
 
 	tilt_read(0);
 	
-	SendWord((WORD)x_value);
-	cs |= (WORD)x_value;
-	SendWord((WORD)y_value);
-	cs |= (WORD)y_value;
-	SendWord((WORD)z_value);
-	cs |= (WORD)z_value;
+	SendWord((WORD)x_value);  //38
+	cs = cs | (x_value & 0xff) | (x_value >> 8) ;
+	SendWord((WORD)y_value);  //40
+	cs = cs | (y_value & 0xff) | (y_value >> 8) ;
+	SendWord((WORD)z_value);  //42
+	cs = cs | (z_value & 0xff) | (z_value >> 8) ;
 	
-	uartSendByte( (cs) & 0x7F); //checksum
+	uartSendByte( (cs) & 0x7F); //checksum = 43 bytes
 
 	return 0;
 }
@@ -188,7 +188,9 @@ int bin_respond_x(int mt)
 	}
 	else
 	{
-		b1 = 0; // could use to send status	
+		b1 = 0; 			// could use to send status	
+		uartSendByte(b1);  	// junk
+		uartSendByte(b1);  	// junk
 		uartSendByte( (mt | b1 ) & 0x7F); //checksum
 	}
 	return 0;
