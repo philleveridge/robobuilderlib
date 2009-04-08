@@ -35,7 +35,7 @@ SYNTAX:
 [LINE No] MOVE LIST
 
 --------------------------TBD ---------------------------
-[LINE No] PUT VAR '=' $PORTA|B|C:0-7
+[LINE No] PUT [Special] = [Expr]
 
 
 
@@ -137,6 +137,10 @@ const prog_char *tokens[] ={
 	"WAIT", "NEXT", "SERVO", "MOVE",
 	"GOSUB", "RETURN"
 };
+
+char *specials[] = { "PF1", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK" };
+
+enum { sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK };
 							
 struct basic_line {
     int lineno;
@@ -360,7 +364,6 @@ void basic_load()
 		{
 		case LET: 
 		case GET: 
-		case PUT: 
 		case FOR:
 			// read Variable		
 			if ((newline.var = getVar(&cp))<0)
@@ -387,6 +390,19 @@ void basic_load()
 			else
 				newline.text=cp;
 			break;
+		case PUT: 
+			if ((newline.var = token_match(specials, &cp, sizeof(specials)))<0)
+			{
+				errno=3;
+			}
+			// '='
+			if (getNext(&cp) != '=')
+			{
+				errno=1;
+			}					
+			newline.text=cp;
+			break;
+
 		case SERVO:
 			// read servo ID		
 			if ((newline.var = getNum(&cp))<0)
@@ -499,7 +515,6 @@ RUNTIME routines
 
 int variable[26]; // only A-Z at moment
 
-char *specials[] = { "PF1", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK" };
 
 int get_special(char *str, int *res)
 {
@@ -507,40 +522,40 @@ int get_special(char *str, int *res)
 	int t=token_match(specials, &str, sizeof(specials));
 	int v;
 	switch(t) {
-	case 0: // PF1
+	case sPF1:
 		v=0;
 		break;
-	case 1: // MIC
+	case sMIC:
 		v=adc_mic();
 		break;
-	case 2: // X
+	case sGX:
 		tilt_read(0);
 		v=x_value;
 		break;	
-	case 3: // Y
+	case sGY:
 		tilt_read(0);
 		v=y_value;
 		break;		
-	case 4: // Z
+	case sGZ:
 		tilt_read(0);
 		v=z_value;
 		break;			
-	case 5: // Z
+	case sPSD:
 		v=adc_psd();
 		break;
-	case 6: // VOLT
+	case sVOLT:
 		v=adc_volt();
 		break;
-	case 7: // IR
+	case sIR:
 		while ((v= irGetByte())<0) ; //wait for IR
 		break;
-	case 8: // KBD 
+	case sKBD:
 		while ((v= uartGetByte())<0) ; // wait for input
 		break;	
-	case 9: // RND
+	case sRND:
 		v=rand();
 		break;	
-	case 10: // SERVO:nn
+	case sSERVO: // SERVO:nn
 		// get position of servo id=nn
 		v=0;
 		if (*str==':') {
@@ -551,7 +566,7 @@ int get_special(char *str, int *res)
 			return (str-p);
 		}
 		break;	
-	case 11: //TICK
+	case sTICK:
 		v=gTicks;
 		break;
 	default:
@@ -742,12 +757,17 @@ int gotoln(int gl)
 }
 
 
-int put_special(char *str, int var)
+int put_special(int var, int n)
 {
-	int t=token_match(specials, &str, sizeof(specials));
-	switch(t) {
-	case 0: // PF1
-		if (variable[var]==0) PF1_LED1_ON; else PF1_LED1_OFF;
+	switch(var) {
+	case sPF1:
+		if (n) PF1_LED1_ON; else PF1_LED1_OFF;
+		break;
+	case sPSD:
+		if (n) PSD_ON; else PSD_OFF;
+		break;
+	default:
+		rprintf ("? special %d is read only\r\n", var);
 		break;
 	}
 	return 0;
@@ -869,7 +889,12 @@ void basic_run(int dbf)
 			variable[line.var]=n;	
 			break;
 		case PUT: 
-			put_special(line.text, line.var);
+			n=0;
+			p=line.text;
+			if (eval_expr(&p, &n)==NUMBER)
+				put_special(line.var, n);
+			else
+				errno=1;
 			break;
 		case LET: 
 			n=0;
