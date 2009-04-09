@@ -37,6 +37,77 @@ static WORD scenesReceived;		// number of scenes received
 static BOOL inMotion = FALSE;	// TRUE when we're playing a motion
 
 //------------------------------------------------------------------------------
+// Send an acknowledgement that we received and handled the last
+// message of the given type.
+static void SendAck(u08 msgType) 
+{
+	rprintf("\xBE\xAD%c%c%c", 'k', msgType, 0);
+}
+
+//------------------------------------------------------------------------------
+// Send a message header for the given message type.
+static void StartMsg(u08 msgType)
+{
+	uartSendByte(0xBE);
+	uartSendByte(0xAD);
+	uartSendByte(msgType);
+}
+
+//------------------------------------------------------------------------------
+// Send the message ending delimiter.
+static void EndMsg(void)
+{
+	uartSendByte(0);
+}
+
+//------------------------------------------------------------------------------
+// Add a byte of data to the message (properly escaped as necessary).
+static void AddMsgByte(u08 b)
+{
+	if (!b) uartSendByte('\\');
+	uartSendByte(b);
+}
+
+//------------------------------------------------------------------------------
+// Add a word of data to the message (in Little-Endian format).
+static void AddMsgWord(WORD w)
+{
+	AddMsgByte(w & 0xFF);
+	AddMsgByte(w >> 8);
+}
+
+//------------------------------------------------------------------------------
+// Send an error message.
+static void SendErr(const char *errMsg) 
+{
+	StartMsg('E');
+	rprintfStr((char*)errMsg);
+	EndMsg();
+	
+	// Note: this approach doesn't work...
+	//	rprintf("\xBE\xAD%c%s%c", 'E', errMsg, 0);
+	// ...apparently because rprintf doesn't actually implement %s properly.
+}
+
+//------------------------------------------------------------------------------
+// Skip the rest of the current message, by reading from the uart until we get
+// a null byte not escaped by a backslash.
+static void SkipMessageData()
+{
+	// To-do: add a timeout mechanism here.
+	u08 ch;
+	while (1) {
+		while (!uartReceiveByte(&ch)) ;
+		if ('\\' == ch) {
+			// backslash found; skip the next byte and continue
+			while (!uartReceiveByte(&ch)) ;
+			continue;
+		}
+		if (!ch) return;	// null found; end of message
+	}
+}
+
+//------------------------------------------------------------------------------
 // ReceiveIntoMotionBuf: uart Rx routine that stuffs data into motionBuf.
 //------------------------------------------------------------------------------
 void ReceiveIntoMotionBuf(unsigned char c)
@@ -78,7 +149,7 @@ void handle_load_motion()
 	int bytes = ((int)b1 << 8) | b0;
 	
 	if (bytes > kMaxMotionBufSize) {
-		rprintf("Error: requested buffer size (%d) exceeds max (%d)\r\n", 
+		rprintf("Error: requested buffer size (%d) exceeds max (%d)\n", 
 				bytes, kMaxMotionBufSize);
 		return;
 	}
@@ -92,7 +163,7 @@ void handle_load_motion()
 	uartSetRxHandler( ReceiveIntoMotionBuf );	// receive directly into motionBuf
 	
 	// Let the host know we're ready.
-	rprintf("Ready to receive %d bytes\r\n", bytes );
+	rprintf("Ready to receive %d bytes\n", bytes );
 	uartSendByte('^');
 	
 	// Now, we should be receiving data directly into motion buf via
@@ -104,7 +175,7 @@ void handle_load_motion()
 		if (gTicks - startTicks > 50) {
 			// Timed out
 			uartSetRxHandler( NULL );
-			rprintf("Timed out after receiving %d bytes\r\n", nextRxIndex );
+			rprintf("Timed out after receiving %d bytes\n", nextRxIndex );
 			return;
 		}
 	}
@@ -112,7 +183,7 @@ void handle_load_motion()
 	
 	// Reset the UART Rx handler, and acknowledge that we got the data.
 	uartSetRxHandler( NULL );
-	rprintf("Received %d bytes in %d ticks\r\n", nextRxIndex, profileTicks1 );
+	rprintf("Received %d bytes in %d ticks\n", nextRxIndex, profileTicks1 );
 
 	// Start the motion.
 	scenesReceived = motionBuf[0];  // To-do: calculate this from nextRxIndex
@@ -125,7 +196,7 @@ void handle_load_motion()
 	PlaySceneFromBuffer( motionBuf, 0 );
 	profileTicks3 = gTicks - startTicks;
 	
-	rprintf("Loaded in %d ticks; started in %d\r\n", profileTicks2, profileTicks3);
+	rprintf("Loaded in %d ticks; started in %d\n", profileTicks2, profileTicks3);
 }
 
 
@@ -142,7 +213,7 @@ void continue_motion()
 	
 	if (gSceneIndex+1 >= motionBuf[0]) {
 		// all done with the motion
-		rprintf("Done with %d-scene motion\r\n", motionBuf[0]);
+		rprintf("Done with %d-scene motion\n", motionBuf[0]);
 		gSceneIndex = -1;
 		inMotion = FALSE;
 		noRepeatLatch = FALSE;
@@ -151,11 +222,11 @@ void continue_motion()
 
 	// Start the next scene (if we've received it)
 	if (gSceneIndex+1 < scenesReceived) {
-		rprintf("Starting scene %d of %d\r\n", gSceneIndex+1, motionBuf[0]);
+		rprintf("Starting scene %d of %d\n", gSceneIndex+1, motionBuf[0]);
 		PlaySceneFromBuffer(motionBuf, gSceneIndex+1);
 		noRepeatLatch = FALSE;
 	} else if (!noRepeatLatch) {
-		rprintf("still waiting for scene %d of %d\r\n", gSceneIndex+1, motionBuf[0]);
+		rprintf("still waiting for scene %d of %d\n", gSceneIndex+1, motionBuf[0]);
 		noRepeatLatch = TRUE;
 	}
 }
@@ -187,9 +258,9 @@ void handle_direct_ctl(BOOL showResponse)
 		BYTE b1 = sciRx0Ready();
 		BYTE b2 = sciRx0Ready();
 		// echo response
-		rprintf ("=%x%x\r\n", b1,b2);
+		rprintf ("=%x%x\n", b1,b2);
 	} else {
-		rprintf (" ok\r\n");
+		rprintf (" ok\n");
 	}
 }
 
@@ -213,30 +284,102 @@ void handle_goto_position(void)
 }
 
 //------------------------------------------------------------------------------
+// Report all the servo positions and other status info.
+void handle_get_status(void)
+{
+	// Currently this command takes no parameters...
+	// in the future, we may want to send a mask indicating which sort
+	// of data we're interested in receiving.
+	SkipMessageData();
+
+	StartMsg('q');
+
+	// Start with servo positions.
+	for (BYTE id=0; id<16; id++) {
+		AddMsgByte( wckPosRead(id) );
+	}
+
+	// PSD (distance) sensor value
+	AddMsgWord( adc_psd() );
+	
+	// Microphone value
+	AddMsgWord( adc_mic() );
+	
+	// Battery voltage
+	AddMsgWord( adc_volt() );
+	
+	// accelerometer
+	tilt_read(0);
+	AddMsgWord( x_value );
+	AddMsgWord( y_value );
+	AddMsgWord( z_value );
+	
+	// clock
+	AddMsgByte( gHOUR );
+	AddMsgByte( gMIN );
+	AddMsgByte( gSEC );
+	AddMsgWord( gMSEC );
+	AddMsgWord( gTicks );
+
+	EndMsg();
+
+}
+
+//------------------------------------------------------------------------------
 // Do_Serial
 //
 //	Handle one command (if there is any) in serial slave mode.
 //------------------------------------------------------------------------------
 void Do_Serial(void)
 {
-	BYTE	lbtmp;
-	WORD	ptmpA;
+//	BYTE	lbtmp;
+//	WORD	ptmpA;
 	
+	u08 ch;
+	if (!uartReceiveByte(&ch)) return;
 
+	static u08 lastCh = 0;	
+	if (lastCh == 0xBE && ch == 0xAD) {
+		// Got magic word that indicates the start of a message.
+		// Assume the rest of the message is coming very quickly now.
+		// First we get the type code...
+		u08 msgType;
+		while (!uartReceiveByte(&msgType)) ;  // To-do: add a timeout here
+
+		// Now, dispatch to a handler based on the type
+		// (except for any trivial ones we can handle here).
+		switch (msgType) {
+
+		case '?':		// Are-you-there?
+			SendAck('?');
+			SkipMessageData();
+			break;
+
+		case 'q':		// Query status
+			handle_get_status();
+			break;
+
+		default:
+			SendErr("Unknown message type");
+			SkipMessageData();
+		}
+	}
+	lastCh = ch;
+/*	
 	int ch = uartGetByte();
 	if (ch < 0) return;
 	
 	switch (ch) {
 	case '?':
-		rprintf("Serial Slave mode: inMotion=%d, F_PLAYING=%d\r\n", inMotion, F_PLAYING);
-		rprintf("  m: load motion (binary)\r\n");
-		rprintf("  q: query robot status\r\n");
-		rprintf("  d: query servo positions in decimal form\r\n");
-		rprintf("  g: Goto (set servo position and torque)\r\n");
-		rprintf("  p: basic pose\r\n");
-		rprintf("  .: read one byte from wCK bus\r\n");
-		rprintf("  x: load data directly into wCK bus\r\n");
-		rprintf(" <ESC>: exit Serial Slave mode\r\n");
+		rprintf("Serial Slave mode: inMotion=%d, F_PLAYING=%d\n", inMotion, F_PLAYING);
+		rprintf("  m: load motion (binary)\n");
+		rprintf("  q: query robot status\n");
+		rprintf("  d: query servo positions in decimal form\n");
+		rprintf("  g: Goto (set servo position and torque)\n");
+		rprintf("  p: basic pose\n");
+		rprintf("  .: read one byte from wCK bus\n");
+		rprintf("  x: load data directly into wCK bus\n");
+		rprintf(" <ESC>: exit Serial Slave mode\n");
 		break;
 	
 	case 'm':
@@ -279,7 +422,7 @@ void Do_Serial(void)
 		
 		// clock
 		rprintf("  %d:%d:%d-%d ",gHOUR,gMIN,gSEC,gMSEC);
-		rprintf("\r\n");			
+		rprintf("\n");			
 		break;
 	
 	case 'd':
@@ -289,22 +432,22 @@ void Do_Serial(void)
 		for (BYTE id=0; id<16; id++) {
 			ptmpA = wckPosRead(id);
 			rprintf("%d", ptmpA);
-			if (id < 15) uartSendByte(','); else rprintf("\r\n");
+			if (id < 15) uartSendByte(','); else rprintf("\n");
 		}
 		break;
 	
 	case 'p':
 	case 'P':
-		rprintf(" Basic pose\r\n");
+		rprintf(" Basic pose\n");
 		BasicPose();
 		break;
 	
 	case '.':
-		rprintf(" sciRx0Ready:%d\r\n", sciRx0Ready());
+		rprintf(" sciRx0Ready:%d\n", sciRx0Ready());
 		break;
 	
 	case 27:  // Esc
-		rprintf("Exit SlaveSerial Mode\r\n");
+		rprintf("Exit SlaveSerial Mode\n");
 		gNextMode = kIdleMode;
 		break;
 
@@ -314,8 +457,9 @@ void Do_Serial(void)
 		break;
 	
 	default:
-		rprintf(" Unknown command '%c' [%d]\r\n", ch, ch);
+		rprintf(" Unknown command '%c' [%d]\n", ch, ch);
 	}
+*/
 } 
 
 
@@ -323,7 +467,7 @@ void Do_Serial(void)
 void serialslave_mainloop()
 {
 	//WORD lMSEC;
-	rprintf ("Serial Slave mode\r\n");
+	rprintf ("Serial Slave mode\n");
 	while (kSerialSlaveMode == gNextMode) {
 		//lMSEC = gMSEC;
 		
