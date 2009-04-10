@@ -90,9 +90,30 @@ static void SendErr(const char *errMsg)
 }
 
 //------------------------------------------------------------------------------
+// Get a byte of data from the message in the uart (unescaping as necessary).
+static u08 GetMsgByte(void)
+{
+	u08 ch;
+	while (!uartReceiveByte(&ch));		// To-Do: add a timeout here
+	if ('\\' == ch) {
+		while (!uartReceiveByte(&ch));		// To-Do: and here
+	}
+	return ch;
+}
+
+//------------------------------------------------------------------------------
+// Get a WORD of data from the message in the uart (unescaping as necessary).
+static WORD GetMsgWord(void)
+{
+	u08 b0 = GetMsgByte();
+	u08 b1 = GetMsgByte();
+	return ((WORD)b1 << 8) | b0;
+}
+
+//------------------------------------------------------------------------------
 // Skip the rest of the current message, by reading from the uart until we get
 // a null byte not escaped by a backslash.
-static void SkipMessageData()
+static void SkipMsgData()
 {
 	// To-do: add a timeout mechanism here.
 	u08 ch;
@@ -139,18 +160,17 @@ void print_motionBuf(int bytes)
 //------------------------------------------------------------------------------
 void handle_load_motion()
 {
-	unsigned char b0, b1;
 	WORD startTicks;
 	WORD profileTicks1, profileTicks2, profileTicks3;
 	
-	// Let's start by getting the data size to expect, as a 2-byte LE integer.	
-	while (!uartReceiveByte(&b0));
-	while (!uartReceiveByte(&b1));
-	int bytes = ((int)b1 << 8) | b0;
+	// Let's start by getting the data size to expect.	
+	int bytes = GetMsgWord();
 	
 	if (bytes > kMaxMotionBufSize) {
+		StartMsg('E');
 		rprintf("Error: requested buffer size (%d) exceeds max (%d)\n", 
 				bytes, kMaxMotionBufSize);
+		EndMsg();
 		return;
 	}
 	
@@ -163,8 +183,8 @@ void handle_load_motion()
 	uartSetRxHandler( ReceiveIntoMotionBuf );	// receive directly into motionBuf
 	
 	// Let the host know we're ready.
-	rprintf("Ready to receive %d bytes\n", bytes );
-	uartSendByte('^');
+	StartMsg('^');
+	EndMsg();
 	
 	// Now, we should be receiving data directly into motion buf via
 	// the interrupt handler.  So all we have to do is sit here and
@@ -183,7 +203,8 @@ void handle_load_motion()
 	
 	// Reset the UART Rx handler, and acknowledge that we got the data.
 	uartSetRxHandler( NULL );
-	rprintf("Received %d bytes in %d ticks\n", nextRxIndex, profileTicks1 );
+	SendAck('^');
+//	rprintf("Received %d bytes in %d ticks\n", nextRxIndex, profileTicks1 );
 
 	// Start the motion.
 	scenesReceived = motionBuf[0];  // To-do: calculate this from nextRxIndex
@@ -196,7 +217,7 @@ void handle_load_motion()
 	PlaySceneFromBuffer( motionBuf, 0 );
 	profileTicks3 = gTicks - startTicks;
 	
-	rprintf("Loaded in %d ticks; started in %d\n", profileTicks2, profileTicks3);
+//	rprintf("Loaded in %d ticks; started in %d\n", profileTicks2, profileTicks3);
 }
 
 
@@ -212,8 +233,15 @@ void continue_motion()
 	if (F_PLAYING) return;		// in the middle of a scene
 	
 	if (gSceneIndex+1 >= motionBuf[0]) {
-		// all done with the motion
-		rprintf("Done with %d-scene motion\n", motionBuf[0]);
+		// all done with the motion!
+		// Send a notification that we're done with this motion...
+		// currently, the data is the number of scenes; we might want
+		// to change this to some other unique identifier that was
+		// sent when the motion was loaded.
+		StartMsg('d');
+		AddMsgByte(motionBuf[0]);  // number of scenes
+		EndMsg();
+
 		gSceneIndex = -1;
 		inMotion = FALSE;
 		noRepeatLatch = FALSE;
@@ -222,7 +250,12 @@ void continue_motion()
 
 	// Start the next scene (if we've received it)
 	if (gSceneIndex+1 < scenesReceived) {
-		rprintf("Starting scene %d of %d\n", gSceneIndex+1, motionBuf[0]);
+		// Notify host that we're beginning a new scene.
+		StartMsg('b');
+		AddMsgByte(gSceneIndex);		// scene number we're starting
+		AddMsgByte(motionBuf[0]);		// number of scenes
+		EndMsg();
+
 		PlaySceneFromBuffer(motionBuf, gSceneIndex+1);
 		noRepeatLatch = FALSE;
 	} else if (!noRepeatLatch) {
@@ -234,6 +267,14 @@ void continue_motion()
 //------------------------------------------------------------------------------
 void handle_direct_ctl(BOOL showResponse)
 {
+	// Phil: this needs to be rewritten for the new protocol.  I'm thinking
+	// that we should simply take the message data bytes (extracted with
+	// GetMsgByte) and stuff them directly into sciTx0Data.  But we might
+	// also want a way for the host to specify how many response bytes it
+	// expects, since leaving stale data on the sciRx buffer leads to problems
+	// for other commands.
+	
+
 	// PC control mode
 	// 2 hex digits = length
 	
@@ -271,16 +312,18 @@ void handle_goto_position(void)
 	// Servo ID, torque (max. 0, min. 4), position (0-255)
 	// Note: send 0xFF for torque to set the servo to passive mode
 	
-	u08 servoID, torque, position;
-	while (!uartReceiveByte(&servoID)) ;
-	while (!uartReceiveByte(&torque)) ;
-	while (!uartReceiveByte(&position)) ;
+	u08 servoID = GetMsgByte();
+	u08 torque = GetMsgByte();
+	u08 position = GetMsgByte();
+	SkipMsgData();	// skip rest of message (if any)
 	
 	if (torque <= 4) {
 		wckPosSend(servoID, torque, position);
 	} else {
 		wckSetPassive(servoID);
 	}
+	
+	SendAck('g');
 }
 
 //------------------------------------------------------------------------------
@@ -290,7 +333,7 @@ void handle_get_status(void)
 	// Currently this command takes no parameters...
 	// in the future, we may want to send a mask indicating which sort
 	// of data we're interested in receiving.
-	SkipMessageData();
+	SkipMsgData();
 
 	StartMsg('q');
 
@@ -352,114 +395,50 @@ void Do_Serial(void)
 
 		case '?':		// Are-you-there?
 			SendAck('?');
-			SkipMessageData();
+			SkipMsgData();
 			break;
 
 		case 'q':		// Query status
 			handle_get_status();
 			break;
 
+		case 'g':		// servo Go to position
+			handle_goto_position();
+			break;
+		
+		case 'p':		// assume the basic Pose
+			SendAck('p');
+			SkipMsgData();
+			BasicPose();
+			break;
+		
+		case '.':		// read a byte from the wCK bus (just a debugging hack really)
+			SkipMsgData();
+			StartMsg('.');
+			AddMsgByte(sciRx0Ready());
+			EndMsg();
+			break;
+		
+		case 'x':		// send data directly to the wCK bus
+			handle_direct_ctl(TRUE);
+			break;
+
+		case 'm':		// request to load Motion
+			handle_load_motion();
+			break;
+			
+		case 27:		// Escape (exit serial slave mode)
+			SendAck(27);
+			SkipMsgData();
+			gNextMode = kIdleMode;
+			break;
+
 		default:
 			SendErr("Unknown message type");
-			SkipMessageData();
+			SkipMsgData();
 		}
 	}
 	lastCh = ch;
-/*	
-	int ch = uartGetByte();
-	if (ch < 0) return;
-	
-	switch (ch) {
-	case '?':
-		rprintf("Serial Slave mode: inMotion=%d, F_PLAYING=%d\n", inMotion, F_PLAYING);
-		rprintf("  m: load motion (binary)\n");
-		rprintf("  q: query robot status\n");
-		rprintf("  d: query servo positions in decimal form\n");
-		rprintf("  g: Goto (set servo position and torque)\n");
-		rprintf("  p: basic pose\n");
-		rprintf("  .: read one byte from wCK bus\n");
-		rprintf("  x: load data directly into wCK bus\n");
-		rprintf(" <ESC>: exit Serial Slave mode\n");
-		break;
-	
-	case 'm':
-		handle_load_motion();
-		break;
-
-	case 'g':
-		handle_goto_position();
-		break;
-		
-	case 'q':
-	case 'Q':
-		// Query mode
-		uartSendByte('Q');
-		
-		// Servo positions
-		for (BYTE id=0; id<16; id++)
-		{
-				ptmpA = wckPosAndLoadRead(id);
-				rprintf("%x", ptmpA);	
-		}
-
-		// PSD (distance) sensor value
-		lbtmp = adc_psd();
-		rprintf("%x", lbtmp);
-		
-		// Microphone value
-		lbtmp = adc_mic();
-		rprintf("%x", lbtmp);	
-		
-		// Battery voltage
-		ptmpA = adc_volt();
-		rprintf("%x", ptmpA);
-		
-		// accelerometer
-		tilt_read(0);
-		rprintf("%x", x_value);
-		rprintf("%x", y_value);
-		rprintf("%x", z_value);
-		
-		// clock
-		rprintf("  %d:%d:%d-%d ",gHOUR,gMIN,gSEC,gMSEC);
-		rprintf("\n");			
-		break;
-	
-	case 'd':
-	case 'D':
-		// Query position, decimal mode
-		rprintf("Position: ");
-		for (BYTE id=0; id<16; id++) {
-			ptmpA = wckPosRead(id);
-			rprintf("%d", ptmpA);
-			if (id < 15) uartSendByte(','); else rprintf("\n");
-		}
-		break;
-	
-	case 'p':
-	case 'P':
-		rprintf(" Basic pose\n");
-		BasicPose();
-		break;
-	
-	case '.':
-		rprintf(" sciRx0Ready:%d\n", sciRx0Ready());
-		break;
-	
-	case 27:  // Esc
-		rprintf("Exit SlaveSerial Mode\n");
-		gNextMode = kIdleMode;
-		break;
-
-	case 'x':
-	case 'X':
-		handle_direct_ctl(ch=='x');
-		break;
-	
-	default:
-		rprintf(" Unknown command '%c' [%d]\n", ch, ch);
-	}
-*/
 } 
 
 
