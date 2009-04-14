@@ -52,6 +52,14 @@ void SendWord(WORD x)
 	uartSendByte(x>>8);
 }
 
+void SendResponse(char mt, uint8_t d)
+{
+	uartSendByte(MAGIC_RESPONSE);
+	uartSendByte(mt);
+	uartSendByte(d);
+	uartSendByte( (mt | d) & 0x7F);
+}
+
 /***************************
 
 Error response
@@ -61,10 +69,7 @@ do we need this or should it ignore
 
 int bin_respond_error(int errno)
 {
-	uartSendByte(MAGIC_RESPONSE);
-	uartSendByte('Z');
-	uartSendByte(errno);
-	uartSendByte( ('Z' | errno) & 0x7F);
+	SendResponse('z', errno);
 	return 0;
 }
 
@@ -76,10 +81,7 @@ ver command response
 
 int bin_respond_ver()
 {
-	uartSendByte(MAGIC_RESPONSE);
-	uartSendByte('v');
-	uartSendByte(VERSION);
-	uartSendByte( ('v' | VERSION) & 0x7F);
+	SendResponse('v', VERSION);
 	return 0;
 }
 
@@ -237,26 +239,25 @@ int bin_read_m()
 int bin_respond_m(int mt)
 {
 	int b1 =0 ;
-	uartSendByte(MAGIC_RESPONSE);
-	uartSendByte(mt);
-	uartSendByte(b1);
-	uartSendByte( (mt | b1 ) & 0x7F);
 	
-	// where should play scene go
-	// after respond ?
-		
 	LoadMotionFromBuffer(motionBuf);			
-	PlaySceneFromBuffer(motionBuf, 0);
 	
 	//left in for now
 	//till happy they can't clash
 	//could be moded to main loop after that
 	
+	PlaySceneFromBuffer(motionBuf, 0);
+
 	while(F_PLAYING) 				
 	{
 		continue_motion();
 		_delay_ms(1);
 	}
+	
+	// tells client it can send again
+	
+	SendResponse(mt, b1);
+	
 	return 0;
 }
 
@@ -321,13 +322,21 @@ void experimental_binloop()
 		
 		while ((r=bin_read_request())<0) ;
 		
-		if (r=='v') 				bin_respond_ver(r);
-		else if (r=='q') 			bin_respond_query(r);
-		else if (r=='m') 			bin_respond_m(r);
-		else if (r=='x' || r=='X' ) bin_respond_x(r);
-		else if (r=='p') return;
-		else
+		switch (r)
+		{
+		case 'v':
+			bin_respond_ver(r); break;
+		case 'q':
+			bin_respond_query(r); break;
+		case 'm':
+			bin_respond_m(r); break;
+		case 'x': case 'X' :
+			bin_respond_x(r); break;
+		case 'p': 
+			return;
+		default:
 			bin_respond_error(PROTOCOL_ERROR);
+		}
 			
 		_delay_ms(1);
 	}

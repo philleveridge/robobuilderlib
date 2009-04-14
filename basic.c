@@ -26,17 +26,20 @@ SYNTAX:
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
 [LINE No] NEXT
 [LINE No] XACT EXPR
+[LINE No] WAIT EXPR
 [Line No] GOSUB [Line No]
 [Line No] RETURN
+[Line No] SERVO VAR '=' EXPR | '@'
 [LINE No] SCENE LIST
 [LINE No] MOVE LIST
 --------------------- UNDER TEST -----------------------
 
 [LINE No] PUT [Special] = [Expr]
 
---------------------------TBD ---------------------------
+--------------------------TBD --------------------------
 
-Nothing !
+[LINE No] SENDOP   expr, expr
+[Line No] SENDSET  expr, expr, expr,  expr
 
 
 Rbas Cmd		 Description
@@ -50,7 +53,10 @@ MOVE             sends a loaded Scene  (time ms, no frames)
 
 
 Special register access ($)
-LET A=$IR  //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
+LET A=$IR  		 //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
+LET A=$PORT:A:6  //Read Bit 6 of Port A
+PUT PORT:A:8 = 3 //set DDR of Port A = 3 (PIN0,PIN1 readable)
+PUT PORT:A:2 = 1 //set Port A bit 1 =1 (assuming writeable)
 
 Example Programs are now available from examples folder
 
@@ -138,9 +144,10 @@ const prog_char *tokens[] ={
 	"GOSUB", "RETURN"
 };
 
-char *specials[] = { "PF1", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK" };
+char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
+		"PORT" };
 
-enum { sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK };
+enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT};
 							
 struct basic_line {
     int lineno;
@@ -223,19 +230,26 @@ int getToken(char *str, char *tok)
 
 int token_match(char *list[], char **p_line, int n)
 {
-	int t;	
+	int t;
+	int t1;
 	char buff[MAX_TOKEN];
 	
-	t=getToken(*p_line, buff);
+	t1=getToken(*p_line, buff);  // this could buffer over run - needs fixing
 	
-	*p_line += t;
-
 	for (t=0; t<n; t++)
 	{
 		if (!strcmp(buff, list[t]))
 			break;
 	}
-	return (t==n)? -1 : t; // no_match : match
+	
+	if (t==n)
+	{
+		return -1; 		// no_match : match
+	}
+	else {
+		*p_line += t1; 
+		return t;
+	} 
 }
 
 int readLine(char *line)
@@ -312,9 +326,9 @@ void basic_load()
 
 		if (errno > 0 && errno<6) {
 			rprintfStr ("Error - '" );
-			rprintfProgStr (error_msgs[errno]);
+			rprintfStr (error_msgs[errno]);
 			rprintfStr ("'\r\n" );
-			rprintf ("Pos=%d\r\n", (cp-line));
+			rprintf ("Pos=%d [%c]\r\n", (cp-line), line[cp-line]);
 			errno=0;
 		}
 		else if (errno!=0)
@@ -394,6 +408,39 @@ void basic_load()
 			if ((newline.var = token_match(specials, &cp, sizeof(specials)))<0)
 			{
 				errno=3;
+			}
+			
+			if (newline.var == sPORT)
+			{
+				if (getNext(&cp) != ':')
+				{
+					errno=3;
+				}	
+
+				char pn = getNext(&cp) ;
+				
+				if (pn<'A' || pn >'G') 
+				{
+					errno=3;
+				}
+				
+				if (getNext(&cp) != ':')
+				{
+					errno=3;
+				}	
+				
+				char pb = getNext(&cp) ;
+				
+				if ((pb<'0' || pb >'8'))
+				{
+					errno=3;
+				}
+				
+				//Now have PORT:$pn:$pb
+				
+				newline.var = 30 + (pn-'A')*10 + (pb-'0') ;
+				
+				rprintf("debug: %d %c %c \r\n", newline.var, pn, pb);
 			}
 			// '='
 			if (getNext(&cp) != '=')
@@ -515,6 +562,100 @@ RUNTIME routines
 
 int variable[26]; // only A-Z at moment
 
+int get_bit(int pn, int bn)
+{
+	int n;
+	switch(pn)
+	{
+	case 0:
+		n = PINA;
+		break;
+	case 1:
+		n = PINB;
+		break;
+	case 2:
+		n = PINC;
+		break;
+	case 3:
+		n = PIND;
+		break;
+	case 4:
+		n = PINE;
+		break;
+	case 5:
+		n = PINF;
+		break;
+	case 6:
+		n = PING;
+		break;
+	default:
+		return 0;
+	}
+	
+	if (bn<8)
+	{
+		// mask result with bit
+		int mask = 1<< bn;
+		n &= mask;
+	}
+	return n;
+}
+
+void set_bit(int p, int b, int n)
+{
+	//rprintf ("Debug - set to port:%d:%d = %d\r\n", p ,b, n);
+	
+	volatile uint8_t *port;
+	uint8_t mask;
+	
+	if (b<0 || b>8) return;
+		
+	switch(p)
+	{
+	case 0:
+		port=&PORTA;
+		break;
+	case 1:
+		port=&PORTB;
+		break;
+	case 2:
+		port=&PORTC;
+		break;
+	case 3:
+		port=&PORTD;
+		break;
+	case 4:
+		port=&PORTE;
+		break;
+	case 5:
+		port=&PORTF;
+		break;
+	case 6:
+		port=&PORTG;
+		break;
+	default:
+		rprintf ("panic error\r\n");
+		return;
+	}
+	
+	if (b==8) // set DDR
+	{
+		port -= 1; // now points to DDR
+		*port = n;
+		return;
+	}
+	
+	mask = (1<<b);
+	
+	if (n==0)	
+	{	
+		*port &= ~mask; //clear bit
+	}
+	else
+	{
+		*port |= mask;  //set bit
+	}
+}
 
 int get_special(char *str, int *res)
 {
@@ -569,6 +710,26 @@ int get_special(char *str, int *res)
 	case sTICK:
 		v=gTicks;
 		break;
+	case sPORT: // PORT:A:n
+		// get position of servo id=nn
+		v=0;
+		if (*str==':') {
+			str++;
+			}
+		if (*str>='A' && *str<='G' ) {
+			v= (*str-'A');
+			str++;
+			}	
+		t=8;
+		if (*str==':') {   // Optional Bit specficied
+			str++;
+			if (*str>='0' && *str<='7' ) {
+				t=  (*str+ '0');
+				str++;
+				}
+		}				
+		*res=get_bit(v, t);         //need to read port with PINA etc 
+		return (str-p); // not finished yet
 	default:
 		return -1;
 	}
@@ -759,17 +920,25 @@ int gotoln(int gl)
 
 int put_special(int var, int n)
 {
-	switch(var) {
-	case sPF1:
-		if (n) PF1_LED1_ON; else PF1_LED1_OFF;
-		break;
-	case sPSD:
-		if (n) PSD_ON; else PSD_OFF;
-		break;
-	default:
-		rprintf ("? special %d is read only\r\n", var);
-		break;
+	if (var>= 30)
+	{
+		char a,b;
+		a='A' + (var-30)/10;
+		b='0' + (var % 10);
+		set_bit((var-30)/10, (var % 10), n);
 	}
+	else
+		switch(var) {
+		case sPF1:
+			if (n) PF1_LED1_ON; else PF1_LED1_OFF;
+			break;
+		case sPSD:
+			if (n) PSD_ON; else PSD_OFF;
+			break;
+		default:
+			rprintf ("? special %d is read only\r\n", var);
+			break;
+		}
 	return 0;
 }
 		
@@ -1071,10 +1240,17 @@ void basic_run(int dbf)
 void basic_clear()
 {
 	// Set Init pointer to Zero
+	int i;	
 	rprintfStr("Clear Program \r\n");
 			
-	uint8_t data= 0x00; // start of program byte		
-	eeprom_write_byte(BASIC_PROG_SPACE, data);
+	uint8_t data= 0xFF; 				// start of program byte		
+	for (i=0; i<EEPROM_MEM_SZ; i++) 	
+	{
+		eeprom_write_byte(BASIC_PROG_SPACE+i, data);
+	}
+	
+	rprintf("Cleared %d bytes \r\n", EEPROM_MEM_SZ);
+
 }
 
 
@@ -1104,6 +1280,12 @@ void basic_list()
 {
 	// TBD -  Dump EEprom for the Moment
 	rprintfStr("List Program \r\n");
+
+	if (eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE)) != 0xAA ) {
+		rprintfStr("No program loaded\r\n");
+		dump();
+		return;
+	}
 	
 	int ptr=1;
 	uint8_t tmp=0;
@@ -1143,7 +1325,17 @@ void basic_list()
 			
 		if (line.token==PUT)
 		{
-			rprintfStr (specials[line.var]); 
+			if (line.var <30)
+			{
+				rprintfStr (specials[line.var]); 
+			}
+			else
+			{
+				char a, b;
+				a='A' + ( (line.var - 30) /10) ;
+				b='0' + (line.var % 10) ;
+				rprintf ("PORT:%c:%c", a, b);			
+			}
 			rprintfStr (" = ");
 		}
 
