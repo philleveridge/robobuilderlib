@@ -560,15 +560,30 @@ void Perform_Action (BYTE Action)
 		ptime(); 
 		rprintf("\r\n");	
 		break;
-		
-	case 0xB0:
+	
+
 		//Put out a pulse on PSD to control Cylon eyes
 		//This is of course has no effect on standard hardware
-		//
+			
+	case 0xB0:
+		PSD_ON;
+		_delay_ms(10);
+		PSD_OFF;
+		break;		
+	case 0xB1:
 		PSD_ON;
 		_delay_ms(20);
 		PSD_OFF;
-		_delay_ms(20);
+		break;		
+	case 0xB2:
+		PSD_ON;
+		_delay_ms(30);
+		PSD_OFF;
+		break;
+	case 0xB3:
+		PSD_ON;
+		_delay_ms(40);
+		PSD_OFF;
 		break;
 		
 	// very experimental - BASIC
