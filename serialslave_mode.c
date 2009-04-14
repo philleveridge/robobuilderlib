@@ -26,14 +26,20 @@ extern int getHex(int d);
 extern int getDec(void);
 
 // Buffer for handling Motion commands
-#define kMaxMotionBufSize 466  // enough for 8 scenes
+//#define kMaxMotionBufSize 466  // enough for 8 scenes
+#define kMaxMotionBufSize 570  // enough for 10 scenes
+//#define kMaxMotionBufSize 1610  // enough for 30 scenes
+//#define kMaxMotionBufSize 2130  // enough for 40 scenes
 
-//modified (removed static) to allow access from basic.c - 
-unsigned char motionBuf[kMaxMotionBufSize];
 
+static unsigned char motionBuf1[kMaxMotionBufSize];
+static unsigned char motionBuf2[kMaxMotionBufSize];
+static unsigned char *curMotionBuf = motionBuf2;	// buffer of motion currently being played
+static unsigned char *nextMotionBuf = motionBuf2;	// next motion buffer, or the one being written to
+unsigned char *motionBuf = motionBuf1;				// for use by other (experimental?) modules
 
-static volatile int nextRxIndex;	// index of next byte to receive
-static WORD scenesReceived;		// number of scenes received
+static volatile int nextRxIndex;	// index of next byte to receive in nextMotionBuf
+static int nextBytesExpected;		// how many bytes we expect to receive in nextMotionBuf
 static BOOL inMotion = FALSE;	// TRUE when we're playing a motion
 
 //------------------------------------------------------------------------------
@@ -129,23 +135,23 @@ static void SkipMsgData()
 }
 
 //------------------------------------------------------------------------------
-// ReceiveIntoMotionBuf: uart Rx routine that stuffs data into motionBuf.
+// ReceiveIntoMotionBuf: uart Rx routine that stuffs data into nextMotionBuf.
 //------------------------------------------------------------------------------
 void ReceiveIntoMotionBuf(unsigned char c)
 {
-	motionBuf[nextRxIndex++] = c;
+	nextMotionBuf[nextRxIndex++] = c;
 }
 
 //------------------------------------------------------------------------------
 // print_motionBuf: debugging routine to dump motionBuf to the uart.
 //------------------------------------------------------------------------------
-void print_motionBuf(int bytes)
+void print_motionBuf(unsigned char *buf, int bytes)
 {
 	// Print the bytes, for debugging purposes.
 	rprintf("motionBuf: ");
 	const unsigned char *hexDigits = "0123456789ABCDEF";
 	for (int i = 0; i < bytes; i++) {
-		unsigned char b = motionBuf[i];
+		unsigned char b = buf[i];
 		uartSendByte( hexDigits[ b >> 4 ] );
 		uartSendByte( hexDigits[ b & 0x0F ] );
 		uartSendByte( ' ' );
@@ -164,20 +170,20 @@ void handle_load_motion()
 	WORD profileTicks1, profileTicks2, profileTicks3;
 	
 	// Let's start by getting the data size to expect.	
-	int bytes = GetMsgWord();
+	nextBytesExpected = GetMsgWord();
 	
-	if (bytes > kMaxMotionBufSize) {
+	if (nextBytesExpected > kMaxMotionBufSize) {
 		StartMsg('E');
 		rprintf("Error: requested buffer size (%d) exceeds max (%d)\n", 
-				bytes, kMaxMotionBufSize);
+				nextBytesExpected, kMaxMotionBufSize);
 		EndMsg();
 		return;
 	}
 	
 	// Initialize our buffer.
-	for (int i=0; i < kMaxMotionBufSize; i++) motionBuf[i] = 0xFF;
+	nextMotionBuf = (nextMotionBuf == motionBuf1 ? motionBuf2 : motionBuf1);
+	for (int i=0; i < kMaxMotionBufSize; i++) nextMotionBuf[i] = 0xFF;
 	nextRxIndex = 0;
-	scenesReceived = 0;
 	
 	// Point the uart at our custom receive function.
 	uartSetRxHandler( ReceiveIntoMotionBuf );	// receive directly into motionBuf
@@ -191,11 +197,11 @@ void handle_load_motion()
 	// watch nextRxIndex, until we've gotten all the data we need, or
 	// we appear to have timed out.
 	startTicks = gTicks;
-	while (nextRxIndex < bytes) {
+	while (nextRxIndex < nextBytesExpected) {
 		if (gTicks - startTicks > 50) {
 			// Timed out
 			uartSetRxHandler( NULL );
-			rprintf("Timed out after receiving %d bytes\n", nextRxIndex );
+			rprintf("Timed out after receiving %d/%d bytes\n", nextRxIndex, nextBytesExpected );
 			return;
 		}
 	}
@@ -206,18 +212,25 @@ void handle_load_motion()
 	SendAck('^');
 //	rprintf("Received %d bytes in %d ticks\n", nextRxIndex, profileTicks1 );
 
-	// Start the motion.
-	scenesReceived = motionBuf[0];  // To-do: calculate this from nextRxIndex
-	startTicks = gTicks;
-	LoadMotionFromBuffer( motionBuf );
+	// If no motion in progress, then start the new motion.
+	if (!inMotion) {
+		curMotionBuf = nextMotionBuf;
+		startTicks = gTicks;
+		LoadMotionFromBuffer( curMotionBuf );
 
-	profileTicks2 = gTicks - startTicks;
-	inMotion = TRUE;
-	startTicks = gTicks;
-	PlaySceneFromBuffer( motionBuf, 0 );
-	profileTicks3 = gTicks - startTicks;
+		StartMsg('b');		// Notify host that we're beginning a new scene.
+		AddMsgByte(0);		// scene number we're starting
+		AddMsgByte(curMotionBuf[0]);		// number of scenes
+		EndMsg();
 	
-//	rprintf("Loaded in %d ticks; started in %d\n", profileTicks2, profileTicks3);
+		profileTicks2 = gTicks - startTicks;
+		inMotion = TRUE;
+		startTicks = gTicks;
+		PlaySceneFromBuffer( curMotionBuf, 0 );
+		profileTicks3 = gTicks - startTicks;
+		
+	//	rprintf("Loaded in %d ticks; started in %d\n", profileTicks2, profileTicks3);
+	}
 }
 
 
@@ -227,41 +240,41 @@ void handle_load_motion()
 //------------------------------------------------------------------------------
 void continue_motion()
 {
-	static BOOL noRepeatLatch = FALSE;
-	
 	if (!inMotion) return;		// not playing a motion
 	if (F_PLAYING) return;		// in the middle of a scene
 	
-	if (gSceneIndex+1 >= motionBuf[0]) {
+	if (gSceneIndex+1 >= curMotionBuf[0]) {
 		// all done with the motion!
 		// Send a notification that we're done with this motion...
 		// currently, the data is the number of scenes; we might want
 		// to change this to some other unique identifier that was
 		// sent when the motion was loaded.
 		StartMsg('d');
-		AddMsgByte(motionBuf[0]);  // number of scenes
+		AddMsgByte(curMotionBuf[0]);  // number of scenes
 		EndMsg();
-
+		
 		gSceneIndex = -1;
-		inMotion = FALSE;
-		noRepeatLatch = FALSE;
-		return;
+
+		if (nextMotionBuf == curMotionBuf || nextRxIndex < nextBytesExpected) {
+			// No next motion has been received (or not received completely),
+			// so we're done here.
+			inMotion = FALSE;
+			return;
+		}
+		
+		// Start the next motion.
+		curMotionBuf = nextMotionBuf;
+		LoadMotionFromBuffer( curMotionBuf );
 	}
 
-	// Start the next scene (if we've received it)
-	if (gSceneIndex+1 < scenesReceived) {
-		// Notify host that we're beginning a new scene.
-		StartMsg('b');
-		AddMsgByte(gSceneIndex);		// scene number we're starting
-		AddMsgByte(motionBuf[0]);		// number of scenes
-		EndMsg();
+	// Notify host that we're beginning a new scene.
+	StartMsg('b');
+	AddMsgByte(gSceneIndex+1);		// scene number we're starting
+	AddMsgByte(curMotionBuf[0]);		// number of scenes
+	EndMsg();
 
-		PlaySceneFromBuffer(motionBuf, gSceneIndex+1);
-		noRepeatLatch = FALSE;
-	} else if (!noRepeatLatch) {
-		rprintf("still waiting for scene %d of %d\n", gSceneIndex+1, motionBuf[0]);
-		noRepeatLatch = TRUE;
-	}
+	// And actually start it.
+	PlaySceneFromBuffer(curMotionBuf, gSceneIndex+1);
 }
 
 //------------------------------------------------------------------------------
