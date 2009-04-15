@@ -42,16 +42,15 @@ void battery_charge()
 	
 	PWR_LED2_OFF;				//Power red light off  (PC7 low)
 
-	while (gMIN < 5 && !ov_flag)  //5 mins
+	while (gMIN < 5)  // trickle charge for 5 mins while battery is full
 	{
 		PWR_LED1_ON;			//   green LED  on (Port G )
 		
 		volts = adc_volt();
-
 		test_voltage(volts);
-		
-		if (ov_flag) break;
 
+		if (!ov_flag) break;	// 	if battery is not full, go to charge cycle
+		
 		CHARGE_ENABLE; 			//   set charging on  (PB4 high)
 
 		_delay_ms(40); 			//   wait 40ms
@@ -62,7 +61,6 @@ void battery_charge()
 		PWR_LED1_OFF; 			//   green LED  on (Port G)
 		
 		volts = adc_volt();
-
 		test_voltage(volts);
 
 		_delay_ms(500);			//   wait 500ms		
@@ -73,7 +71,7 @@ void battery_charge()
 	int f2=0;
 	CHARGE_ENABLE; 
 	
-	while (gMIN < 55 && !ov_flag)  // 55mins
+	while (gMIN < 55 && !ov_flag)  // fast charge 55 mins or until full
 	{
 		if (f2)
 			PWR_LED1_ON;			//   green LED  on (Port G )
@@ -85,8 +83,8 @@ void battery_charge()
 		_delay_ms(500); 			//   wait 1/2 s
 
 		volts = adc_volt();
-
 		test_voltage(volts);
+		if (f2) rprintf("%d mV\n", volts);
 	}	
 	CHARGE_DISABLE;	
 	rprintf("Charging complete - %dmV\r\n", volts);
@@ -138,10 +136,18 @@ void  test_voltage(WORD volts)
 static void handle_serial(int cmd) {
 	switch (cmd) {
 	case '?':
-		rprintf("\nCharge mode\n");
+		rprintf("Charge mode\n");
 		break;
 	case 'v':
-		rprintf("\nBattery voltage: %d mV\n", adc_volt());
+		rprintf("Battery voltage: %d mV\n", adc_volt());
+		break;
+	case 'c':
+		rprintf("Initiating charge cycle\n");
+		battery_charge();
+		break;
+	case 27:
+		rprintf("Exiting charge mode\n");
+		gNextMode = kIdleMode;
 		break;
 	}
 }
@@ -150,7 +156,9 @@ void charge_mainloop(void) {
 
 	int cmd;
 
-	while (kIdleMode == gNextMode) {
+	rprintf("Charge mode\n");
+	
+	while (kChargeMode == gNextMode) {
 
 		cmd = uartGetByte();
 		if (cmd >= 0) handle_serial(cmd);

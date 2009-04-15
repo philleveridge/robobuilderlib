@@ -29,6 +29,7 @@ static void handle_serial(int cmd) {
 	if ('p' == cmd || 'P' == cmd) exitToExperimental();
 	if ('s' == cmd || 'S' == cmd) exitToSerialSlave();
 	if ('r' == cmd || 'R' == cmd) basic_run(0);
+	if ('c' == cmd || 'C' == cmd) gNextMode = kChargeMode;
 	if ('?' == cmd) {
 		rprintf("\nIdle mode\n");
 	}
