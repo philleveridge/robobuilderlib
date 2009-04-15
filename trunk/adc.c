@@ -153,7 +153,7 @@ int adc_test(BYTE debug){
 	//read PSD	
 	if (debug) rprintf("PSD=");
 	adc_psd();
-	rprintf("%x", psd_value);
+	if (debug) rprintf("%x", psd_value);
 	
 	//read Voltage	
 	_delay_ms(50);	
