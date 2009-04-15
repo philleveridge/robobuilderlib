@@ -560,7 +560,27 @@ void Perform_Action (BYTE Action)
 		ptime(); 
 		rprintf("\r\n");	
 		break;
-	
+
+	case 0x91:
+		//query decimal mode
+		for (BYTE id=0; id<16; id++)
+		{
+				ptmpA = wckPosAndLoadRead(id);
+				rprintf("%d,", ptmpA);	
+		}
+		lbtmp=adc_psd();
+		rprintf("%d,", lbtmp);	
+		lbtmp=adc_mic();
+		rprintf("%d,", lbtmp);	
+		ptmpA=adc_volt();
+		rprintf("%d,", ptmpA);
+		tilt_read(0);
+		rprintf("%d,", (int)x_value);
+		rprintf("%d,", (int)y_value);
+		rprintf("%d  ", (int)z_value);
+		ptime(); 
+		rprintf("\r\n");	
+		break;	
 
 		//Put out a pulse on PSD to control Cylon eyes
 		//This is of course has no effect on standard hardware

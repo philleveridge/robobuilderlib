@@ -30,9 +30,21 @@
 void  test_voltage(WORD volts);
 int ov_flag ;
 
+
+WORD read_volt()
+{
+	WORD ptmpA;
+	
+	adc_psd();
+	adc_mic();
+	ptmpA=adc_volt();
+	
+	return ptmpA;
+}
+
 void battery_charge()
 {
-	WORD volts=0;
+	WORD v=0;
 	
 	rprintf("Battery charging\r\n");
 
@@ -46,8 +58,8 @@ void battery_charge()
 	{
 		PWR_LED1_ON;			//   green LED  on (Port G )
 		
-		volts = adc_volt();
-		test_voltage(volts);
+		v = read_volt();
+		test_voltage(v);
 
 		if (!ov_flag) break;	// 	if battery is not full, go to charge cycle
 		
@@ -60,8 +72,8 @@ void battery_charge()
 		_delay_ms(460); 		//   wait 460 ms
 		PWR_LED1_OFF; 			//   green LED  on (Port G)
 		
-		volts = adc_volt();
-		test_voltage(volts);
+		v = read_volt();
+		test_voltage(v);
 
 		_delay_ms(500);			//   wait 500ms		
 	}
@@ -82,14 +94,13 @@ void battery_charge()
 
 		_delay_ms(500); 			//   wait 1/2 s
 
-		volts = adc_volt();
-		test_voltage(volts);
+		v = read_volt();
+		test_voltage(v);
 		if (f2) rprintf("%d mV\n", volts);
 	}	
 	CHARGE_DISABLE;	
-	rprintf("Charging complete - %dmV\r\n", volts);
+	rprintf("Charging complete - %dmV\r\n", v);
 }
-
 
 void  test_voltage(WORD volts)
 {
@@ -139,7 +150,7 @@ static void handle_serial(int cmd) {
 		rprintf("Charge mode\n");
 		break;
 	case 'v':
-		rprintf("Battery voltage: %d mV\n", adc_volt());
+		rprintf("Battery voltage: %d mV\n", read_volt());
 		break;
 	case 'c':
 		rprintf("Initiating charge cycle\n");
