@@ -125,12 +125,6 @@ void sciTx0Data(BYTE td)
 	UDR0=td;
 }
 
-void sciTx1Data(BYTE td)
-{
-	while(!(UCSR1A&(1<<UDRE))); 	// wait until data register is empty
-	UDR1=td;
-}
-
 
 //------------------------------------------------------------------------------
 // Get character when received. or timeout
@@ -149,30 +143,7 @@ BYTE sciRx0Ready(void)
 	return UDR0;
 }
 
-BYTE sciRx1Ready(void)
-{
-	WORD	startT;
-	startT = gMSEC;
-	while(!(UCSR1A&(1<<RXC)) ){ 	// test for received character
-        if(gMSEC<startT){
-			// wait RX_T_OUT for a character
-            if((1000 - startT + gMSEC)>RX_T_OUT) break;
-        }
-		else if((gMSEC-startT)>RX_T_OUT) break;
-	}
-	return UDR1;
-}
 
-
-//------------------------------------------------------------------------------
-// Load a set command to wCK into our transmit buffer (gTx0Buf).
-// Input	: ID, Data1, Data2, Data3
-// Output	: None
-//------------------------------------------------------------------------------
-void SendSetCmd(BYTE ID, BYTE Data1, BYTE Data2, BYTE Data3)
-{
-	wckSendSetCommand((7<<5)|ID, Data1, Data2, Data3);
-}
 
 
 //------------------------------------------------------------------------------
@@ -181,7 +152,7 @@ void SendSetCmd(BYTE ID, BYTE Data1, BYTE Data2, BYTE Data3)
 // (Actually, just stuff such a command into our transmit buffer, gTx0Buf;
 // the actual sending of this buffer is done elsewhere.)
 //------------------------------------------------------------------------------
-void SyncPosSend(void) 
+static void SyncPosSend(void) 
 {
 	int lwtmp;
 	BYTE CheckSum; 
@@ -250,7 +221,7 @@ void ClearMotionData(void)
 //		gpIg_Table: pointer to array of I gain component for each servo in flash
 //		gpZero_Table: pointer to servo initial positions (ultimately ignored)
 //------------------------------------------------------------------------------
-void GetMotionFromFlash(void)
+static void GetMotionFromFlash(void)
 {
 	WORD i;
 
@@ -269,7 +240,7 @@ void GetMotionFromFlash(void)
 //------------------------------------------------------------------------------
 // Fill the motion data structure from a buffer in RAM.
 //------------------------------------------------------------------------------
-void GetMotionFromBuffer(unsigned char *motionBuf)
+static void GetMotionFromBuffer(unsigned char *motionBuf)
 {
 	WORD i;
 	unsigned char *pGains;
@@ -330,21 +301,14 @@ void SendExPortD(void)
 	WORD i;
 	WORD TIME_OUT2 = 250;
 
-/*	UCSR0B &= 0x7F;   		// UART0 Rx Interrupt disable
-	UCSR0B |= 0x40;   		// UART0 Tx Interrupt enable
-
-	while(gTx0Cnt);			// wait till buffer empty
-*/
 	for(i=0;i<MAX_wCK;i++){					// external data set from Motion structure
 		if(Scene.wCK[i].Exist) {			// set external data if wCK exists
-			SendSetCmd(i, 100, Scene.wCK[i].ExPortD, Scene.wCK[i].ExPortD);
+			wckSendSetCommand((7<<5)|i, 100, Scene.wCK[i].ExPortD, Scene.wCK[i].ExPortD);
+
 			wckGetByte(TIME_OUT2);
 			wckGetByte(TIME_OUT2);			
 		}
 	}
-/*	gTx0BufIdx++;
-	sciTx0Data(gTx0Buf[gTx0BufIdx-1]);		// Initiate the transmit
-*/
 }
 
 
@@ -573,7 +537,22 @@ void PlaySceneFromBuffer(unsigned char *motionBuf, WORD sceneIndex)
 }
 
 //------------------------------------------------------------------------------
-// 
+// Check the F_NEXTFRAME flag, and if it's set (which is done by an interrupt
+// scheduled to fire at the desired frame interval), make and send the next
+// frame of the current scene.
+//------------------------------------------------------------------------------
+void ProcessFrames()
+{
+	if (F_NEXTFRAME) {
+		MakeFrame();
+		SendFrame();
+		F_NEXTFRAME = 0;
+	}
+}
+
+
+//------------------------------------------------------------------------------
+// Assume the basic standing position.
 //------------------------------------------------------------------------------
 void BasicPose()
 {

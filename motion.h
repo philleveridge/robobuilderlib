@@ -36,14 +36,7 @@
 
 
 void sciTx0Data(BYTE td);
-void sciTx1Data(BYTE td);
 BYTE sciRx0Ready(void);
-BYTE sciRx1Ready(void);
-void SendOperCmd(BYTE Data1,BYTE Data2);
-void SendSetCmd(BYTE ID, BYTE Data1, BYTE Data2, BYTE Data3);
-void PassiveModeCmdSend(BYTE ID);
-void SyncPosSend(void);
-void GetMotionFromFlash(void);
 void SendTGain(void);
 void SendExPortD(void);
 void GetSceneFromFlash(void);
@@ -58,5 +51,9 @@ void set_break_mode();
 WORD PosMove(BYTE ID, BYTE torq, BYTE target);
 void LoadMotionFromBuffer(unsigned char *motionBuf);
 void PlaySceneFromBuffer(unsigned char *motionBuf, WORD sceneIndex);
+void ProcessFrames();
 
-extern volatile WORD gSceneIndex;
+// software states----------------------------------------------------------------------
+extern volatile BYTE F_PLAYING;				// state: playing from Flash
+extern volatile BYTE F_NEXTFRAME;			// trigger to start the next frame
+extern volatile WORD gSceneIndex;			// which scene we're currently playing

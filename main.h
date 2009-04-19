@@ -45,6 +45,7 @@
 #define RX1_BUF_SIZE    20      // UART1 RX buffer size
 
 //enumerated parameters (event trigger levels)
+// (we should probably move these over into the experimental module)
 #define TIMR  0
 #define TLT   1
 #define TORQ  2
@@ -56,10 +57,6 @@
 #define MICL3 8
 #define VOLT  9
 
-
-// software states----------------------------------------------------------------------
-extern volatile BYTE 	F_PLAYING;				// state: playing from Flash
-extern volatile BYTE	F_NEXTFRAME;			// trigger to start the next frame
 
 // timer variables----------------------------------------------------------------
 extern volatile WORD    gMSEC;
@@ -74,5 +71,3 @@ extern volatile BYTE	gTx0Cnt;					// UART0 transmit length
 extern volatile BYTE	gRx0Cnt;					// UART0 receive length
 extern volatile BYTE	gTx0BufIdx;					// UART0 transmit pointer
 extern volatile BYTE	gRx0Buf[RX0_BUF_SIZE];		// UART0 receive buffer
-
-void ProcessFrames();
