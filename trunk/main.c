@@ -145,17 +145,9 @@ ISR(TIMER1_OVF_vect)
 	TIFR |= 0x04;							// restart timer
 	TIMSK |= 0x04;							// Timer1 Overflow Interrupt enable
 	
-	F_NEXTFRAME = TRUE;
+	F_NEXTFRAME = TRUE;			// trigger start of next frame (in ProcessFrames)
 }
 
-void ProcessFrames()
-{
-	if (F_NEXTFRAME) {
-		MakeFrame();
-		SendFrame();
-		F_NEXTFRAME = 0;
-	}
-}
 
 //------------------------------------------------------------------------------
 // Initialise Ports
