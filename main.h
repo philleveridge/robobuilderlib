@@ -59,6 +59,7 @@
 
 // software states----------------------------------------------------------------------
 extern volatile BYTE 	F_PLAYING;				// state: playing from Flash
+extern volatile BYTE	F_NEXTFRAME;			// trigger to start the next frame
 
 // timer variables----------------------------------------------------------------
 extern volatile WORD    gMSEC;
@@ -73,3 +74,5 @@ extern volatile BYTE	gTx0Cnt;					// UART0 transmit length
 extern volatile BYTE	gRx0Cnt;					// UART0 receive length
 extern volatile BYTE	gTx0BufIdx;					// UART0 transmit pointer
 extern volatile BYTE	gRx0Buf[RX0_BUF_SIZE];		// UART0 receive buffer
+
+void ProcessFrames();

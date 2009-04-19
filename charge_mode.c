@@ -15,7 +15,7 @@
 #include "Macro.h"
 #include "adc.h"
 #include "main.h"
-#include "comm.h"
+#include "motion.h"
 #include "majormodes.h"
 #include "uart.h"
 

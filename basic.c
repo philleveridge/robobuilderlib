@@ -79,7 +79,7 @@ Example Programs are now available from examples folder
 
 #include "global.h"
 #include "Macro.h"
-#include "Comm.h"
+#include "motion.h"
 #include "math.h"
 #include "uart.h"
 #include "rprintf.h"

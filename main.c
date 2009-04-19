@@ -15,7 +15,7 @@
 
 #include "global.h"
 #include "Macro.h"
-#include "Comm.h"
+#include "motion.h"
 #include "math.h"
 #include "uart.h"
 #include "rprintf.h"
@@ -34,7 +34,7 @@ const prog_char version[] = "0.7 - $Rev$\r\n";
 
 // software states----------------------------------------------------------------------
 volatile BYTE 	F_PLAYING;				// state: playing from Flash
-
+volatile BYTE	F_NEXTFRAME;			// trigger to start the next frame
 
 // "major mode" state machine-----------------------------------------------------
 int		gNextMode;
@@ -46,7 +46,6 @@ extern void charge_mainloop(void);
 
 // global variables------------------------------------------------------------
 WORD    gBtnCnt;						// counter for PF button press
-
 
 int		gX,gY,gZ;
 int 	autobalance;
@@ -141,14 +140,22 @@ ISR(TIMER1_OVF_vect)
 		TCCR1B=0x00;
 		return;
 	}
+
 	TCNT1=TxInterval;
 	TIFR |= 0x04;							// restart timer
 	TIMSK |= 0x04;							// Timer1 Overflow Interrupt enable
-	MakeFrame();							// build the wCK frame
-	SendFrame();							// send the wCK frame
+	
+	F_NEXTFRAME = TRUE;
 }
 
-
+void ProcessFrames()
+{
+	if (F_NEXTFRAME) {
+		MakeFrame();
+		SendFrame();
+		F_NEXTFRAME = 0;
+	}
+}
 
 //------------------------------------------------------------------------------
 // Initialise Ports
@@ -331,6 +338,7 @@ void SW_init(void) {
 	ERR_LED_OFF;
 
 	F_PLAYING = 0;          // clear F_Playing
+	F_NEXTFRAME = 0;		// clear the next-frame trigger
 
 	gTx0Cnt = 0;			// UART0 clear length
 	gTx0BufIdx = 0;			// TX0 clear pointer

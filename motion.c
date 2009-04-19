@@ -8,7 +8,7 @@
 #include "global.h"
 #include "main.h"
 #include "Macro.h"
-#include "comm.h"
+#include "motion.h"
 #include "rprintf.h"
 #include "HunoBasic.h"
 #include "e-motion.h"    //extra-motions (gedit??)
