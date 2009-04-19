@@ -322,7 +322,7 @@ void SendExPortD(void)
 //		gpRT_Table;		// Pointer to flash transition time table (int*)
 //		gpPos_Table;	// Pointer to flash position table
 //------------------------------------------------------------------------------
-void GetSceneFromFlash(void)
+static void GetSceneFromFlash(void)
 {
 	WORD i;
 	
@@ -357,7 +357,7 @@ void GetSceneFromFlash(void)
 //		Motion			current motion header data
 //		gSceneIndex			current scene index
 //------------------------------------------------------------------------------
-void GetSceneFromBuffer(unsigned char *motionBuffer)
+static void GetSceneFromBuffer(unsigned char *motionBuffer)
 {
 	WORD i, NumOfwCK;
 	unsigned char *sceneBuffer;
@@ -405,7 +405,7 @@ void GetSceneFromBuffer(unsigned char *motionBuffer)
 // Set the Timer1 interrupt based on the number of frames and the run time of the scene
 // 		
 //------------------------------------------------------------------------------
-void CalcFrameInterval(void)
+static void CalcFrameInterval(void)
 {
 	float tmp;
 	if((Scene.RTime / Scene.NumOfFrame)<20){ // is each scene < 20 ms ?
@@ -433,7 +433,7 @@ void CalcFrameInterval(void)
 // Calculate the interpolation steps
 // gUnitD[] is in range -254 to +254
 //------------------------------------------------------------------------------
-void CalcUnitMove(void)
+static void CalcUnitMove(void)
 {
 	WORD i;
 
@@ -458,7 +458,7 @@ void CalcUnitMove(void)
 // Build a frame to send: that is, stuff the next frame into our transmit
 // buffer.
 //------------------------------------------------------------------------------
-void MakeFrame(void)
+static void MakeFrame(void)
 {
 	while(gTx0Cnt);			// wait until the transmit buffer is empty
 	gFrameIdx++;			// next frame
@@ -470,7 +470,7 @@ void MakeFrame(void)
 // Start sending the frame (or whatever else happens to be in our transmit
 // buffer, gTx0Buf).
 //------------------------------------------------------------------------------
-void SendFrame(void)
+static void SendFrame(void)
 {
 	if(gTx0Cnt==0)	return;	// return if no frame to send
 	gTx0BufIdx++;
