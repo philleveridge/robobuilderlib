@@ -8,7 +8,7 @@
 #include "global.h"
 #include "Main.h"
 #include "Macro.h"
-#include "comm.h"
+#include "motion.h"
 #include "rprintf.h"
 #include "adc.h"
 #include "ir.h"

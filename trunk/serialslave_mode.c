@@ -11,7 +11,7 @@
 #include "global.h"
 #include "Main.h"
 #include "Macro.h"
-#include "comm.h"
+#include "motion.h"
 #include "rprintf.h"
 #include "adc.h"
 #include "ir.h"
@@ -41,6 +41,9 @@ unsigned char *motionBuf = motionBuf1;				// for use by other (experimental?) mo
 static volatile int nextRxIndex;	// index of next byte to receive in nextMotionBuf
 static int nextBytesExpected;		// how many bytes we expect to receive in nextMotionBuf
 static BOOL inMotion = FALSE;	// TRUE when we're playing a motion
+
+void continue_motion();
+
 
 //------------------------------------------------------------------------------
 // Send an acknowledgement that we received and handled the last
@@ -182,6 +185,7 @@ void handle_load_motion()
 	
 	// Initialize our buffer.
 	nextMotionBuf = (nextMotionBuf == motionBuf1 ? motionBuf2 : motionBuf1);
+	rprintf("Loading into buf %d\n", nextMotionBuf);
 	for (int i=0; i < kMaxMotionBufSize; i++) nextMotionBuf[i] = 0xFF;
 	nextRxIndex = 0;
 	
@@ -198,6 +202,8 @@ void handle_load_motion()
 	// we appear to have timed out.
 	startTicks = gTicks;
 	while (nextRxIndex < nextBytesExpected) {
+		ProcessFrames();
+		continue_motion();
 		if (gTicks - startTicks > 50) {
 			// Timed out
 			uartSetRxHandler( NULL );
@@ -216,6 +222,7 @@ void handle_load_motion()
 	if (!inMotion) {
 		curMotionBuf = nextMotionBuf;
 		startTicks = gTicks;
+		rprintf("Loading motion buf %d\n", curMotionBuf );
 		LoadMotionFromBuffer( curMotionBuf );
 
 		StartMsg('b');		// Notify host that we're beginning a new scene.
@@ -230,6 +237,8 @@ void handle_load_motion()
 		profileTicks3 = gTicks - startTicks;
 		
 	//	rprintf("Loaded in %d ticks; started in %d\n", profileTicks2, profileTicks3);
+	} else {
+		rprintf("Not loading motion because we're already in motion");
 	}
 }
 
@@ -258,12 +267,15 @@ void continue_motion()
 		if (nextMotionBuf == curMotionBuf || nextRxIndex < nextBytesExpected) {
 			// No next motion has been received (or not received completely),
 			// so we're done here.
+			if (nextMotionBuf == curMotionBuf) rprintf("No next motion; %d == %d\n", nextMotionBuf, curMotionBuf);
+			if (nextRxIndex < nextBytesExpected) rprintf("Next motion incomplete: %d < %d\n", nextRxIndex, nextBytesExpected);
 			inMotion = FALSE;
 			return;
 		}
 		
 		// Start the next motion.
 		curMotionBuf = nextMotionBuf;
+		rprintf("Loading motion buf %d\n", curMotionBuf );
 		LoadMotionFromBuffer( curMotionBuf );
 	}
 
@@ -362,7 +374,8 @@ void handle_get_status(void)
 	AddMsgWord( adc_mic() );
 	
 	// Battery voltage
-	AddMsgWord( adc_volt() );
+	WORD v = adc_volt();
+	AddMsgWord( v );
 	
 	// accelerometer
 	tilt_read(0);
@@ -378,6 +391,8 @@ void handle_get_status(void)
 	AddMsgWord( gTicks );
 
 	EndMsg();
+
+	rprintf("Battery voltage: %d mV\n", v);
 
 }
 
@@ -458,13 +473,11 @@ void Do_Serial(void)
 //------------------------------------------------------------------------------
 void serialslave_mainloop()
 {
-	//WORD lMSEC;
 	rprintf ("Serial Slave mode\n");
 	while (kSerialSlaveMode == gNextMode) {
-		//lMSEC = gMSEC;
-		
 		Do_Serial();
+
+		ProcessFrames();
 		continue_motion();
-		//_delay_ms(10);  // why should we delay here?
 	}
 }

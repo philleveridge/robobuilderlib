@@ -7,7 +7,7 @@
 #include "majormodes.h"
 #include "ir.h"
 #include "uart.h"
-#include "comm.h"
+#include "motion.h"
 #include "rprintf.h"
 
 extern void basic_run(int);
