@@ -145,7 +145,7 @@ ISR(TIMER1_OVF_vect)
 	TIFR |= 0x04;							// restart timer
 	TIMSK |= 0x04;							// Timer1 Overflow Interrupt enable
 	
-	F_NEXTFRAME = TRUE;			// trigger start of next frame (in ProcessFrames)
+	F_NEXTFRAME = TRUE;			// trigger start of next frame (in process_frames)
 }
 
 

@@ -34,6 +34,7 @@
 
 #define flash PROGMEM
 
+#define kMaxMotionBufSize 570  // enough for 10 scenes
 
 void sciTx0Data(BYTE td);
 BYTE sciRx0Ready(void);
@@ -42,9 +43,12 @@ void SendExPortD(void);
 void SampleMotion(int);
 void BasicPose();
 void set_break_mode();
+
+unsigned char* GetNextMotionBuffer(void);
 void LoadMotionFromBuffer(unsigned char *motionBuf);
 void PlaySceneFromBuffer(unsigned char *motionBuf, WORD sceneIndex);
-void ProcessFrames();
+void process_frames();
+void complete_motion(unsigned char *motionBuf);
 
 // software states----------------------------------------------------------------------
 extern volatile BYTE F_PLAYING;				// state: playing from Flash

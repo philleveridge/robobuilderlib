@@ -18,10 +18,8 @@
 #include "wck.h"
 #include <util/delay.h>
 
-
-extern unsigned char motionBuf[];
+static unsigned char *motionBuf;
 extern void print_motionBuf(int bytes);
-extern void continue_motion();	
 
 /***************************************
 
@@ -217,6 +215,8 @@ int bin_read_m()
 	int b1;
 	int cs;
 	
+	motionBuf = GetNextMotionBuffer();
+	
 	while ((b0=uartGetByte())<0);
 	while ((b1=uartGetByte())<0);
 	int bytes = ((int)b1 << 8) | b0;
@@ -247,12 +247,7 @@ int bin_respond_m(int mt)
 	//could be moded to main loop after that
 	
 	PlaySceneFromBuffer(motionBuf, 0);
-
-	while(F_PLAYING) 				
-	{
-		continue_motion();
-		_delay_ms(1);
-	}
+	complete_motion(motionBuf);
 	
 	// tells client it can send again
 	

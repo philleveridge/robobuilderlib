@@ -40,13 +40,13 @@ extern void basic_list();
 
 extern const prog_char version[];
 
+static unsigned char *motionBuf;
+
 void Perform_Action(BYTE action);
 BYTE Read_Events(void);
 
 #define EPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
-extern unsigned char motionBuf[];
 extern void print_motionBuf(int bytes);
-extern void continue_motion();	
 
 void experimental_binloop();
 
@@ -313,6 +313,8 @@ void check_serial(BYTE *action)
 			while ((b1=uartGetByte())<0);
 			int bytes = ((int)b1 << 8) | b0;
 
+			motionBuf = GetNextMotionBuffer();
+			
 			rprintf("^");
 	
 			while (nb<bytes)
@@ -325,12 +327,7 @@ void check_serial(BYTE *action)
 			print_motionBuf(nb);
 			LoadMotionFromBuffer(motionBuf);			
 			PlaySceneFromBuffer(motionBuf, 0);
-			
-			while(F_PLAYING) 				//wait for scene to play out
-			{
-				continue_motion();
-				_delay_ms(1);
-			}
+			complete_motion(motionBuf);
 			
 			rprintf("Done\r\n", nb);
 
