@@ -110,9 +110,19 @@ struct TScene{			    // Structure for a scene
 //  3*C+4	(end)
 //------------------------------------------------------------------------------
 
+static unsigned char motionBuf1[kMaxMotionBufSize];
+static unsigned char motionBuf2[kMaxMotionBufSize];
+static unsigned char *curMotionBuf = motionBuf2;	// buffer of motion currently being played
+static unsigned char *nextMotionBuf = motionBuf2;	// next motion buffer, or the one being written to
 
 
-// internal method declarations
+unsigned char* GetNextMotionBuffer(void)
+{
+	nextMotionBuf = (nextMotionBuf == motionBuf1 ? motionBuf2 : motionBuf1);
+	return nextMotionBuf;
+}
+
+// internal method forward declarations
 static void ClearMotionData(void);
 
 
@@ -541,12 +551,33 @@ void PlaySceneFromBuffer(unsigned char *motionBuf, WORD sceneIndex)
 // scheduled to fire at the desired frame interval), make and send the next
 // frame of the current scene.
 //------------------------------------------------------------------------------
-void ProcessFrames()
+void process_frames()
 {
 	if (F_NEXTFRAME) {
 		MakeFrame();
 		SendFrame();
 		F_NEXTFRAME = 0;
+	}
+}
+
+//------------------------------------------------------------------------------
+// This is a blocking routine which keeps the frames and scenes going until
+// the whole motion is complete.  (It's not used in serial slave mode, but
+// may be useful in other modes.)
+//------------------------------------------------------------------------------
+void complete_motion(unsigned char *motionBuf)
+{
+	while (1) {
+	
+		// wait for the current scene to end
+		while (F_PLAYING) process_frames();
+		
+		// if no more scenes, then we're done
+		if (gSceneIndex+1 >= motionBuf[0]) return;
+
+		// Otherwise, start the next scene.
+		PlaySceneFromBuffer(motionBuf, gSceneIndex+1);
+		_delay_ms(1);
 	}
 }
 

@@ -25,24 +25,14 @@
 extern int getHex(int d);
 extern int getDec(void);
 
-// Buffer for handling Motion commands
-//#define kMaxMotionBufSize 466  // enough for 8 scenes
-#define kMaxMotionBufSize 570  // enough for 10 scenes
-//#define kMaxMotionBufSize 1610  // enough for 30 scenes
-//#define kMaxMotionBufSize 2130  // enough for 40 scenes
-
-
-static unsigned char motionBuf1[kMaxMotionBufSize];
-static unsigned char motionBuf2[kMaxMotionBufSize];
-static unsigned char *curMotionBuf = motionBuf2;	// buffer of motion currently being played
-static unsigned char *nextMotionBuf = motionBuf2;	// next motion buffer, or the one being written to
-unsigned char *motionBuf = motionBuf1;				// for use by other (experimental?) modules
+static unsigned char* nextMotionBuf;
+static unsigned char* curMotionBuf;
 
 static volatile int nextRxIndex;	// index of next byte to receive in nextMotionBuf
 static int nextBytesExpected;		// how many bytes we expect to receive in nextMotionBuf
 static BOOL inMotion = FALSE;	// TRUE when we're playing a motion
 
-void continue_motion();
+void continue_motions();
 
 
 //------------------------------------------------------------------------------
@@ -184,8 +174,8 @@ void handle_load_motion()
 	}
 	
 	// Initialize our buffer.
-	nextMotionBuf = (nextMotionBuf == motionBuf1 ? motionBuf2 : motionBuf1);
-	rprintf("Loading into buf %d\n", nextMotionBuf);
+	nextMotionBuf = GetNextMotionBuffer();
+//	rprintf("Loading into buf %d\n", nextMotionBuf);
 	for (int i=0; i < kMaxMotionBufSize; i++) nextMotionBuf[i] = 0xFF;
 	nextRxIndex = 0;
 	
@@ -202,8 +192,8 @@ void handle_load_motion()
 	// we appear to have timed out.
 	startTicks = gTicks;
 	while (nextRxIndex < nextBytesExpected) {
-		ProcessFrames();
-		continue_motion();
+		process_frames();			// ...but be sure to keep the robot moving
+		continue_motions();			// while we're waiting on the serial port!
 		if (gTicks - startTicks > 50) {
 			// Timed out
 			uartSetRxHandler( NULL );
@@ -244,10 +234,10 @@ void handle_load_motion()
 
 
 //------------------------------------------------------------------------------
-// continue_motion: keep our motion going by noticing when the current scene
+// continue_motions: keep our motion going by noticing when the current scene
 // is done playing, and starting the next one (if any).
 //------------------------------------------------------------------------------
-void continue_motion()
+void continue_motions()
 {
 	if (!inMotion) return;		// not playing a motion
 	if (F_PLAYING) return;		// in the middle of a scene
@@ -477,7 +467,7 @@ void serialslave_mainloop()
 	while (kSerialSlaveMode == gNextMode) {
 		Do_Serial();
 
-		ProcessFrames();
-		continue_motion();
+		process_frames();
+		continue_motions();
 	}
 }

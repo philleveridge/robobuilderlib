@@ -115,9 +115,8 @@ uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised c
 
 extern void Perform_Action(BYTE action);
 
-extern unsigned char motionBuf[];
+static unsigned char *motionBuf;
 extern void print_motionBuf(int bytes);
-extern void continue_motion();
 
 const  prog_char *error_msgs[] = {
 	"",
@@ -1157,6 +1156,7 @@ void basic_run(int dbf)
 				eval_expr(&p, &tm);
 				//rprintf ("Move %d, %d\r\n", fm, tm); // DEBUG
 				
+				motionBuf = GetNextMotionBuffer();
 				motionBuf[0]= (unsigned char)1; //number of scenes
 				motionBuf[1]= (unsigned char)C; //number of servos
 				
@@ -1179,12 +1179,7 @@ void basic_run(int dbf)
 				
 				//rprintf ("Play? "); DPAUSE
 				PlaySceneFromBuffer(motionBuf, 0);
-				
-				while(F_PLAYING) 				//wait for scene to play out
-				{
-					continue_motion();
-					_delay_ms(1);
-				}
+				complete_motion(motionBuf);
 			}
 			else
 			{
