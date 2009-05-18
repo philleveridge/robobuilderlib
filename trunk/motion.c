@@ -508,7 +508,8 @@ void M_PlayFlash(void)
 		CalcUnitMove();			// Calculate the interpolation steps
 		MakeFrame();			// build a frame to send
 		SendFrame();			// start sending frame
-		while(F_PLAYING);		// wait till scene interpolation complete
+		//while(F_PLAYING)
+		//	process_frames();		// wait till scene interpolation complete
 	}
 }
 
