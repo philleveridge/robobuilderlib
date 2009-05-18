@@ -111,6 +111,8 @@ Example Programs are now available from examples folder
 
 /***********************************/
 
+uint8_t EEMEM FIRMWARE[64];  					// leave blank - used by Robobuilder OS
+
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
 extern void Perform_Action(BYTE action);
@@ -439,7 +441,7 @@ void basic_load()
 				
 				newline.var = 30 + (pn-'A')*10 + (pb-'0') ;
 				
-				rprintf("debug: %d %c %c \r\n", newline.var, pn, pb);
+				//rprintf("debug: %d %c %c \r\n", newline.var, pn, pb);
 			}
 			// '='
 			if (getNext(&cp) != '=')
@@ -661,6 +663,12 @@ int get_special(char *str, int *res)
 	char *p=str;
 	int t=token_match(specials, &str, sizeof(specials));
 	int v;
+	
+	if (t==sPSD || t==sVOLT || t==sMIC)
+	{
+		adc_test(0);
+	}
+	
 	switch(t) {
 	case sPF1:
 		v=0;
@@ -1261,6 +1269,27 @@ void dump()
 		for (j=0; j<8;  j++)
 		{
 			uint8_t data = eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE+i+j));
+			rprintf ("%x ", data);
+			if (data>27 && data<127) asciis[j]=data; else asciis[j]='.';
+		}
+		asciis[8]='\0';
+		rprintfStr (asciis);
+		rprintfStr ("\r\n");	
+	}
+}
+
+void dump_firmware()
+{
+	int i;
+	
+	for (i=0; i<64; i+=8) 	
+	{
+		int j;
+		char asciis[9];
+		rprintf ("%x ", i);
+		for (j=0; j<8;  j++)
+		{
+			uint8_t data = eeprom_read_byte((uint8_t*)(FIRMWARE+i+j));
 			rprintf ("%x ", data);
 			if (data>27 && data<127) asciis[j]=data; else asciis[j]='.';
 		}

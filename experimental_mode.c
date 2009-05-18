@@ -37,6 +37,7 @@ extern void basic_load();
 extern void basic_run(int);
 extern void basic_clear();
 extern void basic_list();
+extern void dump_firmware();
 
 extern const prog_char version[];
 
@@ -622,6 +623,10 @@ void Perform_Action (BYTE Action)
 		basic_list();
 		basic_run(1);
 		break;				
+	case 0xC5:
+		dump_firmware();
+		break;	
+
 		
 	case 0xD0:
 		//experimental
