@@ -37,7 +37,9 @@ extern void basic_load();
 extern void basic_run(int);
 extern void basic_clear();
 extern void basic_list();
+extern void basic_download();
 extern void dump_firmware();
+extern void dump();
 
 extern const prog_char version[];
 
@@ -449,7 +451,7 @@ void Perform_Action (BYTE Action)
 
 	case 0x20:
 		ptime(); rprintf("Basic Pose\r\n");
-		BasicPose();
+		//BasicPose();
 		break;
 	case 0x30:
 		//flash lights
@@ -626,7 +628,12 @@ void Perform_Action (BYTE Action)
 	case 0xC5:
 		dump_firmware();
 		break;	
-
+	case 0xC6:
+		basic_download();
+		break;	
+	case 0xC7:
+		dump();
+		break;	
 		
 	case 0xD0:
 		//experimental

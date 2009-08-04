@@ -55,6 +55,9 @@ MOVE             sends a loaded Scene  (time ms, no frames)
 Special register access ($)
 LET A=$IR  		 //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
 LET A=$PORT:A:6  //Read Bit 6 of Port A
+LET A=$ROM:10    // read byte 10 of ROM
+
+POKE 10,A         // Put A into Byte 10
 PUT PORT:A:8 = 3 //set DDR of Port A = 3 (PIN0,PIN1 readable)
 PUT PORT:A:2 = 1 //set Port A bit 1 =1 (assuming writeable)
 
@@ -119,6 +122,7 @@ extern void Perform_Action(BYTE action);
 
 static unsigned char *motionBuf;
 extern void print_motionBuf(int bytes);
+extern int getHex(int d);
 
 const  prog_char *error_msgs[] = {
 	"",
@@ -134,7 +138,7 @@ enum {
 	ELSE, GOTO, PRINT, GET, 
 	PUT, END, SCENE, XACT, 
 	WAIT, NEXT, SERVO, MOVE,
-	GOSUB, RETURN
+	GOSUB, RETURN, POKE
 	};
 	
 const prog_char *tokens[] ={
@@ -142,13 +146,13 @@ const prog_char *tokens[] ={
 	"ELSE","GOTO","PRINT","GET",
 	"PUT", "END", "SCENE", "XACT",
 	"WAIT", "NEXT", "SERVO", "MOVE",
-	"GOSUB", "RETURN"
+	"GOSUB", "RETURN", "POKE"
 };
 
 char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		"PORT" };
+		"PORT", "ROM" };
 
-enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT};
+enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM};
 							
 struct basic_line {
     int lineno;
@@ -404,6 +408,15 @@ void basic_load()
 			}
 			else
 				newline.text=cp;
+			break;
+		case POKE: 
+		    //poke address, byte
+			newline.var = getNum(&cp);
+			if (getNext(&cp) != ',')
+			{
+				errno=1;
+			}			
+			newline.text=cp;
 			break;
 		case PUT: 
 			if ((newline.var = token_match(specials, &cp, sizeof(specials)))<0)
@@ -737,6 +750,20 @@ int get_special(char *str, int *res)
 		}				
 		*res=get_bit(v, t);         //need to read port with PINA etc 
 		return (str-p); // not finished yet
+	case sROM: // ROM(x)
+		{
+		int i=0; // x
+		if (*str=='(') 
+		{   //(Addr)
+			str++;
+			i=getNum(&str);
+			if (*str==')')
+			{
+				v = eeprom_read_byte((uint8_t*)(FIRMWARE+i));
+			}
+		}
+		}
+		break;
 	default:
 		return -1;
 	}
@@ -1064,6 +1091,18 @@ void basic_run(int dbf)
 				errno=2;
 			variable[line.var]=n;	
 			break;
+		case POKE:
+ 			n=0;
+			p=line.text;
+			if (eval_expr(&p, &n)==NUMBER)
+			{
+				// put result into address line.var
+				uint8_t addr=line.var;
+				eeprom_write_byte(FIRMWARE+addr, n);
+			}
+			else
+				errno=1;
+			break;
 		case PUT: 
 			n=0;
 			p=line.text;
@@ -1379,4 +1418,23 @@ void basic_list()
 	dump(); //debug
 
 }
+
+void basic_download()
+{
+// read comiled binary from serial port
+	int nb;
+	int i;
+	uint8_t b=0;
+	rprintfStr("Download ... \r\n");
+	
+	nb = getHex(4);
+	for (i=0; i<nb; i++)
+	{
+		b = getHex(2);
+		eeprom_write_byte(BASIC_PROG_SPACE+i, b);	
+	}
+	rprintf(".. complete [%d/%d] Bytes\r\n", i, EEPROM_MEM_SZ);
+
+}
+
 
