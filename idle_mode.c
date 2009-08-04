@@ -15,7 +15,7 @@ extern void basic_run(int);
 
 static void exitToExperimental(void) {
 	// Go to basic pose, and then switch to experimental mode
-	BasicPose();
+	//BasicPose();
 	gNextMode = kExperimentalMode;
 }
 
