@@ -51,6 +51,9 @@ BYTE Read_Events(void);
 #define EPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
 extern void print_motionBuf(int bytes);
 
+extern void set_type(uint8_t c);
+extern uint8_t get_type();
+
 void experimental_binloop();
 
 #define MAX_INP_BUF 32
@@ -216,7 +219,7 @@ void check_serial(BYTE *action)
 
 		if (ch=='!') *action=0xC1;       //'program run mode
 		if (ch=='&') *action=0xC0;       //'program entry mode
-		if (ch=='#') *action=0xD8; 		// binary mode
+		if (ch=='#') *action=0xE8; 		// binary mode
 		
 		
 		if (ch=='q' || ch == 'Q' ) 
@@ -442,8 +445,15 @@ void Perform_Action (BYTE Action)
 		0x11:  //hi
 		0x12:  //kick left front turn
 	*/
-		SampleMotion(Action);  					// comm.c: perform the sample motion
-		ptime(); rprintf("Do Motion %x\r\n", Action);
+		if (get_type()==HUNO_BASIC)
+		{
+			SampleMotion(Action);  					// comm.c: perform the sample motion
+			ptime(); rprintf("Do Motion %x\r\n", Action);
+		}
+		else
+		{
+			ptime(); rprintf("Only when in HUNO BASIC mode\r\n");
+		}
 	}
 	else
 	switch (Action)
@@ -451,7 +461,14 @@ void Perform_Action (BYTE Action)
 
 	case 0x20:
 		ptime(); rprintf("Basic Pose\r\n");
-		//BasicPose();
+		if (get_type()==HUNO_BASIC)
+		{
+			BasicPose();
+		}
+		else
+		{
+			rprintf("N/A\r\n");
+		}		
 		break;
 	case 0x30:
 		//flash lights
@@ -635,12 +652,37 @@ void Perform_Action (BYTE Action)
 		dump();
 		break;	
 		
+		//Robot type - prep for 20 dof	
+	case 0xD8:
+		switch(get_type())
+		{
+		case HUNO_BASIC:
+			rprintf("Robot type - BASIC\r\n"); break;
+		case HUNO_ADVANCED:
+			rprintf("Robot type - ADANCED\r\n"); break;
+		case HUNO_OTHER:
+			rprintf("Robot type - OTHER\r\n"); break;
+		}
+		break;	
+	case 0xD9:
+		rprintf("set Robot type Huno\r\n");
+		set_type(HUNO_BASIC);
+		break;	
+	case 0xDA:
+		rprintf("set Robot type Adv\r\n");
+		set_type(HUNO_ADVANCED);
+		break;		
+	case 0xDB:
+		rprintf("set Robot type Other\r\n");
+		set_type(HUNO_OTHER);
+		break;	
+		
 	case 0xD0:
 		//experimental
 		gNextMode = kChargeMode;
 		break;	
 		
-	case 0xD8:
+	case 0xE8:
 		//binary mode
 		experimental_binloop();
 		break;	

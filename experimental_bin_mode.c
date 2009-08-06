@@ -21,6 +21,10 @@
 static unsigned char *motionBuf;
 extern void print_motionBuf(int bytes);
 
+extern void set_type(uint8_t c);
+extern uint8_t get_type();
+extern uint8_t get_noservos();
+
 /***************************************
 
 binary mode
@@ -39,7 +43,7 @@ void experimental_binloop();
 #define MAGIC_RESPONSE	0xEA
 #define MAGIC_REQUEST	0xCD
 #define VERSION			0x11 /* BIN API VERSION */
-#define MAX_INP_BUF 	16
+#define MAX_INP_BUF 	40
 
 #define PROTOCOL_ERROR	01
 
@@ -94,15 +98,17 @@ int bin_respond_query(int mt)
 {
 	BYTE	tmpB;
 	WORD	tmpW;
-
+	
+	int noservos =  get_noservos();
 	
 	uartSendByte(MAGIC_RESPONSE);
 	uartSendByte(mt);
 	
+	uartSendByte(noservos); 			//33
 	
 	//query mode
 	int cs=mt;
-	for (BYTE id=0; id<16; id++)
+	for (BYTE id=0; id<noservos; id++)
 	{
 			tmpW = wckPosAndLoadRead(id);
 			SendWord(tmpW);	
