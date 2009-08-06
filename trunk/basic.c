@@ -116,6 +116,8 @@ Example Programs are now available from examples folder
 
 uint8_t EEMEM FIRMWARE[64];  					// leave blank - used by Robobuilder OS
 
+uint8_t EEMEM HUNO_TYPE[1];  			// this is where the tokenised code will be stored
+
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
 extern void Perform_Action(BYTE action);
@@ -161,6 +163,36 @@ struct basic_line {
 	int value;
 	char *text; // rest of line - unproceesed
 };
+
+
+void set_type(uint8_t c)
+{
+	eeprom_write_byte(HUNO_TYPE, c);	
+}
+
+uint8_t get_type()
+{
+	return eeprom_read_byte(HUNO_TYPE);
+}
+
+
+uint8_t get_noservos()
+{
+	int noservos;
+	switch (get_type())
+	{
+	case HUNO_BASIC: 
+	    noservos=16;
+		break;
+	case HUNO_ADVANCED: 
+	    noservos=19;
+		break;
+	case HUNO_OTHER: 
+	    noservos=18;
+		break;	
+	}
+	return noservos;
+}
 
 int errno;
 
@@ -675,7 +707,7 @@ int get_special(char *str, int *res)
 {
 	char *p=str;
 	int t=token_match(specials, &str, sizeof(specials));
-	int v;
+	int v=0;
 	
 	if (t==sPSD || t==sVOLT || t==sMIC)
 	{
