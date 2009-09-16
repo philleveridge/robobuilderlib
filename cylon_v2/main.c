@@ -35,6 +35,66 @@ void put_byte(int i)
 	TXREG=i;	// Transmit		
 }
 
+void pattern()
+{
+	const unsigned char bits[] = {
+		0,	1,
+		4,	0,
+		8,	0,
+		0,	8,
+		0,	16,
+		0,	32,
+		0,	64,
+		0,	128,
+		1,	0,
+		2,	0,
+		4,	1,
+		8,	8,
+		0,	48,
+		0,	192,
+		3,	0,
+		12,	1,
+		0,	56,
+		1,	192,
+		2,	0,
+		3,	224,
+		12,	25,
+		3,	224,
+		7,	49,
+		8,	200 
+		};
+	
+	unsigned char i; // array iterator
+
+	for(i = 0; i < 20; i=i+2) 
+	{		
+		PORTA = bits[i];
+		PORTB = bits[i+1];
+		delay(500);
+	}
+	
+	for(i = 20; i < 30; i=i+2) 
+	{		
+		PORTA = bits[i];
+		PORTB = bits[i+1];
+		delay(500);
+	}
+	
+	for(i = 38; i < 42; i=i+2) 
+	{		
+		PORTA = bits[i];
+		PORTB = bits[i+1];
+		delay(500);
+	}
+	
+	for(i = 44; i < 48; i=i+2) 
+	{		
+		PORTA = bits[i];
+		PORTB = bits[i+1];
+		delay(500);
+	}
+}
+
 void test()
 {
 	int i=0;
@@ -47,20 +107,9 @@ void test()
 		delay_us(300);
 	}
 	
-	
-	
-	for (i=0; i<10; i++)
-	{
-		delay(200);
-		
-		PORTA = 0;
-		PORTB = 0;
-		
-		delay(200);
-		
-		PORTA=0x0F;  //0000 1111	
-		PORTB=0xF9;  //1111 1001		
-	}
+	pattern();
+	pattern();
+	pattern();
 	
 	for (i=0; i<10; i++)
 	{		`
