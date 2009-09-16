@@ -1,0 +1,138 @@
+
+# This file was written by gpsim.
+
+# You can use this file for example like this:
+#     gpsim -s mycode.cod -c netlist.stc
+
+# If you want to add commands, you can create another .stc file
+# and load this file from it. Something like this:
+# ----------- myproject.stc ---------------
+# load s mycode.cod
+# frequency 12000000
+# load c netlist.stc
+# -----------------------------------------
+# You can then just load this new file:
+#     gpsim -c myproject.stc
+# and use netlist.stc whenever you save from the breadboard.
+#
+
+
+# Processor position:
+
+
+# Module libraries:
+module library libgpsim_modules.dll
+frequency 4000000
+
+
+# Modules:
+module load led led0
+led0.xpos=480.0000000000000
+led0.ypos=48.0000000000000
+
+module load led led1
+led1.xpos=480.0000000000000
+led1.ypos=96.0000000000000
+
+module load led led2
+led2.xpos=480.0000000000000
+led2.ypos=144.0000000000000
+
+
+module load led led3
+led3.xpos=480.0000000000000
+led3.ypos=192.0000000000000
+
+module load led led4
+led4.xpos=480.0000000000000
+led4.ypos=240.0000000000000
+
+module load led led5
+led5.xpos=480.0000000000000
+led5.ypos=288.0000000000000
+
+module load led led6
+led6.xpos=480.0000000000000
+led6.ypos=336.0000000000000
+
+module load led led7
+led7.xpos=480.0000000000000
+led7.ypos=384.0000000000000
+
+module load led led8
+led8.xpos=480.0000000000000
+led8.ypos=432.0000000000000
+
+
+module load led led9
+led9.xpos=480.0000000000000
+led9.ypos=480.0000000000000
+
+p16f648a.CONFIG=$ff
+p16f648a.WarnMode=true
+p16f648a.SafeMode=true
+p16f648a.UnknownMode=true
+p16f648a.BreakOnReset=true
+p16f648a.BreakOnInvalidRegisterRead=true
+p16f648a.BreakOnInvalidRegisterWrite=true
+p16f648a.frequency=4000000.000000000
+p16f648a.xpos=144.0000000000000
+p16f648a.ypos=24.00000000000000
+
+module load usart usart1
+usart1.rxbaud=9600
+usart1.txbaud=9600
+usart1.rx=0
+usart1.tx=16
+usart1.crlf=false
+usart1.loop=false
+usart1.console=false
+usart1.xpos=144.0000000000000
+usart1.ypos=384.0000000000000
+
+
+
+# Connections:
+node l0
+attach l0 led0.in portb0
+
+node l1
+attach l1 led1.in porta2
+
+node l2
+attach l2 led2.in porta3
+
+node l3
+attach l3 led3.in portb3
+
+node l4
+attach l4 led4.in portb4
+
+node l5
+attach l5 led5.in portb5
+
+node l6
+attach l6 led6.in portb6
+
+node l7
+attach l7 led7.in portb7
+
+node l8
+attach l8 led8.in porta0
+
+node l9
+attach l9 led9.in porta1
+
+node rx1
+attach rx1 usart1.TXPIN portb1
+
+node tx1
+attach tx1 usart1.RXPIN portb2
+
+scope.ch0="porta6"
+scope.ch1="portb1"
+scope.ch2="portb2"
+scope.ch3="porta4"
+
+
+# End.

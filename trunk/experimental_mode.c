@@ -190,6 +190,9 @@ void check_behaviour(BYTE *action)
 
 void check_serial(BYTE *action)
 {
+	int c,l;
+	BYTE buff[MAX_INP_BUF];
+	
 	int ch = uartGetByte();
 	if (ch >= 0)
 	{
@@ -243,10 +246,8 @@ void check_serial(BYTE *action)
 			// PC control mode
 			// 2 hex digits = length
 			
-		
-			int c;
-			int l=getHex(2);
-			int buff[MAX_INP_BUF];
+			l=getHex(2);
+
 			// foreach byte
 			for (c=0; (c<l && c<MAX_INP_BUF); c++)
 			{			
@@ -276,6 +277,36 @@ void check_serial(BYTE *action)
 			*action=0xFF;       
 		}
 		
+		if (ch=='u' )        //like X but at 9600 baud
+		{		
+			int f=1;
+					
+			UBRR0H=0x00;
+			UBRR0L=BR9600; //motion.h	
+			
+			while(f)
+			{
+				rprintf("wcK interactive (at 9600) : ");	
+				while ((ch = uartGetByte())<0) ;
+				rprintf("%c", ch);	
+				
+				if (ch != '.')
+				{
+					wckSendByte(ch&0xFF);
+					_delay_ms(50);
+					ch = wckGetByte(1000);
+					rprintf ("%d\r\n", ch);
+				}
+				else
+				{
+					f=0;
+				}
+			}
+			UBRR0H=0x00;
+			UBRR0L=BR115200;
+		}
+		
+
 		if (ch==0x68 || ch==0x48) 				//'h' pressed
 			*action=0xEE; 
 		
@@ -598,30 +629,6 @@ void Perform_Action (BYTE Action)
 		ptime(); 
 		rprintf("\r\n");	
 		break;	
-
-		//Put out a pulse on PSD to control Cylon eyes
-		//This is of course has no effect on standard hardware
-			
-	case 0xB0:
-		PSD_ON;
-		_delay_ms(10);
-		PSD_OFF;
-		break;		
-	case 0xB1:
-		PSD_ON;
-		_delay_ms(20);
-		PSD_OFF;
-		break;		
-	case 0xB2:
-		PSD_ON;
-		_delay_ms(30);
-		PSD_OFF;
-		break;
-	case 0xB3:
-		PSD_ON;
-		_delay_ms(40);
-		PSD_OFF;
-		break;
 		
 	// very experimental - BASIC
 	// Short term aim - simple eprograms controlling motions
