@@ -20,7 +20,7 @@ EXPR   EXPR1 OPER EXPR1
 SYNTAX:
 [LINE no] LET  VAR '=' EXPR 
 [LINE no] GOTO [Line No]
-[LINE no] PRINT LIST [;]
+[LINE no] PRINT [#] LIST [;]
 [LINE No] END
 [LINE no] IF  EXPR THEN LINE no ELSE Line No
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
@@ -152,9 +152,9 @@ const prog_char *tokens[] ={
 };
 
 char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		"PORT", "ROM" };
+		"PORT", "ROM", "TYPE" };
 
-enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM};
+enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE};
 							
 struct basic_line {
     int lineno;
@@ -175,10 +175,44 @@ uint8_t get_type()
 	return eeprom_read_byte(HUNO_TYPE);
 }
 
+void set_bus_baud(int n)
+{
+		UBRR0H=0x00;
+		UBRR0L=n;
+}
+
+void send_bus_str(char *bus_str, int n)
+{
+		set_bus_baud(BR9600);
+		
+		BYTE b;
+		int ch;
+		char *eos = bus_str+n;
+		
+		while  ((bus_str<eos) && (b=*bus_str++) != 0)
+		{			
+			wckSendByte(b);
+			
+			if (b=='p' || b=='t')
+			{
+				_delay_ms(100);	
+				if (*bus_str != 0) wckSendByte(*bus_str++);
+				_delay_ms(100);	
+				if (*bus_str != 0) wckSendByte(*bus_str++);
+				
+			}		
+			_delay_ms(100);		
+			ch = wckGetByte(1000);
+			rprintf ("BUS=%d\r\n", ch);
+		}
+		
+		set_bus_baud(BR115200);
+}
+
 
 uint8_t get_noservos()
 {
-	int noservos;
+	int noservos=0;
 	switch (get_type())
 	{
 	case HUNO_BASIC: 
@@ -510,6 +544,7 @@ void basic_load()
 			newline.text=cp;
 			break;
 		case PRINT:
+		    if (*cp=='#') { newline.var=1; cp++;}
 		case MOVE:
 		case SCENE:
 			newline.text=cp;
@@ -739,6 +774,9 @@ int get_special(char *str, int *res)
 	case sVOLT:
 		v=adc_volt();
 		break;
+	case sTYPE:
+		v=get_type(); 				// Robot configuration
+		break;
 	case sIR:
 		while ((v= irGetByte())<0) ; //wait for IR
 		break;
@@ -838,10 +876,7 @@ int math(int n1, int n2, char op)
 int str_expr(char *str)
 {
 	char *p=str;
-	while (*str != '"')
-	{
-		str++;
-	}
+	while (*str != '"') str++;
 	return str-p;
 }
 
@@ -1045,6 +1080,9 @@ void basic_run(int dbf)
 	
 	line.text=buf;
 	int n;
+	
+	errno=0;
+	
 	while (tmp != 0xCC && ptr < EEPROM_MEM_SZ )
 	{
 		if (errno !=0)
@@ -1192,7 +1230,14 @@ void basic_run(int dbf)
 					break;
 				case STRING:
 					n=str_expr(p);
-					rprintfStrLen(p,0,n);
+					if (line.var==1)
+					{
+						send_bus_str(p, n);
+					}
+					else
+					{
+						rprintfStrLen(p,0,n);
+					}
 					p=p+n+1;
 					break;
 				}
@@ -1436,7 +1481,10 @@ void basic_list()
 
 		if (line.token==SERVO)
 			rprintf ("%d = ", line.var);
-
+			
+		if (line.token==PRINT && line.var==1)
+			rprintf ("# ");
+			
 		if (line.token==NEXT) 
 			rprintf ("%c", line.var+'A');
 		else
