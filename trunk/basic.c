@@ -191,6 +191,7 @@ void send_bus_str(char *bus_str, int n)
 		
 		while  ((bus_str<eos) && (b=*bus_str++) != 0)
 		{			
+			wckSendByte('S');
 			wckSendByte(b);
 			
 			if (b=='p' || b=='t')

@@ -95,38 +95,13 @@ void pattern()
 	}
 }
 
-void test()
+void tune()
 {
-	int i=0;
-	
-			
-	PORTA = 0x00;	
-	for (i=0; i<`2000; i++)
-	{
-		PORTA ^= 0x10;	
-		delay_us(300);
-	}
-	
-	pattern();
-	pattern();
-	pattern();
-	
-	for (i=0; i<10; i++)
-	{		`
-		delay(200);
-		// 1100 
-		PORTA=(unsigned char)12; PORTB=(unsigned char)225;
-
-		delay(200);
-		// 1011 1110 0001
-		PORTA=(unsigned char)11; PORTB=(unsigned char)152;
-	}
-	
-	play_tone(D5, DUR);
-	play_tone(Fsh5, 2*DUR);
-	play_tone(E5, DUR);
-			
-	PORTA=(unsigned char)5; PORTB=(unsigned char)72;		
+    play_tone(D5, DUR);
+    play_tone(E5, DUR);
+    play_tone(D5, DUR);
+    play_tone(G5, DUR);
+    play_tone(Fsh5, 2*DUR);
 }
 
 void main(void)
@@ -136,11 +111,21 @@ void main(void)
 	
 	init_hw();
 	
-	test();
+	pattern();
+	PORTA=(unsigned char)5; PORTB=(unsigned char)72;	// 01010 01010	Eyes
+	tune();
 
 	while(1)
 	{
 		d=get_byte();
+		
+		if (d == 'S') //start byte
+		{
+			d=get_byte();
+		}
+		else
+			continue;
+			
 		switch (d)
 		{
 		case 'A':
@@ -153,11 +138,7 @@ void main(void)
 			cylon(2);
 			break;
 		case 'T':
-			play_tone(D5, DUR);
-			play_tone(E5, DUR);
-			play_tone(D5, DUR);
-			play_tone(G5, DUR);
-			play_tone(Fsh5, 2*DUR);
+			tune();
 			break;
 		case 'S': 
 			PORTA=(unsigned char)11; PORTB=(unsigned char)152;
@@ -177,13 +158,20 @@ void main(void)
 			i=get_byte();
 			PORTB=i;
 			break;
+		case 'p':
+			pattern();
+			break;
 		case 't': 
 			d=get_byte();
 			i=get_byte();
 			play_tone(d,i);
+			d='t';
+			break;
+		default:
+			d='z'; 		//error
 			break;
 		}	
-		put_byte(d); //echo back
+		if (d) put_byte(d); //response
 
 	}
 }
