@@ -1,0 +1,5 @@
+10 print "hello world"
+20 for a=1 to 5
+30 print a;a*2
+40 next a
+50 end
