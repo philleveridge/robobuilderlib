@@ -30,7 +30,7 @@ volatile extern int		gFrameIdx;	    // frame counter
 extern WORD	   	TxInterval;				// Timer 1 interval
 extern WORD		gNumOfFrame;
 
-const prog_char version[] = "0.7 - $Rev$\r\n";
+const prog_char version[] = "0.9 ($Rev$)\r\n";
 
 // software states----------------------------------------------------------------------
 volatile BYTE 	F_PLAYING;				// state: playing from Flash
@@ -58,6 +58,9 @@ volatile BYTE    gSEC;
 volatile BYTE    gMIN;
 volatile BYTE    gHOUR;
 volatile WORD	 gTicks = 0;			// cumulative 10ths of a second since startup
+volatile WORD	gSEC_DCOUNT;
+volatile WORD	gMIN_DCOUNT;
+
 
 // UART variables-----------------------------------------------------------------
 volatile BYTE	gTx0Buf[TX0_BUF_SIZE];		// UART0 transmit buffer
@@ -111,10 +114,15 @@ ISR(TIMER0_OVF_vect)
     if(++gMSEC>999){
 		// 1s 
         gMSEC=0;
+		
+        if(gSEC_DCOUNT > 0)	gSEC_DCOUNT--;
+
         if(++gSEC>59){
 			// 1m 
             gSEC=0;
-            if(++gMIN>59){
+			if(gMIN_DCOUNT > 0)	gMIN_DCOUNT--;
+			
+           if(++gMIN>59){
 				// 1h 
                 gMIN=0;
                 if(++gHOUR>23)
@@ -309,7 +317,22 @@ void HW_init(void) {
 	UCSR1B=0x18;		
 	UCSR1C=0x06;
 	UBRR1H=0x00;
-	UBRR1L=BR115200;	
+	UBRR1L=BR115200;
+
+	// Analog Comparator initialization
+	// Analog Comparator: Off
+	// Analog Comparator Input Capture by Timer/Counter 1: Off
+	// Analog Comparator Output: Off
+	ACSR=0x80;
+	SFIOR=0x00;
+
+    //ADC initialization
+    //ADC Clock frequency: 460.800 kHz
+    //ADC Voltage Reference: AREF pin
+    //Only the 8 most significant bits of
+    //the AD conversion result are used
+    ADMUX=ADC_VREF_TYPE;
+    ADCSRA=0x00;	
 
 	TWCR = 0;
 }
@@ -405,7 +428,7 @@ int main(void)
 	
 	PWR_LED1_ON; 				// Power green light on
 	
-	adc_init();		
+//	adc_init();		
 	tilt_setup();				// initialise acceleromter
 	_delay_ms(200);
 	

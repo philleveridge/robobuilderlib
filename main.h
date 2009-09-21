@@ -64,6 +64,8 @@ extern volatile BYTE    gSEC;
 extern volatile BYTE    gMIN;
 extern volatile BYTE    gHOUR;
 extern volatile WORD	gTicks;
+extern volatile WORD	gSEC_DCOUNT;
+extern volatile WORD	gMIN_DCOUNT;
 
 // UART variables-----------------------------------------------------------------
 extern volatile BYTE	gTx0Buf[TX0_BUF_SIZE];		// UART0 transmit buffer

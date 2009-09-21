@@ -33,6 +33,7 @@ volatile int y_value;
 volatile int z_value;
 
 
+
 void start_accel()
 {
     SET_BIT4(DDRE);
@@ -268,4 +269,246 @@ void tilt_setup()
 	stop_accel();
 }
 
+#define	SCK_HIGH            SET_BIT4(PORTE)
+#define	SCK_LOW             CLR_BIT4(PORTE)
+#define	SDI_HIGH            SET_BIT5(PORTE)
+#define	SDI_LOW             CLR_BIT5(PORTE)
+#define	SCK_SET_OUTPUT      SET_BIT4(DDRE)
+#define	SCK_SET_INPUT       CLR_BIT4(DDRE)
+#define	SDI_SET_OUTPUT      SET_BIT5(DDRE)
+#define	SDI_SET_INPUT       CLR_BIT5(DDRE)
+#define P_ACC_SCK(A)	    if(A) SET_BIT4(PORTE);else CLR_BIT4(PORTE)
+#define P_ACC_SDI(A)	    if(A) SET_BIT5(PORTE);else CLR_BIT5(PORTE)
+#define SDI_CHK				CHK_BIT5(PINE)
+
+//current channel
+volatile int gAccX;
+volatile int gAccY;
+volatile int gAccZ;
+
+
+//==============================================================//
+// Start
+//==============================================================//
+void AccStart(void)
+{
+SDI_SET_OUTPUT;
+SCK_SET_OUTPUT;
+	P_ACC_SDI(1);
+	P_ACC_SCK(1);
+	NOP;
+	NOP;
+	P_ACC_SDI(0);
+	NOP;
+	NOP;
+	P_ACC_SCK(0);
+	NOP;
+	NOP;
+}
+
+
+//==============================================================//
+// Stop
+//==============================================================//
+void AccStop(void)
+{
+	SDI_SET_OUTPUT;
+	SCK_SET_OUTPUT;
+	P_ACC_SDI(0);
+	P_ACC_SCK(1);
+	NOP;
+	NOP;
+	P_ACC_SDI(1);
+	NOP;
+	NOP;
+	SDI_SET_INPUT;
+	SCK_SET_INPUT;
+}
+
+
+//==============================================================//
+//
+//==============================================================//
+void AccByteWrite(BYTE bData)
+{
+	BYTE	i;
+	BYTE	bTmp;
+
+SDI_SET_OUTPUT;
+	for(i=0; i<8; i++){
+		bTmp = CHK_BIT7(bData);
+    	if(bTmp){
+			P_ACC_SDI(1);
+		}else{
+			P_ACC_SDI(0);
+		}
+		NOP;
+		NOP;
+		P_ACC_SCK(1);;
+		NOP;
+		NOP;
+		NOP;
+		NOP;
+		P_ACC_SCK(0);
+		NOP;
+		NOP;
+		bData =	bData << 1;
+	}
+}
+
+
+//==============================================================//
+//
+//==============================================================//
+char AccByteRead(void)
+{
+	BYTE	i;
+	char	bTmp = 0;
+
+	SDI_SET_INPUT;
+	for(i = 0; i < 8;	i++){
+		bTmp = bTmp << 1;
+		NOP;
+		NOP;
+		NOP;
+		NOP;
+		P_ACC_SCK(1);
+		NOP;
+		NOP;
+		if(SDI_CHK)	bTmp |= 0x01;
+		NOP;
+		NOP;
+		P_ACC_SCK(0);
+	}
+	SDI_SET_OUTPUT;
+
+	return	bTmp;
+}
+
+
+//==============================================================//
+//
+//==============================================================//
+void AccAckRead(void)
+{
+SDI_SET_INPUT;
+	NOP;
+	NOP;
+	P_ACC_SDI(1);
+	NOP;
+	NOP;
+	P_ACC_SCK(1);
+	NOP;
+	NOP;
+	P_ACC_SCK(0);
+	NOP;
+	NOP;
+SDI_SET_OUTPUT;
+	NOP;
+	NOP;
+}
+
+
+//==============================================================//
+//
+//==============================================================//
+void AccAckWrite(void)
+{
+SDI_SET_OUTPUT;
+	NOP;
+	NOP;
+	P_ACC_SDI(0);
+	NOP;
+	NOP;
+	P_ACC_SCK(1);
+	NOP;
+	NOP;
+	P_ACC_SCK(0);
+	NOP;
+	NOP;
+	P_ACC_SDI(1);
+	NOP;
+	NOP;
+}
+
+
+//==============================================================//
+//
+//==============================================================//
+void AccNotAckWrite(void)
+{
+SDI_SET_OUTPUT;
+	NOP;
+	NOP;
+	P_ACC_SDI(1);
+	NOP;
+	NOP;
+	P_ACC_SCK(1);
+	NOP;
+	NOP;
+	P_ACC_SCK(0);
+	NOP;
+	NOP;
+}
+
+
+//==============================================================//
+//==============================================================//
+void Acc_init(void)
+{
+	AccStart();
+	AccByteWrite(0x70);
+	AccAckRead();
+	AccByteWrite(0x14);
+	AccAckRead();
+	AccByteWrite(0x03);
+	AccAckRead();
+	AccStop();
+}
+
+//==============================================================//
+//==============================================================//
+void AccGetData(void)
+{
+	signed char	bTmp = 0;
+
+	AccStart();
+	AccByteWrite(0x70);
+	AccAckRead();
+	AccByteWrite(0x02);
+	AccAckRead();
+	AccStop();
+
+	NOP;
+	NOP;
+	NOP;
+	NOP;
+
+	AccStart();
+	AccByteWrite(0x71);
+	AccAckRead();
+
+	bTmp = AccByteRead();
+	AccAckWrite();
+
+	bTmp = AccByteRead();
+	AccAckWrite();
+	gAccX = bTmp;
+
+	bTmp = AccByteRead();
+	AccAckWrite();
+
+	bTmp = AccByteRead();
+	AccAckWrite();
+	gAccY = bTmp;
+
+	bTmp = AccByteRead();
+	AccAckWrite();
+
+	bTmp = AccByteRead();
+	AccNotAckWrite();
+	gAccZ = bTmp;
+
+	AccStop();
+}
 

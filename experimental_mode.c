@@ -53,6 +53,8 @@ extern void print_motionBuf(int bytes);
 
 extern void set_type(uint8_t c);
 extern uint8_t get_type();
+extern uint8_t get_noservos();
+
 
 void experimental_binloop();
 
@@ -145,7 +147,7 @@ void check_behaviour(BYTE *action)
 		if (response) 
 		{
 			//depending on mood :)
-			ptime(); rprintf("PSD event %x\r\n", psd_value);	
+			ptime(); rprintf("PSD event %x\r\n", gDistance);	
 			int mood = rand()%4;
 			switch(mood)
 			{
@@ -171,7 +173,7 @@ void check_behaviour(BYTE *action)
 	{
 		if (response) 
 		{
-			ptime(); rprintf("MIC event %x\r\n", mic_vol);	
+			ptime(); rprintf("MIC event %x\r\n", gSoundLevel);	
 
 			//depending on mood :)
 			int mood = rand()%2;
@@ -292,7 +294,18 @@ void check_serial(BYTE *action)
 				
 				if (ch != '.')
 				{
+					wckSendByte('S');
 					wckSendByte(ch&0xFF);
+					
+					if (ch=='p' || ch=='t')
+					{
+						unsigned char b;
+						b = getHex(2);		
+						if (b != 0) wckSendByte(b);
+						b = getHex(2);		
+						if (b != 0) wckSendByte(b);			
+					}
+					
 					_delay_ms(50);
 					ch = wckGetByte(1000);
 					rprintf ("%d\r\n", ch);
@@ -590,7 +603,11 @@ void Perform_Action (BYTE Action)
 
 	case 0x90:
 		//query mode
-		for (BYTE id=0; id<16; id++)
+		{
+		int n=get_noservos();
+		rprintf("%x,", n);	
+		
+		for (BYTE id=0; id<n; id++)
 		{
 				ptmpA = wckPosAndLoadRead(id);
 				rprintf("%x", ptmpA);	
@@ -607,11 +624,15 @@ void Perform_Action (BYTE Action)
 		rprintf("%x  ", z_value);
 		ptime(); 
 		rprintf("\r\n");	
+		}
 		break;
-
 	case 0x91:
 		//query decimal mode
-		for (BYTE id=0; id<16; id++)
+		{
+		int n=get_noservos();
+		rprintf("%d,", n);	
+
+		for (BYTE id=0; id<n; id++)
 		{
 				ptmpA = wckPosAndLoadRead(id);
 				rprintf("%d,", ptmpA);	
@@ -628,6 +649,7 @@ void Perform_Action (BYTE Action)
 		rprintf("%d  ", (int)z_value);
 		ptime(); 
 		rprintf("\r\n");	
+		}
 		break;	
 		
 	// very experimental - BASIC
