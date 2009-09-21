@@ -11,6 +11,33 @@
 
 //////////////////////////////// Serial Interface Functions ///////////////////////////
 
+void wckReInit(unsigned int ubrr)
+{
+	while ((UCSR0A & (1 << TXC)) == 0) ; //wait until any transmission complete
+
+	/* Dis-able receiver and transmitter */
+	UCSR0B &= ~((1<<RXEN)|(1<<TXEN));
+
+	/* Set baud rate */
+	UBRR0H = (unsigned char)(ubrr>>8);
+	UBRR0L = (unsigned char)ubrr;
+	
+	/* Set frame format: 8data, 2stop bit */
+	//UCSR0C = (1<<USBS)|(3<<UCSZ0);
+
+	/* Enable receiver and transmitter */
+	UCSR0B = (1<<RXEN)|(1<<TXEN);
+}
+
+//------------------------------------------------------------------------------
+// Transmit char to UART when UART is ready
+//------------------------------------------------------------------------------
+void wckFlush( void )
+{
+	unsigned char dummy;
+	while ( UCSR0A & (1<<RXC) ) dummy = UDR0;
+}
+
 //------------------------------------------------------------------------------
 // Transmit char to UART when UART is ready
 //------------------------------------------------------------------------------

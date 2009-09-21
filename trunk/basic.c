@@ -35,11 +35,10 @@ SYNTAX:
 --------------------- UNDER TEST -----------------------
 
 [LINE No] PUT [Special] = [Expr]
+[LINE No] LET A=$ROM:addr
 
 --------------------------TBD --------------------------
-
-[LINE No] SENDOP   expr, expr
-[Line No] SENDSET  expr, expr, expr,  expr
+[LINE No] POKE val, Address
 
 
 Rbas Cmd		 Description
@@ -175,15 +174,10 @@ uint8_t get_type()
 	return eeprom_read_byte(HUNO_TYPE);
 }
 
-void set_bus_baud(int n)
-{
-		UBRR0H=0x00;
-		UBRR0L=n;
-}
 
 void send_bus_str(char *bus_str, int n)
 {
-		set_bus_baud(BR9600);
+		wckReInit(BR9600);
 		
 		BYTE b;
 		int ch;
@@ -207,7 +201,8 @@ void send_bus_str(char *bus_str, int n)
 			rprintf ("BUS=%d\r\n", ch);
 		}
 		
-		set_bus_baud(BR115200);
+		wckReInit(BR115200);
+		wckFlush(); // flush the buffer
 }
 
 
@@ -745,10 +740,10 @@ int get_special(char *str, int *res)
 	int t=token_match(specials, &str, sizeof(specials));
 	int v=0;
 	
-	if (t==sPSD || t==sVOLT || t==sMIC)
-	{
-		adc_test(0);
-	}
+	//if (t==sPSD || t==sVOLT || t==sMIC)
+	//{
+	//	adc_test(0);
+	//}
 	
 	switch(t) {
 	case sPF1:

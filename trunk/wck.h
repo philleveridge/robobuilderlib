@@ -5,6 +5,10 @@
 
 #include "main.h"
 
+/* */
+void wckReInit(unsigned int ubrr);
+void wckFlush( void );
+
 /*------------------ basic wCK bus serial communication ----------------*/  
 void wckSendByte(char data);   // Send 1 Byte to serial port  
 char wckGetByte(WORD timeout); // Receive 1 Byte from serial port  
