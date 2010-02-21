@@ -30,7 +30,7 @@ volatile extern int		gFrameIdx;	    // frame counter
 extern WORD	   	TxInterval;				// Timer 1 interval
 extern WORD		gNumOfFrame;
 
-const prog_char version[] = "0.9 ($Rev$)\r\n";
+const prog_char version[] = "Mk2 ($Rev$)\r\n";
 
 // software states----------------------------------------------------------------------
 volatile BYTE 	F_PLAYING;				// state: playing from Flash
@@ -53,6 +53,7 @@ int     response;						//reponsd to event on/off
 int	    params[10];						//tuning params
 
 // timer variables----------------------------------------------------------------
+volatile WORD    g10MSEC;
 volatile WORD    gMSEC;
 volatile BYTE    gSEC;
 volatile BYTE    gMIN;
@@ -438,7 +439,8 @@ int main(void)
 	while (1) {
 		switch (gNextMode) {
 			case kIdleMode:
-				idle_mainloop();
+				//idle_mainloop();
+				compatability_mode();
 				break;
 			case kExperimentalMode:
 				experimental_mainloop();

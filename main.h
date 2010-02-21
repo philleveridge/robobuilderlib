@@ -59,6 +59,7 @@
 
 
 // timer variables----------------------------------------------------------------
+extern volatile WORD    g10MSEC;
 extern volatile WORD    gMSEC;
 extern volatile BYTE    gSEC;
 extern volatile BYTE    gMIN;
