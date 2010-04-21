@@ -1495,6 +1495,7 @@ void basic_list()
 
 }
 
+/*
 void basic_download()
 {
 // read comiled binary from serial port
@@ -1512,5 +1513,6 @@ void basic_download()
 	rprintf(".. complete [%d/%d] Bytes\r\n", i, EEPROM_MEM_SZ);
 
 }
+*/
 
 

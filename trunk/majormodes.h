@@ -15,5 +15,6 @@ enum {
 	kChargeMode,
 	kPoseMode,
 	kSerialSlaveMode,
-	kClassicMode
+	kClassicMode,
+	kBinMode
 };
