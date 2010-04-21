@@ -26,6 +26,7 @@ static void exitToSerialSlave(void) {
 	
 
 static void handle_serial(int cmd) {
+	if ('b' == cmd || 'b' == cmd) gNextMode = kBinMode;
 	if ('p' == cmd || 'P' == cmd) exitToExperimental();
 	if ('s' == cmd || 'S' == cmd) exitToSerialSlave();
 	if ('r' == cmd || 'R' == cmd) basic_run(0);

@@ -439,8 +439,8 @@ int main(void)
 	while (1) {
 		switch (gNextMode) {
 			case kIdleMode:
-				//idle_mainloop();
-				compatability_mode();
+				idle_mainloop();
+				//compatability_mode();
 				break;
 			case kExperimentalMode:
 				experimental_mainloop();
@@ -450,7 +450,11 @@ int main(void)
 				break;
 			case kSerialSlaveMode:
 				serialslave_mainloop();
+				break;				
+			case kBinMode:
+				experimental_binloop();
 				break;
+				
 /*			case kClassicMode:
 				classic_mainloop();
 				break;

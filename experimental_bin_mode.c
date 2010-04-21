@@ -4,6 +4,8 @@
 #include <avr/io.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <avr/pgmspace.h>
+#include <avr/eeprom.h> 
 
 #include "global.h"
 #include "Main.h"
@@ -89,10 +91,145 @@ int bin_respond_ver()
 
 /***************************
 
-q command response
+l basic download read
+read comiled binary from serial port
 
 ***************************/
 
+extern uint8_t EEMEM BASIC_PROG_SPACE[];  // this is where the tokenised code will be stored
+
+
+int bin_downloadbasic()
+{
+	int i;
+	uint8_t b0=0, b1=0;
+	int cs = 0;
+
+	while ((b0=uartGetByte())<0);      
+	while ((b1=uartGetByte())<0);
+	int bytes = ((int)b1 << 8) | b0;
+	cs ^= b0;
+	cs ^= b1;
+	
+	for (i=0; i<bytes; i++)
+	{
+		while ((b0=uartGetByte())<0); 	
+		cs ^= b0;
+		eeprom_write_byte(BASIC_PROG_SPACE+i, b0);	
+	}
+	
+	while ((b0=uartGetByte())<0);
+	return (b0 != (cs&0x7f));
+}
+
+/***************************
+
+l basic command response
+
+***************************/
+
+int bin_basicdownload_response(int mt)
+{
+
+	SendResponse('l', VERSION);
+	return 0;
+}
+
+
+/***************************
+
+Q command response (PSD and XYZ values)
+
+***************************/
+
+
+int bin_respond_Quickquery(int mt)
+{
+	BYTE	tmpB;
+		
+	uartSendByte(MAGIC_RESPONSE);
+	uartSendByte(mt);	
+	int cs=mt;
+	
+	tmpB=adc_psd();
+	uartSendByte(tmpB); 			//0
+
+	cs ^= tmpB;	
+
+	tilt_read(0);
+	
+	SendWord((WORD)x_value);  		// 1
+	cs = cs ^ (x_value & 0xff) ^ (x_value >> 8) ;
+	SendWord((WORD)y_value);  		// 3
+	cs = cs ^ (y_value & 0xff) ^ (y_value >> 8) ;
+	SendWord((WORD)z_value);  		//5
+	cs = cs ^ (z_value & 0xff) ^ (z_value >> 8) ;
+	
+	uartSendByte( (cs) & 0x7F); 	//7
+
+	return 0;
+}
+
+/***************************
+
+D command response (PSD only)
+
+***************************/
+int bin_respond_Dquery(int mt)
+{
+	BYTE	tmpB;
+		
+	uartSendByte(MAGIC_RESPONSE);
+	uartSendByte(mt);	
+	
+	tmpB=adc_psd();
+	uartSendByte(tmpB); 			//0
+
+	uartSendByte( (mt ^ tmpB) & 0x7F); 	//7
+
+	return 0;
+}
+
+/***************************
+
+I command response (IR and PF1/PF2 values)
+
+***************************/
+int bin_respond_Iquery(int mt)
+{
+	BYTE	tmpB;
+	int cs = mt;
+		
+	uartSendByte(MAGIC_RESPONSE);
+	uartSendByte(mt);	
+	
+	if ( gIRReady) 
+	{
+		gIRReady = FALSE;
+		tmpB = gIRData;
+	}
+	else
+	{
+		tmpB=0;
+	}
+	uartSendByte(tmpB); 	
+    cs ^= tmpB;
+	
+	tmpB=PINA & 3;
+    cs ^= tmpB;	
+	uartSendByte(tmpB); 	
+	
+	uartSendByte( (cs) & 0x7F); 	
+
+	return 0;
+}
+
+
+/***************************
+
+q command response
+
+***************************/
 
 int bin_respond_query(int mt)
 {
@@ -276,7 +413,7 @@ int bin_read_request()
 	{
 		while ((mt=uartGetByte())<0);
 		
-		if (mt=='q' || mt=='v' || mt=='p' || mt=='C' || mt=='S') 
+		if (mt=='q' || mt=='v' || mt=='p' || mt=='C' || mt=='S' || mt=='Q' || mt=='D'  || mt=='I') 
 		{			
 			while ((cs=uartGetByte())<0);
 
@@ -297,6 +434,14 @@ int bin_read_request()
 		if (mt=='m')
 		{
 			if (bin_read_m())
+				return -1;
+			else
+				return mt;
+		}	
+
+		if (mt=='l')
+		{
+			if (bin_downloadbasic())
 				return -1;
 			else
 				return mt;
@@ -323,10 +468,20 @@ void experimental_binloop()
 		
 		switch (r)
 		{
+		case 'l':
+		    //load basic program 
+			bin_basicdownload_response(r);
+			break;
 		case 'v':
 			bin_respond_ver(r); break;
 		case 'q':
 			bin_respond_query(r); break;
+		case 'Q':
+			bin_respond_Quickquery(r); break;
+		case 'D':
+			bin_respond_Dquery(r); break;
+		case 'I':
+			bin_respond_Iquery(r); break;
 		case 'm':
 			bin_respond_m(r); break;
 		case 'x': case 'X' :

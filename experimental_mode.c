@@ -674,9 +674,9 @@ void Perform_Action (BYTE Action)
 	case 0xC5:
 		dump_firmware();
 		break;	
-	case 0xC6:
-		basic_download();
-		break;	
+	//case 0xC6:
+	//	basic_download();
+	//	break;	
 	case 0xC7:
 		dump();
 		break;	
