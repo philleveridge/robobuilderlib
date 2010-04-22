@@ -18,7 +18,10 @@ WORD 	adc_volt(void);
 BYTE 	adc_mic(void);
 int 	adc_test(BYTE);
 
+void 	PSD_on(void);
+void 	PSD_off(void);
 void 	Get_AD_PSD(void);
+
 void 	Get_AD_MIC(void);
 void 	Get_VOLTAGE(void);
 
