@@ -61,7 +61,7 @@ void SendResponse(char mt, uint8_t d)
 	uartSendByte(MAGIC_RESPONSE);
 	uartSendByte(mt);
 	uartSendByte(d);
-	uartSendByte( (mt | d) & 0x7F);
+	uartSendByte( (mt ^ d) & 0x7F);
 }
 
 /***************************
@@ -169,6 +169,33 @@ int bin_respond_Quickquery(int mt)
 
 	return 0;
 }
+
+/***************************
+
+A command response ( XYZ values)
+
+***************************/
+
+int bin_respond_Aquery(int mt)
+{
+	uartSendByte(MAGIC_RESPONSE);
+	uartSendByte(mt);	
+	int cs=mt;
+
+	tilt_read(0);
+	
+	SendWord((WORD)x_value);  		// 0 & 1
+	cs = cs ^ (x_value & 0xff) ^ (x_value >> 8) ;
+	SendWord((WORD)y_value);  		// 2 & 3
+	cs = cs ^ (y_value & 0xff) ^ (y_value >> 8) ;
+	SendWord((WORD)z_value);  		// 4 & 5
+	cs = cs ^ (z_value & 0xff) ^ (z_value >> 8) ;
+	
+	uartSendByte( (cs) & 0x7F); 	//6
+
+	return 0;
+}
+
 
 /***************************
 
@@ -301,7 +328,7 @@ int bin_read_x()
 	{			
 		while ((b0=uartGetByte())<0);
 		buff[c]=b0; 	// load each byte
-		cs |= b0;		// calculate checksum
+		cs ^= b0;		// calculate checksum
 	}
 	while ((b0=uartGetByte())<0);
 
@@ -331,14 +358,14 @@ int bin_respond_x(int mt)
 		
 		uartSendByte(b1);
 		uartSendByte(b2);
-		uartSendByte( (mt | b1 | b2 ) & 0x7F);
+		uartSendByte( (mt ^ b1 ^ b2 ) & 0x7F);
 	}
 	else
 	{
 		b1 = 0; 			// could use to send status	
 		uartSendByte(b1);  	// junk
 		uartSendByte(b1);  	// junk
-		uartSendByte( (mt | b1 ) & 0x7F); //checksum
+		uartSendByte( (mt ^ b1 ^ b1) & 0x7F); //checksum
 	}
 	return 0;
 }
@@ -368,7 +395,7 @@ int bin_read_m()
 	{				
 		while ((b0=uartGetByte())<0);
 		motionBuf[nb++] = b0;
-		cs |= b0;					// calculate checksum
+		cs ^= b0;					// calculate checksum
 	}
 
 	while ((b0=uartGetByte())<0); 	// read cs sent
@@ -413,11 +440,11 @@ int bin_read_request()
 	{
 		while ((mt=uartGetByte())<0);
 		
-		if (mt=='q' || mt=='v' || mt=='p' || mt=='C' || mt=='S' || mt=='Q' || mt=='D'  || mt=='I') 
+		if (mt=='q' || mt=='v' || mt=='p' || mt=='C' || mt=='S' || mt=='Q' || mt=='D'  || mt=='I'  || mt=='A') 
 		{			
 			while ((cs=uartGetByte())<0);
 
-			if (cs != ((b0 | mt) &0x7f))
+			if (cs != ((b0 ^ mt) &0x7f))
 				return -1;
 			else
 				return mt;
@@ -480,6 +507,8 @@ void experimental_binloop()
 			bin_respond_Quickquery(r); break;
 		case 'D':
 			bin_respond_Dquery(r); break;
+		case 'A':
+			bin_respond_Aquery(r); break;
 		case 'I':
 			bin_respond_Iquery(r); break;
 		case 'm':
