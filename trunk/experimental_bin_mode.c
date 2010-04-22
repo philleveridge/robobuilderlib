@@ -372,6 +372,48 @@ int bin_respond_x(int mt)
 
 /***************************
 
+p command read / response
+p0 = PSD on
+p1 = PSD off
+p2 = readPSD
+
+***************************/
+
+int bin_read_p(int mt)
+{
+	int cs;
+
+	while ((cs=uartGetByte())<0); 	// read cs sent
+
+	if  (((mt ^ MAGIC_REQUEST) & 0x7f) == cs)		// Do they match
+	{
+		switch(mt)
+		{
+		case 'Y':
+			PSD_on();
+			break;
+		case 'y':
+			PSD_off();
+			break;
+		case 'P':
+			Get_AD_PSD();
+			break;
+		default:
+			return -1;
+		}
+		return 'P';
+	}
+	return -1;
+}
+
+int bin_respond_p(int mt)
+{
+	SendResponse(mt, gDistance);
+	return 0;
+}
+
+/***************************
+
 m command read / response
 
 ***************************/
@@ -440,7 +482,7 @@ int bin_read_request()
 	{
 		while ((mt=uartGetByte())<0);
 		
-		if (mt=='q' || mt=='v' || mt=='p' || mt=='C' || mt=='S' || mt=='Q' || mt=='D'  || mt=='I'  || mt=='A') 
+		if (mt=='q' || mt=='p' || mt=='v' || mt=='C' || mt=='S' || mt=='Q' || mt=='D'  || mt=='I'  || mt=='A') 
 		{			
 			while ((cs=uartGetByte())<0);
 
@@ -464,6 +506,11 @@ int bin_read_request()
 				return -1;
 			else
 				return mt;
+		}	
+		
+		if (mt=='P' || mt=='y' || mt=='Y')
+		{
+			return  bin_read_p(mt);
 		}	
 
 		if (mt=='l')
@@ -515,6 +562,8 @@ void experimental_binloop()
 			bin_respond_m(r); break;
 		case 'x': case 'X' :
 			bin_respond_x(r); break;		
+		case 'P':
+			bin_respond_p(r); break;		
 		case 'p':
 			return;
 		default:

@@ -42,8 +42,9 @@ BYTE adc_psd()
 	PSD_OFF;	
 	return psd_value;
 */
-	
+	PSD_on();
 	Get_AD_PSD();
+	PSD_off();
 	return gDistance;
 }
 
@@ -133,20 +134,29 @@ void ADC_set(BYTE mode)
 	ADCSRA=mode;     
 }	
 
+void PSD_on(void)
+{
+	PSD_ON;
+   	_delay_ms(50);
+}
+
+void PSD_off(void)
+{
+	PSD_OFF;
+}
+
 void Get_AD_PSD(void)
 {
 	float	tmp = 0;
 	float	dist;
 	
 	EIMSK &= 0xBF;
-	PSD_ON;
-   	_delay_ms(50);
+
 	gAD_Ch_Index = PSD_CH;
    	F_AD_CONVERTING = 1;
    	ADC_set(ADC_MODE_SINGLE);
    	while(F_AD_CONVERTING);            
    	tmp = tmp + gPSD_val;
-	PSD_OFF;
 	EIMSK |= 0x40;
 
 	dist = 1117.2 / (tmp - 6.89);
