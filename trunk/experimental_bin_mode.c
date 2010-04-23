@@ -327,7 +327,7 @@ int bin_read_x()
 	for (c=0; (c<bsize && c<MAX_INP_BUF); c++)
 	{			
 		while ((b0=uartGetByte())<0);
-		buff[c]=b0; 	// load each byte
+		buff[c]=b0; 	// load each byte			
 		cs ^= b0;		// calculate checksum
 	}
 	while ((b0=uartGetByte())<0);
@@ -340,19 +340,18 @@ int bin_respond_x(int mt)
 	int c;
 	BYTE b1;
 	BYTE b2;
-
-	// transmit  buffer
-	for (c=0; (c<bsize && c<MAX_INP_BUF); c++)
-	{	
-		sciTx0Data(buff[c]&0xFF);
-	}
 	
 	uartSendByte(MAGIC_RESPONSE);
 	uartSendByte(mt);
 
 	if (mt=='X')
 	{
-		// get response (or timeout)					
+		// transmit  buffer
+		for (c=0; (c<bsize && c<MAX_INP_BUF); c++)
+		{	
+			sciTx0Data(buff[c]&0xFF);
+		}	
+		// get response (or timeout)				
 		b1 = sciRx0Ready();
 		b2 = sciRx0Ready();
 		
@@ -366,6 +365,13 @@ int bin_respond_x(int mt)
 		uartSendByte(b1);  	// junk
 		uartSendByte(b1);  	// junk
 		uartSendByte( (mt ^ b1 ^ b1) & 0x7F); //checksum
+		
+		// transmit  buffer (after sending respose - should be quicker - 
+		// not waiting for reply
+		for (c=0; (c<bsize && c<MAX_INP_BUF); c++)
+		{	
+			sciTx0Data(buff[c]&0xFF);
+		}
 	}
 	return 0;
 }
@@ -565,6 +571,7 @@ void experimental_binloop()
 		case 'P':
 			bin_respond_p(r); break;		
 		case 'p':
+			// exit back to idle mode
 			return;
 		default:
 			bin_respond_error(PROTOCOL_ERROR);
