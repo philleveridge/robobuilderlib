@@ -1,0 +1,41 @@
+#Binary mode for control of robot from a remote PC
+
+= Introduction =
+
+Binary mode is entered by sending a 'b' on boot up from the default mode ( Idle mode )
+
+Once in binary mode the protocol is as follows:
+
+== Basic Protocol ==
+
+{{{
+PC -> Robot (Over serial comms at 115200 baud)
+<start send>    <message type> <data ....> <checksum>
+
+<start send>    = 0xEA
+
+
+Robot -> PC
+<start respond> <message type> <data ....> <checksum>
+
+<start respond> = 0xCD
+
+}}}
+
+= Details =
+
+Message types:
+
+  * q  query - query everything
+  * m  move
+  * x  raw wCK - no wait
+  * X  raw wck - wait for response
+  * v  version
+  * P/y/Y  PSD read/on/off
+  * I  Infrared and button state
+  * D  Just PSD
+  * Q  Quick query (just PSD and Acc)
+  * l  basic download
+  * H  low speed wck bus comms 
+  * p  exit Binary mode (back to idle)
+
