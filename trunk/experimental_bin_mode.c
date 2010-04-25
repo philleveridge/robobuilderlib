@@ -27,14 +27,23 @@ extern void set_type(uint8_t c);
 extern uint8_t get_type();
 extern uint8_t get_noservos();
 
+extern void send_bus_str(char *bus_str, int n);
+
 /***************************************
 
 binary mode
 
-q  query
+q  query - query everything
 m  move
-x  raw wCK
+x  raw wCK - no wait
+X  raw wck - wait for response
 v  version
+P/y/Y  PSD read/on/off
+I  Infrared and button state
+D  Just PSD
+Q  Quick query (just PSD and Acc)
+l  basic download
+H  low speed wck bus comms 
 p  exit
 
 ****************************************/
@@ -44,7 +53,7 @@ void experimental_binloop();
 
 #define MAGIC_RESPONSE	0xEA
 #define MAGIC_REQUEST	0xCD
-#define VERSION			0x11 /* BIN API VERSION */
+#define VERSION			0x12     /* BIN API VERSION */
 #define MAX_INP_BUF 	40
 
 #define PROTOCOL_ERROR	01
@@ -124,11 +133,50 @@ int bin_downloadbasic()
 
 /***************************
 
+H command response
+
+***************************/
+
+int bin_read_H()
+{
+    char sbuf[10];
+	uint8_t b0=0, b1=0;
+	int cs = 0;
+	int i;
+
+	while ((b0=uartGetByte())<0);   
+	cs ^= b0;
+	
+	if (b0>=10) b0=0;
+	
+	for (i=0; i<b0; i++)
+	{
+		while ((b1=uartGetByte())<0); 	
+		cs ^= b1;
+		sbuf[i] = b1;
+	}
+	
+	if (b1 == (cs&0x7f)) 
+		send_bus_str(sbuf, b0);
+	
+	return (b1 != (cs&0x7f));
+}
+
+
+int bin_respond_H(int mt)
+{
+	SendResponse('H', VERSION);
+	return 0;
+}
+
+
+/***************************
+
 l basic command response
 
 ***************************/
 
-int bin_basicdownload_response(int mt)
+int bin_respond_basicdownload(int mt)
 {
 
 	SendResponse('l', VERSION);
@@ -513,6 +561,15 @@ int bin_read_request()
 			else
 				return mt;
 		}	
+				
+		if (mt=='H')
+		{
+			if (bin_read_H())
+				return -1;
+			else
+				return mt;
+		}	
+		
 		
 		if (mt=='P' || mt=='y' || mt=='Y')
 		{
@@ -549,9 +606,7 @@ void experimental_binloop()
 		switch (r)
 		{
 		case 'l':
-		    //load basic program 
-			bin_basicdownload_response(r);
-			break;
+			bin_respond_basicdownload(r); break;
 		case 'v':
 			bin_respond_ver(r); break;
 		case 'q':
@@ -570,6 +625,8 @@ void experimental_binloop()
 			bin_respond_x(r); break;		
 		case 'P':
 			bin_respond_p(r); break;		
+		case 'H':
+			bin_respond_H(r); break;	
 		case 'p':
 			// exit back to idle mode
 			return;
