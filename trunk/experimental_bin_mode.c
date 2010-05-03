@@ -375,7 +375,8 @@ int bin_read_x()
 	for (c=0; (c<bsize && c<MAX_INP_BUF); c++)
 	{			
 		while ((b0=uartGetByte())<0);
-		buff[c]=b0; 	// load each byte			
+		//buff[c]=b0; 	// load each byte	
+		sciTx0Data(b0&0xFF);		
 		cs ^= b0;		// calculate checksum
 	}
 	while ((b0=uartGetByte())<0);
@@ -395,10 +396,10 @@ int bin_respond_x(int mt)
 	if (mt=='X')
 	{
 		// transmit  buffer
-		for (c=0; (c<bsize && c<MAX_INP_BUF); c++)
-		{	
-			sciTx0Data(buff[c]&0xFF);
-		}	
+		//for (c=0; (c<bsize && c<MAX_INP_BUF); c++)
+		//{	
+			//sciTx0Data(buff[c]&0xFF);
+		//}	
 		// get response (or timeout)				
 		b1 = sciRx0Ready();
 		b2 = sciRx0Ready();
@@ -416,10 +417,10 @@ int bin_respond_x(int mt)
 		
 		// transmit  buffer (after sending respose - should be quicker - 
 		// not waiting for reply
-		for (c=0; (c<bsize && c<MAX_INP_BUF); c++)
-		{	
-			sciTx0Data(buff[c]&0xFF);
-		}
+		//for (c=0; (c<bsize && c<MAX_INP_BUF); c++)
+		//{	
+		//	sciTx0Data(buff[c]&0xFF);
+		//}
 	}
 	return 0;
 }
