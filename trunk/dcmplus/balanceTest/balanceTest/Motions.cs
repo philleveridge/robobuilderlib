@@ -10,6 +10,8 @@ namespace Demo
     {
         bool first = false;
         RobobuilderLib.trigger trg;
+        RobobuilderLib.wckMotion w;
+        int n_of_s;
 
         byte[][] rstep = new byte[][] {
             new byte[] {123, 156, 212,  80, 108, 126, 73, 40, 150, 141,  68, 44, 40, 138, 208, 195},
@@ -34,7 +36,7 @@ namespace Demo
             new byte[] {123, 156, 212, 80,  108, 126, 73, 40, 150, 141, 68,  44, 40, 138, 208, 195}
             };
 
-        void trgAct (bool st, RobobuilderLib.wckMotion w)
+        void trgAct(bool st, RobobuilderLib.wckMotion w)
         {
             trg = new RobobuilderLib.trigger();
 
@@ -46,31 +48,41 @@ namespace Demo
             trg.dbg = true;      // debug on
             trg.DCMP = true;
         }
- 
-        public void dtest (RobobuilderLib.wckMotion w) 
-        {
-           while (!Console.KeyAvailable)
-           {
-               w.wckReadPos(30, 5);
-               Console.WriteLine("*".PadLeft(w.respnse[0],'='));
-            }
-        }
 
         byte[][] reverse(byte[][] z)
         {
-            byte[][] r = z;
-            // tbd
+            byte[][] r = new byte[z.Length][];
+
+            for (int i = 0; i < z.Length; i++)
+                r[i] = z[z.Length-i-1];
+
             return r;
         }
 
         byte[] cv18(byte[] a) // hip conversion
         {
-            a[0] += 18;
-            a[5] -= 20; 
-            return a;
+            byte[] r = new byte[a.Length];
+
+            for (int i = 0; i < a.Length; i++)
+                r[i] = a[i];
+
+            if (n_of_s > 16)
+            {
+                r[0] += 18;
+                r[5] -= 20;
+            }
+            return r;
         }
 
-        bool lpose(int dur, int stp, byte[][] pos, bool lpst, RobobuilderLib.wckMotion w)
+        void setallLeds(int n, bool a, bool b)
+        {
+            for (int i = 0; i <= n; i++)
+            {
+                w.wckWriteIO(i, a, b);
+            }
+        }
+
+        bool lpose(int dur, int stp, byte[][] pos, bool lpst)
         {
             for (int i=0; i<pos.Length; i++)
             {
@@ -86,11 +98,13 @@ namespace Demo
             bool lpst = false;
             int cnt= 0;
             bool dir = true;
+            w = p.w;
+            n_of_s = p.nos;
 
             p.readdistance();  
             Program.pause();
 
-            //(setallLeds 15 dir (not dir))
+            setallLeds (15, dir, !dir);
    
             p.w.reset_timer();
    
@@ -98,29 +112,27 @@ namespace Demo
             {
                 if (dir)
                 {
-                    lpst = lpose(25, 1, rstep, false,p.w);
+                    lpst = lpose(25, 1, rstep, false);
                     Console.Write("R");
-                    lpst = lpose(25, 1, lstep, false, p.w);
+                    lpst = lpose(25, 1, lstep, false);
                     Console.Write("L");
                 }
                 else
                 {
-                    lpst = lpose(25, 1, reverse(lstep), false, p.w);
+                    lpst = lpose(25, 1, reverse(lstep), false);
                     Console.Write("l");
-                    lpst = lpose(25, 1, reverse(rstep), false, p.w);
+                    lpst = lpose(25, 1, reverse(rstep), false);
                     Console.Write("r");
                 }
 				if (cnt++ >4) 
                 {
 					cnt= 0; 
 					dir = !dir;
-					//	;(setallLeds 15 dir (not dir))
+					setallLeds (15, dir, !dir);
                 }
             }
-	        //;(lpose 25 1 (list basic) false)
 	        p.standup();
-            //(setallLeds 15 false false)
-	        //(dcmodeOff)
+            setallLeds (15, false, false);
         }
 
     }

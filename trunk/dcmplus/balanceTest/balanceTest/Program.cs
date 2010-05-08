@@ -15,6 +15,8 @@ namespace Demo
         public wckMotion w;
         int gx=0, gy=0, gz=0;
 
+        public int nos = 0;
+
         long   st;
 
         static public void sleep(double t)
@@ -115,12 +117,15 @@ namespace Demo
         }
 
         byte[] basic18 = new byte[]  {143, 179, 198,  83, 106, 106,  69,  48, 167, 141,  47,  47,  49, 199, 192, 204, 122, 125, 127 };	
+        byte[] basic16 = new byte[]  {125, 179, 199,  88, 108, 126,  72,  49, 163, 141,  51,  47,  49, 199, 205, 205 };
+        
         byte[] ub_Huno = new byte[]  {174, 228, 254, 130, 185, 254, 180, 126, 208, 208, 254, 224, 198, 254, 200, 254};
         byte[] lb_Huno = new byte[]  {  1,  70, 124,  40,  41,  73,  22,   1, 120,  57,   1,  46,   1,   1,  25,  40};
 
         public void standup()
         {
-            w.PlayPose(1000, 10, basic18, true);
+            if (nos < 16) return;
+            w.PlayPose(1000, 10, (nos<18)? basic16:basic18, true);
         }
 
         int[] rmatch(int g, compare[] c)
@@ -194,6 +199,15 @@ namespace Demo
             }
             else
                 return 0;
+        }
+
+        public void dtest()
+        {
+            while (!Console.KeyAvailable)
+            {
+                w.wckReadPos(30, 5);
+                Console.WriteLine("*".PadLeft(w.respnse[0], '='));
+            }
         }
 
         void calibrateXYZ()
@@ -275,15 +289,94 @@ namespace Demo
             }      
         }
 
+        public void headleft()  { setServoPos(20,  85, 4); }
 
+        public void headright() { setServoPos(20, 205, 4); }
+
+        public void headfw()    { setServoPos(20, 145, 4); }
+
+        public void scan()
+        {
+            Utility u = new Utility();
+            u.p1 = new Pen (Color.FromName ("Black"));
+            u.p1.DashStyle = System.Drawing.Drawing2D.DashStyle.DashDot;
+            u.createwindow("scan demo", 250, 250);
+            u.win.Show();
+
+            int centre = 142;
+            int left  = centre + 40;
+            int right = centre - 40;
+            
+
+            while (!Console.KeyAvailable)
+            {
+                    scanw( right,left,  1, u);
+                    scanw( left, right,-1, u);
+            }
+            u.cwin();
+            headfw();
+        }
+
+        void scanw(int a, int b, int inc, Utility u)
+        {
+            int i = a;
+            int[] h = new int[1000];
+            int hc = 0;
+
+            while ((inc > 0 && i < b) || (inc < 0 && i > b))
+            {
+                int d = readdistance();
+                int n;
+                if (inc>0)
+                    n = -100 + (i - a) * (200 / (b - a));
+                else
+                    n = -100 + (i - b) * (200 / (a - b));
+
+                u.plot(String.Format("D={0:#}", d), n, d);
+
+                if (hc < 998)
+                {
+                    h[hc++] = n;
+                    h[hc++] = d;
+                    u.drawlist(h, hc, new Pen (Color.FromName("Blue")));
+                }
+                else
+                    hc = 0;
+
+                setServoPos (20, i, 4);
+                i += inc;
+            }
+        }
+
+        public void swin(Utility u)
+        {
+            u.p1 = new Pen(Color.FromName("Black"));
+            u.p1.DashStyle = (System.Drawing.Drawing2D.DashStyle.DashDot);
+            u.p2 = new Pen(Color.FromName("Red"));
+            u.createwindow("Balance Demo", 250, 250);
+            u.win.Show();
+        }
+
+        public void pwin(Utility u, int coord, int n, double t)
+        {
+            int nx = ((n * 10) % 280) - 140;
+            int ny = 4 * coord;
+
+            u.plot("(Acc=" + ny + " Rate=" + String.Format("{0:#.#}", t) + " ms)", nx, ny);
+
+            u.drawlist(new int[] { -125, 40, 125, 40 }, 4, (Pen)((ny > 40) ? u.p2 : u.p1)); //limit
+            u.drawlist(new int[] { -125, -40, 125, -40 }, 4, (Pen)((ny < -40) ? u.p2 : u.p1)); //limit     
+        }
 
         void balanceTest()
         {
             int x, z;
+            int[] h = new int[1000];
+            int hc = 0;
 
             Double rt=0;
             Utility u = new Utility();
-            u.swin();
+            swin(u);
 
             standup();
 
@@ -303,7 +396,16 @@ namespace Demo
                 }
                 getZX(out x, out z);
 
-                u.pwin(z, nc, rt );
+                pwin(u, z, nc, rt );
+                if (hc < 998)
+                {
+                    h[hc++] = z; h[hc++] = nc;
+                }
+                else
+                    hc = 0;
+
+                if (hc > 6)
+                    u.drawlist(h, hc, new Pen(Color.FromName("Blue")));
 
                 sbase = autobalance(sbase, x, z);
                 spos(sbase);
@@ -312,37 +414,66 @@ namespace Demo
             u.cwin();
         }
 
+        int countServos(int m)
+        {
+            for (int i = 0; i < m; i++)
+            {
+                if (!w.wckReadPos(i))
+                {
+                    nos = i;
+                    return i;
+                }
+            }
+            nos = m;
+            return m;
+        }
+
+        static public bool dotest(string s)
+        {
+            Console.Write("Run test  : " + s + " [Y | N]? ");
+
+            int ch=0;
+            while (ch != 'y' && ch != 'n')
+            {
+                while (!Console.KeyAvailable) ;
+                ConsoleKeyInfo k = Console.ReadKey(true);
+                ch = Char.ToLower(k.KeyChar);
+            }
+            Console.WriteLine((char)ch);
+            return (ch == 'y');
+ 
+        }
+
         static void Main(string[] args)
         {
             string port = "COM5";
+            if (args.Length > 0) port = args[0];
 
             Program g = new Program();
             g.p = new PCremote(port);
             g.w = new wckMotion(g.p);
 
-            int test = 1;
+            Console.WriteLine("Demo - Port: {0} - {1} servos", port, g.countServos(22));       
 
-            Console.WriteLine("Demo - Port: " + port);
-
-            if (test == 1)
+            if (Program.dotest("Balance test"))
             {
-                Console.WriteLine("Balance test");
                 g.balanceTest();
             }
 
-            if (test == 2)
+            if (Program.dotest("Scan test"))
             {
-                Console.WriteLine("Speech Demo");
+                g.scan();
+            }
+
+            if (Program.dotest("Speech Demo"))
+            {
                 Speech s = new Speech();
                 s.voicemenu(g);
             }
 
-            if (test == 3)
+            if (Program.dotest("Walk Demo"))
             {
-                Console.WriteLine("Walk Demo");
                 Motions m = new Motions();
-                m.dtest(g.w);
-                pause();
                 m.panda(g);
             }
 
