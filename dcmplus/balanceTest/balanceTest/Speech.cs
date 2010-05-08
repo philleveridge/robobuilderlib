@@ -11,8 +11,10 @@ namespace Demo
         SpeechSynthesizer sp;
         SpeechRecognitionEngine rec = null;
 
+        RobobuilderLib.wckMotion w;
+
         string greet;
-        String[] c = new String[] { "stand", "close", "open", "exit" };
+        String[] c = new String[] { "stand", "close", "open", "left", "right", "forward", "scan", "exit" };
 
         public Speech()
         {
@@ -41,6 +43,7 @@ namespace Demo
 
         public void voicemenu(Program p)
         {
+            w = p.w;
             sp.Speak(greet);
             Console.WriteLine("Options:");
             foreach (string pmpt in c)
@@ -59,6 +62,8 @@ namespace Demo
                     return;
                 }
                 
+                Console.WriteLine("{0} : {1}%", r.Text, r.Confidence);
+
                 switch (r.Text)
                 {
                     case "exit":
@@ -73,6 +78,18 @@ namespace Demo
                         break;
                     case "close":
                         p.closegripper(5);
+                        break;
+                    case "left":
+                        p.headleft();
+                        break;
+                    case "right":
+                        p.headright();
+                        break;
+                    case "forward":
+                        p.headfw();
+                        break;
+                    case "scan":
+                        p.scan();
                         break;
                 }
             }
