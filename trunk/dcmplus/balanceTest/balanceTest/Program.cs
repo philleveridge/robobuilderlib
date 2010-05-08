@@ -321,7 +321,8 @@ namespace Demo
         {
             int i = a;
             int[] h = new int[1000];
-            int hc = 0;
+
+            u.reset_history();
 
             while ((inc > 0 && i < b) || (inc < 0 && i > b))
             {
@@ -333,15 +334,8 @@ namespace Demo
                     n = -100 + (i - b) * (200 / (a - b));
 
                 u.plot(String.Format("D={0:#}", d), n, d);
-
-                if (hc < 998)
-                {
-                    h[hc++] = n;
-                    h[hc++] = d;
-                    u.drawlist(h, hc, new Pen (Color.FromName("Blue")));
-                }
-                else
-                    hc = 0;
+                u.store(n,d);
+                u.drawlist(u.history, u.hn, new Pen (Color.FromName("Blue")));
 
                 setServoPos (20, i, 4);
                 i += inc;
@@ -363,22 +357,18 @@ namespace Demo
             int ny = 4 * coord;
 
             u.plot("(Acc=" + ny + " Rate=" + String.Format("{0:#.#}", t) + " ms)", nx, ny);
-
             u.drawlist(new int[] { -125, 40, 125, 40 }, 4, (Pen)((ny > 40) ? u.p2 : u.p1)); //limit
-            u.drawlist(new int[] { -125, -40, 125, -40 }, 4, (Pen)((ny < -40) ? u.p2 : u.p1)); //limit     
+            u.drawlist(new int[] { -125, -40, 125, -40 }, 4, (Pen)((ny < -40) ? u.p2 : u.p1)); //limit    
+            u.store(nx,ny);
+            u.drawlist(u.getlast(6), 6, new Pen(Color.FromName("Blue")));
         }
 
         void balanceTest()
         {
             int x, z;
-            int[] h = new int[1000];
-            int hc = 0;
-
             Double rt=0;
             Utility u = new Utility();
             swin(u);
-
-            standup();
 
             byte[] sbase = getallServos(16);
             calibrateXYZ();
@@ -395,17 +385,7 @@ namespace Demo
                     st = DateTime.Now.Ticks;
                 }
                 getZX(out x, out z);
-
                 pwin(u, z, nc, rt );
-                if (hc < 998)
-                {
-                    h[hc++] = z; h[hc++] = nc;
-                }
-                else
-                    hc = 0;
-
-                if (hc > 6)
-                    u.drawlist(h, hc, new Pen(Color.FromName("Blue")));
 
                 sbase = autobalance(sbase, x, z);
                 spos(sbase);
@@ -453,7 +433,9 @@ namespace Demo
             g.p = new PCremote(port);
             g.w = new wckMotion(g.p);
 
-            Console.WriteLine("Demo - Port: {0} - {1} servos", port, g.countServos(22));       
+            Console.WriteLine("Demo - Port: {0} - {1} servos", port, g.countServos(22));
+
+            g.standup();
 
             if (Program.dotest("Balance test"))
             {
