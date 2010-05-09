@@ -12,12 +12,16 @@ namespace Demo
         SpeechRecognitionEngine rec = null;
 
         RobobuilderLib.wckMotion w;
+        Program p;
 
         string greet;
-        String[] c = new String[] { "stand", "close", "open", "left", "right", "forward", "scan", "exit" };
+        String[] c = new String[] { "stand", "close", "open", "left", "right", "forward", "look", "exit" };
 
-        public Speech()
+        public Speech(Program p1)
         {
+            p = p1;
+            w = p.w;
+
             sp = new SpeechSynthesizer();
 
             if (DateTime.Now.Hour < 12) 
@@ -41,9 +45,11 @@ namespace Demo
             }
         }
 
-        public void voicemenu(Program p)
+        public void voicemenu()
         {
-            w = p.w;
+            Grip gr = new Grip(p);
+            Scan sn = new Scan(p);
+
             sp.Speak(greet);
             Console.WriteLine("Options:");
             foreach (string pmpt in c)
@@ -74,22 +80,40 @@ namespace Demo
                         p.standup();
                         break;
                     case "open":
-                        p.opengripper(5);
+                        if (p.gripservo)
+                            gr.opengripper(5);
+                        else
+                            sp.Speak("no");
                         break;
                     case "close":
-                        p.closegripper(5);
+                        if (p.gripservo)
+                            gr.closegripper(5);
+                        else
+                            sp.Speak("no");
                         break;
                     case "left":
-                        p.headleft();
+                        if (p.headservo)
+                            p.headleft();
+                        else
+                            sp.Speak("no");
                         break;
                     case "right":
-                        p.headright();
+                        if (p.headservo)
+                            p.headright();
+                        else
+                            sp.Speak("no");
                         break;
                     case "forward":
-                        p.headfw();
+                        if (p.headservo)
+                            p.headfw();
+                        else
+                            sp.Speak("no");
                         break;
-                    case "scan":
-                        p.scan();
+                    case "look":
+                        if (p.headservo)
+                            sn.scan();
+                        else
+                            sp.Speak("no");
                         break;
                 }
             }
