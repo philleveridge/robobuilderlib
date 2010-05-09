@@ -49,8 +49,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Balance.cs" />
+    <Compile Include="Grip.cs" />
+    <Compile Include="Scan.cs" />
     <Compile Include="Speech.cs" />
-    <Compile Include="Motions.cs" />
+    <Compile Include="Walk.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="utlility.cs" />

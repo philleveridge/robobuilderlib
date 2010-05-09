@@ -5,6 +5,51 @@ using System.Text;
 
 namespace Demo
 {
+    class CList
+    {
+        const int MAXLIST = 1000;
+        int[] history = new int[MAXLIST];
+        int hn;
+
+        public CList()
+        {
+            hn = 0;
+        }
+
+        public int count()
+        {
+            return hn;
+        }
+
+        public void store(int x, int y)
+        {
+            if (hn > MAXLIST-2) hn = 0;
+            history[hn++] = x;
+            history[hn++] = y;
+        }
+
+        public void reset_history()
+        {
+            hn = 0;
+        }
+
+        public int[] getAll()
+        {
+            return history;
+        }
+
+        public int[] getlast(int n)
+        {
+            int[] p = new int[n];
+            for (int i = 0; i < n; i++)
+            {
+                if (hn - n + i > 0)
+                    p[i] = history[hn - n + i];
+            }
+            return p;
+        }
+    }
+
     class Utility
     {
         public Form win = null;
@@ -27,32 +72,6 @@ namespace Demo
             win.Controls.Add( pb);
             g=pb.CreateGraphics();
             return win;
-        }
-
-        public int[] history = new int[1000];
-        public int hn = 0;
-
-        public void store(int x, int y)
-        {
-            if (hn > 998) hn = 0;
-            history[hn++] = x;
-            history[hn++] = y;
-        }
-
-        public void reset_history()
-        {
-            hn = 0;
-        }
-
-        public int[] getlast(int n)
-        {
-            int[] p = new int[n];
-            for (int i = 0; i < n; i++)
-            {
-                if (hn-n+i>0) 
-                    p[i] = history[hn - n + i];
-            }
-            return p;
         }
 
         public void cwin()
