@@ -15,7 +15,6 @@ namespace Demo
         Program p;
 
         string greet;
-        String[] c = new String[] { "stand", "close", "open", "left", "right", "forward", "look", "exit" };
 
         public Speech(Program p1)
         {
@@ -35,18 +34,33 @@ namespace Demo
             else
                 greet = "Good Evening";
 
+
+        }
+
+        void speak(string txt)
+        {
+            sp.Speak(txt);
+            Console.WriteLine(txt);
+        }
+
+        public void voicemenu()
+        {
+            String[] c = new String[] { "stand", "close", "open", "left", "right", "forward", "look", "exit" };
+            voicemenu(c);
+        }
+
+        public void voicemenu(String[] c)
+        {
             if (rec == null)
             {
-                System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo ("en-GB");
+                System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en-GB");
                 rec = new SpeechRecognitionEngine();
                 Grammar g = new Grammar(new GrammarBuilder(new Choices(c)));
                 rec.LoadGrammar(g);
                 rec.SetInputToDefaultAudioDevice();
             }
-        }
 
-        public void voicemenu()
-        {
+
             Grip gr = new Grip(p);
             Scan sn = new Scan(p);
 
@@ -58,13 +72,13 @@ namespace Demo
             bool loop = true;
             while (loop)
             {
-                sp.Speak("Ready");
-                Console.Write("Ready> ");
+                speak("Ready");
+                Console.Write("> ");
                 RecognitionResult r = rec.Recognize();
 
                 if (r == null)
                 {
-                    sp.Speak("Timeout");
+                    speak("Timeout");
                     return;
                 }
                 
@@ -73,7 +87,7 @@ namespace Demo
                 switch (r.Text)
                 {
                     case "exit":
-                        sp.Speak("Goodbye");
+                        speak("Goodbye");
                         loop = false;
                         break;
                     case "stand":
@@ -83,37 +97,37 @@ namespace Demo
                         if (p.gripservo)
                             gr.opengripper(5);
                         else
-                            sp.Speak("no");
+                            speak("no");
                         break;
                     case "close":
                         if (p.gripservo)
                             gr.closegripper(5);
                         else
-                            sp.Speak("no");
+                            speak("no");
                         break;
                     case "left":
                         if (p.headservo)
                             p.headleft();
                         else
-                            sp.Speak("no");
+                            speak("no");
                         break;
                     case "right":
                         if (p.headservo)
                             p.headright();
                         else
-                            sp.Speak("no");
+                            speak("no");
                         break;
                     case "forward":
                         if (p.headservo)
                             p.headfw();
                         else
-                            sp.Speak("no");
+                            speak("no");
                         break;
                     case "look":
                         if (p.headservo)
                             sn.scan();
                         else
-                            sp.Speak("no");
+                            speak("no");
                         break;
                 }
             }

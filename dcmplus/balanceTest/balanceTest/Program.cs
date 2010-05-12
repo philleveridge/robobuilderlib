@@ -68,23 +68,39 @@ namespace Demo
             return r;
         }
 
+        public bool psdon()
+        {
+            return (w.wckReadPos(30, 3));
+        }
+
+        public bool psdoff()
+        {
+            return (w.wckReadPos(30, 4));
+        }
+
         public int readdistance()
         {
             if (w.wckReadPos(30, 5))
             {
                 return w.respnse[0];
             }
-            else
-                return 0;
+            return 0;
         }
 
-        public void headleft()  { setServoPos(20,  85, 4); }
+        public void headleft()  
+        { 
+            setServoPos(20,  85, 4); 
+        }
 
-        public void headright() { setServoPos(20, 205, 4); }
+        public void headright() 
+        { 
+            setServoPos(20, 205, 4); 
+        }
 
-        public void headfw()    { setServoPos(20, 145, 4); }
-
-
+        public void headfw()    
+        { 
+            setServoPos(20, 145, 4); 
+        }
 
         /*
          * 
