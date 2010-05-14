@@ -18,9 +18,6 @@ namespace Demo
         public bool headservo;
         public bool gripservo;
 
-        byte[] basic18 = new byte[] { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125, 255 };
-        byte[] basic16 = new byte[] { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
-        
 
         static public void sleep(double t)
         {
@@ -52,7 +49,7 @@ namespace Demo
         public void standup()
         {
             if (nos < 16) return;
-            w.PlayPose(1000, 10, (nos<18)? basic16:basic18, true);
+            w.PlayPose(1000, 10, (nos < 18) ? wckMotion.basic16 : wckMotion.basic18, true);
         }
 
         public byte[] getallServos(int p)
