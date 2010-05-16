@@ -69,7 +69,7 @@ namespace Demo
             //Console.WriteLine("x={0}, z={1}", x, z);
         }
 
-        int[] rmatch(int g, compare[] c)
+        int[] rmatch(int g,  compare[] c)
         {
             int[] res = null;
             foreach (compare r in c)
@@ -123,11 +123,6 @@ namespace Demo
             Console.WriteLine("calibrated: {0},{1},{2}", gx, gy, gz);
         }
 
-        int[] rmatch(int n)
-        {
-            int[] r = null;
-            return r;
-        }
 
         int[] add_delta(int[] a, int[] b)
         {

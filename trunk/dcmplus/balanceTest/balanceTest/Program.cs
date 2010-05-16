@@ -153,10 +153,24 @@ namespace Demo
             g.p = new PCremote(port);
             g.w = new wckMotion(g.p);
 
+            Console.WriteLine("Demo - Port: {0} - {1} servos", port, g.countServos(22));
+
             g.headservo = g.testServo(20);
             g.gripservo = g.testServo(18);
 
-            Console.WriteLine("Demo - Port: {0} - {1} servos", port, g.countServos(22));
+            Console.WriteLine("Gripper [{0}] - Head [{1}]", (g.gripservo?"Yes":"No"), (g.headservo?"Yes":"No"));
+
+
+            if (g.testServo(30))
+            {
+                Console.WriteLine("DCMP mode assumed");
+                g.w.DCMP = true;
+            }
+            else
+            {
+                Console.WriteLine("Standard firmware assumed {0}", g.p.readVer());
+            }
+
 
             g.standup();
 
@@ -179,7 +193,7 @@ namespace Demo
             if (Program.dotest("Speech Demo"))
             {
                 Speech s = new Speech(g);
-                s.voicemenu();
+                s.voicemenu2();
             }
 
             if (Program.dotest("Gripper Demo"))
