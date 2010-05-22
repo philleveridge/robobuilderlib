@@ -1,5 +1,7 @@
 Archive member included because of file (symbol)
 
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o)
+                              battery.o (__divmodhi4)
 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
                               c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o (exit)
 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
@@ -22,6 +24,8 @@ c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
                               c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o) (__fixsfsi)
 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
                               c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o) (__thenan_sf)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodhi4.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o) (__udivmodhi4)
 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
                               c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o) (__prologue_saves__)
 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
@@ -40,23 +44,40 @@ c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
 Allocating common symbols
 Common symbol       size              file
 
+F_PS_PLUGGED        0x1               battery.o
+gMIN                0x1               battery.o
 x_value             0x2               accelerometer.o
+F_CHARGING          0x1               battery.o
 y_value             0x2               accelerometer.o
 gAccX               0x2               accelerometer.o
+gHOUR               0x1               battery.o
 gVOLTAGE            0x2               adc.o
 gRx1_DStep          0x2               main.o
 gAccY               0x2               accelerometer.o
+g10Mtimer           0x2               battery.o
 gPSD_val            0x1               adc.o
 gAccZ               0x2               accelerometer.o
 z_value             0x2               accelerometer.o
+gPSplugCount        0x2               battery.o
 gRx1Step            0x2               main.o
+ibcnt               0x2               femto.o
 gAD_val             0x1               adc.o
+gBtn_val            0x1               main.o
+g10MSEC             0x2               battery.o
 gCMD                0x1               main.o
+gSEC                0x1               battery.o
 gAD_Ch_Index        0x1               adc.o
 gMIC_val            0x1               adc.o
+inputbuffer         0x64              femto.o
 gSoundLevel         0x1               adc.o
+gSEC_DCOUNT         0x2               battery.o
+gPwrLowCount        0x2               battery.o
+gMIN_DCOUNT         0x2               battery.o
 gFileCheckSum       0x1               main.o
+gPSunplugCount      0x2               battery.o
+gBtnCnt             0x2               main.o
 gRxData             0x1               main.o
+ibptr               0x2               femto.o
 gDistance           0x1               adc.o
 
 Memory Configuration
@@ -77,6 +98,8 @@ LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm1
 LOAD main.o
 LOAD accelerometer.o
 LOAD adc.o
+LOAD battery.o
+LOAD femto.o
 LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a
 LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a
 LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a
@@ -171,7 +194,7 @@ LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000     0x1578
+.text           0x00000000     0x2016
  *(.vectors)
  .vectors       0x00000000       0x8c c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
                 0x00000000                __vectors
@@ -257,89 +280,126 @@ LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a
                 0x000000ca                __vector_26
                 0x000000ca                __vector_14
                 0x000000ca                __vector_10
-                0x000000ca                __vector_16
                 0x000000ca                __vector_20
- .text          0x000000ce      0x2f4 main.o
+ .text          0x000000ce      0x390 main.o
                 0x0000010a                HW_init
-                0x00000234                __vector_30
-                0x000001fe                main
+                0x000002d0                __vector_30
+                0x000001fe                ProcButton
+                0x0000024e                ReadButton
+                0x00000288                main
                 0x000000ce                putByte
                 0x000001e2                SW_init
                 0x000000de                __vector_18
- .text          0x000003c2      0x37e accelerometer.o
-                0x0000044c                ack
-                0x000003dc                stop_accel
-                0x0000056c                tilt_setup
-                0x0000048c                done_read
-                0x000005ae                AccStop
-                0x0000046c                next_byte
-                0x000005f4                AccByteRead
-                0x000004a6                cbyte
-                0x0000065e                AccNotAckWrite
-                0x000003f4                read_value
-                0x0000041e                write_value
-                0x00000594                AccStart
-                0x000004b6                tilt_read
-                0x0000061e                AccAckRead
-                0x000003c2                start_accel
-                0x000005c6                AccByteWrite
-                0x000006a0                AccGetData
-                0x0000063e                AccAckWrite
-                0x00000678                Acc_init
- .text          0x00000740      0x258 adc.o
-                0x000007e2                PSD_off
-                0x00000980                Get_VOLTAGE
-                0x000007e6                Get_AD_PSD
-                0x000007cc                PSD_on
-                0x00000976                adc_mic
-                0x000007c0                ADC_set
-                0x00000762                __vector_21
-                0x000008d8                Get_AD_MIC
-                0x00000740                adc_volt
- .text          0x00000998        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
- .text          0x00000998        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
- .text          0x00000998       0x58 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o)
-                0x00000998                __fixunssfsi
- .text          0x000009f0      0x354 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o)
-                0x00000c88                __subsf3
-                0x00000cea                __addsf3
- .text          0x00000d44      0x154 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_div_sf.o)
-                0x00000d44                __divsf3
- .text          0x00000e98       0x60 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o)
-                0x00000e98                __gtsf2
- .text          0x00000ef8       0x60 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_ge_sf.o)
-                0x00000ef8                __gesf2
- .text          0x00000f58       0x60 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_lt_sf.o)
-                0x00000f58                __ltsf2
- .text          0x00000fb8       0xbc c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o)
-                0x00000fb8                __floatsisf
- .text          0x00001074       0xa8 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
-                0x00001074                __fixsfsi
- .text          0x0000111c        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
- .text          0x0000111c        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
- .text          0x0000111c        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
- .text          0x0000111c       0x9e c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o)
-                0x0000111c                __clzsi2
- .text          0x000011ba      0x1aa c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_pack_sf.o)
-                0x000011ba                __pack_f
- .text          0x00001364       0xf0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_unpack_sf.o)
-                0x00001364                __unpack_f
- .text          0x00001454       0xb2 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fpcmp_parts_sf.o)
-                0x00001454                __fpcmp_parts_f
- .text          0x00001506        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
-                0x00001506                . = ALIGN (0x2)
+ .text          0x0000045e      0x37e accelerometer.o
+                0x000004e8                ack
+                0x00000478                stop_accel
+                0x00000608                tilt_setup
+                0x00000528                done_read
+                0x0000064a                AccStop
+                0x00000508                next_byte
+                0x00000690                AccByteRead
+                0x00000542                cbyte
+                0x000006fa                AccNotAckWrite
+                0x00000490                read_value
+                0x000004ba                write_value
+                0x00000630                AccStart
+                0x00000552                tilt_read
+                0x000006ba                AccAckRead
+                0x0000045e                start_accel
+                0x00000662                AccByteWrite
+                0x0000073c                AccGetData
+                0x000006da                AccAckWrite
+                0x00000714                Acc_init
+ .text          0x000007dc      0x258 adc.o
+                0x0000087e                PSD_off
+                0x00000a1c                Get_VOLTAGE
+                0x00000882                Get_AD_PSD
+                0x00000868                PSD_on
+                0x00000a12                adc_mic
+                0x0000085c                ADC_set
+                0x000007fe                __vector_21
+                0x00000974                Get_AD_MIC
+                0x000007dc                adc_volt
+ .text          0x00000a34      0x4bc battery.o
+                0x00000b38                DetectPower
+                0x00000cc4                ChargeNiMH
+                0x00000e10                test
+                0x00000bd2                SelfTest1
+                0x00000a34                delay_ms
+                0x00000a52                __vector_16
+                0x00000dee                BreakModeCmdSend
+ .text          0x00000ef0      0x4f8 femto.o
+                0x00000ef0                getByte
+                0x00001206                printstr
+                0x00000fe0                readtoken
+                0x0000109a                readwhitespace
+                0x000012a8                readline
+                0x0000129e                prn
+                0x00001200                putch
+                0x00000f20                getch
+                0x000011fe                pr
+                0x0000128c                printline
+                0x00001070                isLetterorDigit
+                0x0000104e                isSymbol
+                0x00000f00                ungetch
+                0x0000121e                printint
+                0x00001344                repl
+                0x0000102c                isWhiteSpace
+                0x000010fa                eval
+                0x00000faa                readstring
+                0x000013d4                femto
+                0x00000f46                readdigit
+ .text          0x000013e8        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o)
+ .text          0x000013e8        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+ .text          0x000013e8        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
+ .text          0x000013e8       0x58 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o)
+                0x000013e8                __fixunssfsi
+ .text          0x00001440      0x354 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o)
+                0x000016d8                __subsf3
+                0x0000173a                __addsf3
+ .text          0x00001794      0x154 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_div_sf.o)
+                0x00001794                __divsf3
+ .text          0x000018e8       0x60 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o)
+                0x000018e8                __gtsf2
+ .text          0x00001948       0x60 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_ge_sf.o)
+                0x00001948                __gesf2
+ .text          0x000019a8       0x60 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_lt_sf.o)
+                0x000019a8                __ltsf2
+ .text          0x00001a08       0xbc c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o)
+                0x00001a08                __floatsisf
+ .text          0x00001ac4       0xa8 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
+                0x00001ac4                __fixsfsi
+ .text          0x00001b6c        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
+ .text          0x00001b6c        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodhi4.o)
+ .text          0x00001b6c        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
+ .text          0x00001b6c        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
+ .text          0x00001b6c       0x9e c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o)
+                0x00001b6c                __clzsi2
+ .text          0x00001c0a      0x1aa c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_pack_sf.o)
+                0x00001c0a                __pack_f
+ .text          0x00001db4       0xf0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_unpack_sf.o)
+                0x00001db4                __unpack_f
+ .text          0x00001ea4       0xb2 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fpcmp_parts_sf.o)
+                0x00001ea4                __fpcmp_parts_f
+ .text          0x00001f56        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
+                0x00001f56                . = ALIGN (0x2)
  *(.text.*)
- .text.libgcc   0x00001506        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
- .text.libgcc   0x00001506        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
- .text.libgcc   0x00001506       0x38 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
-                0x00001506                __prologue_saves__
- .text.libgcc   0x0000153e       0x36 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
-                0x0000153e                __epilogue_restores__
-                0x00001574                . = ALIGN (0x2)
+ .text.libgcc   0x00001f56       0x26 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o)
+                0x00001f56                __divmodhi4
+                0x00001f56                _div
+ .text.libgcc   0x00001f7c        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+ .text.libgcc   0x00001f7c        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
+ .text.libgcc   0x00001f7c       0x28 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodhi4.o)
+                0x00001f7c                __udivmodhi4
+ .text.libgcc   0x00001fa4       0x38 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
+                0x00001fa4                __prologue_saves__
+ .text.libgcc   0x00001fdc       0x36 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
+                0x00001fdc                __epilogue_restores__
+                0x00002012                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00001574        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
-                0x00001574                exit
-                0x00001574                _exit
+ .fini9         0x00002012        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+                0x00002012                exit
+                0x00002012                _exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -358,104 +418,131 @@ LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00001574        0x4 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+ .fini0         0x00002012        0x4 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
  *(.fini0)
-                0x00001578                _etext = .
+                0x00002016                _etext = .
 
-.data           0x00800100      0x108 load address 0x00001578
+.data           0x00800100      0x13e load address 0x00002016
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
- .data          0x00800100        0x0 main.o
- .data          0x00800100        0x0 accelerometer.o
- .data          0x00800100        0x0 adc.o
- .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
- .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
- .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o)
- .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o)
- .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_div_sf.o)
- .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o)
- .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_ge_sf.o)
- .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_lt_sf.o)
- .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o)
- .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
- .data          0x00800100        0x8 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
-                0x00800100                __thenan_sf
- .data          0x00800108        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
- .data          0x00800108        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
- .data          0x00800108        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o)
- .data          0x00800108        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_pack_sf.o)
- .data          0x00800108        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_unpack_sf.o)
- .data          0x00800108        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fpcmp_parts_sf.o)
- .data          0x00800108      0x100 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
-                0x00800108                __clz_tab
+ .data          0x00800100       0x26 main.o
+ .data          0x00800126        0x0 accelerometer.o
+ .data          0x00800126        0x0 adc.o
+ .data          0x00800126        0x0 battery.o
+ .data          0x00800126       0x10 femto.o
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o)
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o)
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o)
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_div_sf.o)
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o)
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_ge_sf.o)
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_lt_sf.o)
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o)
+ .data          0x00800136        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
+ .data          0x00800136        0x8 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
+                0x00800136                __thenan_sf
+ .data          0x0080013e        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodhi4.o)
+ .data          0x0080013e        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
+ .data          0x0080013e        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
+ .data          0x0080013e        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o)
+ .data          0x0080013e        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_pack_sf.o)
+ .data          0x0080013e        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_unpack_sf.o)
+ .data          0x0080013e        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fpcmp_parts_sf.o)
+ .data          0x0080013e      0x100 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
+                0x0080013e                __clz_tab
  *(.data*)
  *(.rodata)
  *(.rodata*)
  *(.gnu.linkonce.d*)
-                0x00800208                . = ALIGN (0x2)
-                0x00800208                _edata = .
-                0x00800208                PROVIDE (__data_end, .)
+                0x0080023e                . = ALIGN (0x2)
+                0x0080023e                _edata = .
+                0x0080023e                PROVIDE (__data_end, .)
 
-.bss            0x00800208       0x1c load address 0x00001680
-                0x00800208                PROVIDE (__bss_start, .)
+.bss            0x0080023e       0x9a load address 0x00002154
+                0x0080023e                PROVIDE (__bss_start, .)
  *(.bss)
- .bss           0x00800208        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
- .bss           0x00800208        0x0 main.o
- .bss           0x00800208        0x0 accelerometer.o
- .bss           0x00800208        0x1 adc.o
-                0x00800208                F_AD_CONVERTING
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_div_sf.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_ge_sf.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_lt_sf.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_pack_sf.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_unpack_sf.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fpcmp_parts_sf.o)
- .bss           0x00800209        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
+ .bss           0x0080023e        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
+ .bss           0x0080023e        0x0 main.o
+ .bss           0x0080023e        0x0 accelerometer.o
+ .bss           0x0080023e        0x1 adc.o
+                0x0080023e                F_AD_CONVERTING
+ .bss           0x0080023f        0x0 battery.o
+ .bss           0x0080023f        0x0 femto.o
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_div_sf.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_ge_sf.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_lt_sf.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodhi4.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_pack_sf.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_unpack_sf.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fpcmp_parts_sf.o)
+ .bss           0x0080023f        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
  *(.bss*)
  *(COMMON)
- COMMON         0x00800209        0x7 main.o
-                0x00800209                gRx1_DStep
-                0x0080020b                gRx1Step
-                0x0080020d                gCMD
-                0x0080020e                gFileCheckSum
-                0x0080020f                gRxData
- COMMON         0x00800210        0xc accelerometer.o
-                0x00800210                x_value
-                0x00800212                y_value
-                0x00800214                gAccX
-                0x00800216                gAccY
-                0x00800218                gAccZ
-                0x0080021a                z_value
- COMMON         0x0080021c        0x8 adc.o
-                0x0080021c                gVOLTAGE
-                0x0080021e                gPSD_val
-                0x0080021f                gAD_val
-                0x00800220                gAD_Ch_Index
-                0x00800221                gMIC_val
-                0x00800222                gSoundLevel
-                0x00800223                gDistance
-                0x00800224                PROVIDE (__bss_end, .)
-                0x00001578                __data_load_start = LOADADDR (.data)
-                0x00001680                __data_load_end = (__data_load_start + SIZEOF (.data))
+ COMMON         0x0080023f        0xa main.o
+                0x0080023f                gRx1_DStep
+                0x00800241                gRx1Step
+                0x00800243                gBtn_val
+                0x00800244                gCMD
+                0x00800245                gFileCheckSum
+                0x00800246                gBtnCnt
+                0x00800248                gRxData
+ COMMON         0x00800249        0xc accelerometer.o
+                0x00800249                x_value
+                0x0080024b                y_value
+                0x0080024d                gAccX
+                0x0080024f                gAccY
+                0x00800251                gAccZ
+                0x00800253                z_value
+ COMMON         0x00800255        0x8 adc.o
+                0x00800255                gVOLTAGE
+                0x00800257                gPSD_val
+                0x00800258                gAD_val
+                0x00800259                gAD_Ch_Index
+                0x0080025a                gMIC_val
+                0x0080025b                gSoundLevel
+                0x0080025c                gDistance
+ COMMON         0x0080025d       0x13 battery.o
+                0x0080025d                F_PS_PLUGGED
+                0x0080025e                gMIN
+                0x0080025f                F_CHARGING
+                0x00800260                gHOUR
+                0x00800261                g10Mtimer
+                0x00800263                gPSplugCount
+                0x00800265                g10MSEC
+                0x00800267                gSEC
+                0x00800268                gSEC_DCOUNT
+                0x0080026a                gPwrLowCount
+                0x0080026c                gMIN_DCOUNT
+                0x0080026e                gPSunplugCount
+ COMMON         0x00800270       0x68 femto.o
+                0x00800270                ibcnt
+                0x00800272                inputbuffer
+                0x008002d6                ibptr
+                0x008002d8                PROVIDE (__bss_end, .)
+                0x00002016                __data_load_start = LOADADDR (.data)
+                0x00002154                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x00800224        0x0
-                0x00800224                PROVIDE (__noinit_start, .)
+.noinit         0x008002d8        0x0
+                0x008002d8                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x00800224                PROVIDE (__noinit_end, .)
-                0x00800224                _end = .
-                0x00800224                PROVIDE (__heap_start, .)
+                0x008002d8                PROVIDE (__noinit_end, .)
+                0x008002d8                _end = .
+                0x008002d8                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -506,7 +593,7 @@ LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000       0x60
+.debug_aranges  0x00000000       0xa0
  *(.debug_aranges)
  .debug_aranges
                 0x00000000       0x20 main.o
@@ -514,61 +601,85 @@ LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a
                 0x00000020       0x20 accelerometer.o
  .debug_aranges
                 0x00000040       0x20 adc.o
+ .debug_aranges
+                0x00000060       0x20 battery.o
+ .debug_aranges
+                0x00000080       0x20 femto.o
 
 .debug_pubnames
-                0x00000000      0x309
+                0x00000000      0x597
  *(.debug_pubnames)
  .debug_pubnames
-                0x00000000       0xa2 main.o
+                0x00000000       0xd9 main.o
  .debug_pubnames
-                0x000000a2      0x165 accelerometer.o
+                0x000000d9      0x165 accelerometer.o
  .debug_pubnames
-                0x00000207      0x102 adc.o
+                0x0000023e      0x102 adc.o
+ .debug_pubnames
+                0x00000340      0x125 battery.o
+ .debug_pubnames
+                0x00000465      0x132 femto.o
 
-.debug_info     0x00000000      0xa10
+.debug_info     0x00000000     0x1412
  *(.debug_info)
- .debug_info    0x00000000      0x25c main.o
- .debug_info    0x0000025c      0x3ce accelerometer.o
- .debug_info    0x0000062a      0x3e6 adc.o
+ .debug_info    0x00000000      0x2b9 main.o
+ .debug_info    0x000002b9      0x3ce accelerometer.o
+ .debug_info    0x00000687      0x3e6 adc.o
+ .debug_info    0x00000a6d      0x33f battery.o
+ .debug_info    0x00000dac      0x666 femto.o
  *(.gnu.linkonce.wi.*)
 
-.debug_abbrev   0x00000000      0x4c2
+.debug_abbrev   0x00000000      0x877
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x133 main.o
- .debug_abbrev  0x00000133      0x1f1 accelerometer.o
- .debug_abbrev  0x00000324      0x19e adc.o
+ .debug_abbrev  0x00000000      0x144 main.o
+ .debug_abbrev  0x00000144      0x1f1 accelerometer.o
+ .debug_abbrev  0x00000335      0x19e adc.o
+ .debug_abbrev  0x000004d3      0x11a battery.o
+ .debug_abbrev  0x000005ed      0x28a femto.o
 
-.debug_line     0x00000000     0x1246
+.debug_line     0x00000000     0x1c18
  *(.debug_line)
- .debug_line    0x00000000      0x4dd main.o
- .debug_line    0x000004dd      0xa1a accelerometer.o
- .debug_line    0x00000ef7      0x34f adc.o
+ .debug_line    0x00000000      0x5b7 main.o
+ .debug_line    0x000005b7      0xa1a accelerometer.o
+ .debug_line    0x00000fd1      0x34f adc.o
+ .debug_line    0x00001320      0x479 battery.o
+ .debug_line    0x00001799      0x47f femto.o
 
-.debug_frame    0x00000000      0x250
+.debug_frame    0x00000000      0x440
  *(.debug_frame)
- .debug_frame   0x00000000       0x70 main.o
- .debug_frame   0x00000070      0x140 accelerometer.o
- .debug_frame   0x000001b0       0xa0 adc.o
+ .debug_frame   0x00000000       0x90 main.o
+ .debug_frame   0x00000090      0x140 accelerometer.o
+ .debug_frame   0x000001d0       0xa0 adc.o
+ .debug_frame   0x00000270       0x80 battery.o
+ .debug_frame   0x000002f0      0x150 femto.o
 
-.debug_str      0x00000000      0x312
+.debug_str      0x00000000      0x550
  *(.debug_str)
- .debug_str     0x00000000      0x132 main.o
-                                0x16b (size before relaxing)
- .debug_str     0x00000132       0xee accelerometer.o
+ .debug_str     0x00000000      0x175 main.o
+                                0x1ae (size before relaxing)
+ .debug_str     0x00000175      0x129 accelerometer.o
                                 0x1db (size before relaxing)
- .debug_str     0x00000220       0xf2 adc.o
+ .debug_str     0x0000029e       0xf2 adc.o
                                 0x1d5 (size before relaxing)
+ .debug_str     0x00000390       0xc7 battery.o
+                                0x1ce (size before relaxing)
+ .debug_str     0x00000457       0xf9 femto.o
+                                0x1c1 (size before relaxing)
 
-.debug_loc      0x00000000      0x206
+.debug_loc      0x00000000      0x435
  *(.debug_loc)
  .debug_loc     0x00000000       0x99 main.o
  .debug_loc     0x00000099       0xe9 accelerometer.o
  .debug_loc     0x00000182       0x84 adc.o
+ .debug_loc     0x00000206       0x18 battery.o
+ .debug_loc     0x0000021e      0x217 femto.o
 
 .debug_macinfo
  *(.debug_macinfo)
 OUTPUT(DCMP.elf elf32-avr)
 LOAD linker stubs
 
-.debug_ranges   0x00000000       0x18
+.debug_ranges   0x00000000       0x78
  .debug_ranges  0x00000000       0x18 adc.o
+ .debug_ranges  0x00000018       0x48 battery.o
+ .debug_ranges  0x00000060       0x18 femto.o
