@@ -12,13 +12,25 @@
 #include "global.h"
 #include "accelerometer.h"
 
-#define BR115200	7 
+#define BR115200			7 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
 
 // ($Rev:$)
 
 extern void Acc_init(void);
 extern void AccGetData(void);
+extern void delay_ms(int);
+
+//defined femto.c
+extern void femto(void);
+
+//defined battery.c
+
+extern BYTE F_PS_PLUGGED;
+extern void BreakModeCmdSend(void);
+extern void ChargeNiMH(void);
+extern void SelfTest1(void);
+extern void DetectPower(void);
 
 // UART variables-----------------------------------------------------------------
 
@@ -336,6 +348,75 @@ void SW_init(void) {
 	PSD_OFF;                // PSD distance sensor off
 }
 
+#define PF1_BTN_PRESSED 1
+#define PF2_BTN_PRESSED 3
+
+BYTE	gBtn_val;
+WORD	gBtnCnt;
+
+
+//(CHK_BIT5(PORTA))
+//------------------------------------------------------------------------------
+//  Check Routine
+//------------------------------------------------------------------------------
+void ReadButton(void)
+{
+	if((PINA&03) == 1)  // PF1 on, PF2 off
+	{
+		delay_ms(10);
+		if((PINA&1) == 1)
+		{
+			gBtn_val = PF1_BTN_PRESSED;
+		}
+	}
+	if((PINA&3) == 2)  // PF1 on, PF2 off
+	{
+		delay_ms(10);
+		if((PINA&3) == 2)
+		{
+			gBtn_val = PF2_BTN_PRESSED;
+		}
+	}
+} 
+
+
+//-----------------------------------------------------------------------------
+// Process routine
+//-----------------------------------------------------------------------------
+
+extern void printline(char *c);
+
+void ProcButton(void)
+{
+	if(gBtn_val == PF1_BTN_PRESSED)
+	{
+		//look to see if PF2 held down
+		printline("charge mode");
+		
+		gBtn_val = 0;
+		Get_VOLTAGE();
+		DetectPower();
+		
+		if(F_PS_PLUGGED)
+		{	
+			printline("plugged in");		
+			BreakModeCmdSend();		// put servo in breakmode (power off)
+			ChargeNiMH();  			//initiate battery charging	
+		}	
+		else
+		{
+			printline("Not plugged in");	
+		}
+	}
+	
+	if(gBtn_val == PF2_BTN_PRESSED)
+	{
+		//look to see if PF1 held down
+		gBtn_val = 0;
+		femto(); 					//start femto
+	}
+}
+
 
 
 //------------------------------------------------------------------------------
@@ -347,25 +428,33 @@ int main(void)
 	HW_init();					// Initialise ATMega Ports
 	SW_init();					// Initialise software states
 			
-	sei();						// enable interrupts		
+	sei();						// enable interrupts	
+	TIMSK |= 0x01;		
 	
 	PWR_LED1_ON; 				// Power green light on
 		
 	tilt_setup();				// initialise acceleromter
 	
-	RUN_LED2_OFF;
+	//call self test
+
+	SelfTest1();	
+	ReadButton();	
+	ProcButton();
+	
+	//otherwise DC mode!
 	
 	TIMSK &= 0xFE;
 	EIMSK &= 0xBF;
 	UCSR0B |= 0x80;
 	UCSR0B &= 0xBF;
 
-	PF1_LED1_ON;
+	RUN_LED2_OFF;
+	PF1_LED1_ON;    //DCmode
 	PF1_LED2_OFF;
 	PF2_LED_ON;
 	
 	gCMD=0;
-	
+			
 	while (1) { } // do nothing
 
 }
