@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Demo
 {
@@ -18,13 +15,15 @@ namespace Demo
 
     public class function
     {
-        public string name = "";
+        public string name    = "";
+        public bool   builtin = false;
     }
 
     public class environ
     {
         int cnt=0;
         const int MAX=30;
+        string reserve = "car.cdr.prn.set.cons.plus.minus.quote.atomp.listp.";
         string[] name = new string[MAX];
         object[] val  = new object[MAX];
 
@@ -35,7 +34,7 @@ namespace Demo
             {
                 if (name[i] == n)
                 {
-                    val[cnt] = v;
+                    val[i] = v;
                     return;
                 }
             }
@@ -47,6 +46,14 @@ namespace Demo
 
         public object find(string n)
         {
+            if (reserve.IndexOf(n) > 0)
+            {
+                function f=new function();
+                f.name=n;
+                f.builtin = true;
+                return f;
+            }
+
             for (int i = 0; i < cnt; i++)
             {
                 if (name[i] == n)
@@ -182,6 +189,11 @@ namespace Demo
             return (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n');
         }
 
+        bool isSymbol(int ch)
+        {
+            return (ch == '+' || ch == '-' || ch == '_' || ch == '.');
+        }
+
         bool isLetterorDigit(int ch)
         {
             return ((ch >= 'A' && ch <= 'Z' ) ||
@@ -285,16 +297,21 @@ namespace Demo
                         return args;
                 }
 
-                if (Char.IsLetter((char)ch))
+                if ( (ch>= 'A' && ch<= 'Z' ) || (ch>= 'a' && ch<= 'z' ))
                 {
                     ungetch(ch);
                     string t=readtoken();
 
                     if (!qf)
                     {
-                        function f = new function();
-                        f.name = t;
-                        return f;
+                        object o = env.find(t);
+                        if (o == null)
+                        {
+                            function f = new function();
+                            f.name = t;
+                            return f;
+                        }
+                        return o;
                     }
                     else
                     {
@@ -308,52 +325,60 @@ namespace Demo
         cell set(cell x)
         { 
             // set x y
-            return (cell)x.head;
+            env.set((string)x.head, x.tail);
+            return (cell)x.tail;
         }
 
-        object print(cell x)
+        object prn(cell x)
         {
-            printstr("(");
-            while (true)
+            object r = pr(x);
+            printline("");
+            return r;
+        }
+
+        object pr(cell x)
+        {
+            cell nxt = x;
+            object r=null;
+            while (nxt != null)
             {
-                if (x.head == null)
+                r = nxt.head;
+                if (nxt.head is string)
                 {
-                    printstr("NIL ");
+                    printstr((string)nxt.head);
                 }
-                else if (x.head is cell)
+                else if (nxt.head is int)
                 {
-                    print((cell)x.head);
+                    printstr(((int)nxt.head).ToString());
+                }
+                else if (nxt.head is function)
+                {
+                    printstr("Function: " + ((function)nxt.head).name);
+                }
+                else if (nxt.head is cell)
+                {
+                    printstr("(");
+                    pr((cell)nxt.head);
+                    printstr(")");
+                }
+                if (nxt.tail is cell)
+                {
+                    nxt = (cell)nxt.tail;
                 }
                 else
                 {
-                    printstr(x.head.ToString());
-                    printstr(" ");
-                }
-
-                if (x.tail == null)
-                {
-                    printstr(") ");
-                    return x.head;
-                }
-
-                if (x.tail is cell)
-                    x = (cell)x.tail;
-                else
-                {
-                    printstr(".");
-                    printstr((string)x.tail);
-                    return x.tail;
+                    if (nxt.tail != null) 
+                        printstr("." + (string)nxt.tail);
+                    nxt = null;
                 }
             }
+            return r;
         }
 
         object callFunction(cell f)
         {
             if (f.head is function)
             {
-                //printstr("Function ");
-                //printstr(((function)(f.head)).name);
-
                 //primitives
                 switch (((function)(f.head)).name)
                 {
@@ -371,8 +396,9 @@ namespace Demo
                         return listp(((cell)f.tail).head);
                     case "quote":
                         return f.tail;
-                    case "pr":
-                        return print((cell)f.tail);
+                    case "prn":
+                        object r = prn((cell)f.tail);
+                        return r;
                     case "set":
                         return set((cell)f.tail);
                     case "cons":
@@ -397,7 +423,7 @@ namespace Demo
                     object r = eval();
                     if (r is cell)
                     {
-                        print((cell)r);
+                        pr((cell)r);
                         printline("");
                     }
                     else
