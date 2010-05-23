@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include "Macro.h"
 
+extern int strcmp(char *, char *);
 /**************************************************************************************************/
 
 #define	RXC					7
@@ -105,17 +106,96 @@ void printint(int n) //tbd
 #define false 0
 #define null  0
 
-enum  TYPE {INT, BOOL, FUNCTION, STRING, CELL};
+enum  TYPE {INT, BOOL, FUNCTION, FLOAT, STRING, CELL, EMPTY};
 
-typedef struct cell {
-	void *head; 
-	void *tail;
-};
 
 struct object {
 	int type;
-	union { int n; struct cell c; char *s;};
-};
+	union { float 	floatpoint; 
+	        int 	number; 
+			char 	*string;
+			void 	*cell;
+		};
+} tOBJ;
+
+struct cell { 
+	struct object head;		
+	struct object tail;		
+} tCELL; 
+
+
+struct object car(struct object);
+
+typedef int (*PFI)();
+	
+typedef struct object (*PFP)(struct object);
+
+struct prim { char *name; PFI func; } prim_tab[] = { "car", car };
+
+
+/**************************************************************************************************/
+
+#define MEMSZ 100
+struct cell memory[MEMSZ];
+int mem=0;
+
+struct cell *newCell()
+{
+	if (mem<MEMSZ-1)
+	{
+		return &memory[mem++];
+	}
+	return (struct cell*)0;
+}
+
+void delCell(struct cell *p)
+{
+	//tbd
+}
+
+BYTE stringbuffer[1024];
+BYTE *stop=stringbuffer;
+
+void copyString(char *a, char *b, int n)
+{
+	while (n-->=0 && *b!=0)
+		*a++ = *b++;
+	*a=0; // null terminate
+}
+
+char *newString(int n, char *txt)
+{
+	char  *p;
+	if ((stop-stringbuffer)+ n+2 >=1024)
+	{
+	    printline("alloc failed");
+		return (char *)0;
+	}
+	if (n>=128)
+	{
+		printline("too big");
+		return (char *)0;
+	}
+	p=(char *)stop;
+	*p++ = (n%256)|0x80;  // use bit 7 to indicate in use
+	stop += (n+1);
+	copyString(p, txt, n);
+	return p;
+}
+
+void delString(char *p)
+{
+	*(p-1) = *(p-1) & 0x7f;  // clear bit7
+}
+
+void garbageCollect()
+{
+	//tbd
+	// free up string space
+	// free up cell space
+}
+
+/**************************************************************************************************/
 
 int readdigit()
 {
@@ -133,24 +213,51 @@ int readdigit()
 	return num;
 }
 
-char * readstring()
-{
-	char* str = "";
-	int ch = 0;
-	while ((ch = getch()) > 0)
-	{
-		if (ch=='"')
-			return str;
-		str += (char)ch;
-	}
-	return str;
-}
-
 	
 bool isWhiteSpace(int ch)
 {
 	return (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n');
 }
+
+
+char *readstring()
+{
+	char str[20];
+	char *p=str;
+	int ch = 0;
+	int  n=0;
+	while (((ch = getch()) > 0) && n<20)
+	{
+		if (ch=='"')
+		{
+			*p =0;
+			return newString(n, str);
+		}
+		*p++ = (char)ch;
+		n++;
+	}
+	return (char *)0; //error
+}
+
+char *readtoken()
+{
+	char str[20];
+	char *p=str;
+	int  n=0;	
+	int ch = 0;
+	while (((ch = getch()) > 0) && n<20)
+	{
+		if (isWhiteSpace((char)ch))
+		{
+			*p =0;
+			return newString(n, str);
+		}
+		*p++ =  (char)ch;
+		n++;
+	}
+	return (char *)0; //error
+}
+
 
 bool isSymbol(int ch)
 {
@@ -171,46 +278,36 @@ void readwhitespace()
 	ungetch(ch);
 }
 
-char * readtoken()
-{
-	char * str = "";
-	int ch = 0;
-	while ((ch = getch()) > 0)
-	{
-		if (isWhiteSpace((char)ch))
-			return str;
-		str += (char)ch;
-	}
-	return str;
-}
-	
+
 		
 /**************************************************************************************************/
 
 struct object eval();
 
-struct cell evalist()
+struct cell *evalist()
 {
 	int ch;
-	struct cell top;
 
-	struct cell *nxt = &top;            
-	struct cell *prv;
+	struct cell *nxt = newCell();	
+	struct cell *top = nxt;
+	struct cell *prv = 0;
 
 	while ((ch = getch()) > 0)
 	{
 		if ((char)ch == ')')
 		{
-			if (prv != 0)
-				prv->tail=0;
 			return top;
 		}
 		ungetch(ch);
-		//nxt.head = eval();
-		//struct cell x;
-		//nxt.tail = x;
-		//prv=nxt;
-		//nxt=(struct cell *)nxt.tail;
+		if (prv != 0)
+		{
+			nxt = newCell();	
+			prv->tail.type = CELL;
+			prv->tail.cell = nxt;
+		}
+		nxt->head = eval();
+		nxt->tail.type=EMPTY;
+		prv=nxt;
 	}
 	return top;
 }
@@ -218,6 +315,7 @@ struct cell evalist()
 struct object eval()
 {
 	struct object r;
+	r.type=EMPTY;
 	
 	int ch;
 	bool qf = false;
@@ -235,12 +333,14 @@ struct object eval()
 		{
 			ungetch(ch);       
 			r.type=INT;
-			r.n=readdigit();
+			r.number=readdigit();
 			return r;
 		}
 		if (ch == '"')
 		{
-			//return (struct object)readstring();
+			r.type=STRING;
+			r.string=readstring();
+			return r;
 		}
 		if (ch == '\'') //quote shortcut
 		{
@@ -249,19 +349,33 @@ struct object eval()
 
 		if (ch == '(')
 		{
-			struct cell args = evalist();
+			struct cell *args = evalist();
 			//if (!qf)
 			//	return callFunction(args);
 			//else
 			r.type = CELL;
-			r.c = args;
+			r.cell = args;
 			return r;
 		}
 
 		if ( (ch>= 'A' && ch<= 'Z' ) || (ch>= 'a' && ch<= 'z' ))
 		{
+			int fc=0;
+			
 			ungetch(ch);
-			char* t=readtoken();
+			r.string=readtoken();
+			r.type = FUNCTION;
+			
+			for (fc=0; fc<sizeof(prim_tab); fc++)
+			{
+				printline(prim_tab[fc].name);
+				if (strcmp(prim_tab[fc].name, r.string)==0)
+				{
+					printline("matched");
+				}
+			}
+			
+			return r;
 			/*
 			if (!qf)
 			{
@@ -284,8 +398,42 @@ struct object eval()
 	return r;
 }
 
-void pr(struct cell x)
+void pr(struct object r)
 {
+	if (r.type == CELL)
+	{
+		printstr("(");
+		struct cell  *c = r.cell;
+		pr(c->head);
+		if (c->tail.type != EMPTY)
+		{
+			printstr(".");
+			pr(c->tail);
+		}
+		printstr(")");		
+	}
+	else if (r.type == INT)
+	{
+		printint(r.number);
+		printline("");
+	}
+	else if (r.type == STRING)
+	{
+		printline(r.string);
+	}
+	else if (r.type == EMPTY)
+	{
+		printline("NIL");
+	}
+	else if (r.type == FUNCTION)
+	{
+		printstr("func: ");
+		printline(r.string);
+	}
+	else	
+	{		
+		printline("? error - type ");	
+	}
 }
 /*
 struct object pr(struct cell x)
@@ -329,12 +477,47 @@ struct object pr(struct cell x)
 }
 */
 
-void prn(struct cell x)
+void prn(struct object x)
 {
 	pr(x);
 	printline("");
 	return ;
 }
+
+/**************************************************************************************************/
+
+/**********  primitives  */
+
+struct object car(struct object list)
+{
+	struct object r;
+	r.type=EMPTY;
+	if (list.type==CELL)
+	{
+		struct cell *p = list.cell;
+		return p->head;
+	}
+	else
+		return r;
+}
+
+struct object plus(struct cell top)
+{
+	struct object r;
+	r.type=EMPTY;
+//	if (top == null)
+//		return 0;
+
+//	if (top.head is int)
+//	{
+//		return (int)top.head + (int)plus((cell)top.tail);
+//	}
+//	else
+//		return 0;
+	return r;
+}
+
+/**************************************************************************************************/
 
 void repl()
 {
@@ -345,20 +528,7 @@ void repl()
 		while (ibptr-inputbuffer < ibcnt)
 		{
 			struct object r = eval();
-
-			if (r.type == CELL)
-			{
-				pr(r.c);
-				printline("");
-			}
-			if (r.type == INT)
-			{
-				printint(r.n);
-				printline("");
-			}
-			//else
-			//	printline((r != null) ? r.ToString() : "? error");
-			
+			pr(r);		
 		}
 	}
 }
