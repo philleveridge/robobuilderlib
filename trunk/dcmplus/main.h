@@ -36,7 +36,7 @@
 
 #define	MAX_wCK				31					// highest possible wCK ID
 
-
+#define SDATASZ 			16
 
 
 

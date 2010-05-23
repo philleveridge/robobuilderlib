@@ -1,7 +1,7 @@
 //==============================================================================
-//	 RoboBuilder MainController Sample Program	1.0
-//	 2008.04.14	Robobuilder co., ltd.
-//   2008.06.30 Richard Ibbotson convert to english and to AVR GCC
+//	 DCMP - Direct Control Mode Plus
+//   Homebre firmware for Robobuilder RBC control unit
+//   by l3v3rz
 //==============================================================================
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -17,20 +17,28 @@
 
 // ($Rev:$)
 
+//defined adc.c
 extern void Acc_init(void);
 extern void AccGetData(void);
-extern void delay_ms(int);
+extern BYTE sData[];
+extern int 	sDcnt;
+extern void sample_sound(int);
 
 //defined femto.c
 extern void femto(void);
+extern void printint(int);
+extern void printline(char *c);
 
 //defined battery.c
-
 extern BYTE F_PS_PLUGGED;
+extern void delay_ms(int);
 extern void BreakModeCmdSend(void);
 extern void ChargeNiMH(void);
 extern void SelfTest1(void);
 extern void DetectPower(void);
+
+//define ir.c
+extern int irGetByte(void);
 
 // UART variables-----------------------------------------------------------------
 
@@ -132,6 +140,21 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					Get_VOLTAGE();
 					b1 = gVOLTAGE;
 					break;
+				case 0x07:
+					b1 = irGetByte();
+					break;					
+				case 0x08:
+					sample_sound(1); // on 
+					break;
+				case 0x09:
+					{
+					int lc;
+					sample_sound(0); // off
+					for (lc=0; lc<SDATASZ; lc++) 
+						putByte(sData[lc]);
+					gCMD=0;
+					return;
+					}
 				}				
 				putByte(b1);
 				putByte(b2);
@@ -384,28 +407,38 @@ void ReadButton(void)
 // Process routine
 //-----------------------------------------------------------------------------
 
-extern void printline(char *c);
-
 void ProcButton(void)
 {
+	int cnt;
 	if(gBtn_val == PF1_BTN_PRESSED)
 	{
 		//look to see if PF2 held down
-		printline("charge mode");
-		
 		gBtn_val = 0;
-		Get_VOLTAGE();
-		DetectPower();
 		
+		printline("charge mode - testing");
+		
+		for (cnt=0; cnt<10; cnt++)
+		{
+			PWR_LED2_ON;	// RED on
+			delay_ms(50);
+			Get_VOLTAGE();
+			DetectPower();
+			printint (gVOLTAGE); printline(" mV");
+			PWR_LED2_OFF;   // RED off
+			delay_ms(50);
+		}
+				
 		if(F_PS_PLUGGED)
 		{	
-			printline("plugged in");		
+			printline("Plugged in - charging");		
 			BreakModeCmdSend();		// put servo in breakmode (power off)
 			ChargeNiMH();  			//initiate battery charging	
+			printline("Complete");	
 		}	
 		else
 		{
-			printline("Not plugged in");	
+			printline("Not plugged in");
+			PWR_LED2_ON	;	
 		}
 	}
 	
@@ -455,6 +488,9 @@ int main(void)
 	
 	gCMD=0;
 			
-	while (1) { } // do nothing
+	while (1) 
+	{
+		// do nothing
+	} 
 
 }

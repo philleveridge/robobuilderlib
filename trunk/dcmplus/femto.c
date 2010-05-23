@@ -83,18 +83,27 @@ void printline(char *c)
 void printint(int n) //tbd
 {
 	char tb[10];
-	tb[0]='0'+ ((n/100) % 10);
-	tb[1]='0'+ ((n/10) % 10);
-	tb[2]='0'+ (n % 10);
-	tb[3]=0;
-			
-	printstr(tb);
+	char *cp=tb;
+	int n1 = (n<0)?-n:n;
+	while (n1>9)
+	{
+		*cp++ = '0' + (n1%10);
+		n1 = n1/10;
+	}
+	*cp++ = '0' + (n1%10);
+	if (n<0) *cp++ = '-';
+	while (cp>tb)
+	{
+		cp--;
+		putch(*cp);
+	}
 }
 
 /**************************************************************************************************/
 #define bool  int
 #define true  1
 #define false 0
+#define null  0
 
 enum  TYPE {INT, BOOL, FUNCTION, STRING, CELL};
 
@@ -137,19 +146,7 @@ char * readstring()
 	return str;
 }
 
-char * readtoken()
-{
-	char * str = "";
-	int ch = 0;
-	while ((ch = getch()) > 0)
-	{
-		if (isWhiteSpace((char)ch))
-			return str;
-		str += (char)ch;
-	}
-	return str;
-}
-		
+	
 bool isWhiteSpace(int ch)
 {
 	return (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n');
@@ -173,9 +170,51 @@ void readwhitespace()
 	while ((ch = getch()) > 0 && isWhiteSpace((char)ch)) ;
 	ungetch(ch);
 }
+
+char * readtoken()
+{
+	char * str = "";
+	int ch = 0;
+	while ((ch = getch()) > 0)
+	{
+		if (isWhiteSpace((char)ch))
+			return str;
+		str += (char)ch;
+	}
+	return str;
+}
+	
 		
 /**************************************************************************************************/
 
+struct object eval();
+
+struct cell evalist()
+{
+	int ch;
+	struct cell top;
+
+	struct cell *nxt = &top;            
+	struct cell *prv;
+
+	while ((ch = getch()) > 0)
+	{
+		if ((char)ch == ')')
+		{
+			if (prv != 0)
+				prv->tail=0;
+			return top;
+		}
+		ungetch(ch);
+		//nxt.head = eval();
+		//struct cell x;
+		//nxt.tail = x;
+		//prv=nxt;
+		//nxt=(struct cell *)nxt.tail;
+	}
+	return top;
+}
+		
 struct object eval()
 {
 	struct object r;
@@ -210,11 +249,13 @@ struct object eval()
 
 		if (ch == '(')
 		{
-			//cell args = evalist();
+			struct cell args = evalist();
 			//if (!qf)
 			//	return callFunction(args);
 			//else
-			//	return args;
+			r.type = CELL;
+			r.c = args;
+			return r;
 		}
 
 		if ( (ch>= 'A' && ch<= 'Z' ) || (ch>= 'a' && ch<= 'z' ))
@@ -322,10 +363,16 @@ void repl()
 	}
 }
 
+#define	RUN_LED1_ON			CLR_BIT5(PORTA)     // BLUE
+#define	RUN_LED1_OFF		SET_BIT5(PORTA)
+#define	RUN_LED2_ON			CLR_BIT6(PORTA)     // GREEN
+#define	RUN_LED2_OFF		SET_BIT6(PORTA)
+
 void femto()
 {
 	printstr("Femto 0.1\r\n");
-	
+	RUN_LED1_ON;
+	RUN_LED2_ON;	
 	UCSR1B= (1<<RXEN)|(1<<TXEN) ; //enable PC read/write Not interupt;	
 	repl();
 }
