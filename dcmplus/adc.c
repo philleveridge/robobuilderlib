@@ -20,7 +20,7 @@
 signed char	gAD_val;
 BYTE	gAD_Ch_Index;
 
-volatile BYTE     F_AD_CONVERTING=0;
+volatile BYTE   F_AD_CONVERTING=0;
 
 volatile BYTE	gPSD_val;
 volatile BYTE	gMIC_val;
@@ -28,6 +28,22 @@ volatile BYTE	gMIC_val;
 volatile WORD	gVOLTAGE;
 volatile BYTE	gDistance;
 volatile BYTE	gSoundLevel;
+
+BYTE 	sData[SDATASZ];
+int 	sDcnt;
+
+void sample_sound(int status)
+{
+	if (status)
+	{
+		// 	set timer interupt on
+		sDcnt=0;
+	}
+	else
+	{
+		// 	set timer interupt off
+	}
+}
 
 
 WORD adc_volt()

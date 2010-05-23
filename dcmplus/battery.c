@@ -20,16 +20,22 @@ volatile WORD   gPSplugCount;
 volatile WORD   gPSunplugCount;
 volatile WORD	gPwrLowCount;
 
-extern void putByte();			 //main.c
-extern void printline(char *c);  //femto.c
-extern void printint(int);  	 //femto.c
+ //main.c
+extern void putByte();			
+
+//femto.c
+extern void printline(char *c);  
+extern void printint(int);  	
+extern void printstr(char*);	 
+
 #define HEADER			0xFF 
 
 void delay_ms(int ms)
 {
-	g10Mtimer=ms/10;
+	g10Mtimer=ms;
 	while (g10Mtimer>0)
 	{
+		//g10Mtime is decremented evry 1ms by interupt.
 	}
 }
 
@@ -56,10 +62,12 @@ void BreakModeCmdSend(void)
 //------------------------------------------------------------------------------
 ISR(TIMER0_OVF_vect)
 {
-	TCNT0 = 111;
+	//TCNT0 = 111;
+	TCNT0 = 25;
+
 	if (g10Mtimer>0) g10Mtimer--; //count down timer
 	
-	if(++g10MSEC > 99){
+	if(++g10MSEC > 999){
         g10MSEC = 0;
         if(gSEC_DCOUNT > 0)	gSEC_DCOUNT--;
         if(++gSEC > 59){
@@ -73,7 +81,6 @@ ISR(TIMER0_OVF_vect)
 		}
     }
 }
-
 
 //------------------------------------------------------------------------------
 // 
@@ -106,8 +113,6 @@ void DetectPower(void)
 	}
 }
 
-
-
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
@@ -115,7 +120,15 @@ void ChargeNiMH(void)
 {
 	F_CHARGING = 1;
 	gMIN_DCOUNT = 5;
-	while(gMIN_DCOUNT){
+	while(gMIN_DCOUNT)
+	{
+	    if (gSEC%5==0)
+		{
+			printint(gMIN);
+			printstr(":");
+			printint(gSEC);
+			printline (" short 40ms charge pulses");
+		}
 		PWR_LED2_OFF;
 		PWR_LED1_ON;
 		Get_VOLTAGE();	DetectPower();
@@ -130,10 +143,20 @@ void ChargeNiMH(void)
 		delay_ms(500);
 	}
 	gMIN_DCOUNT = 85;
-	while(gMIN_DCOUNT){
+	while(gMIN_DCOUNT)
+	{
+		if (gSEC%5==0)
+		{
+			printint(gMIN);
+			printstr(":");
+			printint(gSEC);
+			printline (" full charge power");
+		}
 		PWR_LED2_OFF;
-		if(g10MSEC > 50)	PWR_LED1_ON;
-		else			PWR_LED1_OFF;
+		if(g10MSEC > 50)	
+			PWR_LED1_ON;
+		else			
+			PWR_LED1_OFF;
 		if(g10MSEC == 0 || g10MSEC == 50){
 			Get_VOLTAGE();
 			DetectPower();
@@ -143,6 +166,7 @@ void ChargeNiMH(void)
 	}
 	CHARGE_DISABLE;
 	F_CHARGING = 0;
+	printline ("Done");
 }
 
 void test()
