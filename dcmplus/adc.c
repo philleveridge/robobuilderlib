@@ -21,16 +21,31 @@ signed char	gAD_val;
 BYTE	gAD_Ch_Index;
 
 volatile BYTE   F_AD_CONVERTING=0;
-
 volatile BYTE	gPSD_val;
 volatile BYTE	gMIC_val;
-
 volatile WORD	gVOLTAGE;
 volatile BYTE	gDistance;
 volatile BYTE	gSoundLevel;
 
-BYTE 	sData[SDATASZ];
+volatile BYTE 	sData[SDATASZ];
 int 	sDcnt;
+
+void ADC_set(BYTE);
+
+void  lights(int n) // power bar meter!
+{
+		RUN_LED1_OFF;
+		RUN_LED2_OFF;
+		ERR_LED_OFF;
+		PWR_LED1_OFF;
+		PWR_LED2_OFF;	
+
+		if (n > 1)    ERR_LED_ON;
+		if (n > 8)    RUN_LED1_ON;		
+		if (n > 16)   RUN_LED2_ON;		
+		if (n > 32)   PWR_LED1_ON;		
+		if (n > 64)   PWR_LED2_ON;		
+}
 
 void sample_sound(int status)
 {
@@ -38,48 +53,23 @@ void sample_sound(int status)
 	{
 		// 	set timer interupt on
 		sDcnt=0;
+
+		TIMSK |= 0x01;
+		EIMSK |= 0x40;
+		RUN_LED1_ON;
+		
+		gAD_Ch_Index = MIC_CH;		
+		ADC_set(ADC_MODE_SINGLE);
 	}
 	else
 	{
-		// 	set timer interupt off
+		// 	set timer interupt off	
+		TIMSK &= 0xFE;
+		EIMSK &= 0xBF;
+		lights(0);
 	}
 }
 
-
-WORD adc_volt()
-{
-/*
-	adc_start_conversion(1, 0xDC);	
-	while (bit_is_set(ADCSRA, ADSC));	    // wait until value ready
-	return volts;
-	*/
-	
-	Get_VOLTAGE();
-	return gVOLTAGE;
-	
-}
-
-BYTE adc_mic()
-{
-	/*
-	mic_vol=0;
-	int i;
-	for (i=0; i<50; i++)
-	{
-		adc_start_conversion(15, 0xDC);	
-		while (bit_is_set(ADCSRA, ADSC));	// wait until value ready
-	
-		mic_vol = mic_vol + mic_value;	
-	}
-	return mic_vol;
-	*/
-	Get_AD_MIC();
-	return gSoundLevel;
-	
-}
-
-
-/********************************************************************************/
 
 /********************************************************************************/
 
@@ -101,9 +91,13 @@ ISR(ADC_vect)
 				gMIC_val = (BYTE)gAD_val;
 			else
 				gMIC_val = 0;
+				
+			lights(gMIC_val);
+			sData[sDcnt] = (sData[sDcnt] + gMIC_val)/2;
+			sDcnt = (sDcnt + 1) % SDATASZ;  // store sample
 			break; 
 	}  
-	F_AD_CONVERTING = 0;    
+	//F_AD_CONVERTING = 0;    
 }
 
 void ADC_set(BYTE mode)
@@ -130,10 +124,10 @@ void Get_AD_PSD(void)
 	
 	if (CHK_BIT5(PORTB)==0) PSD_on();
 	
-	EIMSK &= 0xBF;
+	EIMSK &= 0xBF;   // disable interupts
 
 	gAD_Ch_Index = PSD_CH;
-   	F_AD_CONVERTING = 1;
+   	//F_AD_CONVERTING = 1;
    	ADC_set(ADC_MODE_SINGLE);
 	
    	//while(F_AD_CONVERTING);    
@@ -141,7 +135,7 @@ void Get_AD_PSD(void)
         
    	tmp = tmp + gPSD_val;
 	
-	//EIMSK |= 0x40;
+	//EIMSK |= 0x40;   // re-enable interupts
 
 	dist = 1117.2 / (tmp - 6.89);
 	if(dist < 0) dist = 50;
@@ -162,9 +156,9 @@ void Get_AD_MIC(void)
 	gAD_Ch_Index = MIC_CH;
 	for(i = 0; i < 50; i++){
 	
-    	F_AD_CONVERTING = 1;
+    	//F_AD_CONVERTING = 1;
 	   	ADC_set(ADC_MODE_SINGLE);
-    	while(F_AD_CONVERTING);            
+    	while(bit_is_set(ADCSRA, ADSC));            
     	tmp = tmp + gMIC_val;
     }
     tmp = tmp / 10;
