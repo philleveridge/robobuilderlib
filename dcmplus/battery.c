@@ -5,6 +5,8 @@
 #include "Macro.h"
 #include "adc.h"
 
+extern volatile BYTE   MIC_SAMPLING;
+	
 BYTE 	F_PS_PLUGGED;
 BYTE 	F_CHARGING;
 
@@ -27,6 +29,10 @@ extern void putByte();
 extern void printline(char *c);  
 extern void printint(int);  	
 extern void printstr(char*);	 
+
+//adc.c
+extern BYTE	gAD_Ch_Index;
+void ADC_set(BYTE );
 
 //------------------------------------------------------------------------------
 // set wck modules to btreak mode
@@ -65,6 +71,15 @@ ISR(TIMER0_OVF_vect)
 	TCNT0 = 25;
 
 	if (g10Mtimer>0) g10Mtimer--; //count down timer
+	
+	//
+	if (MIC_SAMPLING && g10Mtimer%4==0)
+	{
+		//every 4ms
+		gAD_Ch_Index = MIC_CH;		
+		ADC_set(ADC_MODE_SINGLE);
+	}
+
 	
 	if(++g10MSEC > 999){
         g10MSEC = 0;

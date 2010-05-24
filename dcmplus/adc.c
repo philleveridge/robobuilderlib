@@ -26,6 +26,7 @@ volatile BYTE	gMIC_val;
 volatile WORD	gVOLTAGE;
 volatile BYTE	gDistance;
 volatile BYTE	gSoundLevel;
+volatile BYTE   MIC_SAMPLING=0;
 
 volatile BYTE 	sData[SDATASZ];
 int 	sDcnt;
@@ -56,10 +57,8 @@ void sample_sound(int status)
 
 		TIMSK |= 0x01;
 		EIMSK |= 0x40;
-		RUN_LED1_ON;
-		
-		gAD_Ch_Index = MIC_CH;		
-		ADC_set(ADC_MODE_SINGLE);
+		RUN_LED1_ON;		
+		MIC_SAMPLING=1;
 	}
 	else
 	{
@@ -67,6 +66,7 @@ void sample_sound(int status)
 		TIMSK &= 0xFE;
 		EIMSK &= 0xBF;
 		lights(0);
+		MIC_SAMPLING=0;
 	}
 }
 
