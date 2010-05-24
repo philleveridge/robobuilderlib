@@ -28,20 +28,10 @@ extern void printline(char *c);
 extern void printint(int);  	
 extern void printstr(char*);	 
 
-#define HEADER			0xFF 
-
-void delay_ms(int ms)
-{
-	g10Mtimer=ms;
-	while (g10Mtimer>0)
-	{
-		//g10Mtime is decremented evry 1ms by interupt.
-	}
-}
-
 //------------------------------------------------------------------------------
 // set wck modules to btreak mode
 //------------------------------------------------------------------------------
+#define HEADER			0xFF 
 void BreakModeCmdSend(void)
 {
 	BYTE	Data1, Data2;
@@ -60,6 +50,15 @@ void BreakModeCmdSend(void)
 //------------------------------------------------------------------------------
 // Timer
 //------------------------------------------------------------------------------
+void delay_ms(int ms)
+{
+	g10Mtimer=ms;
+	while (g10Mtimer>0)
+	{
+		//g10Mtime is decremented evry 1ms by interupt.
+	}
+}
+
 ISR(TIMER0_OVF_vect)
 {
 	//TCNT0 = 111;
@@ -169,6 +168,11 @@ void ChargeNiMH(void)
 	printline ("Done");
 }
 
+
+//------------------------------------------------------------------------------
+// Simple self tests
+//------------------------------------------------------------------------------
+
 void test()
 {
 	if(gVOLTAGE>M_T_OF_POWER){
@@ -198,11 +202,6 @@ void test()
 		}
 	}
 }
-
-
-//------------------------------------------------------------------------------
-// Simple self test
-//------------------------------------------------------------------------------
 
 void SelfTest1(void)
 {

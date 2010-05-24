@@ -76,8 +76,14 @@ ISR(USART0_RX_vect) // interrupt [USART0_RXC] void usart0_rx_isr(void)
 
 
 //------------------------------------------------------------------------------
-// UART1 recieve
+// UART1 recieve (from PC)
 //------------------------------------------------------------------------------
+extern volatile BYTE   gSEC;
+extern volatile BYTE   gMIN;
+extern volatile BYTE   gSoundLevel;
+extern void     lights(int n);
+extern void     Get_AD_MIC(void);
+
 ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 {
 	if (CHK_BIT5(PORTA))  RUN_LED1_ON; else RUN_LED1_OFF; 
@@ -86,8 +92,7 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 	
 	while( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
 	UDR0 = gRxData;
-	
-	
+		
 	if(gRxData == 0xff){
 		gRx1_DStep = 1;
 		gFileCheckSum = 0;
@@ -138,7 +143,8 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					break;
 				case 0x06:
 					Get_VOLTAGE();
-					b1 = gVOLTAGE;
+					b1 = gVOLTAGE/256;
+					b2 = gVOLTAGE%256;
 					break;
 				case 0x07:
 					b1 = irGetByte();
@@ -147,14 +153,31 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					sample_sound(1); // on 
 					break;
 				case 0x09:
+					sample_sound(0); // on 
+					break;					
+				case 0x0A:
 					{
+					WORD t=0;
 					int lc;
-					sample_sound(0); // off
 					for (lc=0; lc<SDATASZ; lc++) 
-						putByte(sData[lc]);
-					gCMD=0;
-					return;
+					{
+						lights(sData[lc]);
+						t += sData[lc];  // sum the buffer
+						sData[lc]=0;     // and clear
 					}
+					b1=t/256;
+					b2=t%256;
+					}
+					break;					
+				case 0x0B:
+					b1 = gSEC;
+					b2 = gMIN;
+					break;	
+				case 0x0C:
+					Get_AD_MIC();
+					b1 = gSoundLevel;
+					lights(b1);
+					break;	
 				}				
 				putByte(b1);
 				putByte(b2);

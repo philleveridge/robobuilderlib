@@ -104,12 +104,11 @@ void printint(int n) //tbd
 #define bool  int
 #define true  1
 #define false 0
-#define null  0
+#define null  (void *)0
 
-enum  TYPE {INT, BOOL, FUNCTION, FLOAT, STRING, CELL, EMPTY};
+enum  TYPE {SYMBOL, INT, BOOL, FUNCTION, FLOAT, STRING, CELL, EMPTY};
 
-
-struct object {
+typedef struct object {
 	int type;
 	union { float 	floatpoint; 
 	        int 	number; 
@@ -118,20 +117,33 @@ struct object {
 		};
 } tOBJ;
 
-struct cell { 
+typedef struct cell { 
 	struct object head;		
 	struct object tail;		
 } tCELL; 
 
 
-struct object car(struct object);
+typedef tOBJ (*PFP)(tOBJ);
 
-typedef int (*PFI)();
-	
-typedef struct object (*PFP)(struct object);
+tOBJ car (tOBJ);
+tOBJ cdr (tOBJ);
+tOBJ plus(tOBJ);
+tOBJ pr  (tOBJ);
+tOBJ prn (tOBJ);
+tOBJ set (tOBJ);
+tOBJ env (tOBJ);
 
-struct prim { char *name; PFI func; } prim_tab[] = { "car", car };
+struct prim { char *name; PFP func; } prim_tab[] = { 
+	{"env",  env},
+	{"car",  car},
+	{"plus", plus}, 
+	{"cdr",  cdr},
+	{"pr",   pr},
+	{"set",  set},
+	{"prn",  prn}
+};
 
+#define PRIMSZ (sizeof(prim_tab)/sizeof(struct prim))
 
 /**************************************************************************************************/
 
@@ -180,6 +192,7 @@ char *newString(int n, char *txt)
 	*p++ = (n%256)|0x80;  // use bit 7 to indicate in use
 	stop += (n+1);
 	copyString(p, txt, n);
+	//printstr("[");	printstr(p);	printstr("]"); //debug
 	return p;
 }
 
@@ -213,12 +226,10 @@ int readdigit()
 	return num;
 }
 
-	
 bool isWhiteSpace(int ch)
 {
 	return (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n');
 }
-
 
 char *readstring()
 {
@@ -247,17 +258,13 @@ char *readtoken()
 	int ch = 0;
 	while (((ch = getch()) > 0) && n<20)
 	{
-		if (isWhiteSpace((char)ch))
-		{
-			*p =0;
-			return newString(n, str);
-		}
+		if (isWhiteSpace((char)ch)) break;
 		*p++ =  (char)ch;
 		n++;
 	}
-	return (char *)0; //error
+	*p =0;
+	return newString(n, str);
 }
-
 
 bool isSymbol(int ch)
 {
@@ -277,14 +284,13 @@ void readwhitespace()
 	while ((ch = getch()) > 0 && isWhiteSpace((char)ch)) ;
 	ungetch(ch);
 }
-
-
 		
 /**************************************************************************************************/
 
-struct object eval();
+tOBJ eval();
+tOBJ callFunction(struct cell *);
 
-struct cell *evalist()
+tCELL *evalist()
 {
 	int ch;
 
@@ -312,9 +318,9 @@ struct cell *evalist()
 	return top;
 }
 		
-struct object eval()
+tOBJ eval()
 {
-	struct object r;
+	tOBJ r;
 	r.type=EMPTY;
 	
 	int ch;
@@ -349,175 +355,277 @@ struct object eval()
 
 		if (ch == '(')
 		{
-			struct cell *args = evalist();
-			//if (!qf)
-			//	return callFunction(args);
-			//else
-			r.type = CELL;
-			r.cell = args;
+			tCELL *args = evalist();
+			if (!qf)
+				return callFunction(args);
+			else
+			{
+				r.type = CELL;
+				r.cell = args;
+			}
 			return r;
 		}
 
 		if ( (ch>= 'A' && ch<= 'Z' ) || (ch>= 'a' && ch<= 'z' ))
 		{
-			int fc=0;
-			
 			ungetch(ch);
 			r.string=readtoken();
-			r.type = FUNCTION;
-			
-			for (fc=0; fc<sizeof(prim_tab); fc++)
-			{
-				printline(prim_tab[fc].name);
-				if (strcmp(prim_tab[fc].name, r.string)==0)
-				{
-					printline("matched");
-				}
-			}
-			
+			r.type = SYMBOL;
 			return r;
-			/*
-			if (!qf)
-			{
-				object o = env.find(t);
-				if (o == null)
-				{
-					//function f = new function();
-					//f.name = t;
-					//return f;
-				}
-				return o;
-			}
-			else
-			{
-				return t;
-			}
-			*/
 		}
 	}
 	return r;
 }
 
-void pr(struct object r)
+
+tOBJ print(tOBJ r)
 {
 	if (r.type == CELL)
 	{
-		printstr("(");
 		struct cell  *c = r.cell;
+		printstr("(");	
 		pr(c->head);
+		
+		while (c->tail.type == CELL)
+		{
+			c=c->tail.cell;
+			printstr(" ");
+			pr(c->head);
+		}
 		if (c->tail.type != EMPTY)
 		{
 			printstr(".");
 			pr(c->tail);
 		}
-		printstr(")");		
+		printstr(")");
 	}
 	else if (r.type == INT)
 	{
 		printint(r.number);
-		printline("");
 	}
 	else if (r.type == STRING)
 	{
-		printline(r.string);
+		printstr(r.string);
+	}
+	else if (r.type == SYMBOL)
+	{
+		printstr(r.string);
+	}
+	else if (r.type == BOOL)
+	{
+		if ( r.number==0)
+			printstr("false");
+		else
+			printstr("true");
 	}
 	else if (r.type == EMPTY)
 	{
-		printline("NIL");
+		printstr("NIL");
 	}
 	else if (r.type == FUNCTION)
 	{
 		printstr("func: ");
-		printline(r.string);
+		printstr(r.string);	
 	}
 	else	
 	{		
 		printline("? error - type ");	
 	}
+	return r;
 }
-/*
-struct object pr(struct cell x)
+
+tOBJ pr(tOBJ x)
 {
-	struct cell nxt = x;
-	struct object r;
-	
-	while (nxt != null)
+	print(x);
+	return x;
+}
+
+tOBJ prn(tOBJ x)
+{
+	print(x);
+	printline("");
+	return x;
+}
+
+/**************************************************************************************************/
+
+tOBJ callFunction(tCELL *x)
+{
+	tOBJ r;
+	r.type=CELL;
+	r.cell=x;
+	if (x->head.type == SYMBOL)
 	{
-		r = nxt.head;
-		if (nxt.head is string)
+		int fn = -1;
+		int fc=0;
+		for (fc=0; fc<PRIMSZ; fc++)
 		{
-			printstr(nxt.head);
-		}
-		else if (nxt.head is int)
+			if (strcmp(prim_tab[fc].name, x->head.string)==0)
+				fn=fc;
+		}	
+		if (fn>=0)
 		{
-			printint(nxt.head);
-		}
-		else if (nxt.head is function)
-		{
-			printstr("Function: " + ((function)nxt.head).name);
-		}
-		else if (nxt.head is cell)
-		{
-			printstr("(");
-			pr((struct cell)nxt.head);
-			printstr(")");
-		}
-		if (nxt.tail is cell)
-		{
-			nxt = (struct cell)nxt.tail;
+			// call fucntion
+			r = (*prim_tab[fn].func)(x->tail);
 		}
 		else
 		{
-			if (nxt.tail != null) 
-				printstr("." + (string)nxt.tail);
-			nxt = null;
+			// user define it
+			printstr("Not defined?");
 		}
 	}
 	return r;
 }
-*/
 
-void prn(struct object x)
+/**********  primitives  *********/
+
+void showenviron();
+
+tOBJ env(tOBJ list)
 {
-	pr(x);
-	printline("");
-	return ;
-}
-
-/**************************************************************************************************/
-
-/**********  primitives  */
-
-struct object car(struct object list)
-{
-	struct object r;
-	r.type=EMPTY;
-	if (list.type==CELL)
-	{
-		struct cell *p = list.cell;
-		return p->head;
-	}
-	else
-		return r;
-}
-
-struct object plus(struct cell top)
-{
-	struct object r;
-	r.type=EMPTY;
-//	if (top == null)
-//		return 0;
-
-//	if (top.head is int)
-//	{
-//		return (int)top.head + (int)plus((cell)top.tail);
-//	}
-//	else
-//		return 0;
+	tOBJ r; r.type=EMPTY;
+	showenviron();
 	return r;
 }
 
+tOBJ car(tOBJ list)   // i.e. (car  (123 456)) => 123
+{
+	tOBJ r;
+	r.type=EMPTY;
+	if (list.type==CELL)
+	{
+		tCELL *p = list.cell;
+		tOBJ  x =p->head;
+		if (x.type==CELL)
+		{
+			p = x.cell	;
+			return p->head;
+		}
+	}
+	printline("error");
+	return r;
+}
+
+tOBJ cdr(tOBJ list) // i.e. (cdr  (123 456)) => (456)
+{
+	tOBJ r;
+	r.type=EMPTY;
+	if (list.type==CELL)
+	{
+		tCELL *p = list.cell;
+		tOBJ  x =p->head;
+		if (x.type==CELL)
+		{
+			p = x.cell;	
+			return p->tail;
+		}
+	}
+	printline("error");
+	return r;
+}
+
+tOBJ plus(tOBJ list) // i.e. (plus 123 456) => 597
+{
+	tOBJ r;
+	r.type=INT;
+	r.number=0;
+	
+	int n=0;
+	if (list.type==CELL)
+	{
+		tCELL *p = list.cell;
+		n = p->head.number;
+		tOBJ t=plus(p->tail);
+		n = n + t.number; 
+	}
+	r.number=n;
+	return r;
+}
+
+#define SYMSZ 10
+struct symbs { char *name; tOBJ val; } symb_tab[SYMSZ];
+int symCnt=0;
+
+
+tOBJ get(char *n)
+{
+	tOBJ r;
+	r.type=EMPTY;
+	for (int i=0; i<symCnt; i++)
+	{
+		if (strcmp(n,symb_tab[i].name)==0)
+		{
+			return symb_tab[i].val;
+		}
+	}
+	return r;
+}
+
+int add(char *n, tOBJ v)
+{
+	int i=0;
+	
+	printstr("Add "); printstr(n); printstr("-"); printint(v.type); printline(""); 
+	
+	for (i=0; i<symCnt; i++)
+	{
+		if (strcmp(n,symb_tab[i].name)==0)
+		{
+			symb_tab[i].val =v;
+			return i;
+		}
+	}
+	if (symCnt<SYMSZ)
+	{
+		symb_tab[symCnt].name=n;
+		symb_tab[symCnt].val=v;
+		symCnt++;
+	}
+	return symCnt;
+}
+
+
+tOBJ set(tOBJ list)   // i.e. (set a 123 ) => 123 and set a 
+{
+	tOBJ r;
+	r.type=EMPTY;
+	if (list.type==CELL)
+	{
+		tCELL *p = list.cell;  // set head = tail
+		tOBJ h = p->head;
+		if (h.type == SYMBOL)
+			add(h.string, p->tail);
+		
+	}
+	return r;
+}
+
+
 /**************************************************************************************************/
+
+void showenviron()
+{
+	int i;
+	printstr("Commands: ");
+	printstr(prim_tab[0].name);
+	for (i=1; i<PRIMSZ; i++)
+	{
+		printstr(", ");
+		printstr(prim_tab[i].name);
+	}
+	printline("");	
+		
+	if (symCnt>0) {
+		printstr("Symbols: ");
+		printstr(symb_tab[0].name);
+		for (i=1; i<SYMSZ; i++)
+		{
+			printstr(", ");
+			printstr(symb_tab[i].name);
+		}
+		printline("");	
+	}
+}
 
 void repl()
 {
@@ -528,19 +636,19 @@ void repl()
 		while (ibptr-inputbuffer < ibcnt)
 		{
 			struct object r = eval();
-			pr(r);		
+			print(r);	
+			printline("");	
 		}
 	}
 }
 
 #define	RUN_LED1_ON			CLR_BIT5(PORTA)     // BLUE
-#define	RUN_LED1_OFF		SET_BIT5(PORTA)
 #define	RUN_LED2_ON			CLR_BIT6(PORTA)     // GREEN
-#define	RUN_LED2_OFF		SET_BIT6(PORTA)
 
 void femto()
 {
 	printstr("Femto 0.1\r\n");
+	showenviron();
 	RUN_LED1_ON;
 	RUN_LED2_ON;	
 	UCSR1B= (1<<RXEN)|(1<<TXEN) ; //enable PC read/write Not interupt;	
