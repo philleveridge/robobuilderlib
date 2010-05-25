@@ -190,8 +190,9 @@ char *newString(int n, char *txt)
 	}
 	p=(char *)stop;
 	*p++ = (n%256)|0x80;  // use bit 7 to indicate in use
-	stop += (n+1);
+	stop += (n+2);
 	copyString(p, txt, n);
+	*stop++ = '$' ; //add a guard
 	//printstr("[");	printstr(p);	printstr("]"); //debug
 	return p;
 }
@@ -206,6 +207,21 @@ void garbageCollect()
 	//tbd
 	// free up string space
 	// free up cell space
+	printint(stop-stringbuffer); printline(" bytes");
+	BYTE *bot = stringbuffer;
+	while (bot<stop)
+	{
+		printint(bot-stringbuffer); printstr("] <");
+		printstr((char *)(bot+1));printline(">");
+		bot += ((*bot)&0x7f) + 1; // add no. of bytes
+	}
+	
+	printint(mem); printline(" cells");
+	for (int i=0; i< mem; i++)
+	{
+		printint(i); printstr("-"); printint(memory[i].head.type); printstr("->"); printint(memory[i].tail.type); printline("");
+	}
+
 }
 
 /**************************************************************************************************/
@@ -229,6 +245,13 @@ int readdigit()
 bool isWhiteSpace(int ch)
 {
 	return (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n');
+}
+
+bool isLetterorDigit(int ch)
+{
+	return ((ch >= 'A' && ch <= 'Z' ) ||
+	 (ch >= 'a' && ch <= 'z' ) ||
+	 (ch >= '0' && ch <= '9' ) );
 }
 
 char *readstring()
@@ -258,7 +281,11 @@ char *readtoken()
 	int ch = 0;
 	while (((ch = getch()) > 0) && n<20)
 	{
-		if (isWhiteSpace((char)ch)) break;
+		if (!isLetterorDigit(ch)) 
+		{
+			ungetch(ch);
+			break;
+		}
 		*p++ =  (char)ch;
 		n++;
 	}
@@ -269,13 +296,6 @@ char *readtoken()
 bool isSymbol(int ch)
 {
 	return (ch == '+' || ch == '-' || ch == '_' || ch == '.');
-}
-
-bool isLetterorDigit(int ch)
-{
-	return ((ch >= 'A' && ch <= 'Z' ) ||
-	 (ch >= 'a' && ch <= 'z' ) ||
-	 (ch >= '0' && ch <= '9' ) );
 }
 
 void readwhitespace()
@@ -448,6 +468,7 @@ tOBJ prn(tOBJ x)
 }
 
 /**************************************************************************************************/
+tOBJ get(char *n);
 
 tOBJ callFunction(tCELL *x)
 {
@@ -466,12 +487,20 @@ tOBJ callFunction(tCELL *x)
 		if (fn>=0)
 		{
 			// call fucntion
+			
 			r = (*prim_tab[fn].func)(x->tail);
 		}
 		else
 		{
-			// user define it
-			printstr("Not defined?");
+			// user define it?		
+			r = get(x->head.string);
+			
+			if (r.type==EMPTY)
+			{
+				printstr("Not defined?");
+				printline(x->head.string);
+			}
+			
 		}
 	}
 	return r;
@@ -594,8 +623,19 @@ tOBJ set(tOBJ list)   // i.e. (set a 123 ) => 123 and set a
 		tCELL *p = list.cell;  // set head = tail
 		tOBJ h = p->head;
 		if (h.type == SYMBOL)
+		{
 			add(h.string, p->tail);
+		}
+		else
+		{
+			printint(h.type);
+			printline(" - Must be a symbol?");
+		}
 		
+	}
+	else
+	{
+		printline("Set error?");
 	}
 	return r;
 }
@@ -625,6 +665,8 @@ void showenviron()
 		}
 		printline("");	
 	}
+	
+	garbageCollect();
 }
 
 void repl()
