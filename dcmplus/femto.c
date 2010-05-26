@@ -213,7 +213,7 @@ void garbageCollect()
 	{
 		printint(bot-stringbuffer); printstr("] <");
 		printstr((char *)(bot+1));printline(">");
-		bot += ((*bot)&0x7f) + 1; // add no. of bytes
+		bot += ((*bot)&0x7f) + 2; // add no. of bytes + 1 guard '$'
 	}
 	
 	printint(mem); printline(" cells");
@@ -454,19 +454,6 @@ tOBJ print(tOBJ r)
 	return r;
 }
 
-tOBJ pr(tOBJ x)
-{
-	print(x);
-	return x;
-}
-
-tOBJ prn(tOBJ x)
-{
-	print(x);
-	printline("");
-	return x;
-}
-
 /**************************************************************************************************/
 tOBJ get(char *n);
 
@@ -570,6 +557,31 @@ tOBJ plus(tOBJ list) // i.e. (plus 123 456) => 597
 	r.number=n;
 	return r;
 }
+
+
+tOBJ pr(tOBJ list)
+{
+	tOBJ r;
+	r.type=EMPTY;
+	
+	if (list.type==CELL)
+	{
+		tCELL *p = list.cell;
+		print(p->head);
+		if (p->tail.type==EMPTY)
+			return p->head;
+		r=pr(p->tail);
+	}
+	return r;
+}
+
+tOBJ prn(tOBJ x)
+{
+	tOBJ r= pr(x);
+	printline("");
+	return r;
+}
+
 
 #define SYMSZ 10
 struct symbs { char *name; tOBJ val; } symb_tab[SYMSZ];

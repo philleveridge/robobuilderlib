@@ -58,6 +58,16 @@ void putByte (BYTE b)
 	UDR1 = b;
 }
 
+//------------------------------------------------------------------------------
+// UART1 Transmit  Routine
+//------------------------------------------------------------------------------
+
+void putWck (BYTE b)
+{
+	while ( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
+	UDR0 = b;
+}
+
 
 //------------------------------------------------------------------------------
 // UART0 wCK Receive Interrupt Routine
@@ -83,6 +93,8 @@ extern volatile BYTE   gMIN;
 extern volatile BYTE   gSoundLevel;
 extern void     lights(int n);
 extern void     Get_AD_MIC(void);
+
+void SendToSoundIC(BYTE cmd) ;
 
 ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 {
@@ -119,6 +131,11 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 			{
 				// Depends on gGMD		
 				BYTE b1=0, b2=0;
+				
+				if (gCMD>0x40 && gCMD<(0x40+26))
+				{
+					SendToSoundIC(gCMD-0x40);
+				}
 				switch (gCMD)
 				{
 				case 0x01:  
@@ -473,6 +490,35 @@ void ProcButton(void)
 	}
 }
 
+//------------------------------------------------------------------------------
+// Send message to Sound IC
+//------------------------------------------------------------------------------
+
+#define P_BMC504_RESET(A)		if(A) SET_BIT6(PORTB);else CLR_BIT6(PORTB)
+#define P_PWM_SOUND_CUTOFF(A)	if(A) CLR_BIT3(DDRE);else SET_BIT3(DDRE)
+
+void SendToSoundIC(BYTE cmd) 
+{
+	BYTE	CheckSum; 
+
+	CheckSum = (29^cmd)&0x7f;
+	putWck(0xFF);
+	delay_ms(1);
+	putWck(29);
+	delay_ms(1);
+	putWck(cmd);
+	delay_ms(1);
+	putWck(CheckSum);
+} 
+
+void sound_init()
+{
+	// low -> high PIN
+	// defined in main.h
+	P_BMC504_RESET(0);
+	delay_ms(20);
+	P_BMC504_RESET(1);
+}
 
 
 //------------------------------------------------------------------------------
@@ -483,12 +529,15 @@ int main(void)
 {
 	HW_init();					// Initialise ATMega Ports
 	SW_init();					// Initialise software states
+	
+
 			
 	sei();						// enable interrupts	
 	TIMSK |= 0x01;		
 	
 	PWR_LED1_ON; 				// Power green light on
 		
+	sound_init();
 	tilt_setup();				// initialise acceleromter
 	
 	//call self test
