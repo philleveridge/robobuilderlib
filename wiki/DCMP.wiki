@@ -2,8 +2,7 @@ DCMP is a custom firmware for the Robobuilder humanoid robot. its loaded onto th
 
 = Introduction =
 
-DCP provide direct access to wck BUS to enable Servo to be controlled via serial port. In  order to access additional a capabilities a read servo position for servo ID 30 with the following data parameter will return a two byte data response, contain the information requested:
-
+DCMP provides direct access to Wck Bus to enable Servos to be controlled via serial port. In  order to access additional a capabilities send a "servo read position" for servo ID 30 with the following data parameter will return a two byte data response, contain the information requested:
 
 = Details =
 ||cmd||values||Description||
@@ -20,4 +19,6 @@ DCP provide direct access to wck BUS to enable Servo to be controlled via serial
 ||11||Read timer ||gets the current up time of robot in second:minutes||
 ||12||Get MIC level ||Sample mic level 50 times and returns average||
 ||65 - 90||Play Sound: ||Plays built in sound i.e. 65 = sound1, 66 sound 2 etc ||
- 
+
+
+LISP example programs using the RobobuilderLib.dll that run on a PC will be available to demo the capabilities
