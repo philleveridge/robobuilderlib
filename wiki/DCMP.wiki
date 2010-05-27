@@ -6,18 +6,18 @@ DCP provide direct access to wck BUS to enable Servo to be controlled via serial
 
 
 = Details =
-Cmd:
+||cmd||values||Description||
 ||1||Get X & Z || Reads the accelerometer 1st Byte X value 2nd Byte the Z value ||
 ||2||Get Y & Z ||Reads the accelerometer 1st Byte Y value 2nd Byte the Z value ||
 ||3||PSD on ||Set the Proximity Sensor Device on - for distance measuring ||
-||4||PSD off ||Sets PSD off - i.e. powers down - takes ta least 50ms to turn back on||
+||4||PSD off ||Sets PSD off - i.e. powers down - takes at least 50ms to turn back on||
 ||5||Get PSD ||Reads the current value of the PSD returned 1st byte 10-50 cm||
 ||6||Get Voltage ||Gets the voltage - in mV - High byte / low byte||
-||7||Read IR ||Gets the current valu of IR remote in 1st byte - 255 if nothing pressed||
-||8||sampling on ||turns sound sampling on - activates 3 bar meter on RBC unti||
+||7||Read IR ||Gets the current value of IR remote in 1st byte - 255 if nothing pressed||
+||8||sampling on ||turns sound sampling on - activates 3 bar meter on RBC unit||
 ||9||sampling off ||sampling off||
-||10||Read sound ||Returns the current sound buffer - 2 bytes || average of last 8 samples (4ms each)||
-||11||Read timer ||gets the current up time of robot in second:|minutes
+||10||Read sound ||Returns the current sound buffer - 2 bytes, average of last 8 samples (4ms each)||
+||11||Read timer ||gets the current up time of robot in second:minutes||
 ||12||Get MIC level ||Sample mic level 50 times and returns average||
 ||65 - 90||Play Sound: ||Plays built in sound i.e. 65 = sound1, 66 sound 2 etc ||
  
