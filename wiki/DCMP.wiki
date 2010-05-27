@@ -1,0 +1,23 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+DCP provide direct access to wck BUS to enable Servo to be controlled via serial port. In  order to access additional a capabilities a read servo position for servo ID 30 with the following data parameter will return a two byte data response, contain the information requested:
+
+
+= Details =
+Cmd:
+||1||Get X & Z ||
+||2||Get Y & Z ||
+||3||PSD on ||
+||4||PSD off ||
+||5||Gat PSD ||
+||6||Get Voltage ||
+||7||Read IR ||
+||8||sampling on ||
+||9||sampling off ||
+||10||Read sound ||
+||11||Read timer ||
+||12||Get MIC level ||
+||65 - 90||Play Sound: ||
+ 
