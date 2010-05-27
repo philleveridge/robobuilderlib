@@ -1,8 +1,0 @@
-#summary This page is the title page for the Robobuilder library project.
-
-= Introduction =
-
-A replacement operating system for the humaoid robot Robobuilder
-
-
-*Have fun !!*
