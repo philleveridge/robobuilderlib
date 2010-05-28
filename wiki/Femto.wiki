@@ -1,10 +1,9 @@
-#summary One-sentence summary of this page.
+Description of femto
 
 = Introduction =
 
 Hold PF1 and reboot !
 
-
 = Details =
 
-Coming soon - 
+Coming soon - Femto is still in early stages of development. It will provide language support to enable full autonomy for the robot.
