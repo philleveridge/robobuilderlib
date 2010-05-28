@@ -56,6 +56,33 @@ void BreakModeCmdSend(void)
 //------------------------------------------------------------------------------
 // Timer
 //------------------------------------------------------------------------------
+
+void heart()
+{
+	// the beating heart ...
+	// 1000 ms 
+	// 0-200 ms PF1 LED ON  200-400 ms PF2 LED on
+	// else off
+	if (g10MSEC<200)
+	{
+		PF1_LED1_ON;    
+		PF1_LED2_OFF;
+		PF2_LED_OFF;
+	}
+	else if (g10MSEC>200 && g10MSEC<400)
+	{
+		PF1_LED1_OFF;    
+		PF1_LED2_OFF;
+		PF2_LED_ON;
+	}
+	else
+	{
+		PF1_LED1_OFF;    
+		PF1_LED2_OFF;
+		PF2_LED_OFF;
+	}
+}
+
 void delay_ms(int ms)
 {
 	g10Mtimer=ms;
@@ -73,12 +100,15 @@ ISR(TIMER0_OVF_vect)
 	if (g10Mtimer>0) g10Mtimer--; //count down timer
 	
 	//
-	if (MIC_SAMPLING && g10Mtimer%4==0)
+	if (MIC_SAMPLING && g10MSEC%4==0)
 	{
 		//every 4ms
 		gAD_Ch_Index = MIC_CH;		
 		ADC_set(ADC_MODE_SINGLE);
 	}
+
+	if (!MIC_SAMPLING)
+		heart();
 
 	
 	if(++g10MSEC > 999){
