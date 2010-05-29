@@ -127,10 +127,9 @@ typedef struct object {
 } tOBJ;
 
 typedef struct cell { 
-	struct object head;		
-	struct object tail;		
+	tOBJ 			head;		
+	struct cell*  	tail;		
 } tCELL, *tCELLp; 
-
 
 typedef tOBJ (*PFP)(tCELLp);
 
@@ -175,7 +174,7 @@ tCELLp newCell()
 	{
 		return &memory[mem++];
 	}
-	return (tCELLp)0;
+	return null;
 }
 
 void delCell(tCELLp p)
@@ -236,7 +235,21 @@ void garbageCollect()
 	printint(mem); printline(" cells");
 	for (int i=0; i< mem; i++)
 	{
-		printint(i); printstr("-"); printtype(memory[i].head); printstr(" && "); printtype(memory[i].tail); printline("");
+		printint(i); printstr("-"); printtype(memory[i].head); 
+		
+		printstr("->"); 
+		
+		if (memory[i].tail != null)
+		{
+			int n = (memory[i].tail-&memory[0]); ///sizeof(tCELL);
+			printint(n);
+		}
+		else
+		{
+			printstr("null");
+		}
+		
+		printline("");
 	}
 
 }
@@ -398,11 +411,10 @@ tCELL *evalist(bool qf)
 		if (prv != 0)
 		{
 			nxt = newCell();	
-			prv->tail.type = CELL;
-			prv->tail.cell = nxt;
+			prv->tail = nxt;
 		}
 		nxt->head = eval(qf);
-		nxt->tail.type=EMPTY;
+		nxt->tail = null;
 		prv=nxt;
 		
 		if (top->head.type == SPECIAL)
@@ -476,8 +488,15 @@ void printtype(tOBJ r)
 	if (r.type == CELL)
 	{
 		printstr("CELL#");	
-		int n = ((tCELLp)(r.cell)-&memory[0]); ///sizeof(tCELL);
-		printint(n);
+		if (r.cell != null)
+		{
+			int n = ((tCELLp)(r.cell)-&memory[0]); ///sizeof(tCELL);
+			printint(n);
+		}
+		else
+		{
+			printstr("null");
+		}
 	}
 	else if (r.type == INT)
 	{
@@ -523,17 +542,17 @@ tOBJ print(tOBJ r)
 		printstr("(");	
 		print(c->head);
 		
-		while (c->tail.type == CELL)
+		while (c->tail != null)
 		{
-			c=c->tail.cell;
+			c=c->tail;
 			printstr(" ");
 			print(c->head);
 		}
-		if (c->tail.type != EMPTY)
-		{
-			printstr(".");
-			print(c->tail);
-		}
+		//if (c->tail != EMPTY)
+		//{
+		//	printstr(".");
+		//	print(c->tail);
+		//}
 		printstr(")");
 	}
 	else
@@ -556,7 +575,7 @@ tOBJ callFunction(tCELL *x)
 	{
 		// call function	
 		PFP f = (PFP)x->head.func;
-		r = (*f)(x->tail.cell);
+		r = (*f)(x->tail);
 	}
 	else
 	{
@@ -599,7 +618,8 @@ tOBJ cdr(tCELLp p) // i.e. (cdr  '(123 456)) => (456)
 	if (p->head.type==CELL)
 	{
 		p = p->head.cell;	
-		return p->tail;
+		r.type = CELL;
+		r.cell = p->tail;
 	}
 	return r;
 }
@@ -613,7 +633,7 @@ tOBJ plus(tCELLp p) // i.e. (plus 123 456) => 597
 	int n=0;
 	if (p->head.type == INT)
 	{
-		n = p->head.number + plus(p->tail.cell).number;
+		n = p->head.number + plus(p->tail).number;
 	}
 	r.number=n;
 	return r;
@@ -626,9 +646,9 @@ tOBJ pr(tCELLp p)  // i.e. (pr "abc" 123) => abc123
 	r.type=EMPTY;
 	
 	print(p->head);
-	if (p->tail.type==EMPTY)
+	if (p->tail==null)
 		return p->head;
-	r=pr(p->tail.cell);
+	r=pr(p->tail);
 
 	return r;
 }
@@ -648,7 +668,7 @@ tOBJ eq(tCELLp p)  // i.e. (eq 1 1) => true, (eq 1 2) => nil
 	r.number=0;  // assume false
 	
 	a = p->head;
-	b = ((tCELLp)(p->tail.cell))->head;
+	b = p->tail->head;
 	
 	if (a.type == b.type)
 	{
@@ -678,21 +698,21 @@ tOBJ cond(tCELLp p)  // i.e. (cond ((eq a 1) (prn "One") (eq a 2) (prn "Two"))) 
 {
 	tOBJ r, a, b;
 	r.type=EMPTY;
-		
-	a = p->head; // starting cell
 	
-	while (a.type == CELL)
+	
+	while (p->head.type == CELL)
 	{
-		tOBJ t = ((tCELLp)(a.cell))->head;
+		//a = (p->head.cell)->head;
 		
-		b = ((tCELLp)(t.cell))->head;
+		//b = ((tCELLp)(t.cell))->head;
 
 		if ((b.type == BOOL && b.number==1) || (b.type != EMPTY && b.type != ERROR)) // should work with non-bools
 		{
-			r = call(((tCELLp)(t.cell))->tail.cell);
+			
+			//r.cell = call(t.tail);
 			return r;
 		}
-		a = ((tCELLp)(p->tail.cell))->head;	
+		a = p->tail->head;	
 	}
 
 	return r;
@@ -701,7 +721,6 @@ tOBJ cond(tCELLp p)  // i.e. (cond ((eq a 1) (prn "One") (eq a 2) (prn "Two"))) 
 #define SYMSZ 10
 struct symbs { char *name; tOBJ val; } symb_tab[SYMSZ];
 int symCnt=0;
-
 
 tOBJ get(char *n)
 {
@@ -748,7 +767,7 @@ tOBJ setq(tCELLp p)   // i.e. (setq a 123 ) => 123 and set a
 	tOBJ h = p->head;
 	if (h.type == SYMBOL)
 	{
-		tOBJ t = ((tCELLp)(p->tail.cell))->head;
+		tOBJ t = (p->tail)->head;
 		if (t.type==CELL)
 		{
 			t = callFunction(t.cell);
@@ -772,8 +791,8 @@ tOBJ set(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a
 	tOBJ h = p->head;
 	if (h.type == SYMBOL)
 	{
-		add(h.string, ((tCELLp)(p->tail.cell))->head);
-		r= ((tCELLp)(p->tail.cell))->head;
+		add(h.string, (p->tail)->head);
+		r= (p->tail)->head;
 	}
 	else
 	{
@@ -783,7 +802,7 @@ tOBJ set(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a
 	return r;
 }
 
-tOBJ call(tCELLp p)   // i.e. (eval '(plus 2 3)) -> 7
+tOBJ call(tCELLp p)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")) (eval a) => "hello"
 {
 	tOBJ r ; r.type=EMPTY;
 	
@@ -810,7 +829,7 @@ tOBJ call(tCELLp p)   // i.e. (eval '(plus 2 3)) -> 7
 		{
 			//  function	
 			PFP f = (PFP)prim_tab[fn].func;
-			r = (*f)(p->tail.cell);
+			r = (*f)(p->tail);
 		}
 		else
 		{
@@ -888,10 +907,16 @@ void repl()
 	}
 }
 
+void testf()
+{
+   evalstring("(set 'a 1)");
+   evalstring("(cond ((eq a 1) (prn ""One"") (eq a 2) (prn ""Two""))) ");
+}
+
 void initialise()
 {
 	printline("Femto 0.1");
-	//evalstring("(prn (plus 1 2 3 4))");  // DEBUG Statement
+	testf();
 	showenviron();						
 }
 
