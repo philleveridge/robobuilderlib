@@ -28,7 +28,8 @@ extern void putByte();
 //femto.c
 extern void printline(char *c);  
 extern void printint(int);  	
-extern void printstr(char*);	 
+extern void printstr(char*);	
+extern void printnumber(int n, int w, char pad)  ;
 
 //adc.c
 extern BYTE	gAD_Ch_Index;
@@ -168,9 +169,9 @@ void ChargeNiMH(void)
 	{
 	    if (gSEC%5==0)
 		{
-			printint(gMIN);
+			printnumber(gMIN, 2,'0');
 			printstr(":");
-			printint(gSEC);
+			printnumber(gSEC,2,'0');
 			printline (" short 40ms charge pulses");
 		}
 		PWR_LED2_OFF;
@@ -191,17 +192,17 @@ void ChargeNiMH(void)
 	{
 		if (gSEC%5==0)
 		{
-			printint(gMIN);
+			printnumber(gMIN,2,'0');
 			printstr(":");
-			printint(gSEC);
+			printnumber(gSEC, 2, '0');
 			printline (" full charge power");
 		}
 		PWR_LED2_OFF;
-		if(g10MSEC > 50)	
+		if(g10MSEC > 500)	
 			PWR_LED1_ON;
 		else			
 			PWR_LED1_OFF;
-		if(g10MSEC == 0 || g10MSEC == 50){
+		if(g10MSEC == 0 || g10MSEC == 500){
 			Get_VOLTAGE();
 			DetectPower();
 		}
