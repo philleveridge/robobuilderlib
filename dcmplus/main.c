@@ -547,12 +547,14 @@ int main(void)
 	ProcButton();
 	
 	//otherwise DC mode!
+	//default sampling ON
 	
 	TIMSK &= 0xFE;
 	EIMSK &= 0xBF;
 	UCSR0B |= 0x80;
 	UCSR0B &= 0xBF;
-
+	
+	sample_sound(1);
 	RUN_LED2_OFF;
 	PF1_LED1_ON;    //DCmode
 	PF1_LED2_OFF;
