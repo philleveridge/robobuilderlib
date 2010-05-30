@@ -142,7 +142,7 @@ tOBJ set (tCELLp);
 tOBJ setq(tCELLp);
 tOBJ env (tCELLp);
 tOBJ eq  (tCELLp);
-tOBJ cond(tCELLp);
+tOBJ iff (tCELLp);
 tOBJ call(tCELLp);
 
 struct prim { char *name; PFP func; BYTE f;} prim_tab[] = { 
@@ -155,7 +155,7 @@ struct prim { char *name; PFP func; BYTE f;} prim_tab[] = {
 	{"prn",  prn, 0},
 	{"eq",   eq,  0},
 	{"setq", setq,1},
-	{"cond", cond,1},
+	{"if",   iff, 1},
 	{"eval", call,0}
 };
 
@@ -624,6 +624,12 @@ tOBJ cdr(tCELLp p) // i.e. (cdr  '(123 456)) => (456)
 	return r;
 }
 
+tOBJ cadr(tCELLp p) // i.e. (cdr  '(123 456)) => 456
+{
+	tOBJ r = car (cdr(p).cell);
+	return r;
+}
+
 tOBJ plus(tCELLp p) // i.e. (plus 123 456) => 597
 {
 	tOBJ r;
@@ -693,29 +699,36 @@ tOBJ eq(tCELLp p)  // i.e. (eq 1 1) => true, (eq 1 2) => nil
 }
 
 tOBJ call(tCELLp p);
+tOBJ callobj(tOBJ h) ;
 
-tOBJ cond(tCELLp p)  // i.e. (cond ((eq a 1) (prn "One") (eq a 2) (prn "Two"))) => true
+
+tOBJ iff(tCELLp p)  // i.e. (if (eq 1 2) (prn "One") true (prn "Two")) => Two
 {
-	tOBJ r, a, b;
+	tOBJ r;
 	r.type=EMPTY;
 	
+	if (p == null) return r;
 	
-	while (p->head.type == CELL)
-	{
-		//a = (p->head.cell)->head;
-		
-		//b = ((tCELLp)(t.cell))->head;
-
-		if ((b.type == BOOL && b.number==1) || (b.type != EMPTY && b.type != ERROR)) // should work with non-bools
+	//printstr("test ");printtype(p->head); 	
+	r = callobj(p->head);
+	
+	if ((r.type == BOOL && r.number==1) || (r.type != EMPTY && r.type != ERROR && r.type != BOOL )) 
+	{	
+		tCELLp x = p->tail;
+		if (x != null)
 		{
-			
-			//r.cell = call(t.tail);
-			return r;
-		}
-		a = p->tail->head;	
-	}
+			//printstr(" eval :: ");printtype(x->head); 	
+			r = callobj(x->head);
 
-	return r;
+		}
+		return r;
+	}
+	else
+	{
+		p=p->tail;
+		r=iff(p->tail);
+		return r;		
+	}
 }
 
 #define SYMSZ 10
@@ -802,17 +815,17 @@ tOBJ set(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a
 	return r;
 }
 
-tOBJ call(tCELLp p)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")) (eval a) => "hello"
+
+tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")) (eval a) => "hello"
 {
 	tOBJ r ; r.type=EMPTY;
 	
-	tOBJ h = p->head;
 	if (h.type != CELL)
 	{
 		return h;
 	}
 	
-	p = (tCELLp)(h.cell);
+	tCELLp p = (tCELLp)(h.cell);
 	h=p->head;
 	
 	if (h.type==SYMBOL)
@@ -842,6 +855,11 @@ tOBJ call(tCELLp p)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello"))
 		printline(" :: Not a symbol ?");
 	}
 	return r;
+}
+
+tOBJ call(tCELLp p)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")) (eval a) => "hello"
+{
+	return callobj(p->head);
 }
 
 
@@ -910,13 +928,13 @@ void repl()
 void testf()
 {
    evalstring("(set 'a 1)");
-   evalstring("(cond ((eq a 1) (prn ""One"") (eq a 2) (prn ""Two""))) ");
+   evalstring("(if true (prn \"hi\")))");
 }
 
 void initialise()
 {
 	printline("Femto 0.1");
-	testf();
+	//testf();  //DEBUGING
 	showenviron();						
 }
 
