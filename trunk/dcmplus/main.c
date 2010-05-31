@@ -15,7 +15,7 @@
 #define BR115200			7 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
 
-// ($Rev:$)
+// ($Rev$)
 
 //defined adc.c
 extern void Acc_init(void);
