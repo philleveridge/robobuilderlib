@@ -18,6 +18,7 @@ extern int 		strcmp(char *, char *);
 
 extern volatile WORD   gticks;
 extern volatile WORD   g10MSEC;
+extern volatile WORD   g10Mtimer;
 extern volatile BYTE   gSEC;
 extern volatile BYTE   gMIN;
 extern void     delay_ms(int ms);
@@ -33,26 +34,15 @@ int getByte()
 	return UDR1;
 }
 
-int wckGetByte()
+int wckGetByte(WORD timeout)
 {
-	while(!(UCSR0A & RX_COMPLETE)) ;
-	return UDR0;
-}
-
-/*char wckGetByte(WORD timeout)
-{
-	WORD	startT;
-	startT = g10MSEC;
+	g10Mtimer = timeout;
+	
 	while(!(UCSR0A&(1<<RXC)) ){ 	// test for received character
-        if(g10MSEC<startT) {
-			// wait RX_T_OUT for a character
-            if((1000 - startT + g10MSEC) > timeout) break;
-        }
-		else if((g10MSEC - startT) > timeout) break;
+		if (g10Mtimer==0) return -1;
 	}
 	return UDR0;
 }
-*/
 
 /******************************************************************************/
 /* Function that sends Operation Command Packet(4 Byte) to wCK module */
@@ -67,34 +57,6 @@ void wckSendOperCommand(char Data1, char Data2)
 	putWck(Data1);
 	putWck(Data2);
 	putWck(CheckSum);
-}
-
-/*************************************************************************************************/
-/* Function that sends Position Move Command to wCK module */
-/* Input : ServoID, Torque (0(Max) to 4 (Min)), Position */
-/* Output : Load * 256 + Position */
-/*************************************************************************************************/
-WORD wckPosSend(char ServoID, char Torque, char Position)
-{
-	WORD Load, curPosition;
-	wckSendOperCommand((Torque<<5)|ServoID, Position);
-	Load = wckGetByte(TIME_OUT);
-	curPosition = wckGetByte(TIME_OUT);
-	return (Load << 8) | curPosition;
-}
-
-/************************************************************************************************/
-/* Function that sends Position Read Command to wCK module, and returns the Position. */
-/* Input : ServoID */
-/* Output : Position */
-/************************************************************************************************/
-char wckPosRead(char ServoID)
-{
-	char Position;
-	wckSendOperCommand(0xa0|ServoID, NULL);
-	wckGetByte(TIME_OUT);
-	Position = wckGetByte(TIME_OUT);
-	return Position;
 }
 
 /**************************************************************************************************/
@@ -700,7 +662,6 @@ tOBJ cadr(tCELLp p) // i.e. (cdr  '(123 456)) => 456
 	return r;
 }
 
-
 tOBJ cons(tCELLp p) // i.e. (cons  123 '(456)) => (123 456)
 {
 	tOBJ r ; r.type=EMPTY;
@@ -722,7 +683,6 @@ tOBJ list(tCELLp p) // i.e. (list 123 456) => (123 456)
 	return r;
 }
 
-
 tOBJ plus(tCELLp p) // i.e. (plus 123 456) => 597
 {
 	tOBJ r;
@@ -737,7 +697,6 @@ tOBJ plus(tCELLp p) // i.e. (plus 123 456) => 597
 	r.number=n;
 	return r;
 }
-
 
 tOBJ pr(tCELLp p)  // i.e. (pr "abc" 123) => abc123
 {
@@ -911,7 +870,6 @@ tOBJ setq(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a
 	return r;
 }
 
-
 tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")) (eval a) => "hello"
 {
 	tOBJ r ; r.type=EMPTY;
@@ -1043,7 +1001,14 @@ tOBJ getServo(tCELLp p)   // i.e. (getServo 15)
 	tOBJ r; r.type=INT;
 	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
 	{
-		r.number = wckPosRead(p->head.number);
+		wckSendOperCommand(0xa0|(p->head.number), NULL);
+		int b1 = wckGetByte(TIME_OUT);
+		int b2 = wckGetByte(TIME_OUT);
+		
+		if (b1<0 || b2<0)
+			r.type = EMPTY; //timeout
+		else
+			r.number = b2;
 	}
 	else
 		r.type=EMPTY;
@@ -1062,15 +1027,21 @@ tOBJ sendServo(tCELLp p)   // i.e. (sendServo 12 50 4)
 		r.type=EMPTY; //fail
 	}
 	else	
-		r.number = wckPosSend(sid, tor, pos);
-	
+	{
+		wckSendOperCommand((tor<<5)|sid, pos);
+
+		int b1 = wckGetByte(TIME_OUT);
+		int b2 = wckGetByte(TIME_OUT);	
+
+		if (b1<0 || b2<0)
+			r.type = EMPTY; //timeout
+		else
+			r.number = (b1<<8|b2);
+	}
 	return r;
 }
 
-
-
 /**************************************************************************************************/
-
 
 void printtime(char * s)
 {
