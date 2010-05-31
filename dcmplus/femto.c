@@ -1,18 +1,100 @@
 #include <avr/io.h>
 #include "Macro.h"
 
-extern int strcmp(char *, char *);
+#define	RUN_LED1_ON		CLR_BIT5(PORTA)     // BLUE
+#define	RUN_LED2_ON		CLR_BIT6(PORTA)     // GREEN
+
+#define	RXC				7
+#define RX_COMPLETE		(1<<RXC)
+#define HEADER			0xFF 
+#define TIME_OUT		100
+#define NULL			'\0'
+
+int dbg=0;
+
+#define DEBUG(a)   if(dbg) {a;}
+
+extern int 		strcmp(char *, char *);
+
+extern volatile WORD   gticks;
+extern volatile WORD   g10MSEC;
+extern volatile BYTE   gSEC;
+extern volatile BYTE   gMIN;
+extern void     delay_ms(int ms);
+
 /**************************************************************************************************/
 
-#define	RXC					7
-#define RX_COMPLETE			(1<<RXC)
-
 extern void putByte (BYTE b);
+extern void putWck  (BYTE b);
 
 int getByte()
 {
 	while(!(UCSR1A & RX_COMPLETE)) ;
 	return UDR1;
+}
+
+int wckGetByte()
+{
+	while(!(UCSR0A & RX_COMPLETE)) ;
+	return UDR0;
+}
+
+/*char wckGetByte(WORD timeout)
+{
+	WORD	startT;
+	startT = g10MSEC;
+	while(!(UCSR0A&(1<<RXC)) ){ 	// test for received character
+        if(g10MSEC<startT) {
+			// wait RX_T_OUT for a character
+            if((1000 - startT + g10MSEC) > timeout) break;
+        }
+		else if((g10MSEC - startT) > timeout) break;
+	}
+	return UDR0;
+}
+*/
+
+/******************************************************************************/
+/* Function that sends Operation Command Packet(4 Byte) to wCK module */
+/* Input : Data1, Data2 */
+/* Output : None */
+/******************************************************************************/
+void wckSendOperCommand(char Data1, char Data2)
+{
+	char CheckSum;
+	CheckSum = (Data1^Data2)&0x7f;
+	putWck(HEADER);
+	putWck(Data1);
+	putWck(Data2);
+	putWck(CheckSum);
+}
+
+/*************************************************************************************************/
+/* Function that sends Position Move Command to wCK module */
+/* Input : ServoID, Torque (0(Max) to 4 (Min)), Position */
+/* Output : Load * 256 + Position */
+/*************************************************************************************************/
+WORD wckPosSend(char ServoID, char Torque, char Position)
+{
+	WORD Load, curPosition;
+	wckSendOperCommand((Torque<<5)|ServoID, Position);
+	Load = wckGetByte(TIME_OUT);
+	curPosition = wckGetByte(TIME_OUT);
+	return (Load << 8) | curPosition;
+}
+
+/************************************************************************************************/
+/* Function that sends Position Read Command to wCK module, and returns the Position. */
+/* Input : ServoID */
+/* Output : Position */
+/************************************************************************************************/
+char wckPosRead(char ServoID)
+{
+	char Position;
+	wckSendOperCommand(0xa0|ServoID, NULL);
+	wckGetByte(TIME_OUT);
+	Position = wckGetByte(TIME_OUT);
+	return Position;
 }
 
 /**************************************************************************************************/
@@ -114,10 +196,11 @@ void printint(int n)
 #define false 0
 #define null  (void *)0
 
-enum  TYPE {SYMBOL, INT, BOOL, FUNCTION, FLOAT, STRING, CELL, EMPTY, ERROR, SPECIAL};
+enum  TYPE {SYMBOL, INT, BOOL, FUNCTION, SPECIAL, FLOAT, STRING, CELL, EMPTY, ERROR};
 
 typedef struct object {
-	int type;
+	int   type;
+	bool  q;
 	union { float 	floatpoint; 
 	        int 	number; 
 			char 	*string;
@@ -133,8 +216,16 @@ typedef struct cell {
 
 typedef tOBJ (*PFP)(tCELLp);
 
-tOBJ car (tCELLp);
-tOBJ cdr (tCELLp);
+tOBJ time  (tCELLp);
+tOBJ sleep (tCELLp);
+tOBJ whle  (tCELLp);
+
+tOBJ car  (tCELLp);
+tOBJ cdr  (tCELLp);
+tOBJ cons (tCELLp);
+tOBJ list (tCELLp);
+
+
 tOBJ plus(tCELLp);
 tOBJ pr  (tCELLp);
 tOBJ prn (tCELLp);
@@ -144,19 +235,37 @@ tOBJ env (tCELLp);
 tOBJ eq  (tCELLp);
 tOBJ iff (tCELLp);
 tOBJ call(tCELLp);
+tOBJ prog(tCELLp);
 
-struct prim { char *name; PFP func; BYTE f;} prim_tab[] = { 
+tOBJ sendServo(tCELLp);
+tOBJ getServo (tCELLp);
+tOBJ readIR   (tCELLp);
+
+struct prim { char *name; PFP func; int sf;} prim_tab[] = { 
 	{"env",  env, 0},
+	{"time", time,1},
+	{"sleep",sleep,0},
 	{"car",  car, 0},
 	{"plus", plus,0}, 
+	
+	{"cons", cons,0},
+	{"list", list,0}, 
+	
 	{"cdr",  cdr, 0},
 	{"pr",   pr,  0},
 	{"set",  set, 0},
+	{"setq", setq,1},
 	{"prn",  prn, 0},
 	{"eq",   eq,  0},
-	{"setq", setq,1},
 	{"if",   iff, 1},
-	{"eval", call,0}
+	{"eval", call,0},
+	{"do",   prog,0},
+
+	{"sendServo",   sendServo, 0},
+	{"getServo",    getServo,0},
+	{"readIR",      readIR,0},
+
+	{"while",whle,0}
 };
 
 #define PRIMSZ (sizeof(prim_tab)/sizeof(struct prim))
@@ -221,9 +330,13 @@ void delString(char *p)
 void garbageCollect()
 {
 	//tbd
+
 	// free up string space
 	// free up cell space
 	printint(stop-stringbuffer); printline(" bytes");
+	
+	if (dbg==0) return;
+	
 	BYTE *bot = stringbuffer;
 	while (bot<stop)
 	{
@@ -237,16 +350,14 @@ void garbageCollect()
 	{
 		printint(i); printstr("-"); printtype(memory[i].head); 
 		
-		printstr("->"); 
-		
 		if (memory[i].tail != null)
 		{
 			int n = (memory[i].tail-&memory[0]); ///sizeof(tCELL);
-			printint(n);
+			printstr("->#"); printint(n);
 		}
 		else
 		{
-			printstr("null");
+			printstr("->null");
 		}
 		
 		printline("");
@@ -305,7 +416,7 @@ char *readstring()
 
 tOBJ get(char *n);
 
-tOBJ readtoken(bool quoteflag)
+tOBJ readtoken()
 {
 	char str[20];
 	char *p=str;
@@ -325,6 +436,7 @@ tOBJ readtoken(bool quoteflag)
 
 	// SYMBOL - FUNCTION - BOOL - EMPTY 
 	tOBJ r;
+	r.q = false;
 	r.type=EMPTY;
 	
 	if (strcmp(str, "true")==0)
@@ -339,38 +451,23 @@ tOBJ readtoken(bool quoteflag)
 	}
 	else
 	{
-		if (quoteflag==true)
-		{
-			r.string = newString(n, str);
-			r.type   = SYMBOL;
-			return r;
-		}
-	
 		int fn = -1;
 		int fc=0;
 		for (fc=0; fc<PRIMSZ; fc++)
 		{
 			if (strcmp(prim_tab[fc].name, str)==0)
 				fn=fc;
-		}	
-		
+		}		
 		if (fn>=0)
 		{
 			//  fucntion	
-			r.type = (prim_tab[fn].f==1)?SPECIAL:FUNCTION;
+			r.type = prim_tab[fn].sf==0?FUNCTION:SPECIAL;
 			r.func = prim_tab[fn].func;
 		}
 		else
 		{
-			// user define it?		
-			r = get(str);
-			
-			if (r.type==EMPTY)
-			{
-				printstr("Not defined?");
-				printline(str);
-			}
-			
+			r.string = newString(n, str);
+			r.type   = SYMBOL;
 		}
 	}		
 	return r;
@@ -390,10 +487,10 @@ void readwhitespace()
 		
 /**************************************************************************************************/
 
-tOBJ eval();
+tOBJ parse();
 tOBJ callFunction(struct cell *);
 
-tCELL *evalist(bool qf)
+tCELL *parselist()
 {
 	int ch;
 
@@ -413,31 +510,28 @@ tCELL *evalist(bool qf)
 			nxt = newCell();	
 			prv->tail = nxt;
 		}
-		nxt->head = eval(qf);
+		nxt->head = parse();
 		nxt->tail = null;
 		prv=nxt;
-		
-		if (top->head.type == SPECIAL)
-			qf=true;
 	}
 	return top;
 }
 	
 
-tOBJ eval(bool qf)
+tOBJ parse()
 {
 	tOBJ r;
 	r.type=EMPTY;
+	r.q = false;
 	
 	int ch;
+	bool qf=0;
 	
-	bool fl = qf;
-
 	while ((ch = getch()) > 0)
 	{
 		if (isWhiteSpace((char)ch))
 		{
-			qf = fl;
+			qf = false;
 			readwhitespace();
 			continue;
 		}
@@ -462,21 +556,19 @@ tOBJ eval(bool qf)
 
 		if (ch == '(')
 		{
-			tCELL *args = evalist(qf);
-			if (!qf )
-				return callFunction(args);
-			else
-			{
-				r.type = CELL;
-				r.cell = args;
-			}
+			tCELL *args = parselist();
+			r.q = qf;
+			r.type = CELL;
+			r.cell = args;
+
 			return r;
 		}
 
 		if ( (ch>= 'A' && ch<= 'Z' ) || (ch>= 'a' && ch<= 'z' ))
 		{
 			ungetch(ch);
-			r=readtoken(qf);			
+			r=readtoken();		
+			r.q = qf;
 			return r;
 		}
 	}
@@ -485,8 +577,10 @@ tOBJ eval(bool qf)
 
 void printtype(tOBJ r)
 {
+
 	if (r.type == CELL)
 	{
+		if (r.q == true) printstr("'");
 		printstr("CELL#");	
 		if (r.cell != null)
 		{
@@ -504,12 +598,11 @@ void printtype(tOBJ r)
 	}
 	else if (r.type == STRING)
 	{
-		putch('"');
 		printstr(r.string);
-		putch('"');
 	}
 	else if (r.type == SYMBOL)
 	{
+		if (r.q == true) printstr("'");
 		printstr(r.string);
 	}
 	else if (r.type == BOOL)
@@ -539,6 +632,7 @@ tOBJ print(tOBJ r)
 	if (r.type == CELL)
 	{
 		struct cell  *c = r.cell;
+		if (r.q == true) printstr("'");
 		printstr("(");	
 		print(c->head);
 		
@@ -548,11 +642,6 @@ tOBJ print(tOBJ r)
 			printstr(" ");
 			print(c->head);
 		}
-		//if (c->tail != EMPTY)
-		//{
-		//	printstr(".");
-		//	print(c->tail);
-		//}
 		printstr(")");
 	}
 	else
@@ -565,26 +654,6 @@ tOBJ print(tOBJ r)
 /**************************************************************************************************/
 tOBJ get(char *n);
 
-tOBJ callFunction(tCELL *x)
-{
-	tOBJ r;
-	r.type=CELL;
-	r.cell=x;
-	
-	if (x->head.type == FUNCTION || x->head.type == SPECIAL)
-	{
-		// call function	
-		PFP f = (PFP)x->head.func;
-		r = (*f)(x->tail);
-	}
-	else
-	{
-		printtype(x->head);
-		printline(" :: Error - must be function");
-		r.type=EMPTY;
-	}
-	return r;
-}
 
 /**********  primitives  *********/
 
@@ -593,6 +662,7 @@ void showenviron();
 tOBJ env(tCELLp list)
 {
 	tOBJ r; r.type=EMPTY;
+	if (list != null && list->head.type==INT) dbg = list->head.number;
 	showenviron();
 	return r;
 }
@@ -629,6 +699,29 @@ tOBJ cadr(tCELLp p) // i.e. (cdr  '(123 456)) => 456
 	tOBJ r = car (cdr(p).cell);
 	return r;
 }
+
+
+tOBJ cons(tCELLp p) // i.e. (cons  123 '(456)) => (123 456)
+{
+	tOBJ r ; r.type=EMPTY;
+	tOBJ a = p->head;
+	tOBJ b = p->tail->head;
+	if (a.type ==CELL || b.type != CELL)
+	{
+		r.type=EMPTY; //error
+	}
+	else
+	{
+	}
+	return r;
+}
+
+tOBJ list(tCELLp p) // i.e. (list 123 456) => (123 456)
+{
+	tOBJ r ; r.type=CELL; r.cell = null;
+	return r;
+}
+
 
 tOBJ plus(tCELLp p) // i.e. (plus 123 456) => 597
 {
@@ -686,7 +779,7 @@ tOBJ eq(tCELLp p)  // i.e. (eq 1 1) => true, (eq 1 2) => nil
 		{
 			r.number = (a.number==b.number)?1:0;
 		}
-		if (a.type == FUNCTION || a.type == SPECIAL)
+		if (a.type == FUNCTION || a.type == SPECIAL )
 		{
 			r.number = (a.func==b.func)?1:0;
 		}
@@ -709,7 +802,6 @@ tOBJ iff(tCELLp p)  // i.e. (if (eq 1 2) (prn "One") true (prn "Two")) => Two
 	
 	if (p == null) return r;
 	
-	//printstr("test ");printtype(p->head); 	
 	r = callobj(p->head);
 	
 	if ((r.type == BOOL && r.number==1) || (r.type != EMPTY && r.type != ERROR && r.type != BOOL )) 
@@ -717,9 +809,7 @@ tOBJ iff(tCELLp p)  // i.e. (if (eq 1 2) (prn "One") true (prn "Two")) => Two
 		tCELLp x = p->tail;
 		if (x != null)
 		{
-			//printstr(" eval :: ");printtype(x->head); 	
 			r = callobj(x->head);
-
 		}
 		return r;
 	}
@@ -772,30 +862,6 @@ int add(char *n, tOBJ v)
 }
 
 
-tOBJ setq(tCELLp p)   // i.e. (setq a 123 ) => 123 and set a 
-{
-	tOBJ r;
-	r.type=EMPTY;
-
-	tOBJ h = p->head;
-	if (h.type == SYMBOL)
-	{
-		tOBJ t = (p->tail)->head;
-		if (t.type==CELL)
-		{
-			t = callFunction(t.cell);
-		}
-		add(h.string, t);
-		return t;
-	}
-	else
-	{
-		printtype(h);
-		printline(" - Must be a symbol?");
-	}
-	return r;
-}
-
 tOBJ set(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a 
 {
 	tOBJ r;
@@ -806,6 +872,36 @@ tOBJ set(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a
 	{
 		add(h.string, (p->tail)->head);
 		r= (p->tail)->head;
+		
+		if (p->tail->tail != null)
+		{
+			return set(p->tail->tail);
+		}
+	}
+	else
+	{
+		printtype(h);
+		printline(" - Must be a symbol?");
+	}
+	return r;
+}
+
+tOBJ setq(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a 
+{
+	tOBJ r;
+	r.type=EMPTY;
+
+	tOBJ h = p->head;
+	
+	if (h.type == SYMBOL)
+	{
+		add(h.string, callobj((p->tail)->head));
+		r= (p->tail)->head;
+		
+		if (p->tail->tail != null)
+		{
+			return setq(p->tail->tail);
+		}
 	}
 	else
 	{
@@ -820,53 +916,161 @@ tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")
 {
 	tOBJ r ; r.type=EMPTY;
 	
-	if (h.type != CELL)
+	DEBUG(printstr("DEBUG:: ["); printtype(h); printline("]"))
+	
+	if (h.q == true)
 	{
+		DEBUG(printline("QUOTE"))
+		h.q=false; //unquote
+		return h;
+	}
+	
+	if (h.type != CELL )
+	{
+		if (h.type == SYMBOL)
+		{
+			// user define it?		
+			r = get(h.string);
+			
+			if (r.type==EMPTY)
+			{
+				printstr("Not defined? :: ");
+				printline(r.string);
+			}
+			else
+				return r;
+		}
 		return h;
 	}
 	
 	tCELLp p = (tCELLp)(h.cell);
 	h=p->head;
 	
-	if (h.type==SYMBOL)
+	// first element in a lis must be a function
+	
+	if (h.type==FUNCTION || h.type == SPECIAL)
 	{
-		int fn = -1;
-		int fc=0;
-		for (fc=0; fc<PRIMSZ; fc++)
-		{
-			if (strcmp(prim_tab[fc].name, h.string)==0)
-				fn=fc;
-		}	
+		//  function	
+		PFP f = (PFP)h.func;
 		
-		if (fn>=0)
+		tCELLp tp =p->tail;
+		
+		// eval tail
+		if (h.type == FUNCTION)
 		{
-			//  function	
-			PFP f = (PFP)prim_tab[fn].func;
-			r = (*f)(p->tail);
+			while ((p=p->tail) != null)
+			{ 
+				p->head = callobj (p->head);
+			}
 		}
-		else
-		{
-			printline("Undefined ?");
-		}
+		r= (*f)(tp);
 	}
 	else
 	{
 		printtype(h);
-		printline(" :: Not a symbol ?");
+		printline(" :: Not a function ?");
 	}
+	return r;
+}
+
+tOBJ prog(tCELLp p)   // i.e. (do (prn "hello") (prn "world"))
+{
+	tOBJ r; r.type=EMPTY;
+	if (p != null)
+		r= p->head;
+	return r;
+}
+
+tOBJ whle(tCELLp p)   // i.e. (while true (prn "world"))
+{
+	tOBJ cond = p->head;
+	tOBJ fn   = p->tail->head;
+	tOBJ r; r.type=EMPTY;
+	
+	tOBJ t = callobj(cond);
+	
+	while ((t.type == BOOL && t.number==1) || (t.type != EMPTY && t.type != ERROR && t.type != BOOL )) 
+	{
+		r = callobj(fn);
+		t = callobj(cond);
+	}
+	
+	return r;
+}
+
+tOBJ time(tCELLp p)   // i.e. (time (sleep 500))  => 500
+{
+	tOBJ r; r.type=INT;
+	gticks = 0;
+	callobj(p->head);
+	r.number=gticks;
+	return r;
+}
+
+tOBJ sleep(tCELLp p)   // i.e.(sleep 500) 
+{
+	tOBJ r; r.type=EMPTY;
+	
+	if (p->head.type == INT)
+	{
+		delay_ms(p->head.number);
+	}
+	return r;
+}
+
+//define ir.c
+extern int irGetByte(void);
+
+tOBJ readIR(tCELLp p)   
+{
+	tOBJ r; r.type = INT;
+	r.number = irGetByte();
 	return r;
 }
 
 tOBJ call(tCELLp p)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")) (eval a) => "hello"
 {
-	return callobj(p->head);
+	tOBJ r = callobj(p->head);
+	if (p->tail != null)
+		return call(p->tail);
+	return r;
 }
+
+/**************************************************************************************************/
+
+tOBJ getServo(tCELLp p)   // i.e. (getServo 15)
+{
+	tOBJ r; r.type=INT;
+	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
+	{
+		r.number = wckPosRead(p->head.number);
+	}
+	else
+		r.type=EMPTY;
+	return r;
+}
+tOBJ sendServo(tCELLp p)   // i.e. (sendServo 12 50 4)
+{
+	tOBJ r; r.type=INT;
+	int sid = p->head.number;
+	p=p->tail;
+	int pos = p->head.number;
+	p=p->tail;
+	int tor = p->head.number;
+	if (sid<0 || sid>0 || pos<0 || pos>254 ||tor<0 || tor>4) 	
+	{
+		r.type=EMPTY; //fail
+	}
+	else	
+		r.number = wckPosSend(sid, tor, pos);
+	
+	return r;
+}
+
 
 
 /**************************************************************************************************/
 
-extern volatile BYTE   gSEC;
-extern volatile BYTE   gMIN;
 
 void printtime(char * s)
 {
@@ -901,13 +1105,19 @@ void showenviron()
 	garbageCollect();
 }
 
+tOBJ eval()
+{
+	tOBJ r = parse();
+	return callobj(r);
+}
+
 tOBJ evalstring(char *txt)
 {
 	ibcnt=0;
 	while ((inputbuffer[ibcnt++] = *txt++ ) != 0) ;
 	inputbuffer[ibcnt] = '\0';
 	ibptr=inputbuffer;
-	return eval(false);
+	return eval();
 }
 
 void repl()
@@ -918,7 +1128,7 @@ void repl()
 		readline();
 		while (ibptr-inputbuffer < ibcnt)
 		{
-			struct object r = eval(false);
+			struct object r = eval();
 			print(r);	
 			printline("");	
 		}
@@ -928,25 +1138,25 @@ void repl()
 void testf()
 {
    evalstring("(set 'a 1)");
-   evalstring("(if true (prn \"hi\")))");
+   evalstring("(if (eq a 1) (prn \"one\") true (prn \"hi\")))");
 }
 
 void initialise()
 {
-	printline("Femto 0.1");
-	//testf();  //DEBUGING
+	printline("Femto $Rev$");
+	RUN_LED1_ON;
+	RUN_LED2_ON;	
+	UCSR1B= (1<<RXEN)|(1<<TXEN) ; //enable PC read/write Not interupt;	
+	UCSR0B= (1<<RXEN)|(1<<TXEN) ; //enable wck read/write Not interupt;	
+	
+	DEBUG(testf())  //DEBUGING
+		
 	showenviron();						
 }
 
-#define	RUN_LED1_ON			CLR_BIT5(PORTA)     // BLUE
-#define	RUN_LED2_ON			CLR_BIT6(PORTA)     // GREEN
 
 void femto()
 {
 	initialise();
-
-	RUN_LED1_ON;
-	RUN_LED2_ON;	
-	UCSR1B= (1<<RXEN)|(1<<TXEN) ; //enable PC read/write Not interupt;	
 	repl();
 }

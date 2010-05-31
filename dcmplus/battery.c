@@ -15,6 +15,7 @@ volatile WORD   g10MSEC;
 volatile BYTE   gSEC;
 volatile BYTE   gMIN;
 volatile BYTE   gHOUR;
+volatile WORD   gticks;
 volatile WORD	gSEC_DCOUNT;
 volatile WORD	gMIN_DCOUNT;
 
@@ -97,6 +98,8 @@ ISR(TIMER0_OVF_vect)
 {
 	//TCNT0 = 111;
 	TCNT0 = 25;
+	
+	gticks++;
 
 	if (g10Mtimer>0) g10Mtimer--; //count down timer
 	
