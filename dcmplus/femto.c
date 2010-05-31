@@ -59,6 +59,27 @@ void wckSendOperCommand(char Data1, char Data2)
 	putWck(CheckSum);
 }
 
+void wckSyncPosSend(BYTE LastID, BYTE SpeedLevel, BYTE *TargetArray, BYTE Index)
+{
+	int i;
+	char CheckSum;
+	i = 0;
+	CheckSum = 0;
+	putWck(HEADER);
+	putWck((SpeedLevel<<5)|0x1f);
+	putWck(LastID+1);
+	while(1) 
+	{
+		if(i>LastID) 
+			break;
+		putWck(TargetArray[Index*(LastID+1)+i]);
+		CheckSum = CheckSum ^ TargetArray[Index*(LastID+1)+i];
+		i++;
+	}
+	CheckSum = CheckSum & 0x7f;
+	putWck(CheckSum);
+}
+
 /**************************************************************************************************/
 #define MAX 100
 char inputbuffer[MAX];
@@ -187,7 +208,6 @@ tOBJ cdr  (tCELLp);
 tOBJ cons (tCELLp);
 tOBJ list (tCELLp);
 
-
 tOBJ plus(tCELLp);
 tOBJ pr  (tCELLp);
 tOBJ prn (tCELLp);
@@ -199,9 +219,11 @@ tOBJ iff (tCELLp);
 tOBJ call(tCELLp);
 tOBJ prog(tCELLp);
 
-tOBJ sendServo(tCELLp);
-tOBJ getServo (tCELLp);
-tOBJ readIR   (tCELLp);
+tOBJ sendServo   (tCELLp);
+tOBJ getServo    (tCELLp);
+tOBJ passiveServo(tCELLp);
+tOBJ synchServo  (tCELLp);
+tOBJ readIR      (tCELLp);
 
 struct prim { char *name; PFP func; int sf;} prim_tab[] = { 
 	{"env",  env, 0},
@@ -225,6 +247,8 @@ struct prim { char *name; PFP func; int sf;} prim_tab[] = {
 
 	{"sendServo",   sendServo, 0},
 	{"getServo",    getServo,0},
+	{"passServo",   passiveServo,0},
+	{"syncServo",   synchServo,0},
 	{"readIR",      readIR,0},
 
 	{"while",whle,0}
@@ -332,17 +356,25 @@ void garbageCollect()
 int readdigit()
 {
 	int num = 0;
-	int ch = 0;
+	int ch  = 0;
+	int s   = 1;
+	switch(ch=getch())
+	{
+		case '-': s=-1; break;
+		case '+': s=1; break;
+		default: ungetch(ch); break;
+	}
+	
 	while ((ch = getch()) > 0)
 	{
 		if (!(ch>='0' && ch<='9'))
 		{
 			ungetch(ch);
-			return num;
+			return num*s;
 		}
 		num = num * 10 + (ch - '0');
 	}
-	return num;
+	return num*s;
 }
 
 bool isWhiteSpace(int ch)
@@ -498,9 +530,9 @@ tOBJ parse()
 			continue;
 		}
 
-		if (ch >= '0' && ch <= '9')
+		if (ch=='+' || ch=='-' || (ch >= '0' && ch <= '9'))
 		{
-			ungetch(ch);       
+			ungetch(ch);
 			r.type=INT;
 			r.number=readdigit();
 			return r;
@@ -893,7 +925,7 @@ tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")
 			if (r.type==EMPTY)
 			{
 				printstr("Not defined? :: ");
-				printline(r.string);
+				printline(h.string);
 			}
 			else
 				return r;
@@ -1014,6 +1046,25 @@ tOBJ getServo(tCELLp p)   // i.e. (getServo 15)
 		r.type=EMPTY;
 	return r;
 }
+
+tOBJ passiveServo(tCELLp p)   // i.e. (passiveServo 15)
+{
+	tOBJ r; r.type=INT;
+	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
+	{
+		wckSendOperCommand(0xc0|(p->head.number), 0x10);
+		int b1 = wckGetByte(TIME_OUT);
+		int b2 = wckGetByte(TIME_OUT);
+		
+		if (b1<0 || b2<0)
+			r.type = EMPTY; //timeout
+		else
+			r.number = b2;
+	}
+	else
+		r.type=EMPTY;
+	return r;
+}
 tOBJ sendServo(tCELLp p)   // i.e. (sendServo 12 50 4)
 {
 	tOBJ r; r.type=INT;
@@ -1037,6 +1088,49 @@ tOBJ sendServo(tCELLp p)   // i.e. (sendServo 12 50 4)
 			r.type = EMPTY; //timeout
 		else
 			r.number = (b1<<8|b2);
+	}
+	return r;
+}
+
+tOBJ synchServo(tCELLp p)   // i.e. (sycnServo lastid torq '(positions))
+{
+	tOBJ r;	r.type=EMPTY;
+	BYTE lastid = (p->head.number)&0x1F;
+	p=p->tail;
+	BYTE tor    = (p->head.number)&0x03;
+	p=p->tail;
+	if (p->head.type == CELL)
+	{
+		BYTE pos[lastid+2];
+		p=(tCELLp)(p->head.cell);
+		
+		for (int i=0; i<lastid+1; i++)
+		{
+			int n;
+			if (p == null)
+			{
+				printline("error - not enough items");	
+				return r;
+			}
+			if (p->head.type==INT)
+			{
+				n=p->head.number;							
+				DEBUG(printint(n); printstr("-");)				
+				pos[i] = n;
+			}
+			else
+			{
+				printline("error - must be number");	
+				return r;
+			}
+
+			p=p->tail;
+		}
+		wckSyncPosSend(lastid, tor, pos, 0); // uncomment if works!
+	}
+	else
+	{
+		printline("error - must be list");
 	}
 	return r;
 }
