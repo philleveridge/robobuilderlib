@@ -11,7 +11,6 @@
 #define NULL			'\0'
 
 int dbg=0;
-
 #define DEBUG(a)   if(dbg) {a;}
 
 extern int 		strcmp(char *, char *);
@@ -59,6 +58,18 @@ void wckSendOperCommand(char Data1, char Data2)
 	putWck(CheckSum);
 }
 
+void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
+{
+	char CheckSum;
+	CheckSum = (Data1^Data2^Data3^Data4)&0x7f;
+	putWck(HEADER);
+	putWck(Data1);
+	putWck(Data2);
+	putWck(Data3);
+	putWck(Data4);
+	putWck(CheckSum);
+}
+
 void wckSyncPosSend(BYTE LastID, BYTE SpeedLevel, BYTE *TargetArray, BYTE Index)
 {
 	int i;
@@ -81,6 +92,15 @@ void wckSyncPosSend(BYTE LastID, BYTE SpeedLevel, BYTE *TargetArray, BYTE Index)
 }
 
 /**************************************************************************************************/
+
+char *errmessage[] = {
+	"not enough items",	
+	"must be number",
+	"must be list",
+	"incorrect parameters passed",
+	"must be a symbol"
+};
+
 #define MAX 100
 char inputbuffer[MAX];
 int  ibcnt;
@@ -95,19 +115,25 @@ void readline()
 	while (ibcnt<MAX-1) 
 	{
 		ch=getByte();
-		putByte(ch);            //echo input
 
 		if (ch == 13) 
 		{
-			putByte(10);
+			putByte(13); putByte(10);
 		    break;
 		}
 		if (ch==8 || ch==127)   //Bsapce ?
 		{
-			if (ibcnt>0) ibcnt--;
+			if (ibcnt>0) 
+			{
+				putByte(ch);
+				ibcnt--;
+			}	
 		}
 		else
+		{
+			putByte(ch);            //echo input
 			inputbuffer[ibcnt++] = ch;
+		}
 	}		
 	inputbuffer[ibcnt]=0;
 }
@@ -218,22 +244,24 @@ tOBJ eq  (tCELLp);
 tOBJ iff (tCELLp);
 tOBJ call(tCELLp);
 tOBJ prog(tCELLp);
+tOBJ len (tCELLp);
 
 tOBJ sendServo   (tCELLp);
 tOBJ getServo    (tCELLp);
 tOBJ passiveServo(tCELLp);
 tOBJ synchServo  (tCELLp);
 tOBJ readIR      (tCELLp);
+tOBJ wckwriteIO  (tCELLp); //(n c0 c1)
 
 struct prim { char *name; PFP func; int sf;} prim_tab[] = { 
 	{"env",  env, 0},
 	{"time", time,1},
 	{"sleep",sleep,0},
 	{"car",  car, 0},
-	{"plus", plus,0}, 
-	
+	{"plus", plus,0}, 	
 	{"cons", cons,0},
 	{"list", list,0}, 
+	{"length", len,0}, 
 	
 	{"cdr",  cdr, 0},
 	{"pr",   pr,  0},
@@ -246,12 +274,13 @@ struct prim { char *name; PFP func; int sf;} prim_tab[] = {
 	{"do",   prog,0},
 
 	{"sendServo",   sendServo, 0},
-	{"getServo",    getServo,0},
+	{"getServo",    getServo,  0},
 	{"passServo",   passiveServo,0},
 	{"syncServo",   synchServo,0},
-	{"readIR",      readIR,0},
+	{"wckwriteIO",  wckwriteIO,0},
+	{"readIR",      readIR,    0},
 
-	{"while",whle,0}
+	{"while",whle,1}
 };
 
 #define PRIMSZ (sizeof(prim_tab)/sizeof(struct prim))
@@ -614,6 +643,11 @@ void printtype(tOBJ r)
 	{
 		printstr("FUNCTION");	
 	}
+	else if (r.type == ERROR)
+	{
+		printstr("Error [");printint(r.number);printstr("] :: ");
+		if (r.number<sizeof(errmessage)) printstr(errmessage[r.number]);
+	}
 	else	
 	{		
 		printline("? error - type ");	
@@ -653,6 +687,12 @@ tOBJ get(char *n);
 
 void showenviron();
 
+tOBJ throw(int n)
+{
+	tOBJ r; r.type=ERROR; r.number=n;
+	return r;
+}
+
 tOBJ env(tCELLp list)
 {
 	tOBJ r; r.type=EMPTY;
@@ -688,9 +728,28 @@ tOBJ cdr(tCELLp p) // i.e. (cdr  '(123 456)) => (456)
 	return r;
 }
 
-tOBJ cadr(tCELLp p) // i.e. (cdr  '(123 456)) => 456
+tOBJ cadr(tCELLp p) // i.e. (cadr  '(123 456)) => 456
 {
 	tOBJ r = car (cdr(p).cell);
+	return r;
+}
+
+tOBJ len(tCELLp p) // i.e. (len  '(123 456)) => 2
+{
+	tOBJ r; r.type=INT;
+	if (p->head.type != CELL)
+		r=throw(2);
+	else
+	{
+		int n=0;
+		p=p->head.cell;
+		while (p != null)
+		{
+			n++;
+			p=p->tail;
+		}
+		r.number=n;
+	}
 	return r;
 }
 
@@ -705,13 +764,19 @@ tOBJ cons(tCELLp p) // i.e. (cons  123 '(456)) => (123 456)
 	}
 	else
 	{
+		tCELLp n = newCell();
+		n->head=a;
+		n->tail = (tCELLp)(b.cell);
+		r.type = CELL;
+		r.cell = n;
 	}
 	return r;
 }
 
 tOBJ list(tCELLp p) // i.e. (list 123 456) => (123 456)
 {
-	tOBJ r ; r.type=CELL; r.cell = null;
+	tOBJ r ; r.type=CELL; 
+	r.cell = p;
 	return r;
 }
 
@@ -871,8 +936,8 @@ tOBJ set(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a
 	}
 	else
 	{
-		printtype(h);
-		printline(" - Must be a symbol?");
+		DEBUG(printtype(h);)
+		r=throw(4);
 	}
 	return r;
 }
@@ -896,8 +961,8 @@ tOBJ setq(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a
 	}
 	else
 	{
-		printtype(h);
-		printline(" - Must be a symbol?");
+		DEBUG(printtype(h);)
+		r=throw(4);
 	}
 	return r;
 }
@@ -973,16 +1038,22 @@ tOBJ prog(tCELLp p)   // i.e. (do (prn "hello") (prn "world"))
 
 tOBJ whle(tCELLp p)   // i.e. (while true (prn "world"))
 {
+	// (while (eq -1 (readIR)) (do (prn "loop - IR=" (readIR)) (sleep 50)))
 	tOBJ cond = p->head;
 	tOBJ fn   = p->tail->head;
 	tOBJ r; r.type=EMPTY;
 	
 	tOBJ t = callobj(cond);
 	
+	DEBUG(printstr("cond=");printtype(t);)
+	
 	while ((t.type == BOOL && t.number==1) || (t.type != EMPTY && t.type != ERROR && t.type != BOOL )) 
 	{
 		r = callobj(fn);
+		DEBUG(printstr("fn : ");printtype(fn);printstr("=");printtype(r);)
+
 		t = callobj(cond);
+		DEBUG(printstr("cond : ");printtype(cond);printstr("=");printtype(t);)
 	}
 	
 	return r;
@@ -1047,6 +1118,34 @@ tOBJ getServo(tCELLp p)   // i.e. (getServo 15)
 	return r;
 }
 
+tOBJ wckwriteIO(tCELLp p)   // i.e. (wckwriteIO 15 true true)
+{
+	tOBJ r; r.type=INT;
+	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
+	{
+		int id = p->head.number;
+		p=p->tail;
+		if (p->head.type != BOOL) return throw(3);
+		int b1 = p->head.number;
+		p=p->tail;
+		if (p->head.type != BOOL) return throw(3);
+		int b2 = p->head.number;
+		
+        wckSendSetCommand((7 << 5) | (id % 31), 0x64, ((b1) ? 1 : 0) | ((b2) ? 2 : 0), 0);
+		
+		b1 = wckGetByte(TIME_OUT);
+		b2 = wckGetByte(TIME_OUT);
+		
+		if (b1<0 || b2<0)
+			r.type = EMPTY; //timeout
+		else
+			r.number = b2;		
+	}
+	else
+		r=throw(3);
+	return r;
+}
+
 tOBJ passiveServo(tCELLp p)   // i.e. (passiveServo 15)
 {
 	tOBJ r; r.type=INT;
@@ -1073,9 +1172,9 @@ tOBJ sendServo(tCELLp p)   // i.e. (sendServo 12 50 4)
 	int pos = p->head.number;
 	p=p->tail;
 	int tor = p->head.number;
-	if (sid<0 || sid>0 || pos<0 || pos>254 ||tor<0 || tor>4) 	
+	if (sid<0 || sid>30 || pos<0 || pos>254 ||tor<0 || tor>4) 	
 	{
-		r.type=EMPTY; //fail
+		r=throw(3); // incorrect aparams
 	}
 	else	
 	{
@@ -1109,8 +1208,7 @@ tOBJ synchServo(tCELLp p)   // i.e. (sycnServo lastid torq '(positions))
 			int n;
 			if (p == null)
 			{
-				printline("error - not enough items");	
-				return r;
+				return throw(0);
 			}
 			if (p->head.type==INT)
 			{
@@ -1120,8 +1218,7 @@ tOBJ synchServo(tCELLp p)   // i.e. (sycnServo lastid torq '(positions))
 			}
 			else
 			{
-				printline("error - must be number");	
-				return r;
+				return throw(1);
 			}
 
 			p=p->tail;
@@ -1130,7 +1227,7 @@ tOBJ synchServo(tCELLp p)   // i.e. (sycnServo lastid torq '(positions))
 	}
 	else
 	{
-		printline("error - must be list");
+		return throw(2);
 	}
 	return r;
 }
