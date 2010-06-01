@@ -16,6 +16,7 @@ Coming soon - Femto is still in early stages of development. It will provide a m
 ||car||return head of list (car '(a b c)) -> a||
 ||plus||add list of numbers i.e. (plus 1 2 3) -> 6||
 ||cdr||tail of list i.e. (cdr '(a b c)) -> (b c)||
+||length||(length '(1 2 3)) -> 3||
 ||pr||pr list items i.e (pr "hello world")||
 ||set||set symbol to value (i.e. (set 'a 5) -> 5 and binds a||
 ||setq||as set||
@@ -26,7 +27,11 @@ Coming soon - Femto is still in early stages of development. It will provide a m
 ||sendServo||(sendServo 12 50 4) -> set servo 12 to position 50 torq 4||
 ||getServo||(getServo 10) -> 50 - will return NIL if timeout||
 ||readIR||read latest IR remote value or -1 if nothing pressed||
-||while||(while true (prn "hello")) -> loops for ever||
-||cons||tbd||
-||list||tbd||
-||eval||tbd||
+||passiveServo|| (passiveServo 10) -> servo 10 set to passive state||
+||synchServo|| (synchServo <lastid> <torq> '(<pos servo 0> <pos serv1> .. <pos serv(lastid)))||
+||wckwriteIO||(wckwriteIO 10 true true) set red and blue light on servo 10 ||
+||cons||(cons 'a '(b c)) -> (a b c)||
+||list||(list 'a 'b 'c) -> (a b c)||
+||eval||(eval '(plus 1 2)) -> 3||
+||while||NOT WORKING||
+
