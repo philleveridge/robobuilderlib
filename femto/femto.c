@@ -1057,7 +1057,7 @@ tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")
 		
 		// eval tail
 		int ts=0;
-		tOBJ temp[10];
+		tOBJ temp[50];
 				
 		if (h.type == FUNCTION)
 		{
@@ -1075,7 +1075,7 @@ tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")
 
 		for (i=0;i<ts; i++)
 		{
-			printint(i);printstr("-"); printint(temp[i].type);printtype(temp[i]);printline("");
+			//DEBUG(printint(i);printstr("-"); printint(temp[i].type);printtype(temp[i]);printline("");)
 			p->head = temp[i];
 			p=p->tail;
 		}
@@ -1088,7 +1088,7 @@ tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")
 	return r;
 }
 
-tOBJ prog(tCELLp p)   // i.e. (do (prn "hello") (prn "world") -> "hello")
+tOBJ prog(tCELLp p)   // i.e. (do1 (prn "hello") (prn "world") -> "hello")
 {
 	tOBJ r; r.type=EMPTY;
 	if (p != null)
@@ -1107,24 +1107,19 @@ tOBJ progn(tCELLp p)   // i.e. (do (prn "hello") (prn "world") -> "world")
 	return r;
 }
 
-tOBJ whle(tCELLp p)   // i.e. (while true (prn "world"))
+tOBJ whle(tCELLp p)  
 {
-	// (while (eq -1 (readIR)) (do (prn "loop - IR=" (readIR)) (sleep 500)))
+	// (while (eq -1 (readIR)) (do (prn "loop - IR=" (readIR)) (sleep 100)))
 	tOBJ cond = p->head;
 	tOBJ fn   = p->tail->head;
 	tOBJ r; r.type=EMPTY;
 	
 	tOBJ t = callobj(cond);
-	
-	DEBUG(printstr("cond=");printtype(t);)
-	
+		
 	while ((t.type == BOOL && t.number==1) || (t.type != EMPTY && t.type != ERROR && t.type != BOOL )) 
 	{
 		r = callobj(fn);
-		DEBUG(printstr("fn : ");printtype(fn);printstr("=");printtype(r);)
-
 		t = callobj(cond);
-		DEBUG(printstr("cond : ");printtype(cond);printstr("=");printtype(t);)
 	}
 	
 	return r;
