@@ -1009,11 +1009,11 @@ tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")
 		
 		// eval tail
 		int ts=0;
-		tOBJ temp[50];
+		tOBJ temp[30];
 				
 		if (h.type == FUNCTION)
 		{
-			while ((p=p->tail) != null && ts<49)
+			while ((p=p->tail) != null && ts<29)
 			{ 
 				temp[ts] = p->head;  //?memcpy???
 				
