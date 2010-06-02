@@ -20,10 +20,39 @@
    Prentice-Hall, 1988.
 */
  
-#include <stdio.h>
-#include <time.h>
  
-#define SIZE 1000000 /* numbers of nodes of tree storage */
+ /* l3v3rz MODS   */
+ 
+ #include "rprintf.h"
+ #include "macro.h"
+ 
+ void exit(int n) { /* do nothing */  while (1) {} }
+ void putByte (char b);
+ int getByte();
+ 
+ extern volatile WORD   gticks;
+ 
+ #define putchar   putByte
+ #define getchar   getByte
+ #define printf    rprintf
+ #define EOF -1
+ #define NULL
+ 
+//#include <stdio.h>
+//#include <time.h>
+
+#define SIZE 140 // 32 * 100 = 16K
+
+#define time_t 		WORD
+
+time_t time()
+{
+	return gticks;
+}
+ 
+ /* MODS END */
+ 
+
 #define nil 0 /* end of list marker */
  
 long car[SIZE], cdr[SIZE]; /* tree storage */
@@ -104,18 +133,18 @@ long read_char(void); /* read one character from Turing machine tape */
 long read_word(void); /* read word from Turing machine tape */
 long read_expr(long rparenokay); /* read s-exp from Turing machine tape */
  
-main() /* lisp main program */
+void lisp() /* lisp main program */
 {
 time1 = time(NULL); /* start timer */
-printf("LISP Interpreter Run\n");
+printf("LISP Interpreter Run\r\n");
 initialize_atoms();
  
 while (1) {
       long e, f, name, def;
-      printf("\n");
+      printf("\r\n"); //MOD
       /* read lisp meta-expression, ) not okay */
       e = in(1,0);
-      printf("\n");
+      printf("\r\n"); //MOD
       f = car[e];
       name = car[cdr[e]];
       def = car[cdr[cdr[e]]];
@@ -249,7 +278,7 @@ long cons(long x, long y) /* get free node & stuff x & y in it */
  if ( y != nil && atom[y] ) return x;
  
  if (next >= SIZE) {
-  printf("Storage overflow!\n");
+  printf("Storage overflow!\r\n");
   exit(0);
  }
  
@@ -298,8 +327,8 @@ void out_atm(long x) /* output atom */
  
 void out_chr(long x) /* output character */
 {
-   if (col++ == 50) {printf("\n%-12s"," ");  col = 1;}
-   putchar(x);
+   if (col++ == 50) {printf("\r\n%-12s"," ");  col = 1;}
+   putByte(x); //putchar(x);
 }
  
 long eq_wrd(long x, long y) /* are two lists of characters equal ? */
@@ -332,16 +361,15 @@ long in_word2(void) { /* read word */
       do { /* read characters until '\n' */
          character = getchar();
          if (character == EOF) {
-            time2 = time(NULL);
-            printf(
-            "End of LISP Run\n\nElapsed time is %.0f seconds.\n",
-            difftime(time2,time1)
+             time2 = time(NULL);
+            printf("End of LISP Run\r\n\r\nElapsed time is %.0f seconds.\n",
+            //difftime(time2,time1)
          /* on some systems, above line should instead be: */
-         /* time2 - time1 */
-            );
+            time2 - time1 
+           );
             exit(0); /* terminate execution */
          } /* end of if (character == EOF) */
-         putchar(character);
+         putByte(character); //putchar(character);
          /* add character to end of line */
          end_of_line = cdr[end_of_line] = cons(character,nil);
       }  /* end of read characters until '\n' */
@@ -409,7 +437,10 @@ long in_word(void) /* read word - skip comments */
 long in(long mexp, long rparenokay) /* input m-exp */
 {
    long w = in_word(), first, last, next, name, def, body, var_lst, i ;
-   if (w == right_paren) if (rparenokay) return w; else return nil;
+   if (w == right_paren) 
+   {
+	if (rparenokay) return w; else return nil;
+   }
    if (w == left_paren) { /* explicit list */
       first = last = cons(nil,nil);
       while ((next = in(mexp,1)) != right_paren)
@@ -683,6 +714,7 @@ long compare(long x, long y) /* compare two decimal numbers */
  if (digit1 == digit2) return '=';
  if (digit1 <  digit2) return '<';
  if (digit1 >  digit2) return '>';
+ return 0; //mod
 }
  
 long add1(long x) /* add 1 to decimal number */
@@ -937,7 +969,7 @@ long read_expr(long rparenokay) /* read s-exp from Turing machine tape */
 {
    long w = read_word(), first, last, next;
    if (w < 0) return w; /* error? */
-   if (w == right_paren) if (rparenokay) return w; else return nil;
+   if (w == right_paren) {if (rparenokay) return w; else return nil;}
    if (w == left_paren) { /* explicit list */
       first = last = cons(nil,nil);
       while ((next = read_expr(1)) != right_paren) {
