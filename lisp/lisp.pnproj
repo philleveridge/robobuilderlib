@@ -1,0 +1,1 @@
+<Project name="lisp"><File path="lisp.c"></File><File path="macro.h"></File><File path="main.h"></File><File path="Makefile"></File><File path="main.c"></File><File path="uart.c"></File><File path="rprintf.c"></File><File path="buffer.c"></File><File path="macro.h"></File></Project>
