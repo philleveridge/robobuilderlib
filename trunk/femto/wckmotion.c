@@ -92,8 +92,8 @@ void wckSyncPosSend(BYTE LastID, BYTE SpeedLevel, BYTE *TargetArray, BYTE Index)
 
 // if flag set read initial positions
 
-BYTE cpos[32];
-BYTE nos=0;
+static BYTE cpos[32];
+static BYTE nos=0;
 
 int getservo(int id)
 {
@@ -113,14 +113,13 @@ int readservos()
 	for (i=0; i<31; i++)
 	{
 		int p = getservo(i);
-		printint(i); printstr("-"); printint(p); printline("");
+		//printint(i); printstr("-"); printint(p); printline("C");
 		
-		if (p<0)
-			break;
+		if (p<0) break;
 		cpos[i]=p;	
 	}
 	nos=i;
-				printint(nos); printline(" nos");
+	//printint(nos); printline(" nos");
 	return i;
 }
 
@@ -150,9 +149,8 @@ void PlayPose(int d, int f, BYTE *pos, int flag)
 		for (int j=0; j<nos; j++)
 		{
 			temp[j] = cpos[j] + (float)((i)*intervals[j]+0.5);
-			printint(i); printstr("-"); printint(j); printstr("-"); printint(temp[j]); printline("T");
 		}
-		//wckSyncPosSend(nos-1, 4, temp, 0);
+		wckSyncPosSend(nos-1, 4, temp, 0);
 		delay_ms(dur);
 	}
 }
