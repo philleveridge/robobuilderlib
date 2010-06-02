@@ -1,0 +1,7 @@
+C:\Users\Phil\AppData\Local\Temporary Projects\ConsoleApplication1\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Phil\AppData\Local\Temporary Projects\ConsoleApplication1\bin\Release\ConsoleApplication1.exe
+C:\Users\Phil\AppData\Local\Temporary Projects\ConsoleApplication1\bin\Release\ConsoleApplication1.pdb
+C:\Users\Phil\AppData\Local\Temporary Projects\ConsoleApplication1\bin\Release\RobobuilderLib.exe
+C:\Users\Phil\AppData\Local\Temporary Projects\ConsoleApplication1\bin\Release\RobobuilderLib.pdb
+C:\Users\Phil\AppData\Local\Temporary Projects\ConsoleApplication1\obj\Release\ConsoleApplication1.exe
+C:\Users\Phil\AppData\Local\Temporary Projects\ConsoleApplication1\obj\Release\ConsoleApplication1.pdb

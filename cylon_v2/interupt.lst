@@ -1,0 +1,659 @@
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00001 ;--------------------------------------------------------
+               00002 ; File Created by SDCC : free open source ANSI-C Compiler
+               00003 ; Version 2.9.2 #5492 (Aug 17 2009) (MINGW32)
+               00004 ; This file was generated Wed Sep 09 13:57:17 2009
+               00005 ;--------------------------------------------------------
+               00006 ; PIC port for the 14-bit core
+               00007 ;--------------------------------------------------------
+               00008 ;       .file   "interupt.c"
+               00009         list    p=16f648A
+               00010         radix dec
+               00011         include "p16f648A.inc"
+               00001         LIST
+               00002 ; P16F648A.INC  Standard Header File, Version 1.00    Microchip Technology, Inc.
+               00264         LIST
+               00012 ;--------------------------------------------------------
+               00013 ; external declarations
+               00014 ;--------------------------------------------------------
+               00015         extern  __divsint
+               00016         extern  _CCP1CON_bits
+               00017         extern  _CMCON_bits
+               00018         extern  _EECON1_bits
+               00019         extern  _INTCON_bits
+               00020         extern  _OPTION_REG_bits
+               00021         extern  _PCON_bits
+               00022         extern  _PIE1_bits
+               00023         extern  _PIR1_bits
+               00024         extern  _PORTA_bits
+               00025         extern  _PORTB_bits
+               00026         extern  _RCSTA_bits
+               00027         extern  _STATUS_bits
+               00028         extern  _T1CON_bits
+               00029         extern  _T2CON_bits
+               00030         extern  _TRISA_bits
+               00031         extern  _TRISB_bits
+               00032         extern  _TXSTA_bits
+               00033         extern  _VRCON_bits
+               00034         extern  _INDF
+               00035         extern  _TMR0
+               00036         extern  _PCL
+               00037         extern  _STATUS
+               00038         extern  _FSR
+               00039         extern  _PORTA
+               00040         extern  _PORTB
+               00041         extern  _PCLATH
+               00042         extern  _INTCON
+               00043         extern  _PIR1
+               00044         extern  _TMR1L
+               00045         extern  _TMR1H
+               00046         extern  _T1CON
+               00047         extern  _TMR2
+               00048         extern  _T2CON
+               00049         extern  _CCPR1L
+               00050         extern  _CCPR1H
+               00051         extern  _CCP1CON
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00052         extern  _RCSTA
+               00053         extern  _TXREG
+               00054         extern  _RCREG
+               00055         extern  _CMCON
+               00056         extern  _OPTION_REG
+               00057         extern  _TRISA
+               00058         extern  _TRISB
+               00059         extern  _PIE1
+               00060         extern  _PCON
+               00061         extern  _PR2
+               00062         extern  _TXSTA
+               00063         extern  _SPBRG
+               00064         extern  _EEDATA
+               00065         extern  _EEADR
+               00066         extern  _EECON1
+               00067         extern  _EECON2
+               00068         extern  _VRCON
+               00069         extern  ___sdcc_saved_fsr
+               00070 
+               00071         extern PSAVE
+               00072         extern SSAVE
+               00073         extern WSAVE
+               00074         extern STK12
+               00075         extern STK11
+               00076         extern STK10
+               00077         extern STK09
+               00078         extern STK08
+               00079         extern STK07
+               00080         extern STK06
+               00081         extern STK05
+               00082         extern STK04
+               00083         extern STK03
+               00084         extern STK02
+               00085         extern STK01
+               00086         extern STK00
+               00087 ;--------------------------------------------------------
+               00088 ; global declarations
+               00089 ;--------------------------------------------------------
+               00090         global  _delay
+               00091         global  _delay_us
+               00092         global  _init_hw
+               00093         global  _Msec
+               00094         global  _wlc
+               00095 
+               00096 ;--------------------------------------------------------
+               00097 ; global definitions
+               00098 ;--------------------------------------------------------
+               00099 UD_interupt_0   udata
+               00100 _Msec   res     1
+               00101 
+               00102 UD_interupt_1   udata
+               00103 _wlc    res     1
+               00104 
+               00105 ;--------------------------------------------------------
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00106 ; absolute symbol definitions
+               00107 ;--------------------------------------------------------
+               00108 ;--------------------------------------------------------
+               00109 ; compiler-defined variables
+               00110 ;--------------------------------------------------------
+               00111 UDL_interupt_0  udata
+               00112 r0x1004 res     1
+               00113 r0x1003 res     1
+               00114 r0x1005 res     1
+               00115 _delayus_variable       res     1
+               00116 ;--------------------------------------------------------
+               00117 ; initialized data
+               00118 ;--------------------------------------------------------
+               00119 ;--------------------------------------------------------
+               00120 ; overlayable items in internal ram 
+               00121 ;--------------------------------------------------------
+               00122 ;       udata_ovr
+               00123 ;--------------------------------------------------------
+               00124 ; interrupt and initialization code
+               00125 ;--------------------------------------------------------
+               00126 c_interrupt     code    0x4
+0004 00127 __sdcc_interrupt
+               00128 ;***
+               00129 ;  pBlock Stats: dbName = I
+               00130 ;***
+               00131 ;entry:  _isr   ;Function start
+               00132 ; 0 exit points
+               00133 ;; Starting pCode block
+0004 00134 _isr    ;Function start
+               00135 ; 0 exit points
+               00136 ;       .line   85; "interupt.c"        static void isr(void) interrupt 0 { 
+0004 0080      00137         MOVWF   WSAVE
+0005 0E03      00138         SWAPF   STATUS,W
+0006 0183      00139         CLRF    STATUS
+0007 0080      00140         MOVWF   SSAVE
+0008 080A      00141         MOVF    PCLATH,W
+0009 018A      00142         CLRF    PCLATH
+000A 0080      00143         MOVWF   PSAVE
+000B 0804      00144         MOVF    FSR,W
+000C 0000 0000 00145         BANKSEL ___sdcc_saved_fsr
+000E 0080      00146         MOVWF   ___sdcc_saved_fsr
+               00147 ;       .line   86; "interupt.c"        T0IF = 0;               // Clear timer interrupt flag
+000F 0000 0000 00148         BANKSEL _INTCON_bits
+0011 1100      00149         BCF     _INTCON_bits,2
+               00150 ;       .line   88; "interupt.c"        if (Msec >0) Msec--;
+0012 3000      00151         MOVLW   0x00
+0013 0000 0000 00152         BANKSEL _Msec
+0015 0400      00153         IORWF   _Msec,W
+0016 1D03      00154         BTFSS   STATUS,2
+0017 0380      00155         DECF    _Msec,F
+0018 0000 0000 00156         BANKSEL ___sdcc_saved_fsr
+001A 0800      00157         MOVF    ___sdcc_saved_fsr,W
+001B 0084      00158         MOVWF   FSR
+001C 0800      00159         MOVF    PSAVE,W
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+001D 008A      00160         MOVWF   PCLATH
+001E 0183      00161         CLRF    STATUS
+001F 0E00      00162         SWAPF   SSAVE,W
+0020 0083      00163         MOVWF   STATUS
+0021 0E80      00164         SWAPF   WSAVE,F
+0022 0E00      00165         SWAPF   WSAVE,W
+0023 00166 END_OF_INTERRUPT
+0023 0009      00167         RETFIE  
+               00168 
+               00169 ;--------------------------------------------------------
+               00170 ; code
+               00171 ;--------------------------------------------------------
+               00172 code_interupt   code
+               00173 ;***
+               00174 ;  pBlock Stats: dbName = C
+               00175 ;***
+               00176 ;entry:  _delay ;Function start
+               00177 ; 2 exit points
+               00178 ;has an exit
+               00179 ;functions called:
+               00180 ;   _delay_us
+               00181 ;   _delay_us
+               00182 ;2 compiler assigned registers:
+               00183 ;   r0x1005
+               00184 ;   STK00
+               00185 ;; Starting pCode block
+0000 00186 _delay  ;Function start
+               00187 ; 2 exit points
+               00188 ;       .line   127; "interupt.c"       void delay(unsigned char ms)
+0000 0000 0000 00189         BANKSEL r0x1005
+0002 0080      00190         MOVWF   r0x1005
+0003 00191 _00120_DS_
+               00192 ;       .line   130; "interupt.c"       while (ms>0) 
+0003 3000      00193         MOVLW   0x00
+0004 0000 0000 00194         BANKSEL r0x1005
+0006 0400      00195         IORWF   r0x1005,W
+0007 1903      00196         BTFSC   STATUS,2
+0008 2800      00197         GOTO    _00123_DS_
+               00198 ;       .line   132; "interupt.c"       delay_us(1000);
+0009 30E8      00199         MOVLW   0xe8
+000A 0080      00200         MOVWF   STK00
+000B 3003      00201         MOVLW   0x03
+000C 2000      00202         CALL    _delay_us
+               00203 ;       .line   133; "interupt.c"       ms--;
+000D 0000 0000 00204         BANKSEL r0x1005
+000F 0380      00205         DECF    r0x1005,F
+0010 2800      00206         GOTO    _00120_DS_
+0011 00207 _00123_DS_
+0011 0008      00208         RETURN  
+               00209 ; exit point of _delay
+               00210 
+               00211 ;***
+               00212 ;  pBlock Stats: dbName = C
+               00213 ;***
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00214 ;entry:  _delay_us      ;Function start
+               00215 ; 2 exit points
+               00216 ;has an exit
+               00217 ;functions called:
+               00218 ;   __divsint
+               00219 ;   __divsint
+               00220 ;5 compiler assigned registers:
+               00221 ;   r0x1003
+               00222 ;   STK00
+               00223 ;   r0x1004
+               00224 ;   STK02
+               00225 ;   STK01
+               00226 ;; Starting pCode block
+0012 00227 _delay_us       ;Function start
+               00228 ; 2 exit points
+               00229 ;       .line   112; "interupt.c"       void delay_us(int us)
+0012 0000 0000 00230         BANKSEL r0x1003
+0014 0080      00231         MOVWF   r0x1003
+0015 0800      00232         MOVF    STK00,W
+0016 0080      00233         MOVWF   r0x1004
+               00234 ;       .line   114; "interupt.c"       delayus_variable=(unsigned char)(us/4); \
+0017 3004      00235         MOVLW   0x04
+0018 0080      00236         MOVWF   STK02
+0019 3000      00237         MOVLW   0x00
+001A 0080      00238         MOVWF   STK01
+001B 0800      00239         MOVF    r0x1004,W
+001C 0080      00240         MOVWF   STK00
+001D 0800      00241         MOVF    r0x1003,W
+001E 0000      00242         PAGESEL __divsint
+001F 2000      00243         CALL    __divsint
+0020 0000      00244         PAGESEL $
+0021 0000 0000 00245         BANKSEL r0x1003
+0023 0080      00246         MOVWF   r0x1003
+0024 0800      00247         MOVF    STK00,W
+0025 0080      00248         MOVWF   r0x1004
+0026 0000 0000 00249         BANKSEL _delayus_variable
+0028 0080      00250         MOVWF   _delayus_variable
+               00251         ;movlb (_delayus_variable) >> 8
+0029 0000 0000 00252         BANKSEL _delayus_variable
+002B 0000      00253         nop
+               00254         ;decfsz (_delayus_variable)&0ffh,f
+002C 0B80      00255         decfsz _delayus_variable,f
+002D 2800      00256         goto $ - 2
+               00257         
+002E 0008      00258         RETURN  
+               00259 ; exit point of _delay_us
+               00260 
+               00261 ;***
+               00262 ;  pBlock Stats: dbName = C
+               00263 ;***
+               00264 ;entry:  _init_hw       ;Function start
+               00265 ; 2 exit points
+               00266 ;has an exit
+               00267 ;; Starting pCode block
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+002F 00268 _init_hw        ;Function start
+               00269 ; 2 exit points
+               00270 ;       .line   31; "interupt.c"        CMCON = 0x07;           /* disable comparators */
+002F 3007      00271         MOVLW   0x07
+0030 0000 0000 00272         BANKSEL _CMCON
+0032 0080      00273         MOVWF   _CMCON
+               00274 ;       .line   32; "interupt.c"        T0CS = 1;               /* clear to enable timer mode */
+0033 0000 0000 00275         BANKSEL _OPTION_REG_bits
+0035 1680      00276         BSF     _OPTION_REG_bits,5
+               00277 ;       .line   33; "interupt.c"        PSA = 1;                /* clear to assign prescaller to TMRO */
+0036 1580      00278         BSF     _OPTION_REG_bits,3
+               00279 ;       .line   57; "interupt.c"        PS2 = 0;                /* 011 @ 4Mhz = 1.638 mS */
+0037 1100      00280         BCF     _OPTION_REG_bits,2
+               00281 ;       .line   58; "interupt.c"        PS1 = 0;  
+0038 1080      00282         BCF     _OPTION_REG_bits,1
+               00283 ;       .line   59; "interupt.c"        PS0 = 0;  
+0039 1000      00284         BCF     _OPTION_REG_bits,0
+               00285 ;       .line   61; "interupt.c"        INTCON = 0;             /* clear interrupt flag bits */
+003A 0000 0000 00286         BANKSEL _INTCON
+003C 0180      00287         CLRF    _INTCON
+               00288 ;       .line   62; "interupt.c"        GIE = 1;                /* global interrupt enable */
+003D 1780      00289         BSF     _INTCON_bits,7
+               00290 ;       .line   63; "interupt.c"        T0IE = 1;               /* TMR0 overflow interrupt enable */
+003E 1680      00291         BSF     _INTCON_bits,5
+               00292 ;       .line   65; "interupt.c"        TMR0 = 0;               /* clear the value in TMR0 */
+003F 0180      00293         CLRF    _TMR0
+               00294 ;       .line   67; "interupt.c"        SPBRG=SPBRG_VALUE;      // Baud Rate register, calculated by macro
+0040 3019      00295         MOVLW   0x19
+0041 0000 0000 00296         BANKSEL _SPBRG
+0043 0080      00297         MOVWF   _SPBRG
+               00298 ;       .line   68; "interupt.c"        BRGH=BAUD_HI;
+0044 1500      00299         BSF     _TXSTA_bits,2
+               00300 ;       .line   70; "interupt.c"        SYNC=0;                 // Disable Synchronous/Enable Asynchronous
+0045 1200      00301         BCF     _TXSTA_bits,4
+               00302 ;       .line   71; "interupt.c"        SPEN=1;                 // Enable serial port
+0046 0000 0000 00303         BANKSEL _RCSTA_bits
+0048 1780      00304         BSF     _RCSTA_bits,7
+               00305 ;       .line   72; "interupt.c"        TXEN=1;                 // Enable transmission mode
+0049 0000 0000 00306         BANKSEL _TXSTA_bits
+004B 1680      00307         BSF     _TXSTA_bits,5
+               00308 ;       .line   73; "interupt.c"        CREN=1;                 // Enable reception mode
+004C 0000 0000 00309         BANKSEL _RCSTA_bits
+004E 1600      00310         BSF     _RCSTA_bits,4
+               00311 ;       .line   75; "interupt.c"        TRISA= 0x00;                    // all outputs          
+004F 0000 0000 00312         BANKSEL _TRISA
+0051 0180      00313         CLRF    _TRISA
+               00314 ;       .line   76; "interupt.c"        TRISB= 0x00;                    // all outputs          
+0052 0180      00315         CLRF    _TRISB
+               00316 ;       .line   77; "interupt.c"        TRISB|=RX_BIT;  // These need to be 1 for USART to work
+0053 1480      00317         BSF     _TRISB,1
+               00318 ;       .line   79; "interupt.c"        PORTA=0;
+0054 0000 0000 00319         BANKSEL _PORTA
+0056 0180      00320         CLRF    _PORTA
+               00321 ;       .line   80; "interupt.c"        PORTB=0;
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0057 0180      00322         CLRF    _PORTB
+0058 0008      00323         RETURN  
+               00324 ; exit point of _init_hw
+               00325 
+               00326 
+               00327 ;       code size estimation:
+               00328 ;          76+   21 =    97 instructions (  236 byte)
+               00329 
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE  8
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADEN                              00000003
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CREN                              00000004
+CSRC                              00000007
+DC                                00000001
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+END_OF_INTERRUPT                  00000023
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+PSAVE                             00000000
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+SSAVE                             00000000
+STATUS                            00000003
+STK00                             00000000
+STK01                             00000000
+STK02                             00000000
+STK03                             00000000
+STK04                             00000000
+STK05                             00000000
+STK06                             00000000
+STK07                             00000000
+STK08                             00000000
+STK09                             00000000
+STK10                             00000000
+STK11                             00000000
+STK12                             00000000
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+WSAVE                             00000000
+Z                                 00000002
+_00120_DS_                        00000003
+_00123_DS_                        00000011
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CCP1CON                          00000000
+_CCP1CON_bits                     00000000
+_CCPR1H                           00000000
+_CCPR1L                           00000000
+_CMCON                            00000000
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_CMCON_bits                       00000000
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+_DATA_CP_OFF                      00003FFF
+_DATA_CP_ON                       00003EFF
+_EEADR                            00000000
+_EECON1                           00000000
+_EECON1_bits                      00000000
+_EECON2                           00000000
+_EEDATA                           00000000
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_FSR                              00000000
+_HS_OSC                           00003FEE
+_INDF                             00000000
+_INTCON                           00000000
+_INTCON_bits                      00000000
+_INTOSC_OSC_CLKOUT                00003FFD
+_INTOSC_OSC_NOCLKOUT              00003FFC
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_Msec                             00000000
+_OPTION_REG                       00000000
+_OPTION_REG_bits                  00000000
+_PCL                              00000000
+_PCLATH                           00000000
+_PCON                             00000000
+_PCON_bits                        00000000
+_PIE1                             00000000
+_PIE1_bits                        00000000
+_PIR1                             00000000
+_PIR1_bits                        00000000
+_PORTA                            00000000
+_PORTA_bits                       00000000
+_PORTB                            00000000
+_PORTB_bits                       00000000
+_PR2                              00000000
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RCREG                            00000000
+_RCSTA                            00000000
+_RCSTA_bits                       00000000
+_RC_OSC_CLKOUT                    00003FFF
+_RC_OSC_NOCLKOUT                  00003FFE
+_SPBRG                            00000000
+_STATUS                           00000000
+_STATUS_bits                      00000000
+_T1CON                            00000000
+gpasm-0.13.7 beta               interupt.asm9-9-2009  13:57:17           PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_T1CON_bits                       00000000
+_T2CON                            00000000
+_T2CON_bits                       00000000
+_TMR0                             00000000
+_TMR1H                            00000000
+_TMR1L                            00000000
+_TMR2                             00000000
+_TRISA                            00000000
+_TRISA_bits                       00000000
+_TRISB                            00000000
+_TRISB_bits                       00000000
+_TXREG                            00000000
+_TXSTA                            00000000
+_TXSTA_bits                       00000000
+_VRCON                            00000000
+_VRCON_bits                       00000000
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F648A                         00000001
+___sdcc_saved_fsr                 00000000
+__divsint                         00000000
+__sdcc_interrupt                  00000004
+_code_interupt_000020             00000020
+_code_interupt_00002d             0000002D
+_delay                            00000000
+_delay_us                         00000012
+_delayus_variable                 00000003
+_init_hw                          0000002F
+_isr                              00000004
+_wlc                              00000000
+r0x1003                           00000001
+r0x1004                           00000000
+r0x1005                           00000002
+
+
+Errors   :       0
+Warnings :       0 reported,       0 suppressed
+Messages :       0 reported,       0 suppressed
+

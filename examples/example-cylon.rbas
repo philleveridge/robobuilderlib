@@ -1,8 +1,0 @@
-print "test - lights"
-wait 1000
-print #"A"
-wait 1000
-print #"B"
-wait 1000
-print #"X"
-end

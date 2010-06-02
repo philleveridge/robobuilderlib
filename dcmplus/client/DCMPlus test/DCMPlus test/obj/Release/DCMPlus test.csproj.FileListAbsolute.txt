@@ -1,0 +1,8 @@
+C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\obj\Release\WindowsFormsApplication1.Form1.resources
+C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\obj\Release\WindowsFormsApplication1.Properties.Resources.resources
+C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\obj\Release\DCMPlus test.csproj.GenerateResource.Cache
+C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\bin\Release\DCMPlus test.exe
+C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\bin\Release\DCMPlus test.pdb
+C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\obj\Release\DCMPlus test.exe
+C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\obj\Release\DCMPlus test.pdb

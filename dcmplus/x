@@ -1,0 +1,41 @@
+
+(cond ((eq a 1) (prn "One") (eq a 2) (prn "Two"))) => true
+
+
+> (env)
+Commands: env, car, plus, cdr, pr, set, prn, eq, setq, cond, eval
+Symbols: a
+Time: 00:13
+46 bytes
+0] <a>
+4] <eq>
+9] <a>
+13] <prn>
+19] <One>
+25] <eq>
+30] <a>
+34] <prn>
+40] <Two>
+20 cells
+0-FUNCTION->1
+1-a->2
+2-1->null
+3-FUNCTION->4
+4-CELL#5->null
+5-CELL#6->9
+6-eq->7
+7-a->8
+8-1->null
+9-CELL#10->12
+10-prn->11
+11-One->null
+12-CELL#13->16
+13-eq->14
+14-a->15
+15-2->null
+16-CELL#17->null
+17-prn->18
+18-Two->null
+19-FUNCTION->null
+NIL
+>

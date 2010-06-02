@@ -1,4 +1,0 @@
-10 let a=$servo:12
-20 print "Pos=";a
-30 servo 12=a+5
-

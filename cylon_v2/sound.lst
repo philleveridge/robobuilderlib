@@ -1,0 +1,604 @@
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00001 ;--------------------------------------------------------
+               00002 ; File Created by SDCC : free open source ANSI-C Compiler
+               00003 ; Version 2.9.2 #5492 (Aug 17 2009) (MINGW32)
+               00004 ; This file was generated Wed Sep 09 09:56:28 2009
+               00005 ;--------------------------------------------------------
+               00006 ; PIC port for the 14-bit core
+               00007 ;--------------------------------------------------------
+               00008 ;       .file   "sound.c"
+               00009         list    p=16f648A
+               00010         radix dec
+               00011         include "p16f648A.inc"
+               00001         LIST
+               00002 ; P16F648A.INC  Standard Header File, Version 1.00    Microchip Technology, Inc.
+               00264         LIST
+               00012 ;--------------------------------------------------------
+               00013 ; external declarations
+               00014 ;--------------------------------------------------------
+               00015         extern  _init_hw
+               00016         extern  _delay_us
+               00017         extern  _delay
+               00018         extern  __mulint
+               00019         extern  __divsint
+               00020         extern  _CCP1CON_bits
+               00021         extern  _CMCON_bits
+               00022         extern  _EECON1_bits
+               00023         extern  _INTCON_bits
+               00024         extern  _OPTION_REG_bits
+               00025         extern  _PCON_bits
+               00026         extern  _PIE1_bits
+               00027         extern  _PIR1_bits
+               00028         extern  _PORTA_bits
+               00029         extern  _PORTB_bits
+               00030         extern  _RCSTA_bits
+               00031         extern  _STATUS_bits
+               00032         extern  _T1CON_bits
+               00033         extern  _T2CON_bits
+               00034         extern  _TRISA_bits
+               00035         extern  _TRISB_bits
+               00036         extern  _TXSTA_bits
+               00037         extern  _VRCON_bits
+               00038         extern  _wlc
+               00039         extern  _INDF
+               00040         extern  _TMR0
+               00041         extern  _PCL
+               00042         extern  _STATUS
+               00043         extern  _FSR
+               00044         extern  _PORTA
+               00045         extern  _PORTB
+               00046         extern  _PCLATH
+               00047         extern  _INTCON
+               00048         extern  _PIR1
+               00049         extern  _TMR1L
+               00050         extern  _TMR1H
+               00051         extern  _T1CON
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00052         extern  _TMR2
+               00053         extern  _T2CON
+               00054         extern  _CCPR1L
+               00055         extern  _CCPR1H
+               00056         extern  _CCP1CON
+               00057         extern  _RCSTA
+               00058         extern  _TXREG
+               00059         extern  _RCREG
+               00060         extern  _CMCON
+               00061         extern  _OPTION_REG
+               00062         extern  _TRISA
+               00063         extern  _TRISB
+               00064         extern  _PIE1
+               00065         extern  _PCON
+               00066         extern  _PR2
+               00067         extern  _TXSTA
+               00068         extern  _SPBRG
+               00069         extern  _EEDATA
+               00070         extern  _EEADR
+               00071         extern  _EECON1
+               00072         extern  _EECON2
+               00073         extern  _VRCON
+               00074 
+               00075         extern PSAVE
+               00076         extern SSAVE
+               00077         extern WSAVE
+               00078         extern STK12
+               00079         extern STK11
+               00080         extern STK10
+               00081         extern STK09
+               00082         extern STK08
+               00083         extern STK07
+               00084         extern STK06
+               00085         extern STK05
+               00086         extern STK04
+               00087         extern STK03
+               00088         extern STK02
+               00089         extern STK01
+               00090         extern STK00
+               00091 ;--------------------------------------------------------
+               00092 ; global declarations
+               00093 ;--------------------------------------------------------
+               00094         global  _play_tone
+               00095         global  _s_mask
+               00096         global  _s_bytes
+               00097         global  _s_bytes_
+               00098         global  _c_byte
+               00099 
+               00100 ;--------------------------------------------------------
+               00101 ; global definitions
+               00102 ;--------------------------------------------------------
+               00103 UD_sound_0      udata
+               00104 _s_mask res     1
+               00105 
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00106 UD_sound_1      udata
+               00107 _s_bytes        res     3
+               00108 
+               00109 UD_sound_2      udata
+               00110 _s_bytes_       res     3
+               00111 
+               00112 UD_sound_3      udata
+               00113 _c_byte res     1
+               00114 
+               00115 ;--------------------------------------------------------
+               00116 ; absolute symbol definitions
+               00117 ;--------------------------------------------------------
+               00118 ;--------------------------------------------------------
+               00119 ; compiler-defined variables
+               00120 ;--------------------------------------------------------
+               00121 UDL_sound_0     udata
+               00122 r0x1001 res     1
+               00123 r0x1000 res     1
+               00124 r0x1003 res     1
+               00125 r0x1002 res     1
+               00126 r0x1004 res     1
+               00127 ;--------------------------------------------------------
+               00128 ; initialized data
+               00129 ;--------------------------------------------------------
+               00130 ;--------------------------------------------------------
+               00131 ; overlayable items in internal ram 
+               00132 ;--------------------------------------------------------
+               00133 ;       udata_ovr
+               00134 ;--------------------------------------------------------
+               00135 ; code
+               00136 ;--------------------------------------------------------
+               00137 code_sound      code
+               00138 ;***
+               00139 ;  pBlock Stats: dbName = C
+               00140 ;***
+               00141 ;entry:  _play_tone     ;Function start
+               00142 ; 2 exit points
+               00143 ;has an exit
+               00144 ;functions called:
+               00145 ;   __mulint
+               00146 ;   __divsint
+               00147 ;   __divsint
+               00148 ;   _delay_us
+               00149 ;   _delay_us
+               00150 ;   __mulint
+               00151 ;   __divsint
+               00152 ;   __divsint
+               00153 ;   _delay_us
+               00154 ;   _delay_us
+               00155 ;9 compiler assigned registers:
+               00156 ;   r0x1000
+               00157 ;   STK00
+               00158 ;   r0x1001
+               00159 ;   STK01
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00160 ;   r0x1002
+               00161 ;   STK02
+               00162 ;   r0x1003
+               00163 ;   r0x1004
+               00164 ;   r0x1005
+               00165 ;; Starting pCode block
+0000 00166 _play_tone      ;Function start
+               00167 ; 2 exit points
+               00168 ;       .line   67; "sound.c"   void play_tone(int delay, int duration) {
+0000 0000 0000 00169         BANKSEL r0x1000
+0002 0080      00170         MOVWF   r0x1000
+0003 0800      00171         MOVF    STK00,W
+0004 0080      00172         MOVWF   r0x1001
+0005 0800      00173         MOVF    STK01,W
+0006 0080      00174         MOVWF   r0x1002
+0007 0800      00175         MOVF    STK02,W
+               00176 ;       .line   77; "sound.c"   int tmp = 100 * duration;
+0008 0080      00177         MOVWF   r0x1003
+0009 0080      00178         MOVWF   STK02
+000A 0800      00179         MOVF    r0x1002,W
+000B 0080      00180         MOVWF   STK01
+000C 3064      00181         MOVLW   0x64
+000D 0080      00182         MOVWF   STK00
+000E 3000      00183         MOVLW   0x00
+000F 0000      00184         PAGESEL __mulint
+0010 2000      00185         CALL    __mulint
+0011 0000      00186         PAGESEL $
+0012 0000 0000 00187         BANKSEL r0x1002
+0014 0080      00188         MOVWF   r0x1002
+0015 0800      00189         MOVF    STK00,W
+0016 0080      00190         MOVWF   r0x1003
+               00191 ;       .line   78; "sound.c"   int delaysm = delay / 50;
+0017 3032      00192         MOVLW   0x32
+0018 0080      00193         MOVWF   STK02
+0019 3000      00194         MOVLW   0x00
+001A 0080      00195         MOVWF   STK01
+001B 0800      00196         MOVF    r0x1001,W
+001C 0080      00197         MOVWF   STK00
+001D 0800      00198         MOVF    r0x1000,W
+001E 0000      00199         PAGESEL __divsint
+001F 2000      00200         CALL    __divsint
+0020 0000      00201         PAGESEL $
+0021 0000 0000 00202         BANKSEL r0x1004
+0023 0080      00203         MOVWF   r0x1004
+0024 0800      00204         MOVF    STK00,W
+               00205 ;;1     MOVWF   r0x1005
+               00206 ;       .line   79; "sound.c"   int cycles = tmp / delaysm;
+0025 0080      00207         MOVWF   STK02
+0026 0800      00208         MOVF    r0x1004,W
+0027 0080      00209         MOVWF   STK01
+0028 0800      00210         MOVF    r0x1003,W
+0029 0080      00211         MOVWF   STK00
+002A 0800      00212         MOVF    r0x1002,W
+002B 0000      00213         PAGESEL __divsint
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+002C 2000      00214         CALL    __divsint
+002D 0000      00215         PAGESEL $
+002E 0000 0000 00216         BANKSEL r0x1002
+0030 0080      00217         MOVWF   r0x1002
+0031 0800      00218         MOVF    STK00,W
+0032 0080      00219         MOVWF   r0x1003
+               00220 ;swapping arguments (AOP_TYPEs 1/2)
+               00221 ;signed compare: left >= lit(0x1=1), size=2, mask=ffff
+0033 00222 _00105_DS_
+               00223 ;       .line   81; "sound.c"   while(cycles > 0) {
+0033 0000 0000 00224         BANKSEL r0x1002
+0035 0800      00225         MOVF    r0x1002,W
+0036 3E80      00226         ADDLW   0x80
+0037 3E80      00227         ADDLW   0x80
+0038 1D03      00228         BTFSS   STATUS,2
+0039 2800      00229         GOTO    _00113_DS_
+003A 3001      00230         MOVLW   0x01
+003B 0200      00231         SUBWF   r0x1003,W
+003C 00232 _00113_DS_
+003C 1C03      00233         BTFSS   STATUS,0
+003D 2800      00234         GOTO    _00108_DS_
+               00235 ;genSkipc:3080: created from rifx:0x2260cc
+               00236 ;       .line   82; "sound.c"   PORTA ^= 0X10; 
+003E 3010      00237         MOVLW   0x10
+003F 0000 0000 00238         BANKSEL _PORTA
+0041 0680      00239         XORWF   _PORTA,F
+               00240 ;       .line   83; "sound.c"   delay_us(delay);
+0042 0000 0000 00241         BANKSEL r0x1001
+0044 0800      00242         MOVF    r0x1001,W
+0045 0080      00243         MOVWF   STK00
+0046 0800      00244         MOVF    r0x1000,W
+0047 0000      00245         PAGESEL _delay_us
+0048 2000      00246         CALL    _delay_us
+0049 0000      00247         PAGESEL $
+               00248 ;       .line   84; "sound.c"   PORTA ^= 0X10; 
+004A 3010      00249         MOVLW   0x10
+004B 0000 0000 00250         BANKSEL _PORTA
+004D 0680      00251         XORWF   _PORTA,F
+               00252 ;       .line   85; "sound.c"   delay_us(delay);
+004E 0000 0000 00253         BANKSEL r0x1001
+0050 0800      00254         MOVF    r0x1001,W
+0051 0080      00255         MOVWF   STK00
+0052 0800      00256         MOVF    r0x1000,W
+0053 0000      00257         PAGESEL _delay_us
+0054 2000      00258         CALL    _delay_us
+0055 0000      00259         PAGESEL $
+               00260 ;       .line   86; "sound.c"   cycles--;
+0056 30FF      00261         MOVLW   0xff
+0057 0000 0000 00262         BANKSEL r0x1003
+0059 0780      00263         ADDWF   r0x1003,F
+005A 1C03      00264         BTFSS   STATUS,0
+005B 0380      00265         DECF    r0x1002,F
+005C 2800      00266         GOTO    _00105_DS_
+005D 00267 _00108_DS_
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+005D 0008      00268         RETURN  
+               00269 ; exit point of _play_tone
+               00270 
+               00271 
+               00272 ;       code size estimation:
+               00273 ;          64+   20 =    84 instructions (  208 byte)
+               00274 
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE  7
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADEN                              00000003
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CREN                              00000004
+CSRC                              00000007
+DC                                00000001
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+PSAVE                             00000000
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+SSAVE                             00000000
+STATUS                            00000003
+STK00                             00000000
+STK01                             00000000
+STK02                             00000000
+STK03                             00000000
+STK04                             00000000
+STK05                             00000000
+STK06                             00000000
+STK07                             00000000
+STK08                             00000000
+STK09                             00000000
+STK10                             00000000
+STK11                             00000000
+STK12                             00000000
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+WSAVE                             00000000
+Z                                 00000002
+_00105_DS_                        00000033
+_00108_DS_                        0000005D
+_00113_DS_                        0000003C
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CCP1CON                          00000000
+_CCP1CON_bits                     00000000
+_CCPR1H                           00000000
+_CCPR1L                           00000000
+_CMCON                            00000000
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_CMCON_bits                       00000000
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+_DATA_CP_OFF                      00003FFF
+_DATA_CP_ON                       00003EFF
+_EEADR                            00000000
+_EECON1                           00000000
+_EECON1_bits                      00000000
+_EECON2                           00000000
+_EEDATA                           00000000
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_FSR                              00000000
+_HS_OSC                           00003FEE
+_INDF                             00000000
+_INTCON                           00000000
+_INTCON_bits                      00000000
+_INTOSC_OSC_CLKOUT                00003FFD
+_INTOSC_OSC_NOCLKOUT              00003FFC
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_OPTION_REG                       00000000
+_OPTION_REG_bits                  00000000
+_PCL                              00000000
+_PCLATH                           00000000
+_PCON                             00000000
+_PCON_bits                        00000000
+_PIE1                             00000000
+_PIE1_bits                        00000000
+_PIR1                             00000000
+_PIR1_bits                        00000000
+_PORTA                            00000000
+_PORTA_bits                       00000000
+_PORTB                            00000000
+_PORTB_bits                       00000000
+_PR2                              00000000
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RCREG                            00000000
+_RCSTA                            00000000
+_RCSTA_bits                       00000000
+_RC_OSC_CLKOUT                    00003FFF
+_RC_OSC_NOCLKOUT                  00003FFE
+_SPBRG                            00000000
+_STATUS                           00000000
+_STATUS_bits                      00000000
+_T1CON                            00000000
+_T1CON_bits                       00000000
+gpasm-0.13.7 beta               sound.asm   9-9-2009  09:56:28           PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_T2CON                            00000000
+_T2CON_bits                       00000000
+_TMR0                             00000000
+_TMR1H                            00000000
+_TMR1L                            00000000
+_TMR2                             00000000
+_TRISA                            00000000
+_TRISA_bits                       00000000
+_TRISB                            00000000
+_TRISB_bits                       00000000
+_TXREG                            00000000
+_TXSTA                            00000000
+_TXSTA_bits                       00000000
+_VRCON                            00000000
+_VRCON_bits                       00000000
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F648A                         00000001
+__divsint                         00000000
+__mulint                          00000000
+_c_byte                           00000000
+_code_sound_000011                00000011
+_code_sound_000020                00000020
+_code_sound_00002d                0000002D
+_code_sound_000049                00000049
+_code_sound_000055                00000055
+_delay                            00000000
+_delay_us                         00000000
+_init_hw                          00000000
+_play_tone                        00000000
+_s_bytes                          00000000
+_s_bytes_                         00000000
+_s_mask                           00000000
+_wlc                              00000000
+r0x1000                           00000001
+r0x1001                           00000000
+r0x1002                           00000003
+r0x1003                           00000002
+r0x1004                           00000004
+
+
+Errors   :       0
+Warnings :       0 reported,       0 suppressed
+Messages :       0 reported,       0 suppressed
+

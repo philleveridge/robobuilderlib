@@ -1,7 +1,0 @@
-10 print "Hello";
-20 gosub 50
-30 print " back";
-40 end
-50 print " Here";
-60 return
-
