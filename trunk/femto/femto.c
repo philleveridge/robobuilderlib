@@ -15,6 +15,7 @@ int dbg=0;
 
 extern int 		strcmp(char *, char *);
 
+//battery.c
 extern volatile WORD   gticks;
 extern volatile WORD   g10MSEC;
 extern volatile WORD   g10Mtimer;
@@ -22,73 +23,23 @@ extern volatile BYTE   gSEC;
 extern volatile BYTE   gMIN;
 extern void     delay_ms(int ms);
 
+//wckmotion.c
+extern void putWck  (BYTE b);
+extern int  getWck  (WORD timeout);
+extern void wckSendOperCommand(char Data1, char Data2);
+extern void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4);
+extern void wckSyncPosSend(BYTE LastID, BYTE SpeedLevel, BYTE *TargetArray, BYTE Index);
+extern void PlayPose(int d, int f, BYTE *pos, int flag);
+extern void standup () ;
+
 /**************************************************************************************************/
 
 extern void putByte (BYTE b);
-extern void putWck  (BYTE b);
 
 int getByte()
 {
 	while(!(UCSR1A & RX_COMPLETE)) ;
 	return UDR1;
-}
-
-int wckGetByte(WORD timeout)
-{
-	g10Mtimer = timeout;
-	
-	while(!(UCSR0A&(1<<RXC)) ){ 	// test for received character
-		if (g10Mtimer==0) return -1;
-	}
-	return UDR0;
-}
-
-/******************************************************************************/
-/* Function that sends Operation Command Packet(4 Byte) to wCK module */
-/* Input : Data1, Data2 */
-/* Output : None */
-/******************************************************************************/
-void wckSendOperCommand(char Data1, char Data2)
-{
-	char CheckSum;
-	CheckSum = (Data1^Data2)&0x7f;
-	putWck(HEADER);
-	putWck(Data1);
-	putWck(Data2);
-	putWck(CheckSum);
-}
-
-void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
-{
-	char CheckSum;
-	CheckSum = (Data1^Data2^Data3^Data4)&0x7f;
-	putWck(HEADER);
-	putWck(Data1);
-	putWck(Data2);
-	putWck(Data3);
-	putWck(Data4);
-	putWck(CheckSum);
-}
-
-void wckSyncPosSend(BYTE LastID, BYTE SpeedLevel, BYTE *TargetArray, BYTE Index)
-{
-	int i;
-	char CheckSum;
-	i = 0;
-	CheckSum = 0;
-	putWck(HEADER);
-	putWck((SpeedLevel<<5)|0x1f);
-	putWck(LastID+1);
-	while(1) 
-	{
-		if(i>LastID) 
-			break;
-		putWck(TargetArray[Index*(LastID+1)+i]);
-		CheckSum = CheckSum ^ TargetArray[Index*(LastID+1)+i];
-		i++;
-	}
-	CheckSum = CheckSum & 0x7f;
-	putWck(CheckSum);
 }
 
 /**************************************************************************************************/
@@ -255,6 +206,7 @@ tOBJ passiveServo(tCELLp);
 tOBJ synchServo  (tCELLp);
 tOBJ readIR      (tCELLp);
 tOBJ wckwriteIO  (tCELLp); //(n c0 c1)
+tOBJ wckstandup  (tCELLp); 
 
 struct prim { char *name; PFP func; int sf;} prim_tab[] = { 
 	{"env",  env, 0},
@@ -277,7 +229,7 @@ struct prim { char *name; PFP func; int sf;} prim_tab[] = {
 	{"do1",  prog,0},	
 	{"do",   progn,0},	
 	{"clone",cclone,0},
-
+	{"standup",     wckstandup,0},
 	{"sendServo",   sendServo, 0},
 	{"getServo",    getServo,  0},
 	{"passServo",   passiveServo,0},
@@ -1171,8 +1123,8 @@ tOBJ getServo(tCELLp p)   // i.e. (getServo 15)
 	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
 	{
 		wckSendOperCommand(0xa0|(p->head.number), NULL);
-		int b1 = wckGetByte(TIME_OUT);
-		int b2 = wckGetByte(TIME_OUT);
+		int b1 = getWck(TIME_OUT);
+		int b2 = getWck(TIME_OUT);
 		
 		if (b1<0 || b2<0)
 			r.type = EMPTY; //timeout
@@ -1199,8 +1151,8 @@ tOBJ wckwriteIO(tCELLp p)   // i.e. (wckwriteIO 15 true true)
 		
         wckSendSetCommand((7 << 5) | (id % 31), 0x64, ((b1) ? 1 : 0) | ((b2) ? 2 : 0), 0);
 		
-		b1 = wckGetByte(TIME_OUT);
-		b2 = wckGetByte(TIME_OUT);
+		b1 = getWck(TIME_OUT);
+		b2 = getWck(TIME_OUT);
 		
 		if (b1<0 || b2<0)
 			r.type = EMPTY; //timeout
@@ -1212,14 +1164,21 @@ tOBJ wckwriteIO(tCELLp p)   // i.e. (wckwriteIO 15 true true)
 	return r;
 }
 
+tOBJ wckstandup(tCELLp p)   // i.e. (standup)
+{
+	tOBJ r; r.type=EMPTY;
+	standup();
+	return r;
+}
+
 tOBJ passiveServo(tCELLp p)   // i.e. (passiveServo 15)
 {
 	tOBJ r; r.type=INT;
 	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
 	{
 		wckSendOperCommand(0xc0|(p->head.number), 0x10);
-		int b1 = wckGetByte(TIME_OUT);
-		int b2 = wckGetByte(TIME_OUT);
+		int b1 = getWck(TIME_OUT);
+		int b2 = getWck(TIME_OUT);
 		
 		if (b1<0 || b2<0)
 			r.type = EMPTY; //timeout
@@ -1246,8 +1205,8 @@ tOBJ sendServo(tCELLp p)   // i.e. (sendServo 12 50 4)
 	{
 		wckSendOperCommand((tor<<5)|sid, pos);
 
-		int b1 = wckGetByte(TIME_OUT);
-		int b2 = wckGetByte(TIME_OUT);	
+		int b1 = getWck(TIME_OUT);
+		int b2 = getWck(TIME_OUT);	
 
 		if (b1<0 || b2<0)
 			r.type = EMPTY; //timeout
@@ -1379,7 +1338,7 @@ void initialise()
 	
 	DEBUG(testf())  //DEBUGING
 		
-	showenviron();						
+	showenviron();	
 }
 
 

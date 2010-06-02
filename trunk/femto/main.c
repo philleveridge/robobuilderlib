@@ -40,6 +40,10 @@ extern void DetectPower(void);
 //define ir.c
 extern int irGetByte(void);
 
+//define wckmotion.c
+extern void putWck  (BYTE b);
+extern void getWck  (BYTE b);
+
 // UART variables-----------------------------------------------------------------
 
 WORD	gRx1Step;
@@ -57,17 +61,6 @@ void putByte (BYTE b)
 	while ( (UCSR1A & DATA_REGISTER_EMPTY) == 0 );
 	UDR1 = b;
 }
-
-//------------------------------------------------------------------------------
-// UART1 Transmit  Routine
-//------------------------------------------------------------------------------
-
-void putWck (BYTE b)
-{
-	while ( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
-	UDR0 = b;
-}
-
 
 //------------------------------------------------------------------------------
 // UART1 recieve (from PC)
