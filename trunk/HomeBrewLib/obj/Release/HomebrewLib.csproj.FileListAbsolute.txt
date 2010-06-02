@@ -1,0 +1,10 @@
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomeBrewLib\HomebrewLib\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomeBrewLib\HomebrewLib\bin\Release\HomebrewLib.dll
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomeBrewLib\HomebrewLib\bin\Release\HomebrewLib.pdb
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomeBrewLib\HomebrewLib\obj\Release\HomebrewLib.dll
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomeBrewLib\HomebrewLib\obj\Release\HomebrewLib.pdb
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomebrewLib\bin\Release\HomebrewLib.pdb
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomebrewLib\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomebrewLib\obj\Release\HomebrewLib.pdb
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomebrewLib\bin\Release\HomebrewLib.exe
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomebrewLib\obj\Release\HomebrewLib.exe

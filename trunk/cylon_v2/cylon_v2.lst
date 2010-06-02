@@ -1,0 +1,2243 @@
+gplink-0.13.7 beta
+Copyright (c) 1998-2005 gputils project
+Listing File Generated: 9-18-2009  00:00:15
+ 
+ 
+Address  Value    Disassembly              Source
+-------  -----    -----------              ------
+                                           ;--------------------------------------------------------
+                                           ; File Created by SDCC : free open source ANSI-C Compiler
+                                           ; Version 2.9.2 #5492 (Aug 17 2009) (MINGW32)
+                                           ; This file was generated Fri Sep 18 00:00:14 2009
+                                           ;--------------------------------------------------------
+                                           ; PIC port for the 14-bit core
+                                           ;--------------------------------------------------------
+                                           ;	.file	"main.c"
+                                           	list	p=16f648A
+                                           	radix dec
+                                           	include "p16f648A.inc"
+                                                   LIST
+                                           ; P16F648A.INC  Standard Header File, Version 1.00    Microchip Technology, Inc.
+                                                   NOLIST
+                                           ;--------------------------------------------------------
+                                           ; config word 
+                                           ;--------------------------------------------------------
+                                           	__config 0x3f38
+                                           ;--------------------------------------------------------
+                                           ; external declarations
+                                           ;--------------------------------------------------------
+                                           	extern	_init_hw
+                                           	extern	_delay_us
+                                           	extern	_delay
+                                           	extern	_play_tone
+                                           	extern	_cylon
+                                           	extern	_CCP1CON_bits
+                                           	extern	_CMCON_bits
+                                           	extern	_EECON1_bits
+                                           	extern	_INTCON_bits
+                                           	extern	_OPTION_REG_bits
+                                           	extern	_PCON_bits
+                                           	extern	_PIE1_bits
+                                           	extern	_PIR1_bits
+                                           	extern	_PORTA_bits
+                                           	extern	_PORTB_bits
+                                           	extern	_RCSTA_bits
+                                           	extern	_STATUS_bits
+                                           	extern	_T1CON_bits
+                                           	extern	_T2CON_bits
+                                           	extern	_TRISA_bits
+                                           	extern	_TRISB_bits
+                                           	extern	_TXSTA_bits
+                                           	extern	_VRCON_bits
+                                           	extern	_INDF
+                                           	extern	_TMR0
+                                           	extern	_PCL
+                                           	extern	_STATUS
+                                           	extern	_FSR
+                                           	extern	_PORTA
+                                           	extern	_PORTB
+                                           	extern	_PCLATH
+                                           	extern	_INTCON
+                                           	extern	_PIR1
+                                           	extern	_TMR1L
+                                           	extern	_TMR1H
+                                           	extern	_T1CON
+                                           	extern	_TMR2
+                                           	extern	_T2CON
+                                           	extern	_CCPR1L
+                                           	extern	_CCPR1H
+                                           	extern	_CCP1CON
+                                           	extern	_RCSTA
+                                           	extern	_TXREG
+                                           	extern	_RCREG
+                                           	extern	_CMCON
+                                           	extern	_OPTION_REG
+                                           	extern	_TRISA
+                                           	extern	_TRISB
+                                           	extern	_PIE1
+                                           	extern	_PCON
+                                           	extern	_PR2
+                                           	extern	_TXSTA
+                                           	extern	_SPBRG
+                                           	extern	_EEDATA
+                                           	extern	_EEADR
+                                           	extern	_EECON1
+                                           	extern	_EECON2
+                                           	extern	_VRCON
+                                           	extern	__sdcc_gsinit_startup
+                                           ;--------------------------------------------------------
+                                           ; global declarations
+                                           ;--------------------------------------------------------
+                                           	global	_get_byte
+                                           	global	_put_byte
+                                           	global	_pattern
+                                           	global	_tune
+                                           	global	_main
+                                           
+                                           	global PSAVE
+                                           	global SSAVE
+                                           	global WSAVE
+                                           	global STK12
+                                           	global STK11
+                                           	global STK10
+                                           	global STK09
+                                           	global STK08
+                                           	global STK07
+                                           	global STK06
+                                           	global STK05
+                                           	global STK04
+                                           	global STK03
+                                           	global STK02
+                                           	global STK01
+                                           	global STK00
+                                           
+                                           sharebank udata_ovr 0x0070
+                                           PSAVE	res 1
+                                           SSAVE	res 1
+                                           WSAVE	res 1
+                                           STK12	res 1
+                                           STK11	res 1
+                                           STK10	res 1
+                                           STK09	res 1
+                                           STK08	res 1
+                                           STK07	res 1
+                                           STK06	res 1
+                                           STK05	res 1
+                                           STK04	res 1
+                                           STK03	res 1
+                                           STK02	res 1
+                                           STK01	res 1
+                                           STK00	res 1
+                                           
+                                           ;--------------------------------------------------------
+                                           ; global definitions
+                                           ;--------------------------------------------------------
+                                           ;--------------------------------------------------------
+                                           ; absolute symbol definitions
+                                           ;--------------------------------------------------------
+                                           ;--------------------------------------------------------
+                                           ; compiler-defined variables
+                                           ;--------------------------------------------------------
+                                           UDL_main_0	udata
+                                           r0x1033	res	1
+                                           r0x1034	res	1
+                                           r0x1035	res	1
+                                           r0x1036	res	1
+                                           r0x1037	res	1
+                                           r0x1038	res	1
+                                           r0x1039	res	1
+                                           r0x103B	res	1
+                                           r0x103A	res	1
+                                           _pattern_bits_1_1	res	48
+                                           _main_d_1_1	res	2
+                                           _main_i_1_1	res	1
+                                           ;--------------------------------------------------------
+                                           ; initialized data
+                                           ;--------------------------------------------------------
+                                           ;--------------------------------------------------------
+                                           ; overlayable items in internal ram 
+                                           ;--------------------------------------------------------
+                                           ;	udata_ovr
+                                           ;--------------------------------------------------------
+                                           ; reset vector 
+                                           ;--------------------------------------------------------
+                                           STARTUP	code 0x0000
+000000   0000     nop                      	nop
+000001   118a     bcf	0xa, 0x3             	pagesel __sdcc_gsinit_startup
+000002   2c48     goto	0x448               	goto	__sdcc_gsinit_startup
+                                           ;--------------------------------------------------------
+                                           ; code
+                                           ;--------------------------------------------------------
+                                           code_main	code
+                                           ;***
+                                           ;  pBlock Stats: dbName = M
+                                           ;***
+                                           ;entry:  _main	;Function start
+                                           ; 2 exit points
+                                           ;has an exit
+                                           ;functions called:
+                                           ;   _init_hw
+                                           ;   _pattern
+                                           ;   _tune
+                                           ;   _get_byte
+                                           ;   _get_byte
+                                           ;   _cylon
+                                           ;   _cylon
+                                           ;   _cylon
+                                           ;   _tune
+                                           ;   _get_byte
+                                           ;   _get_byte
+                                           ;   _pattern
+                                           ;   _get_byte
+                                           ;   _get_byte
+                                           ;   _play_tone
+                                           ;   _put_byte
+                                           ;   _init_hw
+                                           ;   _pattern
+                                           ;   _tune
+                                           ;   _get_byte
+                                           ;   _get_byte
+                                           ;   _cylon
+                                           ;   _cylon
+                                           ;   _cylon
+                                           ;   _tune
+                                           ;   _get_byte
+                                           ;   _get_byte
+                                           ;   _pattern
+                                           ;   _get_byte
+                                           ;   _get_byte
+                                           ;   _play_tone
+                                           ;   _put_byte
+                                           ;5 compiler assigned registers:
+                                           ;   STK00
+                                           ;   r0x103A
+                                           ;   r0x103B
+                                           ;   STK02
+                                           ;   STK01
+                                           ;; Starting pCode block
+                                           _main	;Function start
+                                           ; 2 exit points
+                                           ;	.line	112; "main.c"	init_hw();
+000024   118a     bcf	0xa, 0x3             	PAGESEL	_init_hw
+000025   2569     call	0x569               	CALL	_init_hw
+000026   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	114; "main.c"	pattern();
+000027   215f     call	0x15f               	CALL	_pattern
+                                           ;	.line	115; "main.c"	PORTA=(unsigned char)5; PORTB=(unsigned char)72;	// 01010 01010	Eyes
+000028   3005     movlw	0x5                	MOVLW	0x05
+000029   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+00002a   1303     bcf	0x3, 0x6             
+00002b   0085     movwf	0x5                	MOVWF	_PORTA
+00002c   3048     movlw	0x48               	MOVLW	0x48
+00002d   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	116; "main.c"	tune();
+00002e   212c     call	0x12c               	CALL	_tune
+                                           _00163_DS_
+                                           ;	.line	120; "main.c"	d=get_byte();
+00002f   229a     call	0x29a               	CALL	_get_byte
+000030   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+000031   1303     bcf	0x3, 0x6             
+000032   00da     movwf	0x5a               	MOVWF	(_main_d_1_1 + 1)
+000033   087f     movf	0x7f, w             	MOVF	STK00,W
+                                           ;	.line	122; "main.c"	if (d == 'S') //start byte
+000034   00d9     movwf	0x59               	MOVWF	_main_d_1_1
+000035   3a53     xorlw	0x53               	XORLW	0x53
+000036   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+000037   282f     goto	0x2f                	GOTO	_00163_DS_
+000038   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+000039   3a00     xorlw	0                  	XORLW	0x00
+00003a   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+00003b   282f     goto	0x2f                	GOTO	_00163_DS_
+                                           ;	.line	124; "main.c"	d=get_byte();
+00003c   229a     call	0x29a               	CALL	_get_byte
+00003d   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+00003e   1303     bcf	0x3, 0x6             
+00003f   00da     movwf	0x5a               	MOVWF	(_main_d_1_1 + 1)
+000040   087f     movf	0x7f, w             	MOVF	STK00,W
+                                           ;	.line	129; "main.c"	switch (d)
+000041   00d9     movwf	0x59               	MOVWF	_main_d_1_1
+000042   3a41     xorlw	0x41               	XORLW	0x41
+000043   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+000044   2849     goto	0x49                	GOTO	_00181_DS_
+000045   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+000046   3a00     xorlw	0                  	XORLW	0x00
+000047   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+000048   28ae     goto	0xae                	GOTO	_00147_DS_
+                                           _00181_DS_
+000049   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+00004a   1303     bcf	0x3, 0x6             
+00004b   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+00004c   3a42     xorlw	0x42               	XORLW	0x42
+00004d   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+00004e   2853     goto	0x53                	GOTO	_00182_DS_
+00004f   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+000050   3a00     xorlw	0                  	XORLW	0x00
+000051   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+000052   28b3     goto	0xb3                	GOTO	_00148_DS_
+                                           _00182_DS_
+000053   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+000054   1303     bcf	0x3, 0x6             
+000055   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+000056   3a43     xorlw	0x43               	XORLW	0x43
+000057   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+000058   285d     goto	0x5d                	GOTO	_00183_DS_
+000059   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+00005a   3a00     xorlw	0                  	XORLW	0x00
+00005b   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+00005c   28b8     goto	0xb8                	GOTO	_00149_DS_
+                                           _00183_DS_
+00005d   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+00005e   1303     bcf	0x3, 0x6             
+00005f   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+000060   3a4c     xorlw	0x4c               	XORLW	0x4c
+000061   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+000062   2867     goto	0x67                	GOTO	_00184_DS_
+000063   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+000064   3a00     xorlw	0                  	XORLW	0x00
+000065   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+000066   28c6     goto	0xc6                	GOTO	_00152_DS_
+                                           _00184_DS_
+000067   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+000068   1303     bcf	0x3, 0x6             
+000069   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+00006a   3a50     xorlw	0x50               	XORLW	0x50
+00006b   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+00006c   2871     goto	0x71                	GOTO	_00185_DS_
+00006d   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+00006e   3a00     xorlw	0                  	XORLW	0x00
+00006f   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+000070   28db     goto	0xdb                	GOTO	_00155_DS_
+                                           _00185_DS_
+000071   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+000072   1303     bcf	0x3, 0x6             
+000073   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+000074   3a52     xorlw	0x52               	XORLW	0x52
+000075   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+000076   287b     goto	0x7b                	GOTO	_00186_DS_
+000077   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+000078   3a00     xorlw	0                  	XORLW	0x00
+000079   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+00007a   28cd     goto	0xcd                	GOTO	_00153_DS_
+                                           _00186_DS_
+00007b   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+00007c   1303     bcf	0x3, 0x6             
+00007d   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+00007e   3a53     xorlw	0x53               	XORLW	0x53
+00007f   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+000080   2885     goto	0x85                	GOTO	_00187_DS_
+000081   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+000082   3a00     xorlw	0                  	XORLW	0x00
+000083   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+000084   28bf     goto	0xbf                	GOTO	_00151_DS_
+                                           _00187_DS_
+000085   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+000086   1303     bcf	0x3, 0x6             
+000087   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+000088   3a54     xorlw	0x54               	XORLW	0x54
+000089   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+00008a   288f     goto	0x8f                	GOTO	_00188_DS_
+00008b   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+00008c   3a00     xorlw	0                  	XORLW	0x00
+00008d   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+00008e   28bd     goto	0xbd                	GOTO	_00150_DS_
+                                           _00188_DS_
+00008f   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+000090   1303     bcf	0x3, 0x6             
+000091   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+000092   3a58     xorlw	0x58               	XORLW	0x58
+000093   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+000094   2899     goto	0x99                	GOTO	_00189_DS_
+000095   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+000096   3a00     xorlw	0                  	XORLW	0x00
+000097   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+000098   28d4     goto	0xd4                	GOTO	_00154_DS_
+                                           _00189_DS_
+000099   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+00009a   1303     bcf	0x3, 0x6             
+00009b   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+00009c   3a70     xorlw	0x70               	XORLW	0x70
+00009d   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+00009e   28a3     goto	0xa3                	GOTO	_00190_DS_
+00009f   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+0000a0   3a00     xorlw	0                  	XORLW	0x00
+0000a1   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+0000a2   28f4     goto	0xf4                	GOTO	_00156_DS_
+                                           _00190_DS_
+0000a3   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+0000a4   1303     bcf	0x3, 0x6             
+0000a5   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+0000a6   3a74     xorlw	0x74               	XORLW	0x74
+0000a7   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+0000a8   28ad     goto	0xad                	GOTO	_00191_DS_
+0000a9   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+0000aa   3a00     xorlw	0                  	XORLW	0x00
+0000ab   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+0000ac   28f6     goto	0xf6                	GOTO	_00157_DS_
+                                           _00191_DS_
+0000ad   291b     goto	0x11b               	GOTO	_00158_DS_
+                                           _00147_DS_
+                                           ;	.line	132; "main.c"	cylon(0);
+0000ae   3000     movlw	0                  	MOVLW	0x00
+0000af   118a     bcf	0xa, 0x3             	PAGESEL	_cylon
+0000b0   22a9     call	0x2a9               	CALL	_cylon
+0000b1   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	133; "main.c"	break;
+0000b2   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00148_DS_
+                                           ;	.line	135; "main.c"	cylon(1);
+0000b3   3001     movlw	0x1                	MOVLW	0x01
+0000b4   118a     bcf	0xa, 0x3             	PAGESEL	_cylon
+0000b5   22a9     call	0x2a9               	CALL	_cylon
+0000b6   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	136; "main.c"	break;
+0000b7   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00149_DS_
+                                           ;	.line	138; "main.c"	cylon(2);
+0000b8   3002     movlw	0x2                	MOVLW	0x02
+0000b9   118a     bcf	0xa, 0x3             	PAGESEL	_cylon
+0000ba   22a9     call	0x2a9               	CALL	_cylon
+0000bb   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	139; "main.c"	break;
+0000bc   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00150_DS_
+                                           ;	.line	141; "main.c"	tune();
+0000bd   212c     call	0x12c               	CALL	_tune
+                                           ;	.line	142; "main.c"	break;
+0000be   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00151_DS_
+                                           ;	.line	144; "main.c"	PORTA=(unsigned char)11; PORTB=(unsigned char)152;
+0000bf   300b     movlw	0xb                	MOVLW	0x0b
+0000c0   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+0000c1   1303     bcf	0x3, 0x6             
+0000c2   0085     movwf	0x5                	MOVWF	_PORTA
+0000c3   3098     movlw	0x98               	MOVLW	0x98
+0000c4   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	145; "main.c"	break;
+0000c5   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00152_DS_
+                                           ;	.line	147; "main.c"	PORTA=(unsigned char)12; PORTB=(unsigned char)225;
+0000c6   300c     movlw	0xc                	MOVLW	0x0c
+0000c7   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+0000c8   1303     bcf	0x3, 0x6             
+0000c9   0085     movwf	0x5                	MOVWF	_PORTA
+0000ca   30e1     movlw	0xe1               	MOVLW	0xe1
+0000cb   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	148; "main.c"	break;
+0000cc   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00153_DS_
+                                           ;	.line	150; "main.c"	PORTA=(unsigned char)13; PORTB=(unsigned char)200;
+0000cd   300d     movlw	0xd                	MOVLW	0x0d
+0000ce   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+0000cf   1303     bcf	0x3, 0x6             
+0000d0   0085     movwf	0x5                	MOVWF	_PORTA
+0000d1   30c8     movlw	0xc8               	MOVLW	0xc8
+0000d2   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	151; "main.c"	break;
+0000d3   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00154_DS_
+                                           ;	.line	153; "main.c"	PORTA=(unsigned char)5; PORTB=(unsigned char)72;
+0000d4   3005     movlw	0x5                	MOVLW	0x05
+0000d5   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+0000d6   1303     bcf	0x3, 0x6             
+0000d7   0085     movwf	0x5                	MOVWF	_PORTA
+0000d8   3048     movlw	0x48               	MOVLW	0x48
+0000d9   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	154; "main.c"	break;
+0000da   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00155_DS_
+                                           ;	.line	156; "main.c"	i=get_byte();
+0000db   229a     call	0x29a               	CALL	_get_byte
+0000dc   1283     bcf	0x3, 0x5             	BANKSEL	r0x103A
+0000dd   1303     bcf	0x3, 0x6             
+0000de   00a8     movwf	0x28               	MOVWF	r0x103A
+0000df   087f     movf	0x7f, w             	MOVF	STK00,W
+0000e0   00a7     movwf	0x27               	MOVWF	r0x103B
+                                           ;	.line	157; "main.c"	PORTA=i;
+0000e1   1283     bcf	0x3, 0x5             	BANKSEL	_main_i_1_1
+0000e2   1303     bcf	0x3, 0x6             
+0000e3   00db     movwf	0x5b               	MOVWF	_main_i_1_1
+0000e4   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+0000e5   1303     bcf	0x3, 0x6             
+0000e6   0085     movwf	0x5                	MOVWF	_PORTA
+                                           ;	.line	158; "main.c"	i=get_byte();
+0000e7   229a     call	0x29a               	CALL	_get_byte
+0000e8   1283     bcf	0x3, 0x5             	BANKSEL	r0x103A
+0000e9   1303     bcf	0x3, 0x6             
+0000ea   00a8     movwf	0x28               	MOVWF	r0x103A
+0000eb   087f     movf	0x7f, w             	MOVF	STK00,W
+0000ec   00a7     movwf	0x27               	MOVWF	r0x103B
+                                           ;	.line	159; "main.c"	PORTB=i;
+0000ed   1283     bcf	0x3, 0x5             	BANKSEL	_main_i_1_1
+0000ee   1303     bcf	0x3, 0x6             
+0000ef   00db     movwf	0x5b               	MOVWF	_main_i_1_1
+0000f0   1283     bcf	0x3, 0x5             	BANKSEL	_PORTB
+0000f1   1303     bcf	0x3, 0x6             
+0000f2   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	160; "main.c"	break;
+0000f3   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00156_DS_
+                                           ;	.line	162; "main.c"	pattern();
+0000f4   215f     call	0x15f               	CALL	_pattern
+                                           ;	.line	163; "main.c"	break;
+0000f5   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00157_DS_
+                                           ;	.line	165; "main.c"	d=get_byte();
+0000f6   229a     call	0x29a               	CALL	_get_byte
+0000f7   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+0000f8   1303     bcf	0x3, 0x6             
+0000f9   00da     movwf	0x5a               	MOVWF	(_main_d_1_1 + 1)
+0000fa   087f     movf	0x7f, w             	MOVF	STK00,W
+0000fb   00d9     movwf	0x59               	MOVWF	_main_d_1_1
+                                           ;	.line	166; "main.c"	i=get_byte();
+0000fc   229a     call	0x29a               	CALL	_get_byte
+0000fd   1283     bcf	0x3, 0x5             	BANKSEL	r0x103A
+0000fe   1303     bcf	0x3, 0x6             
+0000ff   00a8     movwf	0x28               	MOVWF	r0x103A
+000100   087f     movf	0x7f, w             	MOVF	STK00,W
+000101   00a7     movwf	0x27               	MOVWF	r0x103B
+                                           ;	.line	167; "main.c"	play_tone(d,i);
+000102   1283     bcf	0x3, 0x5             	BANKSEL	_main_i_1_1
+000103   1303     bcf	0x3, 0x6             
+000104   00db     movwf	0x5b               	MOVWF	_main_i_1_1
+000105   1283     bcf	0x3, 0x5             	BANKSEL	r0x103B
+000106   1303     bcf	0x3, 0x6             
+000107   00a7     movwf	0x27               	MOVWF	r0x103B
+000108   01a8     clrf	0x28                	CLRF	r0x103A
+000109   0827     movf	0x27, w             	MOVF	r0x103B,W
+00010a   00fd     movwf	0x7d               	MOVWF	STK02
+00010b   3000     movlw	0                  	MOVLW	0x00
+00010c   00fe     movwf	0x7e               	MOVWF	STK01
+00010d   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+00010e   1303     bcf	0x3, 0x6             
+00010f   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+000110   00ff     movwf	0x7f               	MOVWF	STK00
+000111   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+000112   118a     bcf	0xa, 0x3             	PAGESEL	_play_tone
+000113   24dc     call	0x4dc               	CALL	_play_tone
+000114   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	168; "main.c"	d='t';
+000115   3074     movlw	0x74               	MOVLW	0x74
+000116   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+000117   1303     bcf	0x3, 0x6             
+000118   00d9     movwf	0x59               	MOVWF	_main_d_1_1
+000119   01da     clrf	0x5a                	CLRF	(_main_d_1_1 + 1)
+                                           ;	.line	169; "main.c"	break;
+00011a   2920     goto	0x120               	GOTO	_00159_DS_
+                                           _00158_DS_
+                                           ;	.line	171; "main.c"	d='z'; 		//error
+00011b   307a     movlw	0x7a               	MOVLW	0x7a
+00011c   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+00011d   1303     bcf	0x3, 0x6             
+00011e   00d9     movwf	0x59               	MOVWF	_main_d_1_1
+00011f   01da     clrf	0x5a                	CLRF	(_main_d_1_1 + 1)
+                                           _00159_DS_
+                                           ;	.line	174; "main.c"	if (d) put_byte(d); //response
+000120   1283     bcf	0x3, 0x5             	BANKSEL	_main_d_1_1
+000121   1303     bcf	0x3, 0x6             
+000122   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+000123   045a     iorwf	0x5a, w            	IORWF	(_main_d_1_1 + 1),W
+000124   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+000125   282f     goto	0x2f                	GOTO	_00163_DS_
+000126   0859     movf	0x59, w             	MOVF	_main_d_1_1,W
+000127   00ff     movwf	0x7f               	MOVWF	STK00
+000128   085a     movf	0x5a, w             	MOVF	(_main_d_1_1 + 1),W
+000129   2289     call	0x289               	CALL	_put_byte
+00012a   282f     goto	0x2f                	GOTO	_00163_DS_
+00012b   0008     return                   	RETURN	
+                                           ; exit point of _main
+                                           
+                                           ;***
+                                           ;  pBlock Stats: dbName = C
+                                           ;***
+                                           ;entry:  _tune	;Function start
+                                           ; 2 exit points
+                                           ;has an exit
+                                           ;functions called:
+                                           ;   _play_tone
+                                           ;   _play_tone
+                                           ;   _play_tone
+                                           ;   _play_tone
+                                           ;   _play_tone
+                                           ;   _play_tone
+                                           ;   _play_tone
+                                           ;   _play_tone
+                                           ;   _play_tone
+                                           ;   _play_tone
+                                           ;3 compiler assigned registers:
+                                           ;   STK02
+                                           ;   STK01
+                                           ;   STK00
+                                           ;; Starting pCode block
+                                           _tune	;Function start
+                                           ; 2 exit points
+                                           ;	.line	100; "main.c"	play_tone(D5, DUR);
+00012c   3028     movlw	0x28               	MOVLW	0x28
+00012d   00fd     movwf	0x7d               	MOVWF	STK02
+00012e   3000     movlw	0                  	MOVLW	0x00
+00012f   00fe     movwf	0x7e               	MOVWF	STK01
+000130   3053     movlw	0x53               	MOVLW	0x53
+000131   00ff     movwf	0x7f               	MOVWF	STK00
+000132   3003     movlw	0x3                	MOVLW	0x03
+000133   118a     bcf	0xa, 0x3             	PAGESEL	_play_tone
+000134   24dc     call	0x4dc               	CALL	_play_tone
+000135   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	101; "main.c"	play_tone(E5, DUR);
+000136   3028     movlw	0x28               	MOVLW	0x28
+000137   00fd     movwf	0x7d               	MOVWF	STK02
+000138   3000     movlw	0                  	MOVLW	0x00
+000139   00fe     movwf	0x7e               	MOVWF	STK01
+00013a   30f6     movlw	0xf6               	MOVLW	0xf6
+00013b   00ff     movwf	0x7f               	MOVWF	STK00
+00013c   3002     movlw	0x2                	MOVLW	0x02
+00013d   118a     bcf	0xa, 0x3             	PAGESEL	_play_tone
+00013e   24dc     call	0x4dc               	CALL	_play_tone
+00013f   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	102; "main.c"	play_tone(D5, DUR);
+000140   3028     movlw	0x28               	MOVLW	0x28
+000141   00fd     movwf	0x7d               	MOVWF	STK02
+000142   3000     movlw	0                  	MOVLW	0x00
+000143   00fe     movwf	0x7e               	MOVWF	STK01
+000144   3053     movlw	0x53               	MOVLW	0x53
+000145   00ff     movwf	0x7f               	MOVWF	STK00
+000146   3003     movlw	0x3                	MOVLW	0x03
+000147   118a     bcf	0xa, 0x3             	PAGESEL	_play_tone
+000148   24dc     call	0x4dc               	CALL	_play_tone
+000149   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	103; "main.c"	play_tone(G5, DUR);
+00014a   3028     movlw	0x28               	MOVLW	0x28
+00014b   00fd     movwf	0x7d               	MOVWF	STK02
+00014c   3000     movlw	0                  	MOVLW	0x00
+00014d   00fe     movwf	0x7e               	MOVWF	STK01
+00014e   307d     movlw	0x7d               	MOVLW	0x7d
+00014f   00ff     movwf	0x7f               	MOVWF	STK00
+000150   3002     movlw	0x2                	MOVLW	0x02
+000151   118a     bcf	0xa, 0x3             	PAGESEL	_play_tone
+000152   24dc     call	0x4dc               	CALL	_play_tone
+000153   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	104; "main.c"	play_tone(Fsh5, 2*DUR);
+000154   3050     movlw	0x50               	MOVLW	0x50
+000155   00fd     movwf	0x7d               	MOVWF	STK02
+000156   3000     movlw	0                  	MOVLW	0x00
+000157   00fe     movwf	0x7e               	MOVWF	STK01
+000158   30a3     movlw	0xa3               	MOVLW	0xa3
+000159   00ff     movwf	0x7f               	MOVWF	STK00
+00015a   3002     movlw	0x2                	MOVLW	0x02
+00015b   118a     bcf	0xa, 0x3             	PAGESEL	_play_tone
+00015c   24dc     call	0x4dc               	CALL	_play_tone
+00015d   118a     bcf	0xa, 0x3             	PAGESEL	$
+00015e   0008     return                   	RETURN	
+                                           ; exit point of _tune
+                                           
+                                           ;***
+                                           ;  pBlock Stats: dbName = C
+                                           ;***
+                                           ;entry:  _pattern	;Function start
+                                           ; 2 exit points
+                                           ;has an exit
+                                           ;functions called:
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;7 compiler assigned registers:
+                                           ;   r0x1033
+                                           ;   r0x1034
+                                           ;   r0x1035
+                                           ;   r0x1036
+                                           ;   r0x1037
+                                           ;   r0x1038
+                                           ;   r0x1039
+                                           ;; Starting pCode block
+                                           _pattern	;Function start
+                                           ; 2 exit points
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+                                           ;	.line	40; "main.c"	const unsigned char bits[] = {
+00015f   1283     bcf	0x3, 0x5             	BANKSEL	_pattern_bits_1_1
+000160   1303     bcf	0x3, 0x6             
+000161   01a9     clrf	0x29                	CLRF	(_pattern_bits_1_1 + 0)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000162   3001     movlw	0x1                	MOVLW	0x01
+000163   00aa     movwf	0x2a               	MOVWF	(_pattern_bits_1_1 + 1)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000164   3004     movlw	0x4                	MOVLW	0x04
+000165   00ab     movwf	0x2b               	MOVWF	(_pattern_bits_1_1 + 2)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000166   01ac     clrf	0x2c                	CLRF	(_pattern_bits_1_1 + 3)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000167   3008     movlw	0x8                	MOVLW	0x08
+000168   00ad     movwf	0x2d               	MOVWF	(_pattern_bits_1_1 + 4)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000169   01ae     clrf	0x2e                	CLRF	(_pattern_bits_1_1 + 5)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00016a   01af     clrf	0x2f                	CLRF	(_pattern_bits_1_1 + 6)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00016b   3008     movlw	0x8                	MOVLW	0x08
+00016c   00b0     movwf	0x30               	MOVWF	(_pattern_bits_1_1 + 7)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00016d   01b1     clrf	0x31                	CLRF	(_pattern_bits_1_1 + 8)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00016e   3010     movlw	0x10               	MOVLW	0x10
+00016f   00b2     movwf	0x32               	MOVWF	(_pattern_bits_1_1 + 9)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000170   01b3     clrf	0x33                	CLRF	(_pattern_bits_1_1 + 10)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000171   3020     movlw	0x20               	MOVLW	0x20
+000172   00b4     movwf	0x34               	MOVWF	(_pattern_bits_1_1 + 11)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000173   01b5     clrf	0x35                	CLRF	(_pattern_bits_1_1 + 12)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000174   3040     movlw	0x40               	MOVLW	0x40
+000175   00b6     movwf	0x36               	MOVWF	(_pattern_bits_1_1 + 13)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000176   01b7     clrf	0x37                	CLRF	(_pattern_bits_1_1 + 14)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000177   3080     movlw	0x80               	MOVLW	0x80
+000178   00b8     movwf	0x38               	MOVWF	(_pattern_bits_1_1 + 15)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000179   3001     movlw	0x1                	MOVLW	0x01
+00017a   00b9     movwf	0x39               	MOVWF	(_pattern_bits_1_1 + 16)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00017b   01ba     clrf	0x3a                	CLRF	(_pattern_bits_1_1 + 17)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00017c   3002     movlw	0x2                	MOVLW	0x02
+00017d   00bb     movwf	0x3b               	MOVWF	(_pattern_bits_1_1 + 18)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00017e   01bc     clrf	0x3c                	CLRF	(_pattern_bits_1_1 + 19)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00017f   3004     movlw	0x4                	MOVLW	0x04
+000180   00bd     movwf	0x3d               	MOVWF	(_pattern_bits_1_1 + 20)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000181   3001     movlw	0x1                	MOVLW	0x01
+000182   00be     movwf	0x3e               	MOVWF	(_pattern_bits_1_1 + 21)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000183   3008     movlw	0x8                	MOVLW	0x08
+000184   00bf     movwf	0x3f               	MOVWF	(_pattern_bits_1_1 + 22)
+000185   00c0     movwf	0x40               	MOVWF	(_pattern_bits_1_1 + 23)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000186   01c1     clrf	0x41                	CLRF	(_pattern_bits_1_1 + 24)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000187   3030     movlw	0x30               	MOVLW	0x30
+000188   00c2     movwf	0x42               	MOVWF	(_pattern_bits_1_1 + 25)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000189   01c3     clrf	0x43                	CLRF	(_pattern_bits_1_1 + 26)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00018a   30c0     movlw	0xc0               	MOVLW	0xc0
+00018b   00c4     movwf	0x44               	MOVWF	(_pattern_bits_1_1 + 27)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00018c   3003     movlw	0x3                	MOVLW	0x03
+00018d   00c5     movwf	0x45               	MOVWF	(_pattern_bits_1_1 + 28)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00018e   01c6     clrf	0x46                	CLRF	(_pattern_bits_1_1 + 29)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00018f   300c     movlw	0xc                	MOVLW	0x0c
+000190   00c7     movwf	0x47               	MOVWF	(_pattern_bits_1_1 + 30)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000191   3001     movlw	0x1                	MOVLW	0x01
+000192   00c8     movwf	0x48               	MOVWF	(_pattern_bits_1_1 + 31)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000193   01c9     clrf	0x49                	CLRF	(_pattern_bits_1_1 + 32)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000194   3038     movlw	0x38               	MOVLW	0x38
+000195   00ca     movwf	0x4a               	MOVWF	(_pattern_bits_1_1 + 33)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000196   3001     movlw	0x1                	MOVLW	0x01
+000197   00cb     movwf	0x4b               	MOVWF	(_pattern_bits_1_1 + 34)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+000198   30c0     movlw	0xc0               	MOVLW	0xc0
+000199   00cc     movwf	0x4c               	MOVWF	(_pattern_bits_1_1 + 35)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00019a   3002     movlw	0x2                	MOVLW	0x02
+00019b   00cd     movwf	0x4d               	MOVWF	(_pattern_bits_1_1 + 36)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00019c   01ce     clrf	0x4e                	CLRF	(_pattern_bits_1_1 + 37)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00019d   3003     movlw	0x3                	MOVLW	0x03
+00019e   00cf     movwf	0x4f               	MOVWF	(_pattern_bits_1_1 + 38)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+00019f   30e0     movlw	0xe0               	MOVLW	0xe0
+0001a0   00d0     movwf	0x50               	MOVWF	(_pattern_bits_1_1 + 39)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0001a1   300c     movlw	0xc                	MOVLW	0x0c
+0001a2   00d1     movwf	0x51               	MOVWF	(_pattern_bits_1_1 + 40)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0001a3   3019     movlw	0x19               	MOVLW	0x19
+0001a4   00d2     movwf	0x52               	MOVWF	(_pattern_bits_1_1 + 41)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0001a5   3003     movlw	0x3                	MOVLW	0x03
+0001a6   00d3     movwf	0x53               	MOVWF	(_pattern_bits_1_1 + 42)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0001a7   30e0     movlw	0xe0               	MOVLW	0xe0
+0001a8   00d4     movwf	0x54               	MOVWF	(_pattern_bits_1_1 + 43)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0001a9   3007     movlw	0x7                	MOVLW	0x07
+0001aa   00d5     movwf	0x55               	MOVWF	(_pattern_bits_1_1 + 44)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0001ab   3031     movlw	0x31               	MOVLW	0x31
+0001ac   00d6     movwf	0x56               	MOVWF	(_pattern_bits_1_1 + 45)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0001ad   3008     movlw	0x8                	MOVLW	0x08
+0001ae   00d7     movwf	0x57               	MOVWF	(_pattern_bits_1_1 + 46)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0001af   30c8     movlw	0xc8               	MOVLW	0xc8
+0001b0   00d8     movwf	0x58               	MOVWF	(_pattern_bits_1_1 + 47)
+                                           ;	.line	69; "main.c"	for(i = 0; i < 20; i=i+2) 
+0001b1   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+0001b2   1303     bcf	0x3, 0x6             
+0001b3   01a0     clrf	0x20                	CLRF	r0x1033
+                                           ;unsigned compare: left < lit(0x14=20), size=1
+                                           _00119_DS_
+0001b4   3014     movlw	0x14               	MOVLW	0x14
+0001b5   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+0001b6   1303     bcf	0x3, 0x6             
+0001b7   0220     subwf	0x20, w            	SUBWF	r0x1033,W
+0001b8   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+0001b9   29e6     goto	0x1e6               	GOTO	_00122_DS_
+                                           ;genSkipc:3080: created from rifx:0x2260cc
+                                           ;	.line	71; "main.c"	PORTA = bits[i];
+0001ba   0820     movf	0x20, w             	MOVF	r0x1033,W
+0001bb   3e29     addlw	0x29               	ADDLW	(_pattern_bits_1_1 + 0)
+0001bc   00a1     movwf	0x21               	MOVWF	r0x1034
+0001bd   3000     movlw	0                  	MOVLW	high (_pattern_bits_1_1 + 0)
+0001be   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+0001bf   3e01     addlw	0x1                	ADDLW	0x01
+0001c0   00a2     movwf	0x22               	MOVWF	r0x1035
+0001c1   0821     movf	0x21, w             	MOVF	r0x1034,W
+0001c2   0084     movwf	0x4                	MOVWF	FSR
+0001c3   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+0001c4   1822     btfsc	0x22, 0            	BTFSC	r0x1035,0
+0001c5   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+0001c6   0800     movf	0, w                	MOVF	INDF,W
+0001c7   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+0001c8   1303     bcf	0x3, 0x6             
+0001c9   0085     movwf	0x5                	MOVWF	_PORTA
+                                           ;	.line	72; "main.c"	PORTB = bits[i+1];
+0001ca   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+0001cb   1303     bcf	0x3, 0x6             
+0001cc   0a20     incf	0x20, w             	INCF	r0x1033,W
+0001cd   00a1     movwf	0x21               	MOVWF	r0x1034
+0001ce   3e29     addlw	0x29               	ADDLW	(_pattern_bits_1_1 + 0)
+0001cf   00a1     movwf	0x21               	MOVWF	r0x1034
+0001d0   3000     movlw	0                  	MOVLW	high (_pattern_bits_1_1 + 0)
+0001d1   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+0001d2   3e01     addlw	0x1                	ADDLW	0x01
+0001d3   00a3     movwf	0x23               	MOVWF	r0x1036
+0001d4   0821     movf	0x21, w             	MOVF	r0x1034,W
+0001d5   0084     movwf	0x4                	MOVWF	FSR
+0001d6   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+0001d7   1823     btfsc	0x23, 0            	BTFSC	r0x1036,0
+0001d8   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+0001d9   0800     movf	0, w                	MOVF	INDF,W
+0001da   1283     bcf	0x3, 0x5             	BANKSEL	_PORTB
+0001db   1303     bcf	0x3, 0x6             
+0001dc   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	73; "main.c"	delay(500);
+0001dd   30f4     movlw	0xf4               	MOVLW	0xf4
+0001de   118a     bcf	0xa, 0x3             	PAGESEL	_delay
+0001df   253a     call	0x53a               	CALL	_delay
+0001e0   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	69; "main.c"	for(i = 0; i < 20; i=i+2) 
+0001e1   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+0001e2   1303     bcf	0x3, 0x6             
+0001e3   0aa0     incf	0x20, f             	INCF	r0x1033,F
+0001e4   0aa0     incf	0x20, f             	INCF	r0x1033,F
+0001e5   29b4     goto	0x1b4               	GOTO	_00119_DS_
+                                           _00122_DS_
+                                           ;	.line	76; "main.c"	for(i = 20; i < 30; i=i+2) 
+0001e6   3014     movlw	0x14               	MOVLW	0x14
+0001e7   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+0001e8   1303     bcf	0x3, 0x6             
+0001e9   00a0     movwf	0x20               	MOVWF	r0x1033
+                                           ;unsigned compare: left < lit(0x1E=30), size=1
+                                           _00123_DS_
+0001ea   301e     movlw	0x1e               	MOVLW	0x1e
+0001eb   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+0001ec   1303     bcf	0x3, 0x6             
+0001ed   0220     subwf	0x20, w            	SUBWF	r0x1033,W
+0001ee   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+0001ef   2a1c     goto	0x21c               	GOTO	_00126_DS_
+                                           ;genSkipc:3080: created from rifx:0x2260cc
+                                           ;	.line	78; "main.c"	PORTA = bits[i];
+0001f0   0820     movf	0x20, w             	MOVF	r0x1033,W
+0001f1   3e29     addlw	0x29               	ADDLW	(_pattern_bits_1_1 + 0)
+0001f2   00a1     movwf	0x21               	MOVWF	r0x1034
+0001f3   3000     movlw	0                  	MOVLW	high (_pattern_bits_1_1 + 0)
+0001f4   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+0001f5   3e01     addlw	0x1                	ADDLW	0x01
+0001f6   00a3     movwf	0x23               	MOVWF	r0x1036
+0001f7   0821     movf	0x21, w             	MOVF	r0x1034,W
+0001f8   0084     movwf	0x4                	MOVWF	FSR
+0001f9   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+0001fa   1823     btfsc	0x23, 0            	BTFSC	r0x1036,0
+0001fb   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+0001fc   0800     movf	0, w                	MOVF	INDF,W
+0001fd   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+0001fe   1303     bcf	0x3, 0x6             
+0001ff   0085     movwf	0x5                	MOVWF	_PORTA
+                                           ;	.line	79; "main.c"	PORTB = bits[i+1];
+000200   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+000201   1303     bcf	0x3, 0x6             
+000202   0a20     incf	0x20, w             	INCF	r0x1033,W
+000203   00a1     movwf	0x21               	MOVWF	r0x1034
+000204   3e29     addlw	0x29               	ADDLW	(_pattern_bits_1_1 + 0)
+000205   00a1     movwf	0x21               	MOVWF	r0x1034
+000206   3000     movlw	0                  	MOVLW	high (_pattern_bits_1_1 + 0)
+000207   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+000208   3e01     addlw	0x1                	ADDLW	0x01
+000209   00a4     movwf	0x24               	MOVWF	r0x1037
+00020a   0821     movf	0x21, w             	MOVF	r0x1034,W
+00020b   0084     movwf	0x4                	MOVWF	FSR
+00020c   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+00020d   1824     btfsc	0x24, 0            	BTFSC	r0x1037,0
+00020e   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+00020f   0800     movf	0, w                	MOVF	INDF,W
+000210   1283     bcf	0x3, 0x5             	BANKSEL	_PORTB
+000211   1303     bcf	0x3, 0x6             
+000212   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	80; "main.c"	delay(500);
+000213   30f4     movlw	0xf4               	MOVLW	0xf4
+000214   118a     bcf	0xa, 0x3             	PAGESEL	_delay
+000215   253a     call	0x53a               	CALL	_delay
+000216   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	76; "main.c"	for(i = 20; i < 30; i=i+2) 
+000217   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+000218   1303     bcf	0x3, 0x6             
+000219   0aa0     incf	0x20, f             	INCF	r0x1033,F
+00021a   0aa0     incf	0x20, f             	INCF	r0x1033,F
+00021b   29ea     goto	0x1ea               	GOTO	_00123_DS_
+                                           _00126_DS_
+                                           ;	.line	83; "main.c"	for(i = 38; i < 42; i=i+2) 
+00021c   3026     movlw	0x26               	MOVLW	0x26
+00021d   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+00021e   1303     bcf	0x3, 0x6             
+00021f   00a0     movwf	0x20               	MOVWF	r0x1033
+                                           ;unsigned compare: left < lit(0x2A=42), size=1
+                                           _00127_DS_
+000220   302a     movlw	0x2a               	MOVLW	0x2a
+000221   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+000222   1303     bcf	0x3, 0x6             
+000223   0220     subwf	0x20, w            	SUBWF	r0x1033,W
+000224   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+000225   2a52     goto	0x252               	GOTO	_00130_DS_
+                                           ;genSkipc:3080: created from rifx:0x2260cc
+                                           ;	.line	85; "main.c"	PORTA = bits[i];
+000226   0820     movf	0x20, w             	MOVF	r0x1033,W
+000227   3e29     addlw	0x29               	ADDLW	(_pattern_bits_1_1 + 0)
+000228   00a1     movwf	0x21               	MOVWF	r0x1034
+000229   3000     movlw	0                  	MOVLW	high (_pattern_bits_1_1 + 0)
+00022a   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+00022b   3e01     addlw	0x1                	ADDLW	0x01
+00022c   00a4     movwf	0x24               	MOVWF	r0x1037
+00022d   0821     movf	0x21, w             	MOVF	r0x1034,W
+00022e   0084     movwf	0x4                	MOVWF	FSR
+00022f   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+000230   1824     btfsc	0x24, 0            	BTFSC	r0x1037,0
+000231   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+000232   0800     movf	0, w                	MOVF	INDF,W
+000233   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+000234   1303     bcf	0x3, 0x6             
+000235   0085     movwf	0x5                	MOVWF	_PORTA
+                                           ;	.line	86; "main.c"	PORTB = bits[i+1];
+000236   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+000237   1303     bcf	0x3, 0x6             
+000238   0a20     incf	0x20, w             	INCF	r0x1033,W
+000239   00a1     movwf	0x21               	MOVWF	r0x1034
+00023a   3e29     addlw	0x29               	ADDLW	(_pattern_bits_1_1 + 0)
+00023b   00a1     movwf	0x21               	MOVWF	r0x1034
+00023c   3000     movlw	0                  	MOVLW	high (_pattern_bits_1_1 + 0)
+00023d   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+00023e   3e01     addlw	0x1                	ADDLW	0x01
+00023f   00a5     movwf	0x25               	MOVWF	r0x1038
+000240   0821     movf	0x21, w             	MOVF	r0x1034,W
+000241   0084     movwf	0x4                	MOVWF	FSR
+000242   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+000243   1825     btfsc	0x25, 0            	BTFSC	r0x1038,0
+000244   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+000245   0800     movf	0, w                	MOVF	INDF,W
+000246   1283     bcf	0x3, 0x5             	BANKSEL	_PORTB
+000247   1303     bcf	0x3, 0x6             
+000248   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	87; "main.c"	delay(500);
+000249   30f4     movlw	0xf4               	MOVLW	0xf4
+00024a   118a     bcf	0xa, 0x3             	PAGESEL	_delay
+00024b   253a     call	0x53a               	CALL	_delay
+00024c   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	83; "main.c"	for(i = 38; i < 42; i=i+2) 
+00024d   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+00024e   1303     bcf	0x3, 0x6             
+00024f   0aa0     incf	0x20, f             	INCF	r0x1033,F
+000250   0aa0     incf	0x20, f             	INCF	r0x1033,F
+000251   2a20     goto	0x220               	GOTO	_00127_DS_
+                                           _00130_DS_
+                                           ;	.line	90; "main.c"	for(i = 44; i < 48; i=i+2) 
+000252   302c     movlw	0x2c               	MOVLW	0x2c
+000253   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+000254   1303     bcf	0x3, 0x6             
+000255   00a0     movwf	0x20               	MOVWF	r0x1033
+                                           ;unsigned compare: left < lit(0x30=48), size=1
+                                           _00131_DS_
+000256   3030     movlw	0x30               	MOVLW	0x30
+000257   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+000258   1303     bcf	0x3, 0x6             
+000259   0220     subwf	0x20, w            	SUBWF	r0x1033,W
+00025a   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+00025b   2a88     goto	0x288               	GOTO	_00135_DS_
+                                           ;genSkipc:3080: created from rifx:0x2260cc
+                                           ;	.line	92; "main.c"	PORTA = bits[i];
+00025c   0820     movf	0x20, w             	MOVF	r0x1033,W
+00025d   3e29     addlw	0x29               	ADDLW	(_pattern_bits_1_1 + 0)
+00025e   00a1     movwf	0x21               	MOVWF	r0x1034
+00025f   3000     movlw	0                  	MOVLW	high (_pattern_bits_1_1 + 0)
+000260   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+000261   3e01     addlw	0x1                	ADDLW	0x01
+000262   00a5     movwf	0x25               	MOVWF	r0x1038
+000263   0821     movf	0x21, w             	MOVF	r0x1034,W
+000264   0084     movwf	0x4                	MOVWF	FSR
+000265   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+000266   1825     btfsc	0x25, 0            	BTFSC	r0x1038,0
+000267   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+000268   0800     movf	0, w                	MOVF	INDF,W
+000269   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+00026a   1303     bcf	0x3, 0x6             
+00026b   0085     movwf	0x5                	MOVWF	_PORTA
+                                           ;	.line	93; "main.c"	PORTB = bits[i+1];
+00026c   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+00026d   1303     bcf	0x3, 0x6             
+00026e   0a20     incf	0x20, w             	INCF	r0x1033,W
+00026f   00a1     movwf	0x21               	MOVWF	r0x1034
+000270   3e29     addlw	0x29               	ADDLW	(_pattern_bits_1_1 + 0)
+000271   00a1     movwf	0x21               	MOVWF	r0x1034
+000272   3000     movlw	0                  	MOVLW	high (_pattern_bits_1_1 + 0)
+000273   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+000274   3e01     addlw	0x1                	ADDLW	0x01
+000275   00a6     movwf	0x26               	MOVWF	r0x1039
+000276   0821     movf	0x21, w             	MOVF	r0x1034,W
+000277   0084     movwf	0x4                	MOVWF	FSR
+000278   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+000279   1826     btfsc	0x26, 0            	BTFSC	r0x1039,0
+00027a   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+00027b   0800     movf	0, w                	MOVF	INDF,W
+00027c   1283     bcf	0x3, 0x5             	BANKSEL	_PORTB
+00027d   1303     bcf	0x3, 0x6             
+00027e   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	94; "main.c"	delay(500);
+00027f   30f4     movlw	0xf4               	MOVLW	0xf4
+000280   118a     bcf	0xa, 0x3             	PAGESEL	_delay
+000281   253a     call	0x53a               	CALL	_delay
+000282   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	90; "main.c"	for(i = 44; i < 48; i=i+2) 
+000283   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+000284   1303     bcf	0x3, 0x6             
+000285   0aa0     incf	0x20, f             	INCF	r0x1033,F
+000286   0aa0     incf	0x20, f             	INCF	r0x1033,F
+000287   2a56     goto	0x256               	GOTO	_00131_DS_
+                                           _00135_DS_
+000288   0008     return                   	RETURN	
+                                           ; exit point of _pattern
+                                           
+                                           ;***
+                                           ;  pBlock Stats: dbName = C
+                                           ;***
+                                           ;entry:  _put_byte	;Function start
+                                           ; 2 exit points
+                                           ;has an exit
+                                           ;3 compiler assigned registers:
+                                           ;   r0x1033
+                                           ;   STK00
+                                           ;   r0x1034
+                                           ;; Starting pCode block
+                                           _put_byte	;Function start
+                                           ; 2 exit points
+                                           ;;1	MOVWF	r0x1033
+                                           ;	.line	29; "main.c"	void put_byte(int i)
+000289   087f     movf	0x7f, w             	MOVF	STK00,W
+00028a   1283     bcf	0x3, 0x5             	BANKSEL	r0x1034
+00028b   1303     bcf	0x3, 0x6             
+00028c   00a1     movwf	0x21               	MOVWF	r0x1034
+                                           _00112_DS_
+                                           ;	.line	31; "main.c"	while(!TRMT)
+00028d   1683     bsf	0x3, 0x5             	BANKSEL	_TXSTA_bits
+00028e   1303     bcf	0x3, 0x6             
+00028f   1898     btfsc	0x18, 0x1          	BTFSC	_TXSTA_bits,1
+000290   2a93     goto	0x293               	GOTO	_00114_DS_
+000291   0000     nop                      	nop 
+000292   2a8d     goto	0x28d               	GOTO	_00112_DS_
+                                           _00114_DS_
+                                           ;	.line	35; "main.c"	TXREG=i;	// Transmit		
+000293   1283     bcf	0x3, 0x5             	BANKSEL	r0x1034
+000294   1303     bcf	0x3, 0x6             
+000295   0821     movf	0x21, w             	MOVF	r0x1034,W
+000296   1283     bcf	0x3, 0x5             	BANKSEL	_TXREG
+000297   1303     bcf	0x3, 0x6             
+000298   0099     movwf	0x19               	MOVWF	_TXREG
+000299   0008     return                   	RETURN	
+                                           ; exit point of _put_byte
+                                           
+                                           ;***
+                                           ;  pBlock Stats: dbName = C
+                                           ;***
+                                           ;entry:  _get_byte	;Function start
+                                           ; 2 exit points
+                                           ;has an exit
+                                           ;3 compiler assigned registers:
+                                           ;   r0x1033
+                                           ;   r0x1034
+                                           ;   STK00
+                                           ;; Starting pCode block
+                                           _get_byte	;Function start
+                                           ; 2 exit points
+                                           _00105_DS_
+                                           ;	.line	20; "main.c"	while(!RCIF)  // wait for character
+00029a   1283     bcf	0x3, 0x5             	BANKSEL	_PIR1_bits
+00029b   1303     bcf	0x3, 0x6             
+00029c   1a8c     btfsc	0xc, 0x5           	BTFSC	_PIR1_bits,5
+00029d   2aa0     goto	0x2a0               	GOTO	_00107_DS_
+00029e   0000     nop                      	nop 
+00029f   2a9a     goto	0x29a               	GOTO	_00105_DS_
+                                           _00107_DS_
+                                           ;	.line	25; "main.c"	i= RCREG;
+0002a0   1283     bcf	0x3, 0x5             	BANKSEL	_RCREG
+0002a1   1303     bcf	0x3, 0x6             
+0002a2   081a     movf	0x1a, w             	MOVF	_RCREG,W
+                                           ;	.line	26; "main.c"	return i;
+0002a3   1283     bcf	0x3, 0x5             	BANKSEL	r0x1033
+0002a4   1303     bcf	0x3, 0x6             
+0002a5   00a0     movwf	0x20               	MOVWF	r0x1033
+0002a6   00ff     movwf	0x7f               	MOVWF	STK00
+0002a7   3000     movlw	0                  	MOVLW	0x00
+0002a8   0008     return                   	RETURN	
+                                           ; exit point of _get_byte
+                                           
+                                           
+                                           ;	code size estimation:
+                                           ;	  489+   91 =   580 instructions ( 1342 byte)
+                                           
+                                           	end
+                                           ;--------------------------------------------------------
+                                           ; File Created by SDCC : free open source ANSI-C Compiler
+                                           ; Version 2.9.2 #5492 (Aug 17 2009) (MINGW32)
+                                           ; This file was generated Thu Sep 17 21:03:48 2009
+                                           ;--------------------------------------------------------
+                                           ; PIC port for the 14-bit core
+                                           ;--------------------------------------------------------
+                                           ;	.file	"cylon.c"
+                                           	list	p=16f648A
+                                           	radix dec
+                                           	include "p16f648A.inc"
+                                                   LIST
+                                           ; P16F648A.INC  Standard Header File, Version 1.00    Microchip Technology, Inc.
+                                                   NOLIST
+                                           ;--------------------------------------------------------
+                                           ; external declarations
+                                           ;--------------------------------------------------------
+                                           	extern	_init_hw
+                                           	extern	_delay_us
+                                           	extern	_delay
+                                           	extern	_CCP1CON_bits
+                                           	extern	_CMCON_bits
+                                           	extern	_EECON1_bits
+                                           	extern	_INTCON_bits
+                                           	extern	_OPTION_REG_bits
+                                           	extern	_PCON_bits
+                                           	extern	_PIE1_bits
+                                           	extern	_PIR1_bits
+                                           	extern	_PORTA_bits
+                                           	extern	_PORTB_bits
+                                           	extern	_RCSTA_bits
+                                           	extern	_STATUS_bits
+                                           	extern	_T1CON_bits
+                                           	extern	_T2CON_bits
+                                           	extern	_TRISA_bits
+                                           	extern	_TRISB_bits
+                                           	extern	_TXSTA_bits
+                                           	extern	_VRCON_bits
+                                           	extern	_INDF
+                                           	extern	_TMR0
+                                           	extern	_PCL
+                                           	extern	_STATUS
+                                           	extern	_FSR
+                                           	extern	_PORTA
+                                           	extern	_PORTB
+                                           	extern	_PCLATH
+                                           	extern	_INTCON
+                                           	extern	_PIR1
+                                           	extern	_TMR1L
+                                           	extern	_TMR1H
+                                           	extern	_T1CON
+                                           	extern	_TMR2
+                                           	extern	_T2CON
+                                           	extern	_CCPR1L
+                                           	extern	_CCPR1H
+                                           	extern	_CCP1CON
+                                           	extern	_RCSTA
+                                           	extern	_TXREG
+                                           	extern	_RCREG
+                                           	extern	_CMCON
+                                           	extern	_OPTION_REG
+                                           	extern	_TRISA
+                                           	extern	_TRISB
+                                           	extern	_PIE1
+                                           	extern	_PCON
+                                           	extern	_PR2
+                                           	extern	_TXSTA
+                                           	extern	_SPBRG
+                                           	extern	_EEDATA
+                                           	extern	_EEADR
+                                           	extern	_EECON1
+                                           	extern	_EECON2
+                                           	extern	_VRCON
+                                           
+                                           	extern PSAVE
+                                           	extern SSAVE
+                                           	extern WSAVE
+                                           	extern STK12
+                                           	extern STK11
+                                           	extern STK10
+                                           	extern STK09
+                                           	extern STK08
+                                           	extern STK07
+                                           	extern STK06
+                                           	extern STK05
+                                           	extern STK04
+                                           	extern STK03
+                                           	extern STK02
+                                           	extern STK01
+                                           	extern STK00
+                                           ;--------------------------------------------------------
+                                           ; global declarations
+                                           ;--------------------------------------------------------
+                                           	global	_cylon
+                                           
+                                           ;--------------------------------------------------------
+                                           ; global definitions
+                                           ;--------------------------------------------------------
+                                           ;--------------------------------------------------------
+                                           ; absolute symbol definitions
+                                           ;--------------------------------------------------------
+                                           ;--------------------------------------------------------
+                                           ; compiler-defined variables
+                                           ;--------------------------------------------------------
+                                           UDL_cylon_0	udata
+                                           r0x1018	res	1
+                                           r0x1019	res	1
+                                           r0x101A	res	1
+                                           r0x101B	res	1
+                                           r0x101C	res	1
+                                           r0x101D	res	1
+                                           r0x101E	res	1
+                                           _cylon_cylon_bits_1_1	res	24
+                                           ;--------------------------------------------------------
+                                           ; initialized data
+                                           ;--------------------------------------------------------
+                                           ;--------------------------------------------------------
+                                           ; overlayable items in internal ram 
+                                           ;--------------------------------------------------------
+                                           ;	udata_ovr
+                                           ;--------------------------------------------------------
+                                           ; code
+                                           ;--------------------------------------------------------
+                                           code_cylon	code
+                                           ;***
+                                           ;  pBlock Stats: dbName = C
+                                           ;***
+                                           ;entry:  _cylon	;Function start
+                                           ; 2 exit points
+                                           ;has an exit
+                                           ;functions called:
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;   _delay
+                                           ;7 compiler assigned registers:
+                                           ;   r0x1018
+                                           ;   r0x1019
+                                           ;   r0x101A
+                                           ;   r0x101B
+                                           ;   r0x101C
+                                           ;   r0x101D
+                                           ;   r0x101E
+                                           ;; Starting pCode block
+                                           _cylon	;Function start
+                                           ; 2 exit points
+                                           ;	.line	10; "cylon.c"	void cylon(unsigned char cylon_style) {
+0002a9   1683     bsf	0x3, 0x5             	BANKSEL	r0x1018
+0002aa   1303     bcf	0x3, 0x6             
+0002ab   00a0     movwf	0x20               	MOVWF	r0x1018
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+                                           ;	.line	14; "cylon.c"	const unsigned char cylon_bits[] = {
+0002ac   1683     bsf	0x3, 0x5             	BANKSEL	_cylon_cylon_bits_1_1
+0002ad   1303     bcf	0x3, 0x6             
+0002ae   01a7     clrf	0x27                	CLRF	(_cylon_cylon_bits_1_1 + 0)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002af   01a8     clrf	0x28                	CLRF	(_cylon_cylon_bits_1_1 + 1)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002b0   3002     movlw	0x2                	MOVLW	0x02
+0002b1   00a9     movwf	0x29               	MOVWF	(_cylon_cylon_bits_1_1 + 2)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002b2   01aa     clrf	0x2a                	CLRF	(_cylon_cylon_bits_1_1 + 3)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002b3   3003     movlw	0x3                	MOVLW	0x03
+0002b4   00ab     movwf	0x2b               	MOVWF	(_cylon_cylon_bits_1_1 + 4)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002b5   01ac     clrf	0x2c                	CLRF	(_cylon_cylon_bits_1_1 + 5)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002b6   3001     movlw	0x1                	MOVLW	0x01
+0002b7   00ad     movwf	0x2d               	MOVWF	(_cylon_cylon_bits_1_1 + 6)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002b8   3080     movlw	0x80               	MOVLW	0x80
+0002b9   00ae     movwf	0x2e               	MOVWF	(_cylon_cylon_bits_1_1 + 7)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002ba   01af     clrf	0x2f                	CLRF	(_cylon_cylon_bits_1_1 + 8)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002bb   30c0     movlw	0xc0               	MOVLW	0xc0
+0002bc   00b0     movwf	0x30               	MOVWF	(_cylon_cylon_bits_1_1 + 9)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002bd   01b1     clrf	0x31                	CLRF	(_cylon_cylon_bits_1_1 + 10)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002be   3070     movlw	0x70               	MOVLW	0x70
+0002bf   00b2     movwf	0x32               	MOVWF	(_cylon_cylon_bits_1_1 + 11)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002c0   01b3     clrf	0x33                	CLRF	(_cylon_cylon_bits_1_1 + 12)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002c1   3038     movlw	0x38               	MOVLW	0x38
+0002c2   00b4     movwf	0x34               	MOVWF	(_cylon_cylon_bits_1_1 + 13)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002c3   3008     movlw	0x8                	MOVLW	0x08
+0002c4   00b5     movwf	0x35               	MOVWF	(_cylon_cylon_bits_1_1 + 14)
+0002c5   00b6     movwf	0x36               	MOVWF	(_cylon_cylon_bits_1_1 + 15)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002c6   300c     movlw	0xc                	MOVLW	0x0c
+0002c7   00b7     movwf	0x37               	MOVWF	(_cylon_cylon_bits_1_1 + 16)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002c8   01b8     clrf	0x38                	CLRF	(_cylon_cylon_bits_1_1 + 17)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002c9   3004     movlw	0x4                	MOVLW	0x04
+0002ca   00b9     movwf	0x39               	MOVWF	(_cylon_cylon_bits_1_1 + 18)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002cb   3001     movlw	0x1                	MOVLW	0x01
+0002cc   00ba     movwf	0x3a               	MOVWF	(_cylon_cylon_bits_1_1 + 19)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002cd   01bb     clrf	0x3b                	CLRF	(_cylon_cylon_bits_1_1 + 20)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002ce   3001     movlw	0x1                	MOVLW	0x01
+0002cf   00bc     movwf	0x3c               	MOVWF	(_cylon_cylon_bits_1_1 + 21)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002d0   01bd     clrf	0x3d                	CLRF	(_cylon_cylon_bits_1_1 + 22)
+                                           ;/home/sdcc-builder/build/sdcc-build/orig/sdcc/src/pic/gen.c:5904: size=0/1, offset=0, AOP_TYPE(res)=8
+0002d1   01be     clrf	0x3e                	CLRF	(_cylon_cylon_bits_1_1 + 23)
+                                           ;	.line	32; "cylon.c"	if(cylon_style == 0) {
+0002d2   1683     bsf	0x3, 0x5             	BANKSEL	r0x1018
+0002d3   1303     bcf	0x3, 0x6             
+0002d4   0820     movf	0x20, w             	MOVF	r0x1018,W
+0002d5   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+0002d6   2b3f     goto	0x33f               	GOTO	_00121_DS_
+                                           ;	.line	36; "cylon.c"	for(i = 0; i < sizeof(cylon_bits); i=i+2) 
+0002d7   01a1     clrf	0x21                	CLRF	r0x1019
+                                           ;unsigned compare: left < lit(0x18=24), size=1
+                                           _00123_DS_
+0002d8   3018     movlw	0x18               	MOVLW	0x18
+0002d9   1683     bsf	0x3, 0x5             	BANKSEL	r0x1019
+0002da   1303     bcf	0x3, 0x6             
+0002db   0221     subwf	0x21, w            	SUBWF	r0x1019,W
+0002dc   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+0002dd   2b0a     goto	0x30a               	GOTO	_00126_DS_
+                                           ;genSkipc:3080: created from rifx:0x2260cc
+                                           ;	.line	38; "cylon.c"	PORTA = cylon_bits[i];
+0002de   0821     movf	0x21, w             	MOVF	r0x1019,W
+0002df   3ea7     addlw	0xa7               	ADDLW	(_cylon_cylon_bits_1_1 + 0)
+0002e0   00a2     movwf	0x22               	MOVWF	r0x101A
+0002e1   3000     movlw	0                  	MOVLW	high (_cylon_cylon_bits_1_1 + 0)
+0002e2   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+0002e3   3e01     addlw	0x1                	ADDLW	0x01
+0002e4   00a3     movwf	0x23               	MOVWF	r0x101B
+0002e5   0822     movf	0x22, w             	MOVF	r0x101A,W
+0002e6   0084     movwf	0x4                	MOVWF	FSR
+0002e7   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+0002e8   1823     btfsc	0x23, 0            	BTFSC	r0x101B,0
+0002e9   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+0002ea   0800     movf	0, w                	MOVF	INDF,W
+0002eb   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+0002ec   1303     bcf	0x3, 0x6             
+0002ed   0085     movwf	0x5                	MOVWF	_PORTA
+                                           ;	.line	39; "cylon.c"	PORTB = cylon_bits[i+1];
+0002ee   1683     bsf	0x3, 0x5             	BANKSEL	r0x1019
+0002ef   1303     bcf	0x3, 0x6             
+0002f0   0a21     incf	0x21, w             	INCF	r0x1019,W
+0002f1   00a2     movwf	0x22               	MOVWF	r0x101A
+0002f2   3ea7     addlw	0xa7               	ADDLW	(_cylon_cylon_bits_1_1 + 0)
+0002f3   00a2     movwf	0x22               	MOVWF	r0x101A
+0002f4   3000     movlw	0                  	MOVLW	high (_cylon_cylon_bits_1_1 + 0)
+0002f5   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+0002f6   3e01     addlw	0x1                	ADDLW	0x01
+0002f7   00a4     movwf	0x24               	MOVWF	r0x101C
+0002f8   0822     movf	0x22, w             	MOVF	r0x101A,W
+0002f9   0084     movwf	0x4                	MOVWF	FSR
+0002fa   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+0002fb   1824     btfsc	0x24, 0            	BTFSC	r0x101C,0
+0002fc   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+0002fd   0800     movf	0, w                	MOVF	INDF,W
+0002fe   1283     bcf	0x3, 0x5             	BANKSEL	_PORTB
+0002ff   1303     bcf	0x3, 0x6             
+000300   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	40; "cylon.c"	delay(CYLON_SCAN_DELAY);
+000301   3032     movlw	0x32               	MOVLW	0x32
+000302   118a     bcf	0xa, 0x3             	PAGESEL	_delay
+000303   253a     call	0x53a               	CALL	_delay
+000304   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	36; "cylon.c"	for(i = 0; i < sizeof(cylon_bits); i=i+2) 
+000305   1683     bsf	0x3, 0x5             	BANKSEL	r0x1019
+000306   1303     bcf	0x3, 0x6             
+000307   0aa1     incf	0x21, f             	INCF	r0x1019,F
+000308   0aa1     incf	0x21, f             	INCF	r0x1019,F
+000309   2ad8     goto	0x2d8               	GOTO	_00123_DS_
+                                           _00126_DS_
+                                           ;	.line	44; "cylon.c"	while (1)
+00030a   3016     movlw	0x16               	MOVLW	0x16
+00030b   1683     bsf	0x3, 0x5             	BANKSEL	r0x1019
+00030c   1303     bcf	0x3, 0x6             
+00030d   00a1     movwf	0x21               	MOVWF	r0x1019
+                                           _00108_DS_
+                                           ;	.line	46; "cylon.c"	PORTA = cylon_bits[i];
+00030e   1683     bsf	0x3, 0x5             	BANKSEL	r0x1019
+00030f   1303     bcf	0x3, 0x6             
+000310   0821     movf	0x21, w             	MOVF	r0x1019,W
+000311   3ea7     addlw	0xa7               	ADDLW	(_cylon_cylon_bits_1_1 + 0)
+000312   00a2     movwf	0x22               	MOVWF	r0x101A
+000313   3000     movlw	0                  	MOVLW	high (_cylon_cylon_bits_1_1 + 0)
+000314   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+000315   3e01     addlw	0x1                	ADDLW	0x01
+000316   00a4     movwf	0x24               	MOVWF	r0x101C
+000317   0822     movf	0x22, w             	MOVF	r0x101A,W
+000318   0084     movwf	0x4                	MOVWF	FSR
+000319   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+00031a   1824     btfsc	0x24, 0            	BTFSC	r0x101C,0
+00031b   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+00031c   0800     movf	0, w                	MOVF	INDF,W
+00031d   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+00031e   1303     bcf	0x3, 0x6             
+00031f   0085     movwf	0x5                	MOVWF	_PORTA
+                                           ;	.line	47; "cylon.c"	PORTB = cylon_bits[i+1];
+000320   1683     bsf	0x3, 0x5             	BANKSEL	r0x1019
+000321   1303     bcf	0x3, 0x6             
+000322   0a21     incf	0x21, w             	INCF	r0x1019,W
+000323   00a2     movwf	0x22               	MOVWF	r0x101A
+000324   3ea7     addlw	0xa7               	ADDLW	(_cylon_cylon_bits_1_1 + 0)
+000325   00a2     movwf	0x22               	MOVWF	r0x101A
+000326   3000     movlw	0                  	MOVLW	high (_cylon_cylon_bits_1_1 + 0)
+000327   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+000328   3e01     addlw	0x1                	ADDLW	0x01
+000329   00a5     movwf	0x25               	MOVWF	r0x101D
+00032a   0822     movf	0x22, w             	MOVF	r0x101A,W
+00032b   0084     movwf	0x4                	MOVWF	FSR
+00032c   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+00032d   1825     btfsc	0x25, 0            	BTFSC	r0x101D,0
+00032e   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+00032f   0800     movf	0, w                	MOVF	INDF,W
+000330   1283     bcf	0x3, 0x5             	BANKSEL	_PORTB
+000331   1303     bcf	0x3, 0x6             
+000332   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	48; "cylon.c"	delay(CYLON_SCAN_DELAY);
+000333   3032     movlw	0x32               	MOVLW	0x32
+000334   118a     bcf	0xa, 0x3             	PAGESEL	_delay
+000335   253a     call	0x53a               	CALL	_delay
+000336   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	49; "cylon.c"	if (i==0) break;
+000337   1683     bsf	0x3, 0x5             	BANKSEL	r0x1019
+000338   1303     bcf	0x3, 0x6             
+000339   0821     movf	0x21, w             	MOVF	r0x1019,W
+00033a   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+00033b   2bb1     goto	0x3b1               	GOTO	_00131_DS_
+                                           ;	.line	50; "cylon.c"	i=i-2;
+00033c   30fe     movlw	0xfe               	MOVLW	0xfe
+00033d   07a1     addwf	0x21, f            	ADDWF	r0x1019,F
+00033e   2b0e     goto	0x30e               	GOTO	_00108_DS_
+                                           _00121_DS_
+                                           ;	.line	53; "cylon.c"	} else if(cylon_style == 1) {
+00033f   1683     bsf	0x3, 0x5             	BANKSEL	r0x1018
+000340   1303     bcf	0x3, 0x6             
+000341   0820     movf	0x20, w             	MOVF	r0x1018,W
+000342   3a01     xorlw	0x1                	XORLW	0x01
+000343   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+000344   2b78     goto	0x378               	GOTO	_00118_DS_
+                                           ;	.line	57; "cylon.c"	for(i = 0; i < sizeof(cylon_bits); i+=2) 
+000345   01a1     clrf	0x21                	CLRF	r0x1019
+                                           ;unsigned compare: left < lit(0x18=24), size=1
+                                           _00127_DS_
+000346   3018     movlw	0x18               	MOVLW	0x18
+000347   1683     bsf	0x3, 0x5             	BANKSEL	r0x1019
+000348   1303     bcf	0x3, 0x6             
+000349   0221     subwf	0x21, w            	SUBWF	r0x1019,W
+00034a   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+00034b   2bb1     goto	0x3b1               	GOTO	_00131_DS_
+                                           ;genSkipc:3080: created from rifx:0x2260cc
+                                           ;	.line	59; "cylon.c"	PORTA = cylon_bits[i];
+00034c   0821     movf	0x21, w             	MOVF	r0x1019,W
+00034d   3ea7     addlw	0xa7               	ADDLW	(_cylon_cylon_bits_1_1 + 0)
+00034e   00a2     movwf	0x22               	MOVWF	r0x101A
+00034f   3000     movlw	0                  	MOVLW	high (_cylon_cylon_bits_1_1 + 0)
+000350   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+000351   3e01     addlw	0x1                	ADDLW	0x01
+000352   00a5     movwf	0x25               	MOVWF	r0x101D
+000353   0822     movf	0x22, w             	MOVF	r0x101A,W
+000354   0084     movwf	0x4                	MOVWF	FSR
+000355   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+000356   1825     btfsc	0x25, 0            	BTFSC	r0x101D,0
+000357   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+000358   0800     movf	0, w                	MOVF	INDF,W
+000359   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+00035a   1303     bcf	0x3, 0x6             
+00035b   0085     movwf	0x5                	MOVWF	_PORTA
+                                           ;	.line	60; "cylon.c"	PORTB = cylon_bits[i+1];
+00035c   1683     bsf	0x3, 0x5             	BANKSEL	r0x1019
+00035d   1303     bcf	0x3, 0x6             
+00035e   0a21     incf	0x21, w             	INCF	r0x1019,W
+00035f   00a2     movwf	0x22               	MOVWF	r0x101A
+000360   3ea7     addlw	0xa7               	ADDLW	(_cylon_cylon_bits_1_1 + 0)
+000361   00a2     movwf	0x22               	MOVWF	r0x101A
+000362   3000     movlw	0                  	MOVLW	high (_cylon_cylon_bits_1_1 + 0)
+000363   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+000364   3e01     addlw	0x1                	ADDLW	0x01
+000365   00a6     movwf	0x26               	MOVWF	r0x101E
+000366   0822     movf	0x22, w             	MOVF	r0x101A,W
+000367   0084     movwf	0x4                	MOVWF	FSR
+000368   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+000369   1826     btfsc	0x26, 0            	BTFSC	r0x101E,0
+00036a   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+00036b   0800     movf	0, w                	MOVF	INDF,W
+00036c   1283     bcf	0x3, 0x5             	BANKSEL	_PORTB
+00036d   1303     bcf	0x3, 0x6             
+00036e   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	61; "cylon.c"	delay(CYLON_SCAN_DELAY);
+00036f   3032     movlw	0x32               	MOVLW	0x32
+000370   118a     bcf	0xa, 0x3             	PAGESEL	_delay
+000371   253a     call	0x53a               	CALL	_delay
+000372   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	57; "cylon.c"	for(i = 0; i < sizeof(cylon_bits); i+=2) 
+000373   1683     bsf	0x3, 0x5             	BANKSEL	r0x1019
+000374   1303     bcf	0x3, 0x6             
+000375   0aa1     incf	0x21, f             	INCF	r0x1019,F
+000376   0aa1     incf	0x21, f             	INCF	r0x1019,F
+000377   2b46     goto	0x346               	GOTO	_00127_DS_
+                                           _00118_DS_
+                                           ;	.line	65; "cylon.c"	} else if(cylon_style == 2) {
+000378   1683     bsf	0x3, 0x5             	BANKSEL	r0x1018
+000379   1303     bcf	0x3, 0x6             
+00037a   0820     movf	0x20, w             	MOVF	r0x1018,W
+00037b   3a02     xorlw	0x2                	XORLW	0x02
+00037c   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+00037d   2bb1     goto	0x3b1               	GOTO	_00131_DS_
+                                           ;	.line	70; "cylon.c"	while (1)
+00037e   3016     movlw	0x16               	MOVLW	0x16
+00037f   00a0     movwf	0x20               	MOVWF	r0x1018
+                                           _00113_DS_
+                                           ;	.line	72; "cylon.c"	PORTA = cylon_bits[i];
+000380   1683     bsf	0x3, 0x5             	BANKSEL	r0x1018
+000381   1303     bcf	0x3, 0x6             
+000382   0820     movf	0x20, w             	MOVF	r0x1018,W
+000383   3ea7     addlw	0xa7               	ADDLW	(_cylon_cylon_bits_1_1 + 0)
+000384   00a1     movwf	0x21               	MOVWF	r0x1019
+000385   3000     movlw	0                  	MOVLW	high (_cylon_cylon_bits_1_1 + 0)
+000386   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+000387   3e01     addlw	0x1                	ADDLW	0x01
+000388   00a2     movwf	0x22               	MOVWF	r0x101A
+000389   0821     movf	0x21, w             	MOVF	r0x1019,W
+00038a   0084     movwf	0x4                	MOVWF	FSR
+00038b   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+00038c   1822     btfsc	0x22, 0            	BTFSC	r0x101A,0
+00038d   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+00038e   0800     movf	0, w                	MOVF	INDF,W
+00038f   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+000390   1303     bcf	0x3, 0x6             
+000391   0085     movwf	0x5                	MOVWF	_PORTA
+                                           ;	.line	73; "cylon.c"	PORTB = cylon_bits[i+1];
+000392   1683     bsf	0x3, 0x5             	BANKSEL	r0x1018
+000393   1303     bcf	0x3, 0x6             
+000394   0a20     incf	0x20, w             	INCF	r0x1018,W
+000395   00a1     movwf	0x21               	MOVWF	r0x1019
+000396   3ea7     addlw	0xa7               	ADDLW	(_cylon_cylon_bits_1_1 + 0)
+000397   00a1     movwf	0x21               	MOVWF	r0x1019
+000398   3000     movlw	0                  	MOVLW	high (_cylon_cylon_bits_1_1 + 0)
+000399   1803     btfsc	0x3, 0             	BTFSC	STATUS,0
+00039a   3e01     addlw	0x1                	ADDLW	0x01
+00039b   00a6     movwf	0x26               	MOVWF	r0x101E
+00039c   0821     movf	0x21, w             	MOVF	r0x1019,W
+00039d   0084     movwf	0x4                	MOVWF	FSR
+00039e   1383     bcf	0x3, 0x7             	BCF	STATUS,7
+00039f   1826     btfsc	0x26, 0            	BTFSC	r0x101E,0
+0003a0   1783     bsf	0x3, 0x7             	BSF	STATUS,7
+0003a1   0800     movf	0, w                	MOVF	INDF,W
+0003a2   1283     bcf	0x3, 0x5             	BANKSEL	_PORTB
+0003a3   1303     bcf	0x3, 0x6             
+0003a4   0086     movwf	0x6                	MOVWF	_PORTB
+                                           ;	.line	74; "cylon.c"	delay(CYLON_SCAN_DELAY);
+0003a5   3032     movlw	0x32               	MOVLW	0x32
+0003a6   118a     bcf	0xa, 0x3             	PAGESEL	_delay
+0003a7   253a     call	0x53a               	CALL	_delay
+0003a8   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	75; "cylon.c"	if (i==0) break;
+0003a9   1683     bsf	0x3, 0x5             	BANKSEL	r0x1018
+0003aa   1303     bcf	0x3, 0x6             
+0003ab   0820     movf	0x20, w             	MOVF	r0x1018,W
+0003ac   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+0003ad   2bb1     goto	0x3b1               	GOTO	_00131_DS_
+                                           ;	.line	76; "cylon.c"	i-=2;
+0003ae   30fe     movlw	0xfe               	MOVLW	0xfe
+0003af   07a0     addwf	0x20, f            	ADDWF	r0x1018,F
+0003b0   2b80     goto	0x380               	GOTO	_00113_DS_
+                                           _00131_DS_
+0003b1   0008     return                   	RETURN	
+                                           ; exit point of _cylon
+                                           
+                                           
+                                           ;	code size estimation:
+                                           ;	  205+   34 =   239 instructions (  546 byte)
+                                           
+                                           	end
+                                           ;--------------------------------------------------------
+                                           ; File Created by SDCC : free open source ANSI-C Compiler
+                                           ; Version 2.9.2 #5492 (Aug 17 2009) (MINGW32)
+                                           ; This file was generated Wed Sep 09 13:57:17 2009
+                                           ;--------------------------------------------------------
+                                           ; PIC port for the 14-bit core
+                                           ;--------------------------------------------------------
+                                           ;	.file	"interupt.c"
+                                           	list	p=16f648A
+                                           	radix dec
+                                           	include "p16f648A.inc"
+                                                   LIST
+                                           ; P16F648A.INC  Standard Header File, Version 1.00    Microchip Technology, Inc.
+                                                   NOLIST
+                                           ;--------------------------------------------------------
+                                           ; external declarations
+                                           ;--------------------------------------------------------
+                                           	extern	__divsint
+                                           	extern	_CCP1CON_bits
+                                           	extern	_CMCON_bits
+                                           	extern	_EECON1_bits
+                                           	extern	_INTCON_bits
+                                           	extern	_OPTION_REG_bits
+                                           	extern	_PCON_bits
+                                           	extern	_PIE1_bits
+                                           	extern	_PIR1_bits
+                                           	extern	_PORTA_bits
+                                           	extern	_PORTB_bits
+                                           	extern	_RCSTA_bits
+                                           	extern	_STATUS_bits
+                                           	extern	_T1CON_bits
+                                           	extern	_T2CON_bits
+                                           	extern	_TRISA_bits
+                                           	extern	_TRISB_bits
+                                           	extern	_TXSTA_bits
+                                           	extern	_VRCON_bits
+                                           	extern	_INDF
+                                           	extern	_TMR0
+                                           	extern	_PCL
+                                           	extern	_STATUS
+                                           	extern	_FSR
+                                           	extern	_PORTA
+                                           	extern	_PORTB
+                                           	extern	_PCLATH
+                                           	extern	_INTCON
+                                           	extern	_PIR1
+                                           	extern	_TMR1L
+                                           	extern	_TMR1H
+                                           	extern	_T1CON
+                                           	extern	_TMR2
+                                           	extern	_T2CON
+                                           	extern	_CCPR1L
+                                           	extern	_CCPR1H
+                                           	extern	_CCP1CON
+                                           	extern	_RCSTA
+                                           	extern	_TXREG
+                                           	extern	_RCREG
+                                           	extern	_CMCON
+                                           	extern	_OPTION_REG
+                                           	extern	_TRISA
+                                           	extern	_TRISB
+                                           	extern	_PIE1
+                                           	extern	_PCON
+                                           	extern	_PR2
+                                           	extern	_TXSTA
+                                           	extern	_SPBRG
+                                           	extern	_EEDATA
+                                           	extern	_EEADR
+                                           	extern	_EECON1
+                                           	extern	_EECON2
+                                           	extern	_VRCON
+                                           	extern	___sdcc_saved_fsr
+                                           
+                                           	extern PSAVE
+                                           	extern SSAVE
+                                           	extern WSAVE
+                                           	extern STK12
+                                           	extern STK11
+                                           	extern STK10
+                                           	extern STK09
+                                           	extern STK08
+                                           	extern STK07
+                                           	extern STK06
+                                           	extern STK05
+                                           	extern STK04
+                                           	extern STK03
+                                           	extern STK02
+                                           	extern STK01
+                                           	extern STK00
+                                           ;--------------------------------------------------------
+                                           ; global declarations
+                                           ;--------------------------------------------------------
+                                           	global	_delay
+                                           	global	_delay_us
+                                           	global	_init_hw
+                                           	global	_Msec
+                                           	global	_wlc
+                                           
+                                           ;--------------------------------------------------------
+                                           ; global definitions
+                                           ;--------------------------------------------------------
+                                           UD_interupt_0	udata
+                                           _Msec	res	1
+                                           
+                                           UD_interupt_1	udata
+                                           _wlc	res	1
+                                           
+                                           ;--------------------------------------------------------
+                                           ; absolute symbol definitions
+                                           ;--------------------------------------------------------
+                                           ;--------------------------------------------------------
+                                           ; compiler-defined variables
+                                           ;--------------------------------------------------------
+                                           UDL_interupt_0	udata
+                                           r0x1004	res	1
+                                           r0x1003	res	1
+                                           r0x1005	res	1
+                                           _delayus_variable	res	1
+                                           ;--------------------------------------------------------
+                                           ; initialized data
+                                           ;--------------------------------------------------------
+                                           ;--------------------------------------------------------
+                                           ; overlayable items in internal ram 
+                                           ;--------------------------------------------------------
+                                           ;	udata_ovr
+                                           ;--------------------------------------------------------
+                                           ; interrupt and initialization code
+                                           ;--------------------------------------------------------
+                                           c_interrupt	code	0x4
+                                           __sdcc_interrupt
+                                           ;***
+                                           ;  pBlock Stats: dbName = I
+                                           ;***
+                                           ;entry:  _isr	;Function start
+                                           ; 0 exit points
+                                           ;; Starting pCode block
+                                           _isr	;Function start
+                                           ; 0 exit points
+                                           ;	.line	85; "interupt.c"	static void isr(void) interrupt 0 { 
+000004   00f2     movwf	0x72               	MOVWF	WSAVE
+000005   0e03     swapf	0x3, w             	SWAPF	STATUS,W
+000006   0183     clrf	0x3                 	CLRF	STATUS
+000007   00f1     movwf	0x71               	MOVWF	SSAVE
+000008   080a     movf	0xa, w              	MOVF	PCLATH,W
+000009   018a     clrf	0xa                 	CLRF	PCLATH
+00000a   00f0     movwf	0x70               	MOVWF	PSAVE
+00000b   0804     movf	0x4, w              	MOVF	FSR,W
+00000c   1683     bsf	0x3, 0x5             	BANKSEL	___sdcc_saved_fsr
+00000d   1303     bcf	0x3, 0x6             
+00000e   00e4     movwf	0x64               	MOVWF	___sdcc_saved_fsr
+                                           ;	.line	86; "interupt.c"	T0IF = 0;               // Clear timer interrupt flag
+00000f   1283     bcf	0x3, 0x5             	BANKSEL	_INTCON_bits
+000010   1303     bcf	0x3, 0x6             
+000011   110b     bcf	0xb, 0x2             	BCF	_INTCON_bits,2
+                                           ;	.line	88; "interupt.c"	if (Msec >0) Msec--;
+000012   3000     movlw	0                  	MOVLW	0x00
+000013   1683     bsf	0x3, 0x5             	BANKSEL	_Msec
+000014   1303     bcf	0x3, 0x6             
+000015   0460     iorwf	0x60, w            	IORWF	_Msec,W
+000016   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+000017   03e0     decf	0x60, f             	DECF	_Msec,F
+000018   1683     bsf	0x3, 0x5             	BANKSEL	___sdcc_saved_fsr
+000019   1303     bcf	0x3, 0x6             
+00001a   0864     movf	0x64, w             	MOVF	___sdcc_saved_fsr,W
+00001b   0084     movwf	0x4                	MOVWF	FSR
+00001c   0870     movf	0x70, w             	MOVF	PSAVE,W
+00001d   008a     movwf	0xa                	MOVWF	PCLATH
+00001e   0183     clrf	0x3                 	CLRF	STATUS
+00001f   0e71     swapf	0x71, w            	SWAPF	SSAVE,W
+000020   0083     movwf	0x3                	MOVWF	STATUS
+000021   0ef2     swapf	0x72, f            	SWAPF	WSAVE,F
+000022   0e72     swapf	0x72, w            	SWAPF	WSAVE,W
+                                           END_OF_INTERRUPT
+000023   0009     retfie                   	RETFIE	
+                                           
+                                           ;--------------------------------------------------------
+                                           ; code
+                                           ;--------------------------------------------------------
+                                           code_interupt	code
+                                           ;***
+                                           ;  pBlock Stats: dbName = C
+                                           ;***
+                                           ;entry:  _delay	;Function start
+                                           ; 2 exit points
+                                           ;has an exit
+                                           ;functions called:
+                                           ;   _delay_us
+                                           ;   _delay_us
+                                           ;2 compiler assigned registers:
+                                           ;   r0x1005
+                                           ;   STK00
+                                           ;; Starting pCode block
+                                           _delay	;Function start
+                                           ; 2 exit points
+                                           ;	.line	127; "interupt.c"	void delay(unsigned char ms)
+00053a   1683     bsf	0x3, 0x5             	BANKSEL	r0x1005
+00053b   1303     bcf	0x3, 0x6             
+00053c   00d8     movwf	0x58               	MOVWF	r0x1005
+                                           _00120_DS_
+                                           ;	.line	130; "interupt.c"	while (ms>0) 
+00053d   3000     movlw	0                  	MOVLW	0x00
+00053e   1683     bsf	0x3, 0x5             	BANKSEL	r0x1005
+00053f   1303     bcf	0x3, 0x6             
+000540   0458     iorwf	0x58, w            	IORWF	r0x1005,W
+000541   1903     btfsc	0x3, 0x2           	BTFSC	STATUS,2
+000542   2d4b     goto	0x54b               	GOTO	_00123_DS_
+                                           ;	.line	132; "interupt.c"	delay_us(1000);
+000543   30e8     movlw	0xe8               	MOVLW	0xe8
+000544   00ff     movwf	0x7f               	MOVWF	STK00
+000545   3003     movlw	0x3                	MOVLW	0x03
+000546   254c     call	0x54c               	CALL	_delay_us
+                                           ;	.line	133; "interupt.c"	ms--;
+000547   1683     bsf	0x3, 0x5             	BANKSEL	r0x1005
+000548   1303     bcf	0x3, 0x6             
+000549   03d8     decf	0x58, f             	DECF	r0x1005,F
+00054a   2d3d     goto	0x53d               	GOTO	_00120_DS_
+                                           _00123_DS_
+00054b   0008     return                   	RETURN	
+                                           ; exit point of _delay
+                                           
+                                           ;***
+                                           ;  pBlock Stats: dbName = C
+                                           ;***
+                                           ;entry:  _delay_us	;Function start
+                                           ; 2 exit points
+                                           ;has an exit
+                                           ;functions called:
+                                           ;   __divsint
+                                           ;   __divsint
+                                           ;5 compiler assigned registers:
+                                           ;   r0x1003
+                                           ;   STK00
+                                           ;   r0x1004
+                                           ;   STK02
+                                           ;   STK01
+                                           ;; Starting pCode block
+                                           _delay_us	;Function start
+                                           ; 2 exit points
+                                           ;	.line	112; "interupt.c"	void delay_us(int us)
+00054c   1683     bsf	0x3, 0x5             	BANKSEL	r0x1003
+00054d   1303     bcf	0x3, 0x6             
+00054e   00d7     movwf	0x57               	MOVWF	r0x1003
+00054f   087f     movf	0x7f, w             	MOVF	STK00,W
+000550   00d6     movwf	0x56               	MOVWF	r0x1004
+                                           ;	.line	114; "interupt.c"	delayus_variable=(unsigned char)(us/4); \
+000551   3004     movlw	0x4                	MOVLW	0x04
+000552   00fd     movwf	0x7d               	MOVWF	STK02
+000553   3000     movlw	0                  	MOVLW	0x00
+000554   00fe     movwf	0x7e               	MOVWF	STK01
+000555   0856     movf	0x56, w             	MOVF	r0x1004,W
+000556   00ff     movwf	0x7f               	MOVWF	STK00
+000557   0857     movf	0x57, w             	MOVF	r0x1003,W
+000558   118a     bcf	0xa, 0x3             	PAGESEL	__divsint
+000559   23b2     call	0x3b2               	CALL	__divsint
+00055a   118a     bcf	0xa, 0x3             	PAGESEL	$
+00055b   1683     bsf	0x3, 0x5             	BANKSEL	r0x1003
+00055c   1303     bcf	0x3, 0x6             
+00055d   00d7     movwf	0x57               	MOVWF	r0x1003
+00055e   087f     movf	0x7f, w             	MOVF	STK00,W
+00055f   00d6     movwf	0x56               	MOVWF	r0x1004
+000560   1683     bsf	0x3, 0x5             	BANKSEL	_delayus_variable
+000561   1303     bcf	0x3, 0x6             
+000562   00d9     movwf	0x59               	MOVWF	_delayus_variable
+                                           	;movlb (_delayus_variable) >> 8
+000563   1683     bsf	0x3, 0x5             	BANKSEL _delayus_variable
+000564   1303     bcf	0x3, 0x6             
+000565   0000     nop                      	nop
+                                           	;decfsz (_delayus_variable)&0ffh,f
+000566   0bd9     decfsz	0x59, f           	decfsz _delayus_variable,f
+000567   2d65     goto	0x565               	goto $ - 2
+                                           	
+000568   0008     return                   	RETURN	
+                                           ; exit point of _delay_us
+                                           
+                                           ;***
+                                           ;  pBlock Stats: dbName = C
+                                           ;***
+                                           ;entry:  _init_hw	;Function start
+                                           ; 2 exit points
+                                           ;has an exit
+                                           ;; Starting pCode block
+                                           _init_hw	;Function start
+                                           ; 2 exit points
+                                           ;	.line	31; "interupt.c"	CMCON = 0x07;           /* disable comparators */
+000569   3007     movlw	0x7                	MOVLW	0x07
+00056a   1283     bcf	0x3, 0x5             	BANKSEL	_CMCON
+00056b   1303     bcf	0x3, 0x6             
+00056c   009f     movwf	0x1f               	MOVWF	_CMCON
+                                           ;	.line	32; "interupt.c"	T0CS = 1;               /* clear to enable timer mode */
+00056d   1683     bsf	0x3, 0x5             	BANKSEL	_OPTION_REG_bits
+00056e   1303     bcf	0x3, 0x6             
+00056f   1681     bsf	0x1, 0x5             	BSF	_OPTION_REG_bits,5
+                                           ;	.line	33; "interupt.c"	PSA = 1;                /* clear to assign prescaller to TMRO */
+000570   1581     bsf	0x1, 0x3             	BSF	_OPTION_REG_bits,3
+                                           ;	.line	57; "interupt.c"	PS2 = 0;                /* 011 @ 4Mhz = 1.638 mS */
+000571   1101     bcf	0x1, 0x2             	BCF	_OPTION_REG_bits,2
+                                           ;	.line	58; "interupt.c"	PS1 = 0;  
+000572   1081     bcf	0x1, 0x1             	BCF	_OPTION_REG_bits,1
+                                           ;	.line	59; "interupt.c"	PS0 = 0;  
+000573   1001     bcf	0x1, 0               	BCF	_OPTION_REG_bits,0
+                                           ;	.line	61; "interupt.c"	INTCON = 0;             /* clear interrupt flag bits */
+000574   1283     bcf	0x3, 0x5             	BANKSEL	_INTCON
+000575   1303     bcf	0x3, 0x6             
+000576   018b     clrf	0xb                 	CLRF	_INTCON
+                                           ;	.line	62; "interupt.c"	GIE = 1;                /* global interrupt enable */
+000577   178b     bsf	0xb, 0x7             	BSF	_INTCON_bits,7
+                                           ;	.line	63; "interupt.c"	T0IE = 1;               /* TMR0 overflow interrupt enable */
+000578   168b     bsf	0xb, 0x5             	BSF	_INTCON_bits,5
+                                           ;	.line	65; "interupt.c"	TMR0 = 0;               /* clear the value in TMR0 */
+000579   0181     clrf	0x1                 	CLRF	_TMR0
+                                           ;	.line	67; "interupt.c"	SPBRG=SPBRG_VALUE;	// Baud Rate register, calculated by macro
+00057a   3019     movlw	0x19               	MOVLW	0x19
+00057b   1683     bsf	0x3, 0x5             	BANKSEL	_SPBRG
+00057c   1303     bcf	0x3, 0x6             
+00057d   0099     movwf	0x19               	MOVWF	_SPBRG
+                                           ;	.line	68; "interupt.c"	BRGH=BAUD_HI;
+00057e   1518     bsf	0x18, 0x2            	BSF	_TXSTA_bits,2
+                                           ;	.line	70; "interupt.c"	SYNC=0;			// Disable Synchronous/Enable Asynchronous
+00057f   1218     bcf	0x18, 0x4            	BCF	_TXSTA_bits,4
+                                           ;	.line	71; "interupt.c"	SPEN=1;			// Enable serial port
+000580   1283     bcf	0x3, 0x5             	BANKSEL	_RCSTA_bits
+000581   1303     bcf	0x3, 0x6             
+000582   1798     bsf	0x18, 0x7            	BSF	_RCSTA_bits,7
+                                           ;	.line	72; "interupt.c"	TXEN=1;			// Enable transmission mode
+000583   1683     bsf	0x3, 0x5             	BANKSEL	_TXSTA_bits
+000584   1303     bcf	0x3, 0x6             
+000585   1698     bsf	0x18, 0x5            	BSF	_TXSTA_bits,5
+                                           ;	.line	73; "interupt.c"	CREN=1;			// Enable reception mode
+000586   1283     bcf	0x3, 0x5             	BANKSEL	_RCSTA_bits
+000587   1303     bcf	0x3, 0x6             
+000588   1618     bsf	0x18, 0x4            	BSF	_RCSTA_bits,4
+                                           ;	.line	75; "interupt.c"	TRISA= 0x00; 			// all outputs		
+000589   1683     bsf	0x3, 0x5             	BANKSEL	_TRISA
+00058a   1303     bcf	0x3, 0x6             
+00058b   0185     clrf	0x5                 	CLRF	_TRISA
+                                           ;	.line	76; "interupt.c"	TRISB= 0x00; 			// all outputs		
+00058c   0186     clrf	0x6                 	CLRF	_TRISB
+                                           ;	.line	77; "interupt.c"	TRISB|=RX_BIT;	// These need to be 1 for USART to work
+00058d   1486     bsf	0x6, 0x1             	BSF	_TRISB,1
+                                           ;	.line	79; "interupt.c"	PORTA=0;
+00058e   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+00058f   1303     bcf	0x3, 0x6             
+000590   0185     clrf	0x5                 	CLRF	_PORTA
+                                           ;	.line	80; "interupt.c"	PORTB=0;
+000591   0186     clrf	0x6                 	CLRF	_PORTB
+000592   0008     return                   	RETURN	
+                                           ; exit point of _init_hw
+                                           
+                                           
+                                           ;	code size estimation:
+                                           ;	   76+   21 =    97 instructions (  236 byte)
+                                           
+                                           	end
+                                           ;--------------------------------------------------------
+                                           ; File Created by SDCC : free open source ANSI-C Compiler
+                                           ; Version 2.9.2 #5492 (Aug 17 2009) (MINGW32)
+                                           ; This file was generated Wed Sep 09 09:56:28 2009
+                                           ;--------------------------------------------------------
+                                           ; PIC port for the 14-bit core
+                                           ;--------------------------------------------------------
+                                           ;	.file	"sound.c"
+                                           	list	p=16f648A
+                                           	radix dec
+                                           	include "p16f648A.inc"
+                                                   LIST
+                                           ; P16F648A.INC  Standard Header File, Version 1.00    Microchip Technology, Inc.
+                                                   NOLIST
+                                           ;--------------------------------------------------------
+                                           ; external declarations
+                                           ;--------------------------------------------------------
+                                           	extern	_init_hw
+                                           	extern	_delay_us
+                                           	extern	_delay
+                                           	extern	__mulint
+                                           	extern	__divsint
+                                           	extern	_CCP1CON_bits
+                                           	extern	_CMCON_bits
+                                           	extern	_EECON1_bits
+                                           	extern	_INTCON_bits
+                                           	extern	_OPTION_REG_bits
+                                           	extern	_PCON_bits
+                                           	extern	_PIE1_bits
+                                           	extern	_PIR1_bits
+                                           	extern	_PORTA_bits
+                                           	extern	_PORTB_bits
+                                           	extern	_RCSTA_bits
+                                           	extern	_STATUS_bits
+                                           	extern	_T1CON_bits
+                                           	extern	_T2CON_bits
+                                           	extern	_TRISA_bits
+                                           	extern	_TRISB_bits
+                                           	extern	_TXSTA_bits
+                                           	extern	_VRCON_bits
+                                           	extern	_wlc
+                                           	extern	_INDF
+                                           	extern	_TMR0
+                                           	extern	_PCL
+                                           	extern	_STATUS
+                                           	extern	_FSR
+                                           	extern	_PORTA
+                                           	extern	_PORTB
+                                           	extern	_PCLATH
+                                           	extern	_INTCON
+                                           	extern	_PIR1
+                                           	extern	_TMR1L
+                                           	extern	_TMR1H
+                                           	extern	_T1CON
+                                           	extern	_TMR2
+                                           	extern	_T2CON
+                                           	extern	_CCPR1L
+                                           	extern	_CCPR1H
+                                           	extern	_CCP1CON
+                                           	extern	_RCSTA
+                                           	extern	_TXREG
+                                           	extern	_RCREG
+                                           	extern	_CMCON
+                                           	extern	_OPTION_REG
+                                           	extern	_TRISA
+                                           	extern	_TRISB
+                                           	extern	_PIE1
+                                           	extern	_PCON
+                                           	extern	_PR2
+                                           	extern	_TXSTA
+                                           	extern	_SPBRG
+                                           	extern	_EEDATA
+                                           	extern	_EEADR
+                                           	extern	_EECON1
+                                           	extern	_EECON2
+                                           	extern	_VRCON
+                                           
+                                           	extern PSAVE
+                                           	extern SSAVE
+                                           	extern WSAVE
+                                           	extern STK12
+                                           	extern STK11
+                                           	extern STK10
+                                           	extern STK09
+                                           	extern STK08
+                                           	extern STK07
+                                           	extern STK06
+                                           	extern STK05
+                                           	extern STK04
+                                           	extern STK03
+                                           	extern STK02
+                                           	extern STK01
+                                           	extern STK00
+                                           ;--------------------------------------------------------
+                                           ; global declarations
+                                           ;--------------------------------------------------------
+                                           	global	_play_tone
+                                           	global	_s_mask
+                                           	global	_s_bytes
+                                           	global	_s_bytes_
+                                           	global	_c_byte
+                                           
+                                           ;--------------------------------------------------------
+                                           ; global definitions
+                                           ;--------------------------------------------------------
+                                           UD_sound_0	udata
+                                           _s_mask	res	1
+                                           
+                                           UD_sound_1	udata
+                                           _s_bytes	res	3
+                                           
+                                           UD_sound_2	udata
+                                           _s_bytes_	res	3
+                                           
+                                           UD_sound_3	udata
+                                           _c_byte	res	1
+                                           
+                                           ;--------------------------------------------------------
+                                           ; absolute symbol definitions
+                                           ;--------------------------------------------------------
+                                           ;--------------------------------------------------------
+                                           ; compiler-defined variables
+                                           ;--------------------------------------------------------
+                                           UDL_sound_0	udata
+                                           r0x1001	res	1
+                                           r0x1000	res	1
+                                           r0x1003	res	1
+                                           r0x1002	res	1
+                                           r0x1004	res	1
+                                           ;--------------------------------------------------------
+                                           ; initialized data
+                                           ;--------------------------------------------------------
+                                           ;--------------------------------------------------------
+                                           ; overlayable items in internal ram 
+                                           ;--------------------------------------------------------
+                                           ;	udata_ovr
+                                           ;--------------------------------------------------------
+                                           ; code
+                                           ;--------------------------------------------------------
+                                           code_sound	code
+                                           ;***
+                                           ;  pBlock Stats: dbName = C
+                                           ;***
+                                           ;entry:  _play_tone	;Function start
+                                           ; 2 exit points
+                                           ;has an exit
+                                           ;functions called:
+                                           ;   __mulint
+                                           ;   __divsint
+                                           ;   __divsint
+                                           ;   _delay_us
+                                           ;   _delay_us
+                                           ;   __mulint
+                                           ;   __divsint
+                                           ;   __divsint
+                                           ;   _delay_us
+                                           ;   _delay_us
+                                           ;9 compiler assigned registers:
+                                           ;   r0x1000
+                                           ;   STK00
+                                           ;   r0x1001
+                                           ;   STK01
+                                           ;   r0x1002
+                                           ;   STK02
+                                           ;   r0x1003
+                                           ;   r0x1004
+                                           ;   r0x1005
+                                           ;; Starting pCode block
+                                           _play_tone	;Function start
+                                           ; 2 exit points
+                                           ;	.line	67; "sound.c"	void play_tone(int delay, int duration) {
+0004dc   1683     bsf	0x3, 0x5             	BANKSEL	r0x1000
+0004dd   1303     bcf	0x3, 0x6             
+0004de   00d2     movwf	0x52               	MOVWF	r0x1000
+0004df   087f     movf	0x7f, w             	MOVF	STK00,W
+0004e0   00d1     movwf	0x51               	MOVWF	r0x1001
+0004e1   087e     movf	0x7e, w             	MOVF	STK01,W
+0004e2   00d4     movwf	0x54               	MOVWF	r0x1002
+0004e3   087d     movf	0x7d, w             	MOVF	STK02,W
+                                           ;	.line	77; "sound.c"	int tmp = 100 * duration;
+0004e4   00d3     movwf	0x53               	MOVWF	r0x1003
+0004e5   00fd     movwf	0x7d               	MOVWF	STK02
+0004e6   0854     movf	0x54, w             	MOVF	r0x1002,W
+0004e7   00fe     movwf	0x7e               	MOVWF	STK01
+0004e8   3064     movlw	0x64               	MOVLW	0x64
+0004e9   00ff     movwf	0x7f               	MOVWF	STK00
+0004ea   3000     movlw	0                  	MOVLW	0x00
+0004eb   118a     bcf	0xa, 0x3             	PAGESEL	__mulint
+0004ec   25e2     call	0x5e2               	CALL	__mulint
+0004ed   118a     bcf	0xa, 0x3             	PAGESEL	$
+0004ee   1683     bsf	0x3, 0x5             	BANKSEL	r0x1002
+0004ef   1303     bcf	0x3, 0x6             
+0004f0   00d4     movwf	0x54               	MOVWF	r0x1002
+0004f1   087f     movf	0x7f, w             	MOVF	STK00,W
+0004f2   00d3     movwf	0x53               	MOVWF	r0x1003
+                                           ;	.line	78; "sound.c"	int delaysm = delay / 50;
+0004f3   3032     movlw	0x32               	MOVLW	0x32
+0004f4   00fd     movwf	0x7d               	MOVWF	STK02
+0004f5   3000     movlw	0                  	MOVLW	0x00
+0004f6   00fe     movwf	0x7e               	MOVWF	STK01
+0004f7   0851     movf	0x51, w             	MOVF	r0x1001,W
+0004f8   00ff     movwf	0x7f               	MOVWF	STK00
+0004f9   0852     movf	0x52, w             	MOVF	r0x1000,W
+0004fa   118a     bcf	0xa, 0x3             	PAGESEL	__divsint
+0004fb   23b2     call	0x3b2               	CALL	__divsint
+0004fc   118a     bcf	0xa, 0x3             	PAGESEL	$
+0004fd   1683     bsf	0x3, 0x5             	BANKSEL	r0x1004
+0004fe   1303     bcf	0x3, 0x6             
+0004ff   00d5     movwf	0x55               	MOVWF	r0x1004
+000500   087f     movf	0x7f, w             	MOVF	STK00,W
+                                           ;;1	MOVWF	r0x1005
+                                           ;	.line	79; "sound.c"	int cycles = tmp / delaysm;
+000501   00fd     movwf	0x7d               	MOVWF	STK02
+000502   0855     movf	0x55, w             	MOVF	r0x1004,W
+000503   00fe     movwf	0x7e               	MOVWF	STK01
+000504   0853     movf	0x53, w             	MOVF	r0x1003,W
+000505   00ff     movwf	0x7f               	MOVWF	STK00
+000506   0854     movf	0x54, w             	MOVF	r0x1002,W
+000507   118a     bcf	0xa, 0x3             	PAGESEL	__divsint
+000508   23b2     call	0x3b2               	CALL	__divsint
+000509   118a     bcf	0xa, 0x3             	PAGESEL	$
+00050a   1683     bsf	0x3, 0x5             	BANKSEL	r0x1002
+00050b   1303     bcf	0x3, 0x6             
+00050c   00d4     movwf	0x54               	MOVWF	r0x1002
+00050d   087f     movf	0x7f, w             	MOVF	STK00,W
+00050e   00d3     movwf	0x53               	MOVWF	r0x1003
+                                           ;swapping arguments (AOP_TYPEs 1/2)
+                                           ;signed compare: left >= lit(0x1=1), size=2, mask=ffff
+                                           _00105_DS_
+                                           ;	.line	81; "sound.c"	while(cycles > 0) {
+00050f   1683     bsf	0x3, 0x5             	BANKSEL	r0x1002
+000510   1303     bcf	0x3, 0x6             
+000511   0854     movf	0x54, w             	MOVF	r0x1002,W
+000512   3e80     addlw	0x80               	ADDLW	0x80
+000513   3e80     addlw	0x80               	ADDLW	0x80
+000514   1d03     btfss	0x3, 0x2           	BTFSS	STATUS,2
+000515   2d18     goto	0x518               	GOTO	_00113_DS_
+000516   3001     movlw	0x1                	MOVLW	0x01
+000517   0253     subwf	0x53, w            	SUBWF	r0x1003,W
+                                           _00113_DS_
+000518   1c03     btfss	0x3, 0             	BTFSS	STATUS,0
+000519   2d39     goto	0x539               	GOTO	_00108_DS_
+                                           ;genSkipc:3080: created from rifx:0x2260cc
+                                           ;	.line	82; "sound.c"	PORTA ^= 0X10; 
+00051a   3010     movlw	0x10               	MOVLW	0x10
+00051b   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+00051c   1303     bcf	0x3, 0x6             
+00051d   0685     xorwf	0x5, f             	XORWF	_PORTA,F
+                                           ;	.line	83; "sound.c"	delay_us(delay);
+00051e   1683     bsf	0x3, 0x5             	BANKSEL	r0x1001
+00051f   1303     bcf	0x3, 0x6             
+000520   0851     movf	0x51, w             	MOVF	r0x1001,W
+000521   00ff     movwf	0x7f               	MOVWF	STK00
+000522   0852     movf	0x52, w             	MOVF	r0x1000,W
+000523   118a     bcf	0xa, 0x3             	PAGESEL	_delay_us
+000524   254c     call	0x54c               	CALL	_delay_us
+000525   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	84; "sound.c"	PORTA ^= 0X10; 
+000526   3010     movlw	0x10               	MOVLW	0x10
+000527   1283     bcf	0x3, 0x5             	BANKSEL	_PORTA
+000528   1303     bcf	0x3, 0x6             
+000529   0685     xorwf	0x5, f             	XORWF	_PORTA,F
+                                           ;	.line	85; "sound.c"	delay_us(delay);
+00052a   1683     bsf	0x3, 0x5             	BANKSEL	r0x1001
+00052b   1303     bcf	0x3, 0x6             
+00052c   0851     movf	0x51, w             	MOVF	r0x1001,W
+00052d   00ff     movwf	0x7f               	MOVWF	STK00
+00052e   0852     movf	0x52, w             	MOVF	r0x1000,W
+00052f   118a     bcf	0xa, 0x3             	PAGESEL	_delay_us
+000530   254c     call	0x54c               	CALL	_delay_us
+000531   118a     bcf	0xa, 0x3             	PAGESEL	$
+                                           ;	.line	86; "sound.c"	cycles--;
+000532   30ff     movlw	0xff               	MOVLW	0xff
+000533   1683     bsf	0x3, 0x5             	BANKSEL	r0x1003
+000534   1303     bcf	0x3, 0x6             
+000535   07d3     addwf	0x53, f            	ADDWF	r0x1003,F
+000536   1c03     btfss	0x3, 0             	BTFSS	STATUS,0
+000537   03d4     decf	0x54, f             	DECF	r0x1002,F
+000538   2d0f     goto	0x50f               	GOTO	_00105_DS_
+                                           _00108_DS_
+000539   0008     return                   	RETURN	
+                                           ; exit point of _play_tone
+                                           
+                                           
+                                           ;	code size estimation:
+                                           ;	   64+   20 =    84 instructions (  208 byte)
+                                           
+                                           	end

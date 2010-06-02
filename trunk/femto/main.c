@@ -15,7 +15,7 @@
 #define BR115200			7 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
 
-// ($Rev$)
+// ($Rev: 147 $)
 
 //defined adc.c
 extern void Acc_init(void);
@@ -25,8 +25,9 @@ extern int 	sDcnt;
 extern void sample_sound(int);
 
 //defined femto.c
-void printint(int);
-void printline(char *c);
+extern void femto(void);
+extern void printint(int);
+extern void printline(char *c);
 
 //defined battery.c
 extern BYTE F_PS_PLUGGED;
@@ -57,11 +58,6 @@ void putByte (BYTE b)
 	UDR1 = b;
 }
 
-void putch(char c)
-{
-	putByte(c);
-}
-
 //------------------------------------------------------------------------------
 // UART1 Transmit  Routine
 //------------------------------------------------------------------------------
@@ -70,21 +66,6 @@ void putWck (BYTE b)
 {
 	while ( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
 	UDR0 = b;
-}
-
-//------------------------------------------------------------------------------
-// UART0 wCK Receive Interrupt Routine
-//------------------------------------------------------------------------------
-ISR(USART0_RX_vect) // interrupt [USART0_RXC] void usart0_rx_isr(void)
-{
-	RUN_LED1_OFF;
-	
-    char	data;	
-	data = UDR0;		// get the data
-	
-	while ( (UCSR1A & DATA_REGISTER_EMPTY) == 0 );
-	UDR1 = data;
-	return;
 }
 
 
@@ -98,123 +79,6 @@ extern void     lights(int n);
 extern void     Get_AD_MIC(void);
 
 void SendToSoundIC(BYTE cmd) ;
-
-ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
-{
-	if (CHK_BIT5(PORTA))  RUN_LED1_ON; else RUN_LED1_OFF; 
-
-    gRxData = UDR1;
-	
-	while( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
-	UDR0 = gRxData;
-		
-	if(gRxData == 0xff){
-		gRx1_DStep = 1;
-		gFileCheckSum = 0;
-		return;
-	}
-	// check for FF 101 11110   (read Position Servo 30)
-	switch(gRx1_DStep){
-		case 1:
-			if(gRxData == 0xBE) 
-			{
-				gRx1_DStep = 2;
-			}
-			else 
-				gRx1_DStep = 0;
-			gFileCheckSum ^= gRxData;
-			break;
-		case 2:
-			gCMD = gRxData;
-			gRx1_DStep = 3;
-			gFileCheckSum ^= gRxData;
-			break;
-		case 3:
-			if(gRxData == (gFileCheckSum & 0x7f))
-			{
-				// Depends on gGMD		
-				BYTE b1=0, b2=0;
-				
-				if (gCMD>0x40 && gCMD<(0x40+26))
-				{
-					SendToSoundIC(gCMD-0x40);
-				}
-				switch (gCMD)
-				{
-				case 0x01:  
-					tilt_read();
-					b1 = y_value;
-					b2 = z_value;
-					break;
-				case 0x02:
-					tilt_read();
-					b1 = x_value;
-					b2 = z_value;	
-					break;
-				case 0x03:
-					PSD_on();
-					break;
-				case 0x04:
-					PSD_off();
-					break;
-				case 0x05:
-					Get_AD_PSD();
-					b1 = gDistance;
-					break;
-				case 0x06:
-					Get_VOLTAGE();
-					b1 = gVOLTAGE/256;
-					b2 = gVOLTAGE%256;
-					break;
-				case 0x07:
-					b1 = irGetByte();
-					break;					
-				case 0x08:
-					sample_sound(1); // on 
-					break;
-				case 0x09:
-					sample_sound(0); // on 
-					break;					
-				case 0x0A:
-					{
-					WORD t=0;
-					int lc;
-					for (lc=0; lc<SDATASZ; lc++) 
-					{
-						lights(sData[lc]);
-						t += sData[lc];  // sum the buffer
-						sData[lc]=0;     // and clear
-					}
-					b1=t/256;
-					b2=t%256;
-					}
-					break;					
-				case 0x0B:
-					b1 = gSEC;
-					b2 = gMIN;
-					break;	
-				case 0x0C:
-					Get_AD_MIC();
-					b1 = gSoundLevel;
-					lights(b1);
-					break;	
-				}				
-				putByte(b1);
-				putByte(b2);
-				gCMD=0;
-			}
-			else
-			{
-				putByte(gFileCheckSum);
-				putByte(gRxData);
-				gCMD=0;
-			}
-			gRx1_DStep = 0;
-			break;
-	}
-	return;
-}
-
 
 //------------------------------------------------------------------------------
 // Initialise Ports
@@ -484,13 +348,6 @@ void ProcButton(void)
 			PWR_LED2_ON	;	
 		}
 	}
-	
-	if(gBtn_val == PF2_BTN_PRESSED)
-	{
-		//look to see if PF1 held down
-		gBtn_val = 0;
-		//femto(); 	// removed - separate firmware
-	}
 }
 
 //------------------------------------------------------------------------------
@@ -523,61 +380,16 @@ void sound_init()
 	P_BMC504_RESET(1);
 }
 
-//------------------------------------------------------------------------------
-// output routines
-//------------------------------------------------------------------------------
-
-void printstr(char *c)
-{
-	char ch;
-	while ((ch=*c++) != 0) putch(ch);
-}
-
-void printline(char *c)
-{
-	printstr(c);
-	putch(13);
-	putch(10);
-}
-
-void printnumber(int n, int w, char pad) 
-{
-	char tb[10];
-	char *cp=tb;
-	int n1 = (n<0)?-n:n;
-	while (n1>9)
-	{
-		*cp++ = '0' + (n1%10);
-		n1 = n1/10;
-		w--;
-	}
-	*cp++ = '0' + (n1%10);
-	w--;
-	if (n<0) *cp++ = '-';
-	while (w-- > 0) *cp++ = pad;
-	while (cp>tb)
-	{
-		cp--;
-		putch(*cp);
-	}
-}
-
-void printint(int n) 
-{
-	printnumber(n, 0, '\0');
-}
-
 
 //------------------------------------------------------------------------------
 // Main Routine
+// Version $Rev$
 //------------------------------------------------------------------------------
 	
 int main(void) 
 {
 	HW_init();					// Initialise ATMega Ports
-	SW_init();					// Initialise software states
-	
-
+	SW_init();					// Initialise software states	
 			
 	sei();						// enable interrupts	
 	TIMSK |= 0x01;		
@@ -593,25 +405,7 @@ int main(void)
 	ReadButton();	
 	ProcButton();
 	
-	//otherwise DC mode!
-	//default sampling ON
+	//otherwise femto!
 	
-	TIMSK &= 0xFE;
-	EIMSK &= 0xBF;
-	UCSR0B |= 0x80;
-	UCSR0B &= 0xBF;
-	
-	sample_sound(1);
-	RUN_LED2_OFF;
-	PF1_LED1_ON;    //DCmode
-	PF1_LED2_OFF;
-	PF2_LED_ON;
-	
-	gCMD=0;
-			
-	while (1) 
-	{
-		// do nothing
-	} 
-
+	femto();
 }

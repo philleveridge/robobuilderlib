@@ -1,0 +1,1480 @@
+Archive member included because of file (symbol)
+
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodqi4.o)
+                              basic.o (__udivmodqi4)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodhi4.o)
+                              main.o (__udivmodhi4)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o)
+                              experimental_mode.o (__divmodhi4)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodsi4.o)
+                              uart.o (__udivmodsi4)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o (exit)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
+                              main.o (__do_clear_bss)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o)
+                              motion.o (__fixunssfsi)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o)
+                              adc.o (__subsf3)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_mul_sf.o)
+                              motion.o (__mulsf3)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_div_sf.o)
+                              motion.o (__divsf3)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o)
+                              motion.o (__gtsf2)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_ge_sf.o)
+                              compatability.o (__gesf2)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_lt_sf.o)
+                              motion.o (__ltsf2)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o)
+                              motion.o (__floatsisf)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
+                              motion.o (__fixsfsi)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o) (__thenan_sf)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_usi_to_sf.o)
+                              motion.o (__floatunsisf)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o) (__prologue_saves__)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o) (__epilogue_restores__)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o) (__clzsi2)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_pack_sf.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o) (__pack_f)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_unpack_sf.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o) (__unpack_f)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fpcmp_parts_sf.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o) (__fpcmp_parts_f)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o) (__clz_tab)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(rand.o)
+                              experimental_mode.o (rand)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcat.o)
+                              basic.o (strcat)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcmp.o)
+                              basic.o (strcmp)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcpy.o)
+                              basic.o (strcpy)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strstr.o)
+                              basic.o (strstr)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eerd_block.o)
+                              basic.o (__eerd_block)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eerd_word.o)
+                              basic.o (__eerd_word)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eewr_block.o)
+                              basic.o (__eewr_block)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eewr_word.o)
+                              basic.o (__eewr_word)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(ceil.o)
+                              compatability.o (ceil)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(floor.o)
+                              compatability.o (floor)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_mintl.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(ceil.o) (__fp_mintl)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_mpack.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(ceil.o) (__fp_mpack)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_trunc.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(ceil.o) (__fp_trunc)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_zero.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(ceil.o) (__fp_szero)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_split3.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_trunc.o) (__fp_splitA)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_mulsi3.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(rand.o) (__mulsi3)
+c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodsi4.o)
+                              c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(rand.o) (__divmodsi4)
+
+Allocating common symbols
+Common symbol       size              file
+
+uartReadyTx         0x1               uart.o
+gRx0Buf             0x8               main.o
+F_PF                0x1               compatability.o
+F_PS_PLUGGED        0x1               charge_mode.o
+response            0x2               main.o
+gMIN                0x1               main.o
+ov_flag             0x2               charge_mode.o
+gIRAddr             0x1               ir.o
+params              0x14              main.o
+x_value             0x2               accelerometer.o
+gFieldIdx           0x2               compatability.o
+errno               0x2               basic.o
+F_SCENE_PLAYING     0x1               compatability.o
+gpFN_Table          0x2               motion.o
+F_IR_RECEIVED       0x1               compatability.o
+F_EEPROM_BUSY       0x1               compatability.o
+F_CHARGING          0x1               charge_mode.o
+gDownNumOfA         0x1               compatability.o
+y_value             0x2               accelerometer.o
+gY                  0x2               main.o
+gNumOfFrame         0x2               motion.o
+gpIg_Table          0x2               motion.o
+gTx0BufIdx          0x1               main.o
+gpE_Table           0x2               motion.o
+IRBit               0x1               ir.o
+buff                0x50              experimental_bin_mode.o
+gAccX               0x2               accelerometer.o
+gIrBuf              0x4               compatability.o
+uartRxBuffer        0x8               uart.o
+gHOUR               0x1               main.o
+F_ACTION_PLAYING    0x1               compatability.o
+gVOLTAGE            0x2               adc.o
+gRx1_DStep          0x2               compatability.o
+gZ                  0x2               main.o
+gAccY               0x2               accelerometer.o
+F_MOTION_STOPPED    0x1               compatability.o
+F_MIC_INPUT         0x1               compatability.o
+variable            0x34              basic.o
+F_ERR_CODE          0x1               compatability.o
+gPSD_val            0x1               adc.o
+gAccZ               0x2               accelerometer.o
+z_value             0x2               accelerometer.o
+gPSplugCount        0x2               charge_mode.o
+pulse_width         0x1               ir.o
+F_RSV_MOTION        0x1               compatability.o
+gRx1Step            0x2               compatability.o
+uartBufferedTx      0x1               uart.o
+gAD_val             0x1               adc.o
+gpPos_Table         0x2               motion.o
+gBtn_val            0x1               compatability.o
+g10MSEC             0x2               main.o
+gSEC                0x1               main.o
+gAD_Ch_Index        0x1               adc.o
+gPoseDelta          0x3e              compatability.o
+gMIC_val            0x1               adc.o
+gIRReady            0x1               ir.o
+gPF12BtnCnt         0x2               compatability.o
+gRx0Cnt             0x1               main.o
+F_RSV_BTN_READ      0x1               compatability.o
+gpT_Table           0x2               motion.o
+gpZero_Table        0x2               motion.o
+gSoundLevel         0x1               adc.o
+gSoundMinTh         0x1               compatability.o
+F_PF_CHANGED        0x1               compatability.o
+Motion              0xc6              motion.o
+bsize               0x2               experimental_bin_mode.o
+gScIdx              0x2               compatability.o
+gSEC_DCOUNT         0x2               main.o
+IRByte              0x1               ir.o
+gMSEC               0x2               main.o
+IRState             0x1               ir.o
+gUnitD              0x7c              motion.o
+gX                  0x2               main.o
+gTx0Buf             0xba              main.o
+autobalance         0x2               main.o
+gPwrLowCount        0x2               charge_mode.o
+gpPg_Table          0x2               motion.o
+gRx1Buf             0x14              compatability.o
+F_RSV_IR_READ       0x1               compatability.o
+gTx0Cnt             0x1               main.o
+F_RSV_PSD_READ      0x1               compatability.o
+uartTxBuffer        0x8               uart.o
+gNextMode           0x2               main.o
+gIRData             0x1               ir.o
+F_RSV_SOUND_READ    0x1               compatability.o
+gpRT_Table          0x2               motion.o
+gPF1BtnCnt          0x2               compatability.o
+gMIN_DCOUNT         0x2               main.o
+gFileCheckSum       0x1               compatability.o
+Scene               0xa1              motion.o
+gPSunplugCount      0x2               charge_mode.o
+gBtnCnt             0x2               main.o
+uartRxOverflow      0x2               uart.o
+gPF2BtnCnt          0x2               compatability.o
+IRTemp              0x4               ir.o
+F_PLAYING           0x1               main.o
+F_FIRST_M           0x1               compatability.o
+F_DIRECT_C_EN       0x1               compatability.o
+gRxData             0x1               compatability.o
+gpDg_Table          0x2               motion.o
+F_NEXTFRAME         0x1               main.o
+gDistance           0x1               adc.o
+gDownNumOfM         0x1               compatability.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x00000000         0x00020000         xr
+data             0x00800060         0x0000ffa0         rw !x
+eeprom           0x00810000         0x00010000         rw !x
+fuse             0x00820000         0x00000400         rw !x
+lock             0x00830000         0x00000400         rw !x
+signature        0x00840000         0x00000400         rw !x
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+Address of section .data set to 0x800100
+LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
+LOAD main.o
+LOAD uart.o
+LOAD buffer.o
+LOAD motion.o
+LOAD rprintf.o
+LOAD adc.o
+LOAD ir.o
+LOAD accelerometer.o
+LOAD idle_mode.o
+LOAD experimental_mode.o
+LOAD charge_mode.o
+LOAD serialslave_mode.o
+LOAD basic.o
+LOAD wck.o
+LOAD experimental_bin_mode.o
+LOAD compatability.o
+LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a
+LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a
+LOAD c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.text.*)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.text.*)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.rodata.*)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.rodata.*)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.data.*)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.data.*)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.text           0x00000000     0xded4
+ *(.vectors)
+ .vectors       0x00000000       0x8c c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
+                0x00000000                __vectors
+                0x00000000                __vector_default
+ *(.vectors)
+ *(.progmem.gcc*)
+ .progmem.gcc_sw_table
+                0x0000008c       0x4c basic.o
+ .progmem.gcc_sw_table
+                0x000000d8       0x62 compatability.o
+ *(.progmem*)
+ .progmem.data  0x0000013a       0x1b main.o
+                0x0000013a                version
+ .progmem.data  0x00000155     0x3323 motion.o
+                0x00002c0d                HANDSTANDS1_RuntimeDGain
+                0x000001c5                HunoBasic_PunchLeft_Port
+                0x00002f5d                HANDSTANDS1_Torque
+                0x000002b9                HunoBasic_PunchRight_Torque
+                0x000020e9                RSHOOT_RuntimeDGain
+                0x000003fd                HunoBasic_SidewalkLeft_Torque
+                0x000025c5                STANDUPR_RuntimeDGain
+                0x00002995                HUNODEMO_KICKLEFTFRONTTURN_TrTime
+                0x00000309                HunoBasic_PunchRight_Port
+                0x00000d99                HunoBasic_GetupFront_Position
+                0x000020d9                RSHOOT_RuntimePGain
+                0x00001bf9                HunoBasic_WalkBackward_IGain
+                0x00002361                RSIDEWALK_RuntimePGain
+                0x00000575                HunoBasic_SidewalkRight_Torque
+                0x00001699                HunoBasic_WalkBackward_Torque
+                0x00001f61                LSHOOT_RuntimePGain
+                0x000025e5                STANDUPR_Frames
+                0x00000393                HunoBasic_PunchRight_TrTime
+                0x00000d65                HunoBasic_GetupFront_IGain
+                0x00000225                HunoBasic_PunchLeft_DGain
+                0x00002321                LSIDEWALK_Port
+                0x0000039d                HunoBasic_PunchRight_Position
+                0x00002809                HUNODEMO_HI_RuntimePGain
+                0x000008c5                HunoBasic_TurnRight_Port
+                0x00001bd9                HunoBasic_WalkBackward_PGain
+                0x00002115                RSHOOT_TrTime
+                0x00002381                RSIDEWALK_RuntimeIGain
+                0x00002a7d                HUNODEMO_KICKLEFTFRONTTURN_Torque
+                0x00000b4d                HunoBasic_GetupBack_Frames
+                0x000026a9                STANDUPR_Port
+                0x00000b3d                HunoBasic_GetupBack_IGain
+                0x000023a1                RSIDEWALK_Position
+                0x00001f91                LSHOOT_Frames
+                0x00002839                HUNODEMO_HI_Frames
+                0x00000379                HunoBasic_PunchRight_IGain
+                0x00001f71                LSHOOT_RuntimeDGain
+                0x00000e39                HunoBasic_WalkForward_Torque
+                0x00001359                HunoBasic_WalkForward_IGain
+                0x000020f9                RSHOOT_RuntimeIGain
+                0x00002731                HUNODEMO_SITDOWN_TrTime
+                0x00000259                HunoBasic_PunchLeft_Position
+                0x000005d5                HunoBasic_SidewalkRight_Port
+                0x0000067d                HunoBasic_SidewalkRight_Position
+                0x00002019                LSHOOT_Torque
+                0x00002515                STANDUPF_Torque
+                0x00000655                HunoBasic_SidewalkRight_IGain
+                0x00002251                LSIDEWALK_RuntimePGain
+                0x00002c2d                HANDSTANDS1_Frames
+                0x000010b9                HunoBasic_WalkForward_Port
+                0x0000345d                wCK_IDs
+                0x00000175                HunoBasic_PunchLeft_Torque
+                0x00002481                STANDUPF_RuntimeDGain
+                0x00002399                RSIDEWALK_TrTime
+                0x000004ed                HunoBasic_SidewalkLeft_Frames
+                0x00001be9                HunoBasic_WalkBackward_DGain
+                0x00002719                HUNODEMO_SITDOWN_RuntimeIGain
+                0x00002b3d                HUNODEMO_KICKLEFTFRONTTURN_Port
+                0x000006ed                HunoBasic_TurnLeft_Torque
+                0x000025ef                STANDUPR_TrTime
+                0x00000359                HunoBasic_PunchRight_PGain
+                0x00002491                STANDUPF_RuntimeIGain
+                0x000028ad                HUNODEMO_HI_Torque
+                0x00002ccd                HANDSTANDS1_Position
+                0x00000b1d                HunoBasic_GetupBack_PGain
+                0x00000cb5                HunoBasic_GetupFront_Port
+                0x00002c1d                HANDSTANDS1_RuntimeIGain
+                0x00002709                HUNODEMO_SITDOWN_RuntimeDGain
+                0x000025d5                STANDUPR_RuntimeIGain
+                0x0000074d                HunoBasic_TurnLeft_Port
+                0x00001f9d                LSHOOT_TrTime
+                0x00002829                HUNODEMO_HI_RuntimeIGain
+                0x00000505                HunoBasic_SidewalkLeft_Position
+                0x000004dd                HunoBasic_SidewalkLeft_IGain
+                0x00001cb1                HunoBasic_WalkBackward_Position
+                0x00000389                HunoBasic_PunchRight_Frames
+                0x000004bd                HunoBasic_SidewalkLeft_PGain
+                0x00002819                HUNODEMO_HI_RuntimeDGain
+                0x000031dd                HANDSTANDS1_Port
+                0x00000645                HunoBasic_SidewalkRight_DGain
+                0x000013b9                HunoBasic_WalkForward_TrTime
+                0x000025f9                STANDUPR_Position
+                0x00000961                HunoBasic_TurnRight_TrTime
+                0x000027c9                HUNODEMO_SITDOWN_Port
+                0x00002659                STANDUPR_Torque
+                0x00002431                RSIDEWALK_Port
+                0x00000235                HunoBasic_PunchLeft_IGain
+                0x000007f5                HunoBasic_TurnLeft_Position
+                0x000024b5                STANDUPF_Position
+                0x00000865                HunoBasic_TurnRight_Torque
+                0x000028fd                HUNODEMO_HI_Port
+                0x00000665                HunoBasic_SidewalkRight_Frames
+                0x00001939                HunoBasic_WalkBackward_Port
+                0x00002281                LSIDEWALK_Frames
+                0x00002391                RSIDEWALK_Frames
+                0x00001f81                LSHOOT_RuntimeIGain
+                0x00000b61                HunoBasic_GetupBack_TrTime
+                0x0000296d                HUNODEMO_KICKLEFTFRONTTURN_RuntimeIGain
+                0x000007cd                HunoBasic_TurnLeft_IGain
+                0x000007ad                HunoBasic_TurnLeft_PGain
+                0x000004f9                HunoBasic_SidewalkLeft_TrTime
+                0x000021f1                RSHOOT_Port
+                0x0000297d                HUNODEMO_KICKLEFTFRONTTURN_Frames
+                0x0000295d                HUNODEMO_KICKLEFTFRONTTURN_RuntimeDGain
+                0x00002739                HUNODEMO_SITDOWN_Position
+                0x00000945                HunoBasic_TurnRight_IGain
+                0x00002471                STANDUPF_RuntimePGain
+                0x00000671                HunoBasic_SidewalkRight_TrTime
+                0x000004cd                HunoBasic_SidewalkLeft_DGain
+                0x00000d45                HunoBasic_GetupFront_PGain
+                0x0000284d                HUNODEMO_HI_Position
+                0x00002291                LSIDEWALK_Position
+                0x0000045d                HunoBasic_SidewalkLeft_Port
+                0x00002271                LSIDEWALK_RuntimeIGain
+                0x00000b2d                HunoBasic_GetupBack_DGain
+                0x00002289                LSIDEWALK_TrTime
+                0x000025b5                STANDUPR_RuntimePGain
+                0x00002121                RSHOOT_Position
+                0x00002c7d                HANDSTANDS1_TrTime
+                0x00001fa9                LSHOOT_Position
+                0x000029ad                HUNODEMO_KICKLEFTFRONTTURN_Position
+                0x00001369                HunoBasic_WalkForward_Frames
+                0x000024ab                STANDUPF_TrTime
+                0x00000b75                HunoBasic_GetupBack_Position
+                0x00002843                HUNODEMO_HI_TrTime
+                0x000022e1                LSIDEWALK_Torque
+                0x00000d55                HunoBasic_GetupFront_DGain
+                0x000024a1                STANDUPF_Frames
+                0x00000d87                HunoBasic_GetupFront_TrTime
+                0x000009dd                HunoBasic_GetupBack_Torque
+                0x00000a7d                HunoBasic_GetupBack_Port
+                0x00001349                HunoBasic_WalkForward_DGain
+                0x00002371                RSIDEWALK_RuntimeDGain
+                0x00002109                RSHOOT_Frames
+                0x00002789                HUNODEMO_SITDOWN_Torque
+                0x00000369                HunoBasic_PunchRight_DGain
+                0x00002bfd                HANDSTANDS1_RuntimePGain
+                0x00000c25                HunoBasic_GetupFront_Torque
+                0x00000215                HunoBasic_PunchLeft_PGain
+                0x0000294d                HUNODEMO_KICKLEFTFRONTTURN_RuntimePGain
+                0x00001409                HunoBasic_WalkForward_Position
+                0x00002565                STANDUPF_Port
+                0x00002261                LSIDEWALK_RuntimeDGain
+                0x000007dd                HunoBasic_TurnLeft_Frames
+                0x00002729                HUNODEMO_SITDOWN_Frames
+                0x00000955                HunoBasic_TurnRight_Frames
+                0x00001339                HunoBasic_WalkForward_PGain
+                0x000007e9                HunoBasic_TurnLeft_TrTime
+                0x00001c09                HunoBasic_WalkBackward_Frames
+                0x00000165                HunoBasicPose
+                0x00000d75                HunoBasic_GetupFront_Frames
+                0x000007bd                HunoBasic_TurnLeft_DGain
+                0x0000024f                HunoBasic_PunchLeft_TrTime
+                0x0000096d                HunoBasic_TurnRight_Position
+                0x00000155                MotionZeroPos
+                0x000026f9                HUNODEMO_SITDOWN_RuntimePGain
+                0x00001c5d                HunoBasic_WalkBackward_TrTime
+                0x00000635                HunoBasic_SidewalkRight_PGain
+                0x000023f1                RSIDEWALK_Torque
+                0x00002079                LSHOOT_Port
+                0x00002191                RSHOOT_Torque
+                0x00000935                HunoBasic_TurnRight_DGain
+                0x00000245                HunoBasic_PunchLeft_Frames
+                0x00000925                HunoBasic_TurnRight_PGain
+ .progmem.data  0x00003478       0x11 rprintf.o
+ .progmem.data  0x00003489       0x1f adc.o
+ .progmem.data  0x000034a8       0x1d accelerometer.o
+ .progmem.data  0x000034c5        0xc idle_mode.o
+ .progmem.data  0x000034d1      0x619 experimental_mode.o
+ .progmem.data  0x00003aea       0x9e charge_mode.o
+ .progmem.data  0x00003b88      0x143 serialslave_mode.o
+ .progmem.data  0x00003ccb      0x142 basic.o
+                0x00003e0e                . = ALIGN (0x2)
+ *fill*         0x00003e0d        0x1 00
+                0x00003e0e                __trampolines_start = .
+ *(.trampolines)
+ .trampolines   0x00003e0e        0x0 linker stubs
+ *(.trampolines*)
+                0x00003e0e                __trampolines_end = .
+ *(.jumptables)
+ *(.jumptables*)
+ *(.lowtext)
+ *(.lowtext*)
+                0x00003e0e                __ctors_start = .
+ *(.ctors)
+                0x00003e0e                __ctors_end = .
+                0x00003e0e                __dtors_start = .
+ *(.dtors)
+                0x00003e0e                __dtors_end = .
+ SORT(*)(.ctors)
+ SORT(*)(.dtors)
+ *(.init0)
+ .init0         0x00003e0e        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
+                0x00003e0e                __init
+ *(.init0)
+ *(.init1)
+ *(.init1)
+ *(.init2)
+ .init2         0x00003e0e        0xc c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
+ *(.init2)
+ *(.init3)
+ *(.init3)
+ *(.init4)
+ .init4         0x00003e1a       0x1a c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
+                0x00003e1a                __do_copy_data
+ .init4         0x00003e34       0x10 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
+                0x00003e34                __do_clear_bss
+ *(.init4)
+ *(.init5)
+ *(.init5)
+ *(.init6)
+ *(.init6)
+ *(.init7)
+ *(.init7)
+ *(.init8)
+ *(.init8)
+ *(.init9)
+ .init9         0x00003e44        0x8 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
+ *(.init9)
+ *(.text)
+ .text          0x00003e4c        0x4 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
+                0x00003e4c                __vector_22
+                0x00003e4c                __vector_28
+                0x00003e4c                __vector_1
+                0x00003e4c                __vector_34
+                0x00003e4c                __vector_24
+                0x00003e4c                __vector_12
+                0x00003e4c                __bad_interrupt
+                0x00003e4c                __vector_6
+                0x00003e4c                __vector_31
+                0x00003e4c                __vector_3
+                0x00003e4c                __vector_23
+                0x00003e4c                __vector_25
+                0x00003e4c                __vector_11
+                0x00003e4c                __vector_13
+                0x00003e4c                __vector_17
+                0x00003e4c                __vector_19
+                0x00003e4c                __vector_27
+                0x00003e4c                __vector_5
+                0x00003e4c                __vector_33
+                0x00003e4c                __vector_4
+                0x00003e4c                __vector_9
+                0x00003e4c                __vector_2
+                0x00003e4c                __vector_15
+                0x00003e4c                __vector_29
+                0x00003e4c                __vector_8
+                0x00003e4c                __vector_26
+ .text          0x00003e50      0x504 main.o
+                0x00004092                HW_init
+                0x00004224                pversion
+                0x000041b2                initparams
+                0x00004244                main
+                0x0000416a                SW_init
+                0x00004022                __vector_14
+                0x00003f1c                __vector_16
+                0x00003eba                __vector_18
+                0x00003e50                __vector_20
+ .text          0x00004354      0x266 uart.o
+                0x000044e2                uartSendTxBuffer
+                0x0000446a                __vector_32
+                0x000043a4                uartSendByte
+                0x00004564                uartInitBuffers
+                0x00004504                uartReceiveByte
+                0x000043d6                __vector_30
+                0x0000445e                uartAddToTxBuffer
+                0x00004354                uartSetRxHandler
+                0x000043b8                uartFlushReceiveBuffer
+                0x00004586                uartInit
+                0x000043c2                uartReceiveBufferIsEmpty
+                0x0000435e                uartSetBaudRate
+                0x0000439e                uartGetTxBuffer
+                0x00004538                uartGetByte
+                0x00004398                uartGetRxBuffer
+ .text          0x000045ba      0x160 buffer.o
+                0x000046f4                bufferIsNotFull
+                0x000045d4                bufferGetFromFront
+                0x0000467e                bufferGetAtIndex
+                0x0000463a                bufferDumpFromFront
+                0x000045ba                bufferInit
+                0x000046a6                bufferAddToEnd
+                0x0000470c                bufferFlush
+ .text          0x0000471a      0xcaa motion.o
+                0x000052c0                SampleMotion
+                0x00004e8a                SendTGain
+                0x0000473e                sciTx0Data
+                0x00004746                sciRx0Ready
+                0x00004d38                BasicPose
+                0x00004ce2                complete_motion
+                0x00004b02                PlaySceneFromBuffer
+                0x0000500c                M_PlayFlash
+                0x00004cac                process_frames
+                0x0000471a                GetNextMotionBuffer
+                0x00004786                set_break_mode
+                0x00004e4a                SendExPortD
+                0x00004eec                LoadMotionFromBuffer
+ .text          0x000053c4      0x3de rprintf.o
+                0x0000567a                rprintf1RamRom
+                0x000054aa                rprintfu08
+                0x000054d4                rprintfu32
+                0x000053f2                rprintfStr
+                0x00005410                rprintfStrLen
+                0x0000546c                rprintfProgStr
+                0x000054c0                rprintfu16
+                0x000053c4                rprintfInit
+                0x000053ce                rprintfChar
+                0x0000548c                rprintfCRLF
+                0x00005494                rprintfu04
+                0x000054fa                rprintfNum
+ .text          0x000057a2      0x3b0 adc.o
+                0x00005850                PSD_off
+                0x00005938                adc_psd
+                0x00005a00                Get_VOLTAGE
+                0x00005854                Get_AD_PSD
+                0x0000583a                PSD_on
+                0x000059f6                adc_mic
+                0x0000582e                ADC_set
+                0x000057d0                __vector_21
+                0x00005a24                adc_test
+                0x00005958                Get_AD_MIC
+                0x000057a2                adc_volt
+ .text          0x00005b52      0x140 ir.o
+                0x00005c74                irGetByte
+                0x00005b74                __vector_7
+                0x00005b52                __vector_10
+ .text          0x00005c92      0x402 accelerometer.o
+                0x00005d1c                ack
+                0x00005cac                stop_accel
+                0x00005d86                tilt_setup
+                0x00005d5c                done_read
+                0x00005dc8                AccStop
+                0x00005d3c                next_byte
+                0x00005e0e                AccByteRead
+                0x00005d76                cbyte
+                0x00005e78                AccNotAckWrite
+                0x00005cc4                read_value
+                0x00005cee                write_value
+                0x00005dae                AccStart
+                0x00005f5a                tilt_read
+                0x00005e38                AccAckRead
+                0x00005c92                start_accel
+                0x00005de0                AccByteWrite
+                0x00005eba                AccGetData
+                0x00005e58                AccAckWrite
+                0x00005e92                Acc_init
+ .text          0x00006094       0xfa idle_mode.o
+                0x00006094                idle_mainloop
+ .text          0x0000618e     0x166a experimental_mode.o
+                0x00006580                Perform_Action
+                0x0000620e                check_IR
+                0x0000618e                check_buttons
+                0x000070d0                check_serial
+                0x00007684                check_behaviour
+                0x0000631a                check_balance
+                0x000061c2                ptime
+                0x000077a8                experimental_mainloop
+                0x0000773a                Read_Events
+                0x00007038                getDec
+                0x00006f8c                getHex
+ .text          0x000077f8      0x37c charge_mode.o
+                0x000077f8                DetectPower
+                0x000079dc                charge_mainloop
+                0x0000789c                ChargeNiMH
+ .text          0x00007b74      0x8bc serialslave_mode.o
+                0x00007e06                handle_direct_ctl
+                0x00007c5e                print_motionBuf
+                0x00007d98                handle_goto_position
+                0x00007f0a                continue_motions
+                0x0000828e                Do_Serial
+                0x0000807a                handle_load_motion
+                0x000083fe                serialslave_mainloop
+                0x00007cd6                handle_get_status
+                0x00007b74                ReceiveIntoMotionBuf
+ .text          0x00008430     0x213a basic.o
+                0x00008f34                token_match
+                0x00008486                get_noservos
+                0x0000884a                dump
+                0x00008710                str_expr
+                0x00008a4a                set_bit
+                0x00008af4                put_special
+                0x00009240                eval_expr
+                0x0000957c                basic_load
+                0x00009002                get_special
+                0x000084bc                getNext
+                0x00008726                dump_firmware
+                0x000085b2                getToken
+                0x00008474                get_type
+                0x00008458                set_type
+                0x0000853c                getNum
+                0x00009d60                basic_run
+                0x000084f2                getVar
+                0x00008b74                basic_list
+                0x000085d8                get_bit
+                0x00009c7e                send_bus_str
+                0x00008648                math
+                0x00008e54                readLine
+                0x00008970                basic_clear
+                0x000089c0                gotoln
+ .text          0x0000a56a      0x996 wck.o
+                0x0000ad0e                wckOverCTRead
+                0x0000a5f8                wckSendSetCommand
+                0x0000a862                wckPowerDown
+                0x0000a62a                wckPosSend
+                0x0000a58c                wckSendByte
+                0x0000abcc                wckGainRead
+                0x0000a74a                wckPosAndLoadRead
+                0x0000a594                wckGetByte
+                0x0000a7dc                wckSetPassive
+                0x0000aa80                wckGainSet
+                0x0000ab38                wckIdSet
+                0x0000a9ec                wckBaudrateSet
+                0x0000a984                wckSyncPosSend
+                0x0000a582                wckFlush
+                0x0000a8f0                wckRotation360
+                0x0000ad98                wckBoundSet
+                0x0000a6c4                wckPosRead
+                0x0000a5d6                wckSendOperCommand
+                0x0000a56a                wckReInit
+                0x0000ae50                wckBoundRead
+                0x0000ac84                wckOverCTSet
+ .text          0x0000af00      0x982 experimental_bin_mode.o
+                0x0000b1d8                bin_respond_error
+                0x0000b1a0                bin_respond_p
+                0x0000b510                bin_respond_Quickquery
+                0x0000b08e                bin_read_p
+                0x0000b6ac                bin_read_request
+                0x0000af00                bin_read_x
+                0x0000b1f8                bin_respond_x
+                0x0000b2b0                bin_respond_Dquery
+                0x0000b1e6                SendWord
+                0x0000b2e0                bin_respond_query
+                0x0000b006                bin_read_m
+                0x0000b1ae                bin_respond_basicdownload
+                0x0000b1bc                bin_respond_H
+                0x0000b5f6                bin_read_H
+                0x0000b77a                experimental_binloop
+                0x0000b0e6                bin_respond_Iquery
+                0x0000b43a                bin_respond_Aquery
+                0x0000af82                bin_downloadbasic
+                0x0000b1ca                bin_respond_ver
+                0x0000b13a                SendResponse
+                0x0000b164                bin_respond_m
+ .text          0x0000b882     0x135a compatability.o
+                0x0000cb6e                compatability_mode
+                0x0000bd5e                SendToPC
+                0x0000b92e                U1I_case100
+                0x0000b952                U1I_case301
+                0x0000c0f8                process_read
+                0x0000ba16                U1I_case603
+                0x0000b882                ProcButton
+                0x0000bcfa                Round
+                0x0000ba26                ReadButton
+                0x0000b9a2                U1I_case302
+                0x0000bb5a                SelfTest1
+                0x0000b884                delay_ms
+                0x0000bfb4                U1I_case703
+                0x0000c96c                M_Play
+                0x0000c974                ProcIr
+                0x0000bbd4                IoUpdate
+                0x0000bd58                sciTx1Data
+                0x0000b9d8                U1I_case502
+                0x0000bdc2                ProcComm
+                0x0000c0a8                U1I_case303
+ .text          0x0000cbdc        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodqi4.o)
+ .text          0x0000cbdc        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodhi4.o)
+ .text          0x0000cbdc        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o)
+ .text          0x0000cbdc        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodsi4.o)
+ .text          0x0000cbdc        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+ .text          0x0000cbdc        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
+ .text          0x0000cbdc       0x58 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o)
+                0x0000cbdc                __fixunssfsi
+ .text          0x0000cc34      0x354 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o)
+                0x0000cecc                __subsf3
+                0x0000cf2e                __addsf3
+ .text          0x0000cf88      0x1f4 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_mul_sf.o)
+                0x0000cf88                __mulsf3
+ .text          0x0000d17c      0x154 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_div_sf.o)
+                0x0000d17c                __divsf3
+ .text          0x0000d2d0       0x60 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o)
+                0x0000d2d0                __gtsf2
+ .text          0x0000d330       0x60 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_ge_sf.o)
+                0x0000d330                __gesf2
+ .text          0x0000d390       0x60 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_lt_sf.o)
+                0x0000d390                __ltsf2
+ .text          0x0000d3f0       0xbc c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o)
+                0x0000d3f0                __floatsisf
+ .text          0x0000d4ac       0xa8 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
+                0x0000d4ac                __fixsfsi
+ .text          0x0000d554        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
+ .text          0x0000d554       0xf2 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_usi_to_sf.o)
+                0x0000d554                __floatunsisf
+ .text          0x0000d646        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
+ .text          0x0000d646        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
+ .text          0x0000d646       0x9e c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o)
+                0x0000d646                __clzsi2
+ .text          0x0000d6e4      0x1aa c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_pack_sf.o)
+                0x0000d6e4                __pack_f
+ .text          0x0000d88e       0xf0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_unpack_sf.o)
+                0x0000d88e                __unpack_f
+ .text          0x0000d97e       0xb2 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fpcmp_parts_sf.o)
+                0x0000d97e                __fpcmp_parts_f
+ .text          0x0000da30        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
+ .text          0x0000da30       0xc2 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(rand.o)
+                0x0000dacc                rand_r
+                0x0000dad2                rand
+                0x0000dadc                srand
+ .text          0x0000daf2       0x16 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcat.o)
+                0x0000daf2                strcat
+ .text          0x0000db08       0x12 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcmp.o)
+                0x0000db08                strcmp
+ .text          0x0000db1a        0xe c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcpy.o)
+                0x0000db1a                strcpy
+ .text          0x0000db28       0x34 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strstr.o)
+                0x0000db28                strstr
+ .text          0x0000db5c       0x38 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eerd_block.o)
+                0x0000db5c                __eerd_block
+ .text          0x0000db94       0x2c c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eerd_word.o)
+                0x0000db94                __eerd_word
+ .text          0x0000dbc0       0x38 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eewr_block.o)
+                0x0000dbc0                __eewr_block
+ .text          0x0000dbf8       0x2a c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eewr_word.o)
+                0x0000dbf8                __eewr_word
+ .text          0x0000dc22        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(ceil.o)
+ .text          0x0000dc22        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(floor.o)
+ .text          0x0000dc22        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_mintl.o)
+ .text          0x0000dc22        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_mpack.o)
+ .text          0x0000dc22        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_trunc.o)
+ .text          0x0000dc22        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_zero.o)
+ .text          0x0000dc22        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_split3.o)
+ .text          0x0000dc22        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_mulsi3.o)
+ .text          0x0000dc22        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodsi4.o)
+                0x0000dc22                . = ALIGN (0x2)
+ *(.text.*)
+ .text.libgcc   0x0000dc22       0x18 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodqi4.o)
+                0x0000dc22                __udivmodqi4
+ .text.libgcc   0x0000dc3a       0x28 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodhi4.o)
+                0x0000dc3a                __udivmodhi4
+ .text.libgcc   0x0000dc62       0x26 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o)
+                0x0000dc62                __divmodhi4
+                0x0000dc62                _div
+ .text.libgcc   0x0000dc88       0x44 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodsi4.o)
+                0x0000dc88                __udivmodsi4
+ .text.libgcc   0x0000dccc        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+ .text.libgcc   0x0000dccc        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
+ .text.libgcc   0x0000dccc       0x38 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
+                0x0000dccc                __prologue_saves__
+ .text.libgcc   0x0000dd04       0x36 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
+                0x0000dd04                __epilogue_restores__
+ .text.fplib    0x0000dd3a       0x26 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(ceil.o)
+                0x0000dd3a                ceil
+ .text.fplib    0x0000dd60       0x26 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(floor.o)
+                0x0000dd60                floor
+ .text.fplib    0x0000dd86       0x36 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_mintl.o)
+                0x0000dd86                __fp_mintl
+ .text.fplib    0x0000ddbc       0x20 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_mpack.o)
+                0x0000ddbc                __fp_mpack
+ .text.fplib    0x0000dddc       0x2e c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_trunc.o)
+                0x0000dddc                __fp_trunc
+ .text.fplib    0x0000de0a        0xe c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_zero.o)
+                0x0000de0a                __fp_zero
+                0x0000de0c                __fp_szero
+ .text.fplib    0x0000de18       0x44 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_split3.o)
+                0x0000de18                __fp_split3
+                0x0000de28                __fp_splitA
+ .text.libgcc   0x0000de5c       0x3e c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_mulsi3.o)
+                0x0000de5c                __mulsi3
+ .text.libgcc   0x0000de9a       0x36 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodsi4.o)
+                0x0000de9a                __divmodsi4
+                0x0000ded0                . = ALIGN (0x2)
+ *(.fini9)
+ .fini9         0x0000ded0        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+                0x0000ded0                exit
+                0x0000ded0                _exit
+ *(.fini9)
+ *(.fini8)
+ *(.fini8)
+ *(.fini7)
+ *(.fini7)
+ *(.fini6)
+ *(.fini6)
+ *(.fini5)
+ *(.fini5)
+ *(.fini4)
+ *(.fini4)
+ *(.fini3)
+ *(.fini3)
+ *(.fini2)
+ *(.fini2)
+ *(.fini1)
+ *(.fini1)
+ *(.fini0)
+ .fini0         0x0000ded0        0x4 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+ *(.fini0)
+                0x0000ded4                _etext = .
+
+.data           0x00800100      0x482 load address 0x0000ded4
+                0x00800100                PROVIDE (__data_start, .)
+ *(.data)
+ .data          0x00800100        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
+ .data          0x00800100        0x0 main.o
+ .data          0x00800100        0x0 uart.o
+ .data          0x00800100        0x0 buffer.o
+ .data          0x00800100      0x194 motion.o
+                0x00800102                mlist
+                0x00800100                gSceneIndex
+ .data          0x00800294        0x0 rprintf.o
+ .data          0x00800294        0x0 adc.o
+ .data          0x00800294        0x0 ir.o
+ .data          0x00800294        0x0 accelerometer.o
+ .data          0x00800294        0x0 idle_mode.o
+ .data          0x00800294        0x0 experimental_mode.o
+ .data          0x00800294        0x0 charge_mode.o
+ .data          0x00800294       0x26 serialslave_mode.o
+ .data          0x008002ba      0x1bb basic.o
+                0x008003fd                tokens
+                0x00800457                specials
+                0x0080039d                error_msgs
+ .data          0x00800475        0x0 wck.o
+ .data          0x00800475        0x0 experimental_bin_mode.o
+ .data          0x00800475        0x0 compatability.o
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodqi4.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodhi4.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodsi4.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_mul_sf.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_div_sf.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_ge_sf.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_lt_sf.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o)
+ .data          0x00800475        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
+ .data          0x00800475        0x8 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
+                0x00800475                __thenan_sf
+ .data          0x0080047d        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_usi_to_sf.o)
+ .data          0x0080047d        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
+ .data          0x0080047d        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
+ .data          0x0080047d        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o)
+ .data          0x0080047d        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_pack_sf.o)
+ .data          0x0080047d        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_unpack_sf.o)
+ .data          0x0080047d        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fpcmp_parts_sf.o)
+ .data          0x0080047d      0x100 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
+                0x0080047d                __clz_tab
+ .data          0x0080057d        0x4 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(rand.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcat.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcmp.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcpy.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strstr.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eerd_block.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eerd_word.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eewr_block.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eewr_word.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(ceil.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(floor.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_mintl.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_mpack.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_trunc.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_zero.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_split3.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_mulsi3.o)
+ .data          0x00800581        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodsi4.o)
+ *(.data*)
+ *(.rodata)
+ *(.rodata*)
+ *(.gnu.linkonce.d*)
+                0x00800582                . = ALIGN (0x2)
+ *fill*         0x00800581        0x1 00
+                0x00800582                _edata = .
+                0x00800582                PROVIDE (__data_end, .)
+
+.bss            0x00800582      0x93b load address 0x0000e356
+                0x00800582                PROVIDE (__bss_start, .)
+ *(.bss)
+ .bss           0x00800582        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51/crtm128.o
+ .bss           0x00800582        0x2 main.o
+                0x00800582                gTicks
+ .bss           0x00800584       0x82 uart.o
+ .bss           0x00800606        0x0 buffer.o
+ .bss           0x00800606      0x478 motion.o
+                0x00800606                gFrameIdx
+                0x00800608                TxInterval
+ .bss           0x00800a7e        0x2 rprintf.o
+ .bss           0x00800a80        0x2 adc.o
+                0x00800a80                F_AD_CONVERTING
+                0x00800a81                F_DOWNLOAD
+ .bss           0x00800a82        0x0 ir.o
+ .bss           0x00800a82        0x0 accelerometer.o
+ .bss           0x00800a82        0x0 idle_mode.o
+ .bss           0x00800a82        0x2 experimental_mode.o
+ .bss           0x00800a84        0x0 charge_mode.o
+ .bss           0x00800a84        0xa serialslave_mode.o
+ .bss           0x00800a8e        0x2 basic.o
+ .bss           0x00800a90        0x0 wck.o
+ .bss           0x00800a90        0x2 experimental_bin_mode.o
+ .bss           0x00800a92        0x1 compatability.o
+                0x00800a92                gIrBitIndex
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodqi4.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodhi4.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodhi4.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_udivmodsi4.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_exit.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clear_bss.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fixunssfsi.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_addsub_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_mul_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_div_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_gt_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_ge_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_lt_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_si_to_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_sf_to_si.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_thenan_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_usi_to_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_prologue.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_epilogue.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clzsi2.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_pack_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_unpack_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_fpcmp_parts_sf.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_clz.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(rand.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcat.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcmp.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strcpy.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(strstr.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eerd_block.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eerd_word.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eewr_block.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(eewr_word.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(ceil.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(floor.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_mintl.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_mpack.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_trunc.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_zero.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/../../../../avr/lib/avr51\libc.a(fp_split3.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_mulsi3.o)
+ .bss           0x00800a93        0x0 c:/winavr-20080610/bin/../lib/gcc/avr/4.3.0/avr51\libgcc.a(_divmodsi4.o)
+ *(.bss*)
+ *(COMMON)
+ COMMON         0x00800a93       0xf4 main.o
+                0x00800a93                gRx0Buf
+                0x00800a9b                response
+                0x00800a9d                gMIN
+                0x00800a9e                params
+                0x00800ab2                gY
+                0x00800ab4                gTx0BufIdx
+                0x00800ab5                gHOUR
+                0x00800ab6                gZ
+                0x00800ab8                g10MSEC
+                0x00800aba                gSEC
+                0x00800abb                gRx0Cnt
+                0x00800abc                gSEC_DCOUNT
+                0x00800abe                gMSEC
+                0x00800ac0                gX
+                0x00800ac2                gTx0Buf
+                0x00800b7c                autobalance
+                0x00800b7e                gTx0Cnt
+                0x00800b7f                gNextMode
+                0x00800b81                gMIN_DCOUNT
+                0x00800b83                gBtnCnt
+                0x00800b85                F_PLAYING
+                0x00800b86                F_NEXTFRAME
+ COMMON         0x00800b87       0x14 uart.o
+                0x00800b87                uartReadyTx
+                0x00800b88                uartRxBuffer
+                0x00800b90                uartBufferedTx
+                0x00800b91                uartTxBuffer
+                0x00800b99                uartRxOverflow
+ COMMON         0x00800b9b      0x1f7 motion.o
+                0x00800b9b                gpFN_Table
+                0x00800b9d                gNumOfFrame
+                0x00800b9f                gpIg_Table
+                0x00800ba1                gpE_Table
+                0x00800ba3                gpPos_Table
+                0x00800ba5                gpT_Table
+                0x00800ba7                gpZero_Table
+                0x00800ba9                Motion
+                0x00800c6f                gUnitD
+                0x00800ceb                gpPg_Table
+                0x00800ced                gpRT_Table
+                0x00800cef                Scene
+                0x00800d90                gpDg_Table
+ COMMON         0x00800d92        0x8 adc.o
+                0x00800d92                gVOLTAGE
+                0x00800d94                gPSD_val
+                0x00800d95                gAD_val
+                0x00800d96                gAD_Ch_Index
+                0x00800d97                gMIC_val
+                0x00800d98                gSoundLevel
+                0x00800d99                gDistance
+ COMMON         0x00800d9a        0xb ir.o
+                0x00800d9a                gIRAddr
+                0x00800d9b                IRBit
+                0x00800d9c                pulse_width
+                0x00800d9d                gIRReady
+                0x00800d9e                IRByte
+                0x00800d9f                IRState
+                0x00800da0                gIRData
+                0x00800da1                IRTemp
+ COMMON         0x00800da5        0xc accelerometer.o
+                0x00800da5                x_value
+                0x00800da7                y_value
+                0x00800da9                gAccX
+                0x00800dab                gAccY
+                0x00800dad                gAccZ
+                0x00800daf                z_value
+ COMMON         0x00800db1        0xa charge_mode.o
+                0x00800db1                F_PS_PLUGGED
+                0x00800db2                ov_flag
+                0x00800db4                F_CHARGING
+                0x00800db5                gPSplugCount
+                0x00800db7                gPwrLowCount
+                0x00800db9                gPSunplugCount
+ COMMON         0x00800dbb       0x36 basic.o
+                0x00800dbb                errno
+                0x00800dbd                variable
+ COMMON         0x00800df1       0x52 experimental_bin_mode.o
+                0x00800df1                buff
+                0x00800e41                bsize
+ COMMON         0x00800e43       0x7a compatability.o
+                0x00800e43                F_PF
+                0x00800e44                gFieldIdx
+                0x00800e46                F_SCENE_PLAYING
+                0x00800e47                F_IR_RECEIVED
+                0x00800e48                F_EEPROM_BUSY
+                0x00800e49                gDownNumOfA
+                0x00800e4a                gIrBuf
+                0x00800e4e                F_ACTION_PLAYING
+                0x00800e4f                gRx1_DStep
+                0x00800e51                F_MOTION_STOPPED
+                0x00800e52                F_MIC_INPUT
+                0x00800e53                F_ERR_CODE
+                0x00800e54                F_RSV_MOTION
+                0x00800e55                gRx1Step
+                0x00800e57                gBtn_val
+                0x00800e58                gPoseDelta
+                0x00800e96                gPF12BtnCnt
+                0x00800e98                F_RSV_BTN_READ
+                0x00800e99                gSoundMinTh
+                0x00800e9a                F_PF_CHANGED
+                0x00800e9b                gScIdx
+                0x00800e9d                gRx1Buf
+                0x00800eb1                F_RSV_IR_READ
+                0x00800eb2                F_RSV_PSD_READ
+                0x00800eb3                F_RSV_SOUND_READ
+                0x00800eb4                gPF1BtnCnt
+                0x00800eb6                gFileCheckSum
+                0x00800eb7                gPF2BtnCnt
+                0x00800eb9                F_FIRST_M
+                0x00800eba                F_DIRECT_C_EN
+                0x00800ebb                gRxData
+                0x00800ebc                gDownNumOfM
+                0x00800ebd                PROVIDE (__bss_end, .)
+                0x0000ded4                __data_load_start = LOADADDR (.data)
+                0x0000e356                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x00800ebd        0x0
+                0x00800ebd                PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                0x00800ebd                PROVIDE (__noinit_end, .)
+                0x00800ebd                _end = .
+                0x00800ebd                PROVIDE (__heap_start, .)
+
+.eeprom         0x00810000      0x4e8
+ *(.eeprom*)
+ .eeprom        0x00810000      0x441 basic.o
+                0x00810000                FIRMWARE
+                0x00810041                BASIC_PROG_SPACE
+                0x00810040                HUNO_TYPE
+ .eeprom        0x00810441       0xa7 compatability.o
+                0x00810466                eRCodeM
+                0x0081046b                eRCodeL
+                0x00810451                ePF
+                0x00810453                eNumOfA
+                0x008104c0                eA_Addr
+                0x008104d4                eA_FSize
+                0x00810441                eM_OriginPose
+                0x00810452                eNumOfM
+                0x00810498                eM_FSize
+                0x00810470                eM_Addr
+                0x00810461                eRCodeH
+                0x00810454                eData
+                0x008104e8                __eeprom_end = .
+
+.fuse
+ *(.fuse)
+ *(.lfuse)
+ *(.hfuse)
+ *(.efuse)
+
+.lock
+ *(.lock*)
+
+.signature
+ *(.signature*)
+
+.stab
+ *(.stab)
+
+.stabstr
+ *(.stabstr)
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment
+ *(.comment)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges  0x00000000      0x200
+ *(.debug_aranges)
+ .debug_aranges
+                0x00000000       0x20 main.o
+ .debug_aranges
+                0x00000020       0x20 uart.o
+ .debug_aranges
+                0x00000040       0x20 buffer.o
+ .debug_aranges
+                0x00000060       0x20 motion.o
+ .debug_aranges
+                0x00000080       0x20 rprintf.o
+ .debug_aranges
+                0x000000a0       0x20 adc.o
+ .debug_aranges
+                0x000000c0       0x20 ir.o
+ .debug_aranges
+                0x000000e0       0x20 accelerometer.o
+ .debug_aranges
+                0x00000100       0x20 idle_mode.o
+ .debug_aranges
+                0x00000120       0x20 experimental_mode.o
+ .debug_aranges
+                0x00000140       0x20 charge_mode.o
+ .debug_aranges
+                0x00000160       0x20 serialslave_mode.o
+ .debug_aranges
+                0x00000180       0x20 basic.o
+ .debug_aranges
+                0x000001a0       0x20 wck.o
+ .debug_aranges
+                0x000001c0       0x20 experimental_bin_mode.o
+ .debug_aranges
+                0x000001e0       0x20 compatability.o
+
+.debug_pubnames
+                0x00000000     0x27c4
+ *(.debug_pubnames)
+ .debug_pubnames
+                0x00000000      0x1ac main.o
+ .debug_pubnames
+                0x000001ac      0x194 uart.o
+ .debug_pubnames
+                0x00000340       0x9c buffer.o
+ .debug_pubnames
+                0x000003dc     0x13fe motion.o
+ .debug_pubnames
+                0x000017da       0xd4 rprintf.o
+ .debug_pubnames
+                0x000018ae      0x12a adc.o
+ .debug_pubnames
+                0x000019d8       0xa0 ir.o
+ .debug_pubnames
+                0x00001a78      0x165 accelerometer.o
+ .debug_pubnames
+                0x00001bdd       0x24 idle_mode.o
+ .debug_pubnames
+                0x00001c01       0xc5 experimental_mode.o
+ .debug_pubnames
+                0x00001cc6       0xa6 charge_mode.o
+ .debug_pubnames
+                0x00001d6c       0xd7 serialslave_mode.o
+ .debug_pubnames
+                0x00001e43      0x1c6 basic.o
+ .debug_pubnames
+                0x00002009      0x179 wck.o
+ .debug_pubnames
+                0x00002182      0x1c9 experimental_bin_mode.o
+ .debug_pubnames
+                0x0000234b      0x479 compatability.o
+
+.debug_info     0x00000000     0xa12b
+ *(.debug_info)
+ .debug_info    0x00000000      0x4cc main.o
+ .debug_info    0x000004cc      0x3ca uart.o
+ .debug_info    0x00000896      0x2cb buffer.o
+ .debug_info    0x00000b61     0x23ef motion.o
+ .debug_info    0x00002f50      0x4f7 rprintf.o
+ .debug_info    0x00003447      0x613 adc.o
+ .debug_info    0x00003a5a      0x17e ir.o
+ .debug_info    0x00003bd8      0x447 accelerometer.o
+ .debug_info    0x0000401f      0x19e idle_mode.o
+ .debug_info    0x000041bd     0x10d3 experimental_mode.o
+ .debug_info    0x00005290      0x428 charge_mode.o
+ .debug_info    0x000056b8      0x8a0 serialslave_mode.o
+ .debug_info    0x00005f58     0x1b74 basic.o
+ .debug_info    0x00007acc      0xc94 wck.o
+ .debug_info    0x00008760      0x760 experimental_bin_mode.o
+ .debug_info    0x00008ec0     0x126b compatability.o
+ *(.gnu.linkonce.wi.*)
+
+.debug_abbrev   0x00000000     0x2158
+ *(.debug_abbrev)
+ .debug_abbrev  0x00000000      0x1e9 main.o
+ .debug_abbrev  0x000001e9      0x1ba uart.o
+ .debug_abbrev  0x000003a3       0xec buffer.o
+ .debug_abbrev  0x0000048f      0x359 motion.o
+ .debug_abbrev  0x000007e8      0x1a3 rprintf.o
+ .debug_abbrev  0x0000098b      0x1fe adc.o
+ .debug_abbrev  0x00000b89       0xc3 ir.o
+ .debug_abbrev  0x00000c4c      0x1f5 accelerometer.o
+ .debug_abbrev  0x00000e41      0x11b idle_mode.o
+ .debug_abbrev  0x00000f5c      0x316 experimental_mode.o
+ .debug_abbrev  0x00001272      0x18b charge_mode.o
+ .debug_abbrev  0x000013fd      0x2a2 serialslave_mode.o
+ .debug_abbrev  0x0000169f      0x401 basic.o
+ .debug_abbrev  0x00001aa0      0x207 wck.o
+ .debug_abbrev  0x00001ca7      0x233 experimental_bin_mode.o
+ .debug_abbrev  0x00001eda      0x27e compatability.o
+
+.debug_line     0x00000000     0x7e38
+ *(.debug_line)
+ .debug_line    0x00000000      0x6d3 main.o
+ .debug_line    0x000006d3      0x2b1 uart.o
+ .debug_line    0x00000984      0x1e1 buffer.o
+ .debug_line    0x00000b65      0xa7d motion.o
+ .debug_line    0x000015e2      0x3a4 rprintf.o
+ .debug_line    0x00001986      0x463 adc.o
+ .debug_line    0x00001de9      0x18a ir.o
+ .debug_line    0x00001f73      0xa35 accelerometer.o
+ .debug_line    0x000029a8      0x120 idle_mode.o
+ .debug_line    0x00002ac8      0xc59 experimental_mode.o
+ .debug_line    0x00003721      0x3a9 charge_mode.o
+ .debug_line    0x00003aca      0x651 serialslave_mode.o
+ .debug_line    0x0000411b     0x1a10 basic.o
+ .debug_line    0x00005b2b      0x9d2 wck.o
+ .debug_line    0x000064fd      0x867 experimental_bin_mode.o
+ .debug_line    0x00006d64     0x10d4 compatability.o
+
+.debug_frame    0x00000000      0xe10
+ *(.debug_frame)
+ .debug_frame   0x00000000       0xa0 main.o
+ .debug_frame   0x000000a0      0x100 uart.o
+ .debug_frame   0x000001a0       0x80 buffer.o
+ .debug_frame   0x00000220      0x110 motion.o
+ .debug_frame   0x00000330       0xd0 rprintf.o
+ .debug_frame   0x00000400       0xc0 adc.o
+ .debug_frame   0x000004c0       0x40 ir.o
+ .debug_frame   0x00000500      0x140 accelerometer.o
+ .debug_frame   0x00000640       0x20 idle_mode.o
+ .debug_frame   0x00000660       0xc0 experimental_mode.o
+ .debug_frame   0x00000720       0x40 charge_mode.o
+ .debug_frame   0x00000760       0xf0 serialslave_mode.o
+ .debug_frame   0x00000850      0x1b0 basic.o
+ .debug_frame   0x00000a00      0x160 wck.o
+ .debug_frame   0x00000b60      0x160 experimental_bin_mode.o
+ .debug_frame   0x00000cc0      0x150 compatability.o
+
+.debug_str      0x00000000     0x27b8
+ *(.debug_str)
+ .debug_str     0x00000000      0x280 main.o
+                                0x2c8 (size before relaxing)
+ .debug_str     0x00000280      0x1bc uart.o
+                                0x2a5 (size before relaxing)
+ .debug_str     0x0000043c       0x9d buffer.o
+                                0x1b8 (size before relaxing)
+ .debug_str     0x000004d9     0x12fc motion.o
+                               0x1484 (size before relaxing)
+ .debug_str     0x000017d5      0x139 rprintf.o
+                                0x256 (size before relaxing)
+ .debug_str     0x0000190e       0xd9 adc.o
+                                0x1fe (size before relaxing)
+ .debug_str     0x000019e7       0x5b ir.o
+                                0x143 (size before relaxing)
+ .debug_str     0x00001a42      0x106 accelerometer.o
+                                0x1e8 (size before relaxing)
+ .debug_str     0x00001b48       0x57 idle_mode.o
+                                0x191 (size before relaxing)
+ .debug_str     0x00001b9f       0xed experimental_mode.o
+                                0x30a (size before relaxing)
+ .debug_str     0x00001c8c       0x7e charge_mode.o
+                                0x235 (size before relaxing)
+ .debug_str     0x00001d0a      0x1a1 serialslave_mode.o
+                                0x35d (size before relaxing)
+ .debug_str     0x00001eab      0x2df basic.o
+                                0x48f (size before relaxing)
+ .debug_str     0x0000218a      0x1d1 wck.o
+                                0x2ee (size before relaxing)
+ .debug_str     0x0000235b      0x178 experimental_bin_mode.o
+                                0x321 (size before relaxing)
+ .debug_str     0x000024d3      0x2e5 compatability.o
+                                0x52b (size before relaxing)
+
+.debug_loc      0x00000000     0x49b0
+ *(.debug_loc)
+ .debug_loc     0x00000000       0x9b main.o
+ .debug_loc     0x0000009b       0xe1 uart.o
+ .debug_loc     0x0000017c      0x1a2 buffer.o
+ .debug_loc     0x0000031e      0x57e motion.o
+ .debug_loc     0x0000089c      0x62a rprintf.o
+ .debug_loc     0x00000ec6      0x152 adc.o
+ .debug_loc     0x00001018      0x127 accelerometer.o
+ .debug_loc     0x0000113f       0x58 idle_mode.o
+ .debug_loc     0x00001197      0x4ca experimental_mode.o
+ .debug_loc     0x00001661       0xb0 charge_mode.o
+ .debug_loc     0x00001711      0x33b serialslave_mode.o
+ .debug_loc     0x00001a4c     0x1dc1 basic.o
+ .debug_loc     0x0000380d      0x681 wck.o
+ .debug_loc     0x00003e8e      0x861 experimental_bin_mode.o
+ .debug_loc     0x000046ef      0x2c1 compatability.o
+
+.debug_macinfo
+ *(.debug_macinfo)
+OUTPUT(Robobuilderlib.elf elf32-avr)
+LOAD linker stubs
+
+.debug_ranges   0x00000000      0x568
+ .debug_ranges  0x00000000      0x1c0 motion.o
+ .debug_ranges  0x000001c0       0x18 adc.o
+ .debug_ranges  0x000001d8       0x48 idle_mode.o
+ .debug_ranges  0x00000220      0x120 experimental_mode.o
+ .debug_ranges  0x00000340       0x60 charge_mode.o
+ .debug_ranges  0x000003a0       0xf0 basic.o
+ .debug_ranges  0x00000490       0x78 wck.o
+ .debug_ranges  0x00000508       0x60 experimental_bin_mode.o

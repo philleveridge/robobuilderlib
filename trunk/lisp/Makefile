@@ -3,9 +3,9 @@
 ###############################################################################
 
 ## General Flags
-PROJECT = DCMPlus
+PROJECT = femto
 MCU = atmega128
-TARGET = DCMP.elf
+TARGET = femto.elf
 
 ## Attempt to tell what platform we're on, to pick the right avr-gcc
 ifdef SHELL
@@ -31,7 +31,7 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 
 ## Linker flags
 LDFLAGS = $(COMMON)
-LDFLAGS +=  -Wl,-Map=DCMP.map
+LDFLAGS +=  -Wl,-Map=femto.map
 
 
 ## Intel Hex file production flags
@@ -43,13 +43,12 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
 ## Objects that must be built in order to link
-OBJECTS = main.o accelerometer.o adc.o battery.o ir.o
-
+OBJECTS = main.o femto.o
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 
 
 ## Build
-all: $(TARGET) DCMP.hex DCMP.eep DCMP.lss size
+all: $(TARGET) femto.hex femto.eep femto.lss size
 
 ## Compile
 %.o: %.c
@@ -75,7 +74,7 @@ size: ${TARGET}
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf $(OBJECTS) DCMP.elf dep/* DCMP.hex DCMP.eep DCMP.lss DCMP.map
+	-rm -rf $(OBJECTS) femto.elf dep/* femto.hex femto.eep femto.lss femto.map
 
 
 ## Other dependencies
