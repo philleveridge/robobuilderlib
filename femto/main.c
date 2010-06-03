@@ -37,24 +37,26 @@ extern void ChargeNiMH(void);
 extern void SelfTest1(void);
 extern void DetectPower(void);
 
+extern volatile BYTE   gSEC;
+extern volatile BYTE   gMIN;
+extern volatile BYTE   gSoundLevel;
+extern void     lights(int n);
+extern void     Get_AD_MIC(void);
+
 //define ir.c
 extern int irGetByte(void);
 
-//define wckmotion.c
-extern void putWck  (BYTE b);
-extern void getWck  (BYTE b);
+//wckmotion.c
+extern void putWck (BYTE b);
 
-// UART variables-----------------------------------------------------------------
-
-WORD	gRx1Step;
-BYTE	gRxData;
-WORD	gRx1_DStep;
-BYTE	gFileCheckSum;
-BYTE	gCMD;
 
 //------------------------------------------------------------------------------
 // UART1 Transmit  Routine
 //------------------------------------------------------------------------------
+
+#define	RXC				7
+#define RX_COMPLETE		(1<<RXC)
+
 
 void putByte (BYTE b)
 {
@@ -65,13 +67,12 @@ void putByte (BYTE b)
 //------------------------------------------------------------------------------
 // UART1 recieve (from PC)
 //------------------------------------------------------------------------------
-extern volatile BYTE   gSEC;
-extern volatile BYTE   gMIN;
-extern volatile BYTE   gSoundLevel;
-extern void     lights(int n);
-extern void     Get_AD_MIC(void);
 
-void SendToSoundIC(BYTE cmd) ;
+int getByte()
+{
+	while(!(UCSR1A & RX_COMPLETE)) ;
+	return UDR1;
+}
 
 //------------------------------------------------------------------------------
 // Initialise Ports
@@ -278,7 +279,6 @@ BYTE	gBtn_val;
 WORD	gBtnCnt;
 
 
-//(CHK_BIT5(PORTA))
 //------------------------------------------------------------------------------
 //  Check Routine
 //------------------------------------------------------------------------------
