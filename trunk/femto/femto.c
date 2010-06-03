@@ -1,17 +1,10 @@
+#include <avr/pgmspace.h>
 #include <avr/io.h>
 #include "Macro.h"
+#include "femto.h"
 
 #define	RUN_LED1_ON		CLR_BIT5(PORTA)     // BLUE
 #define	RUN_LED2_ON		CLR_BIT6(PORTA)     // GREEN
-
-#define	RXC				7
-#define RX_COMPLETE		(1<<RXC)
-#define HEADER			0xFF 
-#define TIME_OUT		100
-#define NULL			'\0'
-
-int dbg=0;
-#define DEBUG(a)   if(dbg) {a;}
 
 extern int 		strcmp(char *, char *);
 
@@ -23,34 +16,26 @@ extern volatile BYTE   gSEC;
 extern volatile BYTE   gMIN;
 extern void     delay_ms(int ms);
 
-//wckmotion.c
-extern void putWck  (BYTE b);
-extern int  getWck  (WORD timeout);
-extern void wckSendOperCommand(char Data1, char Data2);
-extern void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4);
-extern void wckSyncPosSend(BYTE LastID, BYTE SpeedLevel, BYTE *TargetArray, BYTE Index);
-extern void PlayPose(int d, int f, BYTE *pos, int flag);
-extern void standup () ;
-
-/**************************************************************************************************/
-
+//main.c
 extern void putByte (BYTE b);
+extern int  getByte ();
 
-int getByte()
-{
-	while(!(UCSR1A & RX_COMPLETE)) ;
-	return UDR1;
-}
 
 /**************************************************************************************************/
 
-char *errmessage[] = {
+int dbg=0;
+
+const prog_char welcome[] = "Femto $Rev: 152 $\r\n";
+
+
+const prog_char *errmessage[] = {
 	"not enough items",	
 	"must be number",
 	"must be list",
 	"incorrect parameters passed",
 	"must be a symbol",
-	"must be a function"
+	"must be a function",
+	"Symbol not defined?"
 };
 
 #define MAX 100
@@ -117,6 +102,13 @@ void printstr(char *c)
 	while ((ch=*c++) != 0) putch(ch);
 }
 
+void printromstr(const char c[])
+{
+	char ch;
+	if (c==0) return;
+	while ( (ch = pgm_read_byte(c++)) != 0) putch (ch);
+}
+
 void printline(char *c)
 {
 	printstr(c);
@@ -152,30 +144,7 @@ void printint(int n)
 }
 
 /**************************************************************************************************/
-#define bool  int
-#define true  1
-#define false 0
-#define null  (void *)0
 
-enum  TYPE {SYMBOL, INT, BOOL, FUNCTION, SPECIAL, FLOAT, STRING, CELL, EMPTY, ERROR};
-
-typedef struct object {
-	int   type;
-	bool  q;
-	union { float 	floatpoint; 
-	        int 	number; 
-			char 	*string;
-			void 	*cell;
-			void 	*func;
-		};
-} tOBJ;
-
-typedef struct cell { 
-	tOBJ 			head;		
-	struct cell*  	tail;		
-} tCELL, *tCELLp; 
-
-typedef tOBJ (*PFP)(tCELLp);
 
 tOBJ time  (tCELLp);
 tOBJ sleep (tCELLp);
@@ -199,6 +168,7 @@ tOBJ progn(tCELLp);
 tOBJ prog(tCELLp);
 tOBJ len (tCELLp);
 tOBJ cclone (tCELLp);
+tOBJ fthrow (tCELLp);
 
 tOBJ sendServo   (tCELLp);
 tOBJ getServo    (tCELLp);
@@ -217,6 +187,7 @@ struct prim { char *name; PFP func; int sf;} prim_tab[] = {
 	{"cons", cons,0},
 	{"list", list,0}, 
 	{"length", len,0}, 
+	{"throw", fthrow,0}, 
 	
 	{"cdr",  cdr, 0},
 	{"pr",   pr,  0},
@@ -263,7 +234,7 @@ void delCell(tCELLp p)
 	//tbd
 }
 
-BYTE stringbuffer[1024];
+BYTE stringbuffer[200];
 BYTE *stop=stringbuffer;
 
 void copyString(char *a, char *b, int n)
@@ -636,11 +607,16 @@ tOBJ print(tOBJ r)
 	return r;
 }
 
+void printtime(char * s)
+{
+	printstr (s); printnumber(gMIN,2,'0'); printstr(":"); printnumber(gSEC,2,'0'); 
+}
+
 /**************************************************************************************************/
-tOBJ get(char *n);
-
-
-/**********  primitives  *********/
+//
+//         **********  primitives  *********
+//
+/**************************************************************************************************/
 
 void showenviron();
 
@@ -949,6 +925,13 @@ tCELLp clone(tCELLp p)  //(clone 1 2 '(3))-> (1 2 (3))
 	return r;
 }
 
+tOBJ fthrow(tCELLp p)
+{
+	int e=0;
+	if (p->head.type==INT) e=p->head.number;
+	return throw(e);
+}
+
 tOBJ cclone(tCELLp p)
 {
 	tOBJ r; r.type=CELL;
@@ -985,8 +968,7 @@ tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")
 			
 			if (r.type==EMPTY)
 			{
-				printstr("Not defined? :: ");
-				printline(h.string);
+				return throw(6);
 			}
 			else
 				return r;
@@ -1117,152 +1099,6 @@ tOBJ call(tCELLp p)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello"))
 
 /**************************************************************************************************/
 
-tOBJ getServo(tCELLp p)   // i.e. (getServo 15)
-{
-	tOBJ r; r.type=INT;
-	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
-	{
-		wckSendOperCommand(0xa0|(p->head.number), NULL);
-		int b1 = getWck(TIME_OUT);
-		int b2 = getWck(TIME_OUT);
-		
-		if (b1<0 || b2<0)
-			r.type = EMPTY; //timeout
-		else
-			r.number = b2;
-	}
-	else
-		r.type=EMPTY;
-	return r;
-}
-
-tOBJ wckwriteIO(tCELLp p)   // i.e. (wckwriteIO 15 true true)
-{
-	tOBJ r; r.type=INT;
-	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
-	{
-		int id = p->head.number;
-		p=p->tail;
-		if (p->head.type != BOOL) return throw(3);
-		int b1 = p->head.number;
-		p=p->tail;
-		if (p->head.type != BOOL) return throw(3);
-		int b2 = p->head.number;
-		
-        wckSendSetCommand((7 << 5) | (id % 31), 0x64, ((b1) ? 1 : 0) | ((b2) ? 2 : 0), 0);
-		
-		b1 = getWck(TIME_OUT);
-		b2 = getWck(TIME_OUT);
-		
-		if (b1<0 || b2<0)
-			r.type = EMPTY; //timeout
-		else
-			r.number = b2;		
-	}
-	else
-		r=throw(3);
-	return r;
-}
-
-tOBJ wckstandup(tCELLp p)   // i.e. (standup)
-{
-	tOBJ r; r.type=EMPTY;
-	standup();
-	return r;
-}
-
-tOBJ passiveServo(tCELLp p)   // i.e. (passiveServo 15)
-{
-	tOBJ r; r.type=INT;
-	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
-	{
-		wckSendOperCommand(0xc0|(p->head.number), 0x10);
-		int b1 = getWck(TIME_OUT);
-		int b2 = getWck(TIME_OUT);
-		
-		if (b1<0 || b2<0)
-			r.type = EMPTY; //timeout
-		else
-			r.number = b2;
-	}
-	else
-		r.type=EMPTY;
-	return r;
-}
-tOBJ sendServo(tCELLp p)   // i.e. (sendServo 12 50 4)
-{
-	tOBJ r; r.type=INT;
-	int sid = p->head.number;
-	p=p->tail;
-	int pos = p->head.number;
-	p=p->tail;
-	int tor = p->head.number;
-	if (sid<0 || sid>30 || pos<0 || pos>254 ||tor<0 || tor>4) 	
-	{
-		r=throw(3); // incorrect aparams
-	}
-	else	
-	{
-		wckSendOperCommand((tor<<5)|sid, pos);
-
-		int b1 = getWck(TIME_OUT);
-		int b2 = getWck(TIME_OUT);	
-
-		if (b1<0 || b2<0)
-			r.type = EMPTY; //timeout
-		else
-			r.number = (b1<<8|b2);
-	}
-	return r;
-}
-
-tOBJ synchServo(tCELLp p)   // i.e. (sycnServo lastid torq '(positions))
-{
-	tOBJ r;	r.type=EMPTY;
-	BYTE lastid = (p->head.number)&0x1F;
-	p=p->tail;
-	BYTE tor    = (p->head.number)&0x03;
-	p=p->tail;
-	if (p->head.type == CELL)
-	{
-		BYTE pos[lastid+2];
-		p=(tCELLp)(p->head.cell);
-		
-		for (int i=0; i<lastid+1; i++)
-		{
-			int n;
-			if (p == null)
-			{
-				return throw(0);
-			}
-			if (p->head.type==INT)
-			{
-				n=p->head.number;							
-				DEBUG(printint(n); printstr("-");)				
-				pos[i] = n;
-			}
-			else
-			{
-				return throw(1);
-			}
-
-			p=p->tail;
-		}
-		wckSyncPosSend(lastid, tor, pos, 0); // uncomment if works!
-	}
-	else
-	{
-		return throw(2);
-	}
-	return r;
-}
-
-/**************************************************************************************************/
-
-void printtime(char * s)
-{
-	printstr (s); printnumber(gMIN,2,'0'); printstr(":"); printnumber(gSEC,2,'0'); 
-}
 
 void showenviron()
 {
@@ -1330,7 +1166,7 @@ void testf()
 
 void initialise()
 {
-	printline("Femto $Rev: 152 $");
+	printromstr(welcome);
 	RUN_LED1_ON;
 	RUN_LED2_ON;	
 	UCSR1B= (1<<RXEN)|(1<<TXEN) ; //enable PC read/write Not interupt;	

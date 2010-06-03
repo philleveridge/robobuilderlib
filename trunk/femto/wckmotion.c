@@ -1,5 +1,6 @@
 #include "Macro.h"
 #include <avr/io.h>
+#include "femto.h"
 
 #define	RXC				7
 #define RX_COMPLETE		(1<<RXC)
@@ -10,12 +11,6 @@
 
 extern volatile WORD   g10Mtimer;
 extern void     delay_ms(int ms);
-
-//femto.c
-extern void printline(char *c);  
-extern void printint(int);  	
-extern void printstr(char*);	
-extern void printnumber(int n, int w, char pad)  ;
 
 //------------------------------------------------------------------------------
 // UART1 Receive  Routine
@@ -40,7 +35,6 @@ void putWck (BYTE b)
 	while ( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
 	UDR0 = b;
 }
-
 
 /******************************************************************************/
 /* Function that sends Operation Command Packet(4 Byte) to wCK module */
@@ -119,12 +113,11 @@ int readservos()
 		cpos[i]=p;	
 	}
 	nos=i;
-	//printint(nos); printline(" nos");
 	return i;
 }
 
 // Play d ms per step, f frames, from current -> pos
-void PlayPose(int d, int f, BYTE *pos, int flag)
+void PlayPose(int d, int f, BYTE pos[], int flag)
 {
 	int i;	
 	if (flag!=0) 
@@ -155,10 +148,195 @@ void PlayPose(int d, int f, BYTE *pos, int flag)
 	}
 }
 
-BYTE basic18[] = { 143, 179, 198,  83, 106, 106,  69,  48, 167, 141,  47,  47,  49, 199, 192, 204, 122, 125};
+const BYTE basic18[] = { 143, 179, 198,  83, 106, 106,  69,  48, 167, 141,  47,  47,  49, 199, 192, 204, 122, 125};
+const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
 
-void standup () 
+void standup (int n) 
 {
-	PlayPose(1000, 10, basic18, 18); 
+	if (n<18)
+		PlayPose(1000, 10, basic16, 16); //huno basic
+	else
+		PlayPose(1000, 10, basic18, 18); //huno with hip
+}
+
+
+/**************************************************************************************************/
+//
+//    femto functions
+//
+/**************************************************************************************************/
+
+tOBJ getServo(tCELLp p)   // i.e. (getServo 15)
+{
+	tOBJ r; r.type=INT;
+	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
+	{
+		wckSendOperCommand(0xa0|(p->head.number), NULL);
+		int b1 = getWck(TIME_OUT);
+		int b2 = getWck(TIME_OUT);
+		
+		if (b1<0 || b2<0)
+			r.type = EMPTY; //timeout
+		else
+			r.number = b2;
+	}
+	else
+		r.type=EMPTY;
+	return r;
+}
+
+tOBJ wckwriteIO(tCELLp p)   // i.e. (wckwriteIO 15 true true)
+{
+	tOBJ r; r.type=INT;
+	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
+	{
+		int id = p->head.number;
+		p=p->tail;
+		if (p->head.type != BOOL) return throw(3);
+		int b1 = p->head.number;
+		p=p->tail;
+		if (p->head.type != BOOL) return throw(3);
+		int b2 = p->head.number;
+		
+        wckSendSetCommand((7 << 5) | (id % 31), 0x64, ((b1) ? 1 : 0) | ((b2) ? 2 : 0), 0);
+		
+		b1 = getWck(TIME_OUT);
+		b2 = getWck(TIME_OUT);
+		
+		if (b1<0 || b2<0)
+			r.type = EMPTY; //timeout
+		else
+			r.number = b2;		
+	}
+	else
+		r=throw(3);
+	return r;
+}
+
+tOBJ wckstandup(tCELLp p)   // i.e. (standup)
+{
+	tOBJ r; r.type=EMPTY;
+	standup(18);
+	return r;
+}
+
+tOBJ passiveServo(tCELLp p)   // i.e. (passiveServo 15)
+{
+	tOBJ r; r.type=INT;
+	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
+	{
+		wckSendOperCommand(0xc0|(p->head.number), 0x10);
+		int b1 = getWck(TIME_OUT);
+		int b2 = getWck(TIME_OUT);
+		
+		if (b1<0 || b2<0)
+			r.type = EMPTY; //timeout
+		else
+			r.number = b2;
+	}
+	else
+		r.type=EMPTY;
+	return r;
+}
+tOBJ sendServo(tCELLp p)   // i.e. (sendServo 12 50 4)
+{
+	tOBJ r; r.type=INT;
+	int sid = p->head.number;
+	p=p->tail;
+	int pos = p->head.number;
+	p=p->tail;
+	int tor = p->head.number;
+	if (sid<0 || sid>30 || pos<0 || pos>254 ||tor<0 || tor>4) 	
+	{
+		r=throw(3); // incorrect aparams
+	}
+	else	
+	{
+		wckSendOperCommand((tor<<5)|sid, pos);
+
+		int b1 = getWck(TIME_OUT);
+		int b2 = getWck(TIME_OUT);	
+
+		if (b1<0 || b2<0)
+			r.type = EMPTY; //timeout
+		else
+			r.number = (b1<<8|b2);
+	}
+	return r;
+}
+
+tOBJ synchServo(tCELLp p)   // i.e. (sycnServo lastid torq '(positions))
+{
+	tOBJ r;	r.type=EMPTY;
+	BYTE lastid = (p->head.number)&0x1F;
+	p=p->tail;
+	BYTE tor    = (p->head.number)&0x03;
+	p=p->tail;
+	if (p->head.type == CELL)
+	{
+		BYTE pos[lastid+2];
+		p=(tCELLp)(p->head.cell);
+		
+		for (int i=0; i<lastid+1; i++)
+		{
+			int n;
+			if (p == null)
+			{
+				return throw(0);
+			}
+			if (p->head.type==INT)
+			{
+				n=p->head.number;							
+				DEBUG(printint(n); printstr("-");)				
+				pos[i] = n;
+			}
+			else
+			{
+				return throw(1);
+			}
+
+			p=p->tail;
+		}
+		wckSyncPosSend(lastid, tor, pos, 0); // uncomment if works!
+	}
+	else
+	{
+		return throw(2);
+	}
+	return r;
+}
+
+tOBJ len(tCELLp);
+
+tOBJ moveServo(tCELLp p)   // i.e. (moveServo time frames '(positions))
+{
+	tOBJ r;	r.type=EMPTY;
+	int n=0;
+	
+	BYTE msec  = (p->head.number)&0x1F;
+	p=p->tail;
+	BYTE frame = (p->head.number)&0x03;
+	p=p->tail;
+	
+	if (p->head.type == CELL)
+	{
+		p=(tCELLp)(p->head.cell);
+		tOBJ l = len(p);
+		if (l.type==INT)
+		{
+			BYTE bytearray[l.number];
+			for (n=0; n<l.number; n++)
+			{
+				if (p->head.type != INT) return throw(1);
+				bytearray[n] = p->head.number;
+				p=p->tail;
+			}
+			// PlayPose(msec, frame, bytearray, n);   // uncomment when checked!!
+		}	
+	}
+	else
+		return throw(2);
+	
+	return r;
 }
 
