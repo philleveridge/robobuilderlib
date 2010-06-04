@@ -3,8 +3,6 @@
 #include "Macro.h"
 #include "femto.h"
 
-#define	RUN_LED1_ON		CLR_BIT5(PORTA)     // BLUE
-#define	RUN_LED2_ON		CLR_BIT6(PORTA)     // GREEN
 
 extern int 		strcmp(char *, char *);
 
@@ -1167,13 +1165,7 @@ void testf()
 void initialise()
 {
 	printromstr(welcome);
-	RUN_LED1_ON;
-	RUN_LED2_ON;	
-	UCSR1B= (1<<RXEN)|(1<<TXEN) ; //enable PC read/write Not interupt;	
-	UCSR0B= (1<<RXEN)|(1<<TXEN) ; //enable wck read/write Not interupt;	
-	
-	DEBUG(testf())  //DEBUGING
-		
+	DEBUG(testf())  //DEBUGING	
 	showenviron();	
 }
 

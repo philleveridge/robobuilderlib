@@ -15,14 +15,7 @@
 #define BR115200			7 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
 
-// ($Rev: 147 $)
-
-//defined adc.c
-extern void Acc_init(void);
-extern void AccGetData(void);
-extern BYTE sData[];
-extern int 	sDcnt;
-extern void sample_sound(int);
+// ($Rev$)
 
 //defined femto.c
 extern void femto(void);
@@ -34,17 +27,7 @@ extern BYTE F_PS_PLUGGED;
 extern void delay_ms(int);
 extern void BreakModeCmdSend(void);
 extern void ChargeNiMH(void);
-extern void SelfTest1(void);
 extern void DetectPower(void);
-
-extern volatile BYTE   gSEC;
-extern volatile BYTE   gMIN;
-extern volatile BYTE   gSoundLevel;
-extern void     lights(int n);
-extern void     Get_AD_MIC(void);
-
-//define ir.c
-extern int irGetByte(void);
 
 //wckmotion.c
 extern void putWck (BYTE b);
@@ -219,7 +202,7 @@ void HW_init(void) {
 	UCSR0A=0x00;
 	//UCSR0B=0x98;
 	//UCSR0B=0x48;
-	UCSR0B = (1<<RXEN)|(1<<TXEN) |(1<<TXCIE); //enable reads for GetPos !!
+	UCSR0B= (1<<RXEN)|(1<<TXEN) ; //enable wck read/write Not interupt;	
 	UCSR0C=0x06;
 	UBRR0H=0x00;
 	UBRR0L=0x07;
@@ -231,7 +214,7 @@ void HW_init(void) {
 	// USART1 Mode: Asynchronous
 	// USART1 Baud rate: 115200
 	UCSR1A=0x00;
-	UCSR1B= (1<<RXEN)|(1<<TXEN) |(1<<RXCIE); //enable PC read/write ! (old value=0x18;		
+	UCSR1B= (1<<RXEN)|(1<<TXEN) ; //enable PC read/write Not interupt;	
 	UCSR1C=0x06;
 	UBRR1H=0x00;
 	UBRR1L=BR115200;
@@ -270,6 +253,9 @@ void SW_init(void) {
 	ERR_LED_OFF;
 
 	PSD_OFF;                // PSD distance sensor off
+	
+	RUN_LED1_ON;
+	RUN_LED2_ON;
 }
 
 #define PF1_BTN_PRESSED 1
@@ -393,8 +379,7 @@ int main(void)
 	tilt_setup();				// initialise acceleromter
 	
 	//call self test
-
-	SelfTest1();	
+	
 	ReadButton();	
 	ProcButton();
 	
