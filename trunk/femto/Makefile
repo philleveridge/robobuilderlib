@@ -3,9 +3,9 @@
 ###############################################################################
 
 ## General Flags
-PROJECT = DCMPlus
+PROJECT = Femto
 MCU = atmega128
-TARGET = DCMP.elf
+TARGET = femto.elf
 
 ## Attempt to tell what platform we're on, to pick the right avr-gcc
 ifdef SHELL
@@ -49,7 +49,7 @@ OBJECTS = main.o accelerometer.o adc.o battery.o femto.o ir.o wckmotion.o
 LINKONLYOBJECTS = 
 
 ## Build
-all: $(TARGET) DCMP.hex DCMP.eep DCMP.lss size
+all: $(TARGET) femto.hex femto.eep femto.lss size
 
 ## Compile
 %.o: %.c
@@ -75,7 +75,7 @@ size: ${TARGET}
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf $(OBJECTS) DCMP.elf dep/* DCMP.hex DCMP.eep DCMP.lss DCMP.map
+	-rm -rf $(OBJECTS) femto.elf dep/* femto.hex femto.eep femto.lss femto.map
 
 
 ## Other dependencies
