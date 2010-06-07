@@ -39,5 +39,6 @@
 #define SDATASZ 			16					// sound sample data
 
 
-
+#define P_BMC504_RESET(A)		if(A) SET_BIT6(PORTB);else CLR_BIT6(PORTB)
+#define P_PWM_SOUND_CUTOFF(A)	if(A) CLR_BIT3(DDRE);else SET_BIT3(DDRE)
 

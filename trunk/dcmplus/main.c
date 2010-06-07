@@ -23,6 +23,7 @@ extern void AccGetData(void);
 extern BYTE sData[];
 extern int 	sDcnt;
 extern void sample_sound(int);
+extern volatile BYTE   MIC_SAMPLING;
 
 //defined femto.c
 void printint(int);
@@ -46,6 +47,7 @@ BYTE	gRxData;
 WORD	gRx1_DStep;
 BYTE	gFileCheckSum;
 BYTE	gCMD;
+volatile BYTE	PLAY_SOUND;
 
 //------------------------------------------------------------------------------
 // UART1 Transmit  Routine
@@ -63,21 +65,11 @@ void putch(char c)
 }
 
 //------------------------------------------------------------------------------
-// UART1 Transmit  Routine
-//------------------------------------------------------------------------------
-
-void putWck (BYTE b)
-{
-	while ( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
-	UDR0 = b;
-}
-
-//------------------------------------------------------------------------------
 // UART0 wCK Receive Interrupt Routine
 //------------------------------------------------------------------------------
 ISR(USART0_RX_vect) // interrupt [USART0_RXC] void usart0_rx_isr(void)
 {
-	RUN_LED1_OFF;
+	RUN_LED1_ON;
 	
     char	data;	
 	data = UDR0;		// get the data
@@ -137,7 +129,9 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 				
 				if (gCMD>0x40 && gCMD<(0x40+26))
 				{
-					SendToSoundIC(gCMD-0x40);
+					PLAY_SOUND = gCMD-0x40;
+					gCMD=0;
+					return;
 				}
 				switch (gCMD)
 				{
@@ -489,7 +483,6 @@ void ProcButton(void)
 	{
 		//look to see if PF1 held down
 		gBtn_val = 0;
-		//femto(); 	// removed - separate firmware
 	}
 }
 
@@ -497,21 +490,78 @@ void ProcButton(void)
 // Send message to Sound IC
 //------------------------------------------------------------------------------
 
-#define P_BMC504_RESET(A)		if(A) SET_BIT6(PORTB);else CLR_BIT6(PORTB)
-#define P_PWM_SOUND_CUTOFF(A)	if(A) CLR_BIT3(DDRE);else SET_BIT3(DDRE)
+//------------------------------------------------------------------------------
+// UART0 Receive  Routine
+//------------------------------------------------------------------------------
+extern volatile WORD   g10Mtimer;
+
+int getWck(WORD timeout)
+{
+	g10Mtimer = timeout;
+	
+	while(!(UCSR0A&(1<<RXC)) ){ 	// test for received character
+		if (g10Mtimer==0) return -1;
+	}
+	return UDR0;
+}
+
+//------------------------------------------------------------------------------
+// UART0 Transmit  Routine
+//------------------------------------------------------------------------------
+
+void putWck (BYTE b)
+{
+	while ( (UCSR0A & DATA_REGISTER_EMPTY) == 0 ) ; //{s=!s; delay_ms(1); if (s) PWR_LED1_ON; else PWR_LED1_OFF; }
+	UDR0 = b;
+}
+
+WORD Sound_Length[25]={
+2268,1001,832,365,838,417,5671,5916,780,2907,552,522,1525,2494,438,402,433,461,343,472,354,461,458,442,371};
 
 void SendToSoundIC(BYTE cmd) 
 {
 	BYTE	CheckSum; 
+	
+	if (cmd <1 || cmd>25)
+	{
+		putByte(0x00);
+		putByte(0xff);
+		return;
+	}
+	
+	TIMSK |= 0x01;
+	EIMSK |= 0x40;
+		
+	PWR_LED2_ON;	// RED on
+	UCSR0B = (1<<RXEN)|(1<<TXEN); //enable reads for GetPos !!
 
 	CheckSum = (29^cmd)&0x7f;
 	putWck(0xFF);
 	delay_ms(1);
+
 	putWck(29);
+
+	
 	delay_ms(1);
 	putWck(cmd);
 	delay_ms(1);
 	putWck(CheckSum);
+	
+	PWR_LED2_OFF; // RED off	
+		
+	//wait for response?
+	
+	PWR_LED1_ON;	// RED on
+	
+	WORD timeo = Sound_Length[cmd-1] + 200;
+	
+	int b1 = getWck(timeo);
+	
+	putByte(b1);
+	putByte(b1);
+	
+	UCSR0B = (1<<RXEN)|(1<<TXEN) |(1<<RXCIE); //enable reads for GetPos !!
+	PWR_LED1_OFF; // RED off	
 } 
 
 void sound_init()
@@ -608,10 +658,16 @@ int main(void)
 	PF2_LED_ON;
 	
 	gCMD=0;
+	PLAY_SOUND=0;
 			
 	while (1) 
 	{
 		// do nothing
+		if (PLAY_SOUND!=0)
+		{
+			SendToSoundIC(PLAY_SOUND);
+			PLAY_SOUND=0;
+		}
 	} 
 
 }
