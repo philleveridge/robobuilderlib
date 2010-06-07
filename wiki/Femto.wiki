@@ -1,12 +1,20 @@
-Description of femto
+Femto -  a Micro-LISP interpreter running natively on the Robobuilder RBC unit
 
 = Introduction =
 
-Hold PF1 and reboot !
+This is still in early stages of development - get the latest binary here:
+http://robobuilderlib.googlecode.com/files/femto.hex
 
 = Details =
 
-Coming soon - Femto is still in early stages of development. It will provide a micro-lisp  language support to enable full autonomy for the robot.
+Femto aim is to provide a micro-lisp  language support to enable full autonomy for the robot.
+
+==Things still to do==
+* Memory allocation and garbage collection
+* local scope variables
+* user defined functions
+* Flash/EEPROM program storage
+* Autorun LISP function on startup
 
 ==Commands core commands==
 ||*Command*||*Description/Example*||
@@ -30,7 +38,7 @@ Coming soon - Femto is still in early stages of development. It will provide a m
 ||eq||test for equality i.e. (eq 1 1) ->true||
 ||if||conditionals i.e. (if (eq 1 2) (prn "never") true (prn "always)) -> "always"||
 ||do||(do (pr "a") (prn "b")) -> "ab" ||
-||while||NOT WORKING||
+||while||(while cond list) i.e. (while (eq -1 (readIR)) (do (prn "loop" (sleep 100))))||
 
 ==Command to access wck Servos and sensors==
 ||*Command*||*Description/Example*||
@@ -40,3 +48,4 @@ Coming soon - Femto is still in early stages of development. It will provide a m
 ||passiveServo|| (passiveServo 10) -> servo 10 set to passive state||
 ||synchServo|| (synchServo 'lastid 'torq '(pos0 pos1 .. pos(lastid)))||
 ||wckwriteIO||(wckwriteIO 10 true true) set red and blue light on servo 10 ||
+||moveServo|| (moveServo time frames '(positions)) smooth move from current position to new positon ||
