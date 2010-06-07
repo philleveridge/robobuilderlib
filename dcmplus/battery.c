@@ -111,7 +111,7 @@ ISR(TIMER0_OVF_vect)
 		ADC_set(ADC_MODE_SINGLE);
 	}
 
-	if (!MIC_SAMPLING)
+	//if (!MIC_SAMPLING)
 		heart();
 
 	

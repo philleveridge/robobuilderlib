@@ -13,7 +13,7 @@ extern volatile WORD   g10Mtimer;
 extern void     delay_ms(int ms);
 
 //------------------------------------------------------------------------------
-// UART1 Receive  Routine
+// UART0 Receive  Routine
 //------------------------------------------------------------------------------
 
 int getWck(WORD timeout)
@@ -27,7 +27,7 @@ int getWck(WORD timeout)
 }
 
 //------------------------------------------------------------------------------
-// UART1 Transmit  Routine
+// UART0 Transmit  Routine
 //------------------------------------------------------------------------------
 
 void putWck (BYTE b)
