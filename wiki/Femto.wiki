@@ -10,11 +10,11 @@ http://robobuilderlib.googlecode.com/files/femto.hex
 Femto aim is to provide a micro-lisp  language support to enable full autonomy for the robot.
 
 ==Things still to do==
-* Memory allocation and garbage collection
-* local scope variables
-* user defined functions
-* Flash/EEPROM program storage
-* Autorun LISP function on startup
+  * Memory allocation and garbage collection
+  * local scope variables
+  * user defined functions
+  * Flash/EEPROM program storage
+  * Autorun LISP function on startup
 
 ==Commands core commands==
 ||*Command*||*Description/Example*||
