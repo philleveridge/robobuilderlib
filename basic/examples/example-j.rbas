@@ -1,0 +1,11 @@
+5 PRINT "Test Passive"
+10 SERVO 12=@
+20 Print "Servo 12 = "; $SERVO:12
+30 wait 500
+40 goto 20
+
+
+
+
+
+

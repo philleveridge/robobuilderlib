@@ -1,0 +1,4 @@
+10 LET A=(5+3)*(2+1)
+20 PRINT "The answer is ";A
+30 END
+

@@ -1,8 +1,12 @@
+#ifdef AVR
 #include <avr/pgmspace.h>
 #include <avr/io.h>
+#else // FOR WIndows
+#define prog_char	char
+#endif
+
 #include "Macro.h"
 #include "femto.h"
-
 
 extern int 		strcmp(char *, char *);
 
@@ -41,6 +45,8 @@ char inputbuffer[MAX];
 int  ibcnt;
 char *ibptr;
 
+#ifdef AVR
+
 void readline()
 {
 	int ch=0;
@@ -73,6 +79,23 @@ void readline()
 	inputbuffer[ibcnt]=0;
 }
 
+#else 
+//windows version
+void readline()
+{
+	int ch=0;
+	ibcnt=0;
+	ibptr=&inputbuffer[0];
+	while (ibcnt<MAX-1) 
+	{
+		ch=getByte();
+		if (ch == 10) break; 
+		inputbuffer[ibcnt++] = ch;
+	}
+	inputbuffer[ibcnt]=0;
+}
+#endif
+
 void ungetch(int c)
 {
 	if (ibptr>inputbuffer)
@@ -100,12 +123,19 @@ void printstr(char *c)
 	while ((ch=*c++) != 0) putch(ch);
 }
 
+#ifdef AVR
 void printromstr(const char c[])
 {
 	char ch;
 	if (c==0) return;
 	while ( (ch = pgm_read_byte(c++)) != 0) putch (ch);
 }
+#else
+void printromstr(const char c[])
+{
+	printstr(c);
+}
+#endif
 
 void printline(char *c)
 {
@@ -198,6 +228,7 @@ struct prim { char *name; PFP func; int sf;} prim_tab[] = {
 	{"do1",  prog,0},	
 	{"do",   progn,0},	
 	{"clone",cclone,0},
+#ifdef AVR
 	{"standup",     wckstandup,0},
 	{"sendServo",   sendServo, 0},
 	{"getServo",    getServo,  0},
@@ -205,6 +236,7 @@ struct prim { char *name; PFP func; int sf;} prim_tab[] = {
 	{"syncServo",   synchServo,0},
 	{"wckwriteIO",  wckwriteIO,0},
 	{"readIR",      readIR,    0},
+#endif
 
 	{"while",whle,1}
 };
@@ -224,7 +256,7 @@ tCELLp newCell()
 	{
 		return &memory[mem++];
 	}
-	return null;
+	return (tCELLp)null;
 }
 
 void delCell(tCELLp p)
@@ -270,6 +302,8 @@ void delString(char *p)
 
 void garbageCollect()
 {
+	BYTE *bot = &stringbuffer[0];
+	int i;
 	//tbd
 
 	// free up string space
@@ -278,7 +312,7 @@ void garbageCollect()
 	
 	if (dbg==0) return;
 	
-	BYTE *bot = stringbuffer;
+
 	while (bot<stop)
 	{
 		printint(bot-stringbuffer); printstr("] <");
@@ -287,7 +321,7 @@ void garbageCollect()
 	}
 	
 	printint(mem); printline(" cells");
-	for (int i=0; i< mem; i++)
+	for (i=0; i< mem; i++)
 	{
 		printint(i); printstr("-"); printtype(memory[i].head); 
 		
@@ -371,6 +405,8 @@ tOBJ readtoken()
 	char *p=str;
 	int  n=0;	
 	int ch = 0;
+	tOBJ r;
+
 	while (((ch = getch()) > 0) && n<20)
 	{
 		if (!isLetterorDigit(ch)) 
@@ -384,7 +420,7 @@ tOBJ readtoken()
 	*p =0;
 
 	// SYMBOL - FUNCTION - BOOL - EMPTY 
-	tOBJ r;
+
 	r.q = false;
 	r.type=EMPTY;
 	
@@ -470,11 +506,13 @@ tCELL *parselist()
 tOBJ parse()
 {
 	tOBJ r;
+	int ch;
+	bool qf=0;
+
 	r.type=EMPTY;
 	r.q = false;
 	
-	int ch;
-	bool qf=0;
+
 	
 	while ((ch = getch()) > 0)
 	{
@@ -686,9 +724,11 @@ tOBJ len(tCELLp p) // i.e. (len  '(123 456)) => 2
 
 tOBJ cons(tCELLp p) // i.e. (cons  123 '(456)) => (123 456)
 {
-	tOBJ r ; r.type=EMPTY;
+	tOBJ r ; 
 	tOBJ a = p->head;
 	tOBJ b = p->tail->head;
+	r.type=EMPTY;
+
 	if (a.type ==CELL || b.type != CELL)
 	{
 		r.type=EMPTY; //error
@@ -714,11 +754,13 @@ tOBJ list(tCELLp p) // i.e. (list 123 456) => (123 456)
 tOBJ plus(tCELLp p) // i.e. (plus 123 456) => 597
 {
 	tOBJ r;
+	int n=0;
+
 	r.type=INT;
 	r.number=0;
 	
-	int n=0;
-	if (p->head.type == INT)
+
+	if (p!=0 && p->head.type == INT)
 	{
 		n = p->head.number + plus(p->tail).number;
 	}
@@ -815,8 +857,9 @@ int symCnt=0;
 tOBJ get(char *n)
 {
 	tOBJ r;
+	int i;
 	r.type=EMPTY;
-	for (int i=0; i<symCnt; i++)
+	for (i=0; i<symCnt; i++)
 	{
 		if (strcmp(n,symb_tab[i].name)==0)
 		{
@@ -852,9 +895,10 @@ int add(char *n, tOBJ v)
 tOBJ set(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a 
 {
 	tOBJ r;
+	tOBJ h = p->head;
+
 	r.type=EMPTY;
 
-	tOBJ h = p->head;
 	if (h.type == SYMBOL)
 	{
 		add(h.string, (p->tail)->head);
@@ -875,10 +919,8 @@ tOBJ set(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a
 
 tOBJ setq(tCELLp p)   // i.e. (set 'a 123 'b 245 ) => 123 and set a 
 {
-	tOBJ r;
-	r.type=EMPTY;
-
 	tOBJ h = p->head;
+	tOBJ r;	r.type=EMPTY;
 	
 	if (h.type == SYMBOL)
 	{
@@ -946,6 +988,7 @@ tOBJ oclone(tOBJ o)
 
 tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")) (eval a) => "hello"
 {
+	tCELLp p;
 	tOBJ r ; r.type=EMPTY;
 	
 	DEBUG(printstr("DEBUG:: ["); printtype(h); printline("]"))
@@ -974,7 +1017,7 @@ tOBJ callobj(tOBJ h)   // i.e. (eval '(plus 2 3)) -> 7 // (set 'a '(prn "hello")
 		return h;
 	}
 	
-	tCELLp p = (tCELLp)(h.cell);
+	p = (tCELLp)(h.cell);
 	h=p->head;
 	
 	// first element in a lis must be a function
@@ -1044,9 +1087,9 @@ tOBJ whle(tCELLp p)
 	// (while (eq -1 (readIR)) (do (prn "loop - IR=" (readIR)) (sleep 100)))
 	tOBJ cond = p->head;
 	tOBJ fn   = p->tail->head;
-	tOBJ r; r.type=EMPTY;
+	tOBJ r; 
 	
-	tOBJ t = callobj(cond);
+	tOBJ t = callobj(cond);r.type=EMPTY;
 		
 	while ((t.type == BOOL && t.number==1) || (t.type != EMPTY && t.type != ERROR && t.type != BOOL )) 
 	{
@@ -1175,3 +1218,10 @@ void femto()
 	initialise();
 	repl();
 }
+
+#ifndef AVR
+main()
+{
+	femto();
+}
+#endif

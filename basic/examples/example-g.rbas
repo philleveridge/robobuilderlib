@@ -1,0 +1,6 @@
+10 let A=$IR
+20 print "Received=";A
+30 if a=4 then 40 else 10
+40 xact 8
+50 goto 10
+
