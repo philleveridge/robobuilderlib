@@ -4,6 +4,7 @@
 //	things that may or may not work.  It consists mainly of a lot of little
 //	routines that the user can access via the serial interface.
 
+#include <avr/eeprom.h> 
 #include <avr/io.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,13 +34,6 @@ extern int 	autobalance;
 extern int 	response;
 extern int  params[];
 
-extern void basic_load();
-extern void basic_run(int);
-extern void basic_clear();
-extern void basic_list();
-extern void basic_download();
-extern void dump_firmware();
-extern void dump();
 
 extern const prog_char version[];
 
@@ -51,9 +45,71 @@ BYTE Read_Events(void);
 #define EPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
 extern void print_motionBuf(int bytes);
 
-extern void set_type(uint8_t c);
-extern uint8_t get_type();
-extern uint8_t get_noservos();
+uint8_t EEMEM HUNO_TYPE[1];  			// this is where the tokenised code will be stored
+
+void set_type(uint8_t c)
+{
+	eeprom_write_byte(HUNO_TYPE, c);	
+}
+
+uint8_t get_type()
+{
+	return eeprom_read_byte(HUNO_TYPE);
+}
+
+void delay_ms(int m)
+{
+	_delay_ms(m);
+}
+
+uint8_t get_noservos()
+{
+	int noservos=0;
+	switch (get_type())
+	{
+	case HUNO_BASIC: 
+	    noservos=16;
+		break;
+	case HUNO_ADVANCED: 
+	    noservos=19;
+		break;
+	case HUNO_OTHER: 
+	    noservos=18;
+		break;	
+	}
+	return noservos;
+}
+
+void send_bus_str(char *bus_str, int n)
+{
+			
+		BYTE b;
+		int ch;
+		char *eos = bus_str+n;
+
+		wckReInit(BR9600);
+	
+		while  ((bus_str<eos) && (b=*bus_str++) != 0)
+		{			
+			wckSendByte('S');
+			wckSendByte(b);
+			
+			if (b=='p' || b=='t')
+			{
+				delay_ms(100);	
+				if (*bus_str != 0) wckSendByte(*bus_str++);
+				delay_ms(100);	
+				if (*bus_str != 0) wckSendByte(*bus_str++);
+				
+			}		
+			delay_ms(100);		
+			ch = wckGetByte(1000);
+			rprintf ("BUS=%d\r\n", ch);
+		}
+		
+		wckReInit(BR115200);
+		wckFlush(); // flush the buffer
+}
 
 
 void experimental_binloop();
@@ -488,7 +544,7 @@ void Perform_Action (BYTE Action)
 		0x10:  //sitdown
 		0x11:  //hi
 		0x12:  //kick left front turn
-	*/
+
 		if (get_type()==HUNO_BASIC)
 		{
 			SampleMotion(Action);  					// comm.c: perform the sample motion
@@ -498,6 +554,7 @@ void Perform_Action (BYTE Action)
 		{
 			ptime(); rprintf("Only when in HUNO BASIC mode\r\n");
 		}
+		*/
 	}
 	else
 	switch (Action)
@@ -505,11 +562,11 @@ void Perform_Action (BYTE Action)
 
 	case 0x20:
 		ptime(); rprintf("Basic Pose\r\n");
-		if (get_type()==HUNO_BASIC)
-		{
-			BasicPose();
-		}
-		else
+		//if (get_type()==HUNO_BASIC)
+		//{
+		//	BasicPose();
+		//}
+		//else
 		{
 			rprintf("N/A\r\n");
 		}		
@@ -654,7 +711,7 @@ void Perform_Action (BYTE Action)
 		
 	// very experimental - BASIC
 	// Short term aim - simple eprograms controlling motions
-	// long term aim  - to be compatible with Robonova basic
+	/*
 	case 0xC0:
 		basic_load();
 		break;
@@ -705,6 +762,7 @@ void Perform_Action (BYTE Action)
 		rprintf("set Robot type Other\r\n");
 		set_type(HUNO_OTHER);
 		break;	
+		*/
 		
 	case 0xD0:
 		//experimental
