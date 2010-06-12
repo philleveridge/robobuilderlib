@@ -65,25 +65,65 @@ Example Programs are now available from examples folder
 
 */
 
+#ifdef AVR
 #include <avr/io.h>
 #include <avr/eeprom.h> 
+//#include <util/delay.h>
+#include <avr/pgmspace.h>
+#include <avr/interrupt.h>
 
+#include "uart.h"
+#include "rprintf.h"
+#include "math.h"
+#else
+//windows mods
+
+#define uint16_t unsigned int
+#define uint8_t  unsigned char
+#define EEMEM
+#define prog_char char
+#define PINA 1
+#define PINB 2
+#define PINC 3
+#define PIND 4
+#define PINE 5
+#define PINF 6
+#define PING 7
+
+char port[8];
+
+#define PORTA port[1]
+#define PORTB port[2]
+#define PORTC port[3]
+#define PORTD port[4]
+#define PORTE port[5]
+#define PORTF port[6]
+#define PORTG port[7]
+
+#define rprintf			printf 
+#define rprintfChar		putchar 
+#define rprintfStr		printf 
+
+//from win.c
+extern void			eeprom_read_block (char *b, char *d, int l);
+extern unsigned int	eeprom_read_word  (char *p);
+extern char			eeprom_read_byte  (char *p);
+extern void			eeprom_write_block(char *d, char *b, int l);
+extern void			eeprom_write_word (char *b, unsigned int  w);
+extern void			eeprom_write_byte (char *b, unsigned char c);
+extern int			uartGetByte();
+extern void			rprintfStrLen(char *p, int s, int l);
+
+#endif
 
 // Standard Input/Output functions
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "Main.h"
-
-//#include <util/delay.h>
-#include <avr/pgmspace.h>
-#include <avr/interrupt.h>
-
 #include "global.h"
 #include "Macro.h"
-#include "math.h"
-#include "uart.h"
-#include "rprintf.h"
+
 #include "adc.h"
 #include "ir.h"
 #include "accelerometer.h"
@@ -178,12 +218,13 @@ uint8_t get_type()
 
 void send_bus_str(char *bus_str, int n)
 {
-		wckReInit(BR9600);
-		
+			
 		BYTE b;
 		int ch;
 		char *eos = bus_str+n;
-		
+
+		wckReInit(BR9600);
+	
 		while  ((bus_str<eos) && (b=*bus_str++) != 0)
 		{			
 			wckSendByte('S');
@@ -372,21 +413,24 @@ int readLine(char *line)
 // Loop
 
 void basic_load()
-{
-	rprintfStr("Enter Program '.' to Finish\r\n");
-	
+{	
 	char line[MAX_LINE];
 	int n=0;
 	int lc=0;
 //	int i=0;
 	char *cp;
 	
-	errno=0;
-	
 	uint16_t psize=0;
 	
 	char forbuf[MAX_FOR_NEST][MAX_FOR_EXPR];
 	int fb=0;
+
+			
+	struct basic_line newline;	
+	
+	errno=0;
+
+	rprintfStr("Enter Program '.' to Finish\r\n");
 	
 	while (1)
 	{
@@ -417,9 +461,7 @@ void basic_load()
 		if (n==0) continue; //ignore blank lines
 		
 		// convert to token
-		
-		struct basic_line newline;	
-		
+	
 		newline.var=0;
 		newline.value=0;
 		newline.text=0;
@@ -489,12 +531,13 @@ void basic_load()
 			
 			if (newline.var == sPORT)
 			{
+				char pn, pb;
 				if (getNext(&cp) != ':')
 				{
 					errno=3;
 				}	
 
-				char pn = getNext(&cp) ;
+				pn = getNext(&cp) ;
 				
 				if (pn<'A' || pn >'G') 
 				{
@@ -506,7 +549,7 @@ void basic_load()
 					errno=3;
 				}	
 				
-				char pb = getNext(&cp) ;
+				pb = getNext(&cp) ;
 				
 				if ((pb<'0' || pb >'8'))
 				{
@@ -551,10 +594,12 @@ void basic_load()
 			// and handle error
 			// replace THEN with ? and ELSE with :
 			// IF A THEN B ELSE C =>  GOTO (A)?B:C
+			{
+			char *p_then,*p_else;
 			newline.text=cp-1;
 			*(cp-1)='(';
-			char *p_then = strstr(cp, "THEN");
-			char *p_else = strstr(cp, "ELSE");
+			p_then = strstr(cp, "THEN");
+			p_else = strstr(cp, "ELSE");
 			if (p_then != 0) 
 				strncpy(p_then, ")?  ",4);
 			else
@@ -566,6 +611,7 @@ void basic_load()
 				strcat(cp,":0");
 			
 			//rprintf("["); rprintfStr(newline.text); rprintf("]\r\n"); //debug
+			}
 			break;
 		case WAIT: 
 		case GOTO: 
@@ -600,6 +646,7 @@ void basic_load()
 		
 		if (errno==0)
 		{	
+			uint8_t l=0;
 			lc++;
 			if (psize==0)
 			{
@@ -617,7 +664,7 @@ void basic_load()
 			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+psize), newline.value);	
 			psize+=2;
 			
-			uint8_t l=0;
+
 			if (newline.text != 0) l = strlen(newline.text);
 			eeprom_write_byte(BASIC_PROG_SPACE+psize, l);	
 			psize++;
@@ -989,6 +1036,7 @@ int gotoln(int gl)
 
 	while (lno != 0)
 	{
+		uint8_t b;
 		//rprintf("debug: %d,%d ??\r\n", lno, nl);
 		//DPAUSE
 
@@ -1002,7 +1050,7 @@ int gotoln(int gl)
 		
 		if (lno == gl)
 			break;				
-		uint8_t b=eeprom_read_byte(BASIC_PROG_SPACE+nl+6);	
+		b=eeprom_read_byte(BASIC_PROG_SPACE+nl+6);	
 		nl = nl + 6+ b +1;
 	}
 	if (lno!=0) 
@@ -1044,8 +1092,23 @@ void basic_run(int dbf)
 	//   Execute action
 	//	 Move to next line
 	// Loop
+	int ptr=1;
+	int tm;
+	int fm;
+	uint8_t tmp=0;
+	char *p;	
 	
+	struct basic_line line;
+	
+	int forptr[MAX_FOR_NEST]; int fp=0; // Upto 3 nested for/next
+	int gosub[MAX_GOSUB_NEST]; int gp=0;  // 3 nested gosubs
+	
+	char buf[64];
+	char scene[16];
+	int n;
+
 	uint8_t data = eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE));
+	line.text=buf;
 
 	if (data==0xAA) {
 		rprintfStr("Run Program \r\n");
@@ -1058,27 +1121,11 @@ void basic_run(int dbf)
 	
 	//point top at EEPROM
 	
-	int ptr=1;
-	int tm;
-	int fm;
-	uint8_t tmp=0;
-	char *p;
-	
-	struct basic_line line;
-	
-	int forptr[MAX_FOR_NEST]; int fp=0; // Upto 3 nested for/next
-	int gosub[MAX_GOSUB_NEST]; int gp=0;  // 3 nested gosubs
-	
-	char buf[64];
-	char scene[16];
-	
-	line.text=buf;
-	int n;
-	
 	errno=0;
 	
 	while (tmp != 0xCC && ptr < EEPROM_MEM_SZ )
 	{
+		uint8_t l;
 		if (errno !=0)
 		{
 			rprintf("Runtime error %d\r\n", errno);
@@ -1093,7 +1140,7 @@ void basic_run(int dbf)
 		line.value=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
 		ptr+=2;
 		
-		uint8_t l=eeprom_read_byte((uint8_t *)(BASIC_PROG_SPACE+ptr));	
+		l=eeprom_read_byte((uint8_t *)(BASIC_PROG_SPACE+ptr));	
 
 		eeprom_read_block(line.text, BASIC_PROG_SPACE+ptr+1, l);	
 		line.text[l]='\0';
@@ -1307,13 +1354,16 @@ void basic_run(int dbf)
 			break;
 		case SCENE: 
 			// read in 16 servo position values and store
+			{
+			int i;
 			p=line.text;
-			for (int i=0;i<16;i++)
+			for (i=0;i<16;i++)
 			{
 				n=0;
 				eval_expr(&p, &n);
 				if (i!=15 && *p++ != ',') { errno=6;break; }
 				scene[i]=n;
+			}
 			}
 			//
 			break;
@@ -1351,16 +1401,15 @@ void basic_clear()
 {
 	// Set Init pointer to Zero
 	int i;	
+	uint8_t data= 0xFF; 				// start of program byte	
 	rprintfStr("Clear Program \r\n");
 			
-	uint8_t data= 0xFF; 				// start of program byte		
 	for (i=0; i<EEPROM_MEM_SZ; i++) 	
 	{
 		eeprom_write_byte(BASIC_PROG_SPACE+i, data);
 	}
 	
 	rprintf("Cleared %d bytes \r\n", EEPROM_MEM_SZ);
-
 }
 
 
@@ -1410,23 +1459,24 @@ void dump_firmware()
 void basic_list()
 {
 	// TBD -  Dump EEprom for the Moment
+	int ptr=1;
+	uint8_t tmp=0;
+	
+	struct basic_line line;
+	char buf[64];
+
 	rprintfStr("List Program \r\n");
 
 	if (eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE)) != 0xAA ) {
 		rprintfStr("No program loaded\r\n");
 		dump();
 		return;
-	}
-	
-	int ptr=1;
-	uint8_t tmp=0;
-	
-	struct basic_line line;
-	char buf[64];
+	}	
 	
 	line.text=buf;
 	while (tmp != 0xCC && ptr < EEPROM_MEM_SZ )
 	{
+		uint8_t l;
 		line.lineno=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
 		ptr+=2;
 		line.token=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
@@ -1436,7 +1486,7 @@ void basic_list()
 		line.value=eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
 		ptr+=2;
 		
-		uint8_t l=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
+		l=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
 
 		eeprom_read_block(line.text, BASIC_PROG_SPACE+ptr+1, l);	
 		line.text[l]='\0';
@@ -1513,6 +1563,43 @@ void basic_download()
 
 void basic()
 {
-	basic_load();
+	int ch;
+	rprintfStr("Basic 0.1\r\nComands: i r l c z\r\n");
+	while (1)
+	{
+		rprintfStr(": ");
+		while ((ch = uartGetByte())<0) ;			
+		rprintfChar(ch);rprintfChar(10);rprintfChar(13);	
+		switch (ch)
+		{
+		case 'i': // input
+			basic_load();
+			break;
+		case 'r': // run
+			basic_run(0);
+			break;
+		case 'l': // list 
+			basic_list();
+			break;
+		case 'c': // clear 
+			basic_clear();
+			break;
+		case 'd': // dump 
+			dump();
+			break;
+		case 'z': // download 
+			rprintfStr("start download\r\n");
+			break;
+		default:
+			rprintfStr("??\r\n");
+			break;
+		}
+	}
 }
 
+#ifndef AVR
+main()
+{
+	basic();
+}
+#endif
