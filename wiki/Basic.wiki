@@ -2,25 +2,27 @@
 #labels Phase-Requirements
 = Introduction =
 
-This is still in an early development stage !!!
+This is still in an early development stage !!! 
 
-It can only be accessed via *experimental mode*, by typing the following:
-  * & - program entry
-  * ! - program run 
+This gives Robobuilder the ability to create simple actions in an elementary basic language. Download [http://code.google.com/p/robobuilderlib/source/browse/trunk/basic/Basic.hex basic.hex] on to the RBC module using the RBCUpgrade tool as per manual.
 
-In addition extra features can be access using follow special codes
-  * eC2 - program clear
-  * eC3 - program list 
-  * eC4 - program run in debug mode
+Turn of the RBC and connect a vt100 terminal emulator. You should see the following:
+{{{
+Basic 0.1
+Commands: i r l c z
+:
+}}}
 
-Typing r in 'idle mode' will run the stored program if it exists
-(*) Note: List mode 
+At the prompt type 
+  * i - input a new program
+  * r - run current program
+  * l - list current program
+  * c - clear memory
+  * z - download (tbc)
 
 See examples below of programs that have been tested
 
 = Details =
-
-The ability to create simple actions in an elementary basic language
 
 {{{
 
@@ -71,7 +73,7 @@ SERVO ID=POS  set servo id to position POS / @
 PUT 	      enable access to PORTS/SPECIAL REGISTER
 SCENE         sends a Scene - 16 Servo Positions, Plus time, no frames
 WAIT          Wait for a an amount of time in ms
-XACT          Call any action using code i.e. XACT 0, would punch left, XACT 17 a wave
+XACT          *TBC* - Call any action using code i.e. XACT 0, would punch left, XACT 17 a wave
 Built in motions:
 0x00:  PunchLeft
 0x01:  PunchRight
