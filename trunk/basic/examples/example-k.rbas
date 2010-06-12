@@ -1,0 +1,11 @@
+5 print "test Put "; $TICK
+10 PUT PSD=1
+20 PUT PF1=1
+30 wait 500
+40 PUT PSD=0
+50 PUT PF1=0
+60 wait 500
+70 goto 5
+
+
+
