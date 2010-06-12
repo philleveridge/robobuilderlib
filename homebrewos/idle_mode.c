@@ -10,8 +10,6 @@
 #include "motion.h"
 #include "rprintf.h"
 
-extern void basic_run(int);
-
 
 static void exitToExperimental(void) {
 	// Go to basic pose, and then switch to experimental mode
@@ -29,7 +27,6 @@ static void handle_serial(int cmd) {
 	if ('b' == cmd || 'b' == cmd) gNextMode = kBinMode;
 	if ('p' == cmd || 'P' == cmd) exitToExperimental();
 	if ('s' == cmd || 'S' == cmd) exitToSerialSlave();
-	if ('r' == cmd || 'R' == cmd) basic_run(0);
 	if ('c' == cmd || 'C' == cmd) gNextMode = kChargeMode;
 	if ('?' == cmd) {
 		rprintf("\nIdle mode\n");

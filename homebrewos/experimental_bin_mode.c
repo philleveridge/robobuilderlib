@@ -107,7 +107,7 @@ read comiled binary from serial port
 
 extern uint8_t EEMEM BASIC_PROG_SPACE[];  // this is where the tokenised code will be stored
 
-
+/*
 int bin_downloadbasic()
 {
 	int i;
@@ -130,6 +130,7 @@ int bin_downloadbasic()
 	while ((b0=uartGetByte())<0);
 	return (b0 != (cs&0x7f));
 }
+*/
 
 /***************************
 
@@ -174,7 +175,7 @@ int bin_respond_H(int mt)
 
 l basic command response
 
-***************************/
+
 
 int bin_respond_basicdownload(int mt)
 {
@@ -182,6 +183,7 @@ int bin_respond_basicdownload(int mt)
 	SendResponse('l', VERSION);
 	return 0;
 }
+***************************/
 
 
 /***************************
@@ -577,13 +579,13 @@ int bin_read_request()
 			return  bin_read_p(mt);
 		}	
 
-		if (mt=='l')
+		/*if (mt=='l')
 		{
 			if (bin_downloadbasic())
 				return -1;
 			else
 				return mt;
-		}		
+		}*/	
 	}
 	//
 	return -1;
@@ -606,8 +608,8 @@ void experimental_binloop()
 		
 		switch (r)
 		{
-		case 'l':
-			bin_respond_basicdownload(r); break;
+		//case 'l':
+		//	bin_respond_basicdownload(r); break;
 		case 'v':
 			bin_respond_ver(r); break;
 		case 'q':

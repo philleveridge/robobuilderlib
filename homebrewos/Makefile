@@ -43,7 +43,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
 ## Objects that must be built in order to link
-OBJECTS = main.o uart.o buffer.o motion.o rprintf.o adc.o ir.o accelerometer.o idle_mode.o experimental_mode.o charge_mode.o serialslave_mode.o basic.o wck.o experimental_bin_mode.o compatability.o
+OBJECTS = main.o uart.o buffer.o motion.o rprintf.o adc.o ir.o accelerometer.o idle_mode.o experimental_mode.o charge_mode.o serialslave_mode.o wck.o experimental_bin_mode.o 
 
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 
@@ -52,51 +52,9 @@ LINKONLYOBJECTS =
 all: $(TARGET) Robobuilderlib.hex Robobuilderlib.eep Robobuilderlib.lss size
 
 ## Compile
-main.o: main.c
-#	$(CC) $(INCLUDES) $(CFLAGS) -DPSD_SENSOR -c  $<
+%.o: %.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
 	
-compatability.o: compatability.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-	
-experimental_bin_mode.o: experimental_bin_mode.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-	
-serialslave_mode.o: serialslave_mode.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-
-battery.o: battery.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-	
-uart.o: uart.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-
-buffer.o: buffer.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-
-motion.o: motion.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-
-wck.o: wck.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-
-dio.o: dio.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-
-rprintf.o: rprintf.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-
-adc.o: adc.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-	
-ir.o: ir.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-
-accelerometer.o: accelerometer.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
-
-basic.o: basic.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
 	
 ##Link
 $(TARGET): $(OBJECTS)

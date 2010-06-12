@@ -30,7 +30,7 @@ volatile extern int		gFrameIdx;	    // frame counter
 extern WORD	   	TxInterval;				// Timer 1 interval
 extern WORD		gNumOfFrame;
 
-const prog_char version[] = "Mk2 ($Rev: 105 $)\r\n";
+const prog_char version[] = "Mk3 ($Rev$)\r\n";
 
 // software states----------------------------------------------------------------------
 volatile BYTE 	F_PLAYING;				// state: playing from Flash
@@ -440,7 +440,6 @@ int main(void)
 		switch (gNextMode) {
 			case kIdleMode:
 				idle_mainloop();
-				//compatability_mode();
 				break;
 			case kExperimentalMode:
 				experimental_mainloop();
@@ -454,11 +453,6 @@ int main(void)
 			case kBinMode:
 				experimental_binloop();
 				break;
-				
-/*			case kClassicMode:
-				classic_mainloop();
-				break;
-*/
 		}
 	}
 }
