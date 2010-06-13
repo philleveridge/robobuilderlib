@@ -78,7 +78,7 @@ void heart()
 void delay_ms(int m)
 {
 	mstimer=m;
-	while (1) {}; //wait for mstimer to clear;
+	while (mstimer>0) {}; //wait for mstimer to clear;
 }
 
 //------------------------------------------------------------------------------
