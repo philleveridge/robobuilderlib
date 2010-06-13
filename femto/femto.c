@@ -27,7 +27,7 @@ extern int  getByte ();
 
 int dbg=0;
 
-const prog_char welcome[] = "Femto $Rev: 152 $\r\n";
+const prog_char welcome[] = "Femto $Rev$\r\n";
 
 
 const prog_char *errmessage[] = {
