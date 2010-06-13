@@ -27,12 +27,9 @@ volatile extern int		gFrameIdx;	    	// frame counter
 extern WORD	   			TxInterval;			// Timer 1 interval
 extern WORD				gNumOfFrame;
 
-const prog_char version[] = "Ver=$Rev$\r\n";
-
 // software states----------------------------------------------------------------------
 volatile BYTE 	F_PLAYING;				// state: playing from Flash
 volatile BYTE	F_NEXTFRAME;			// trigger to start the next frame
-
 
 // global variables------------------------------------------------------------
 WORD    gBtnCnt;						// counter for PF button press
@@ -40,7 +37,6 @@ WORD    gBtnCnt;						// counter for PF button press
 int		gX,gY,gZ;
 int 	autobalance;
 int     response;						//reponsd to event on/off
-int	    params[10];						//tuning params
 
 // timer variables----------------------------------------------------------------
 volatile WORD    g10MSEC;
@@ -53,7 +49,33 @@ volatile WORD	mstimer;
 volatile WORD	gSEC_DCOUNT;
 volatile WORD	gMIN_DCOUNT;
 
-int delay_ms(int m)
+void heart()
+{
+	// the beating heart ...
+	// 1000 ms 
+	// 0-200 ms PF1 LED ON  200-400 ms PF2 LED on
+	// else off
+	if (gMSEC<200)
+	{
+		PF1_LED1_ON;    
+		PF1_LED2_OFF;
+		PF2_LED_OFF;
+	}
+	else if (gMSEC>200 && gMSEC<400)
+	{
+		PF1_LED1_OFF;    
+		PF1_LED2_OFF;
+		PF2_LED_ON;
+	}
+	else
+	{
+		PF1_LED1_OFF;    
+		PF1_LED2_OFF;
+		PF2_LED_OFF;
+	}
+}
+
+void delay_ms(int m)
 {
 	mstimer=m;
 	while (1) {}; //wait for mstimer to clear;
@@ -68,6 +90,8 @@ ISR(TIMER0_OVF_vect)
 	// 1ms 
 	
 	if (mstimer>0) mstimer--;
+	
+	heart(); // beating
 	
     if(++gMSEC>999){
 		// 1s 
@@ -258,7 +282,7 @@ void HW_init(void) {
 	UCSR0A=0x00;
 	//UCSR0B=0x98;
 	//UCSR0B=0x48;
-	UCSR0B = (1<<RXEN)|(1<<TXEN) |(1<<TXCIE); //enable reads for GetPos !!
+	UCSR0B = (1<<RXEN)|(1<<TXEN); //enable reads for GetPos !!
 	UCSR0C=0x06;
 	UBRR0H=0x00;
 	UBRR0L=0x07;
@@ -347,9 +371,7 @@ int main(void)
 	
 //	adc_init();		
 	tilt_setup();				// initialise acceleromter
-	
-	delay_ms(200);
-	
+		
 	basic();
 	
 	while (1) { }
