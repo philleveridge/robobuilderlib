@@ -166,6 +166,18 @@ extern int getHex(int d);
 
 extern int delay_ms(int d);
 
+//wait for byte
+int  GetByte()
+{
+	int b;
+	
+	RUN_LED1_OFF;
+	while ((b=uartGetByte())<0) ;
+	RUN_LED1_ON;
+	
+	return b;
+}
+
 const  prog_char *error_msgs[] = {
 	"",
 	"Syntax error",
@@ -1580,51 +1592,53 @@ void basic_list()
 
 void SendResponse(char mt, uint8_t d)
 {
-	uartSendByte(MAGIC_RESPONSE);
-	uartSendByte(mt);
-	uartSendByte(d);
-	uartSendByte( (mt ^ d) & 0x7F);
+	PWR_LED1_ON;
+	rprintfChar(MAGIC_RESPONSE);
+	rprintfChar(mt);
+	rprintfChar(d);
+	rprintfChar( (mt ^ d) & 0x7F);
+	PWR_LED1_OFF;
 }
 
 int bin_downloadbasic()
 {
 	int i;
-	uint8_t b0=0, b1=0;
+	int b0=0, b1=0;
 	int cs = 0;
 
-	while ((b0=uartGetByte())<0);      
-	while ((b1=uartGetByte())<0);
-	int bytes = ((int)b1 << 8) | b0;
+	b0 = GetByte();    
+	b1 = GetByte();
+		
+	int bytes = (b1 << 8) | b0;
 	cs ^= b0;
 	cs ^= b1;
 	
 	for (i=0; i<bytes; i++)
 	{
-		while ((b0=uartGetByte())<0); 	
+		b0 = GetByte();
 		cs ^= b0;
-		eeprom_write_byte(BASIC_PROG_SPACE+i, b0);	
-	}
+		eeprom_write_byte(BASIC_PROG_SPACE+i, b0 % 256);	
+	}	
 	
-	while ((b0=uartGetByte())<0);
-	return (b0 != (cs&0x7f));
+	b0 = GetByte();
+	return (b0 = (cs&0x7f));
 }
 
 int bin_read_request()
 {
-	int b0;
 	int mt;
-	int cs;
-	while ((b0=uartGetByte())<0);
+	int b0 = GetByte();
+	
 	if (b0==MAGIC_REQUEST)
 	{
-		while ((mt=uartGetByte())<0);	
+		mt = GetByte();
 
 		if (mt=='l')
 		{
 			if (bin_downloadbasic())
-				return -1;
-			else
 				return mt;
+			else
+				return -1;
 		}
 	}
 	return -1;
@@ -1633,13 +1647,17 @@ int bin_read_request()
 void binmode()
 {
 	int r;
+	
+	RUN_LED2_ON;
 
-	while ((r=bin_read_request())<0) ;
-		
+	r=bin_read_request();
+			
 	if (r == 'l')
 		SendResponse('l', VERSION);
 	else
 		SendResponse('z', PROTOCOL_ERROR);
+		
+	RUN_LED2_OFF;
 }
 
 // if flag set read initial positions
@@ -1669,7 +1687,7 @@ void basic()
 	while (1)
 	{
 		rprintfStr(": ");
-		while ((ch = uartGetByte())<0) ;			
+		ch = GetByte();			
 		rprintfChar(ch);rprintfChar(10);rprintfChar(13);	
 		switch (ch)
 		{
