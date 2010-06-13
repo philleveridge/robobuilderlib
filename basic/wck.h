@@ -11,13 +11,13 @@ void wckFlush( void );
 
 /*------------------ basic wCK bus serial communication ----------------*/  
 void wckSendByte(char data);   // Send 1 Byte to serial port  
-char wckGetByte(WORD timeout); // Receive 1 Byte from serial port  
+int  wckGetByte(WORD timeout); // Receive 1 Byte from serial port  
 
 /*------------------ other Basic Functions relating to wCK module--------------------------*/  
 void wckSendOperCommand(char Data1, char Data2);  
 void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4);  
 WORD wckPosSend(char ServoID, char Torque, char Position);  
-char wckPosRead(char ServoID);
+int  wckPosRead(char ServoID);
 WORD wckPosAndLoadRead(char ServoID);
 char wckSetPassive(char ServoID);
 char wckPowerDown(void);  

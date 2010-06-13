@@ -135,7 +135,7 @@ extern void			rprintfStrLen(char *p, int s, int l);
 #define BR115200	7 
 
 #define EEPROM_MEM_SZ 	1024
-#define MAX_LINE  		80 
+#define MAX_LINE  		40 
 #define MAX_TOKEN 		8
 #define MAX_FOR_NEST	3
 #define MAX_GOSUB_NEST	3
@@ -267,6 +267,37 @@ uint8_t get_noservos()
 }
 
 int errno;
+
+void PerformAction (BYTE Action)
+{	
+	if (Action>=0 && Action <=0x12)
+	{
+	/*
+		0x00:  //PunchLeft
+		0x01:  //PunchRight
+		0x02:  //SidewalkLeft
+		0x03:	//SidewalkRight
+		0x04:  //TurnLeft
+		0x05:  //TurnRight
+		0x06:  //GetupBack
+		0x07:  //GetupFront
+		0x08:  //WalkForward
+		0x09:  //WalkBackward
+		0x0A:  //lshoot
+		0x0B:  //rshoot
+		0x0C:  //rsidewalk
+		0x0D:  //lsidewalk
+		0x0E:  //standupr
+		0x0F:  //standupf
+		0x10:  //sitdown
+		0x11:  //hi
+		0x12:  //kick left front turn
+	*/
+		SampleMotion(Action); 
+		//ptime(); 
+		rprintf("Do Motion %x\r\n", Action);
+	}
+}
 
 //next no space char
 char getNext(char **p_line) 
@@ -1367,6 +1398,10 @@ void basic_run(int dbf)
 			}
 			//
 			break;
+			
+		case XACT: 
+			PerformAction(line.value);
+			break;
 		case WAIT: 
 			delay_ms(line.value);
 			break;
@@ -1535,36 +1570,102 @@ void basic_list()
 			rprintfStr (line.text);
 		rprintf ("\r\n");
 	}
-	
-	dump(); //debug
-
 }
 
-/*
-void basic_download()
+#define MAGIC_RESPONSE	0xEA
+#define MAGIC_REQUEST	0xCD
+#define VERSION			0x12     /* BIN API VERSION */
+#define MAX_INP_BUF 	40
+#define PROTOCOL_ERROR	01
+
+void SendResponse(char mt, uint8_t d)
 {
-// read comiled binary from serial port
-	int nb;
-	int i;
-	uint8_t b=0;
-	rprintfStr("Download ... \r\n");
-	
-	nb = getHex(4);
-	for (i=0; i<nb; i++)
-	{
-		b = getHex(2);
-		eeprom_write_byte(BASIC_PROG_SPACE+i, b);	
-	}
-	rprintf(".. complete [%d/%d] Bytes\r\n", i, EEPROM_MEM_SZ);
-
+	uartSendByte(MAGIC_RESPONSE);
+	uartSendByte(mt);
+	uartSendByte(d);
+	uartSendByte( (mt ^ d) & 0x7F);
 }
-*/
 
+int bin_downloadbasic()
+{
+	int i;
+	uint8_t b0=0, b1=0;
+	int cs = 0;
+
+	while ((b0=uartGetByte())<0);      
+	while ((b1=uartGetByte())<0);
+	int bytes = ((int)b1 << 8) | b0;
+	cs ^= b0;
+	cs ^= b1;
+	
+	for (i=0; i<bytes; i++)
+	{
+		while ((b0=uartGetByte())<0); 	
+		cs ^= b0;
+		eeprom_write_byte(BASIC_PROG_SPACE+i, b0);	
+	}
+	
+	while ((b0=uartGetByte())<0);
+	return (b0 != (cs&0x7f));
+}
+
+int bin_read_request()
+{
+	int b0;
+	int mt;
+	int cs;
+	while ((b0=uartGetByte())<0);
+	if (b0==MAGIC_REQUEST)
+	{
+		while ((mt=uartGetByte())<0);	
+
+		if (mt=='l')
+		{
+			if (bin_downloadbasic())
+				return -1;
+			else
+				return mt;
+		}
+	}
+	return -1;
+}
+
+void binmode()
+{
+	int r;
+
+	while ((r=bin_read_request())<0) ;
+		
+	if (r == 'l')
+		SendResponse('l', VERSION);
+	else
+		SendResponse('z', PROTOCOL_ERROR);
+}
+
+// if flag set read initial positions
+
+static BYTE cpos[32];
+static BYTE nos=0;
+
+BYTE readservos()
+{
+	BYTE i;
+	for (i=0; i<31; i++)
+	{
+		int p = wckPosRead(i);		
+		if (p<0 || p>255) break;
+		rprintfStr("+");
+		cpos[i]=p;	
+	}
+	rprintfStr("\r\n");
+	return i;
+}
 
 void basic()
 {
 	int ch;
-	rprintfStr("Basic 0.1\r\nComands: i r l c z\r\n");
+	rprintfStr("Basic $Rev$\r\nCommands: i r l c z q\r\n");
+
 	while (1)
 	{
 		rprintfStr(": ");
@@ -1589,6 +1690,11 @@ void basic()
 			break;
 		case 'z': // download 
 			rprintfStr("start download\r\n");
+			binmode(); // enter binary mode
+			break;
+		case 'q': // download 
+			nos=readservos();
+			rprintf("Servos: %d\r\n", nos);	
 			break;
 		default:
 			rprintfStr("??\r\n");

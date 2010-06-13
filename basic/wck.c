@@ -50,19 +50,18 @@ void wckSendByte(char td)
 //------------------------------------------------------------------------------
 // Get character when received. or timeout
 //------------------------------------------------------------------------------
-char wckGetByte(WORD timeout)
+extern volatile WORD	mstimer;
+
+int wckGetByte(WORD timeout)
 {
-	WORD	startT;
-	startT = gMSEC;
+	mstimer = timeout;
+	
 	while(!(UCSR0A&(1<<RXC)) ){ 	// test for received character
-        if(gMSEC<startT) {
-			// wait RX_T_OUT for a character
-            if((1000 - startT + gMSEC) > timeout) break;
-        }
-		else if((gMSEC - startT) > timeout) break;
+		if (mstimer==0) return -1;
 	}
 	return UDR0;
 }
+
 
 
 //////////////////////////////// Definition of Basic Functions ///////////////////////////
@@ -117,14 +116,15 @@ WORD wckPosSend(char ServoID, char Torque, char Position)
 /* Input : ServoID */
 /* Output : Position */
 /************************************************************************************************/
-char wckPosRead(char ServoID)
+int wckPosRead(char ServoID)
 {
-	char Position;
+	int Position;
 	wckSendOperCommand(0xa0|ServoID, NULL);
 	wckGetByte(TIME_OUT1);
 	Position = wckGetByte(TIME_OUT1);
 	return Position;
 }
+
 
 /************************************************************************************************/
 /* Function that sends Position Read Command to wCK module, and returns the Load and Position. */
