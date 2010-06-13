@@ -437,6 +437,7 @@ namespace RobobuilderLib
             codeptr++; // (include terminator 0xCC )
 
             string s = codeptr.ToString("X4");
+            s = "";
 
             for (int i = 0; i < codeptr; i++)
             {

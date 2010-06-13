@@ -8,16 +8,18 @@ namespace RobobuilderLib
     public partial class Basic_frm : Form
     {
         Basic       compiler;
-        PCremote    pcr;
         SerialPort  s;
 
         string rx = ".";
+
+        bool bm = false;
 
         public Basic_frm()
         {
             InitializeComponent();
             download_btn.Enabled = false;
 
+            compiler = new Basic();
             s = new SerialPort(comPort.Text, 115200);
             s.DataReceived += new SerialDataReceivedEventHandler(s_DataReceived);
 
@@ -26,6 +28,7 @@ namespace RobobuilderLib
 
         void output_KeyPress(object sender, KeyPressEventArgs e)
         {
+            if (bm) return;
             //throw new NotImplementedException();
             rx = e.KeyChar.ToString();
             if (s.IsOpen)
@@ -59,27 +62,31 @@ namespace RobobuilderLib
         private void download_btn_Click(object sender, EventArgs e)
         {
             string c= compiler.Download();
+            bm = true;
 
             try
             {
-                pcr = new PCremote(s);
 
-                if (pcr == null || pcr.download_basic(c) == false)
-                {
-                    MessageBox.Show("Download failed");
-                }
-                else
+                binxfer btf = new binxfer(s);
+                btf.dbg = true;
+                btf.send_msg_raw('l', c);
+
+                if (btf.recv_packet())
                 {
                     MessageBox.Show("Download ok");
                     output.Text = "Complete - Ready to run";
                 }
+                else
+                {
+                    Console.WriteLine("download failed");
+                }
 
-                pcr.close();
             }
             catch (Exception err)
             {
                 MessageBox.Show("Download failed - connection problem" + err.Message);
             }
+            bm = false;
         }
 
         private void load_btn_Click(object sender, EventArgs e)
@@ -122,7 +129,6 @@ namespace RobobuilderLib
 
         private void button1_Click(object sender, EventArgs e)
         {
-            compiler = new Basic();
             if (s.IsOpen)
             {
                 s.Close();
@@ -143,7 +149,7 @@ namespace RobobuilderLib
         void s_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             //throw new NotImplementedException();
-
+            if (bm) return;
 
             switch (e.EventType)
             {
