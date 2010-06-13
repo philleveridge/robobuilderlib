@@ -66,19 +66,19 @@ namespace RobobuilderLib
 
             try
             {
-
                 binxfer btf = new binxfer(s);
                 btf.dbg = true;
                 btf.send_msg_raw('l', c);
 
                 if (btf.recv_packet())
                 {
+                    bm = false;
                     MessageBox.Show("Download ok");
-                    output.Text = "Complete - Ready to run";
                 }
                 else
                 {
                     Console.WriteLine("download failed");
+                    bm = false;
                 }
 
             }
@@ -86,7 +86,7 @@ namespace RobobuilderLib
             {
                 MessageBox.Show("Download failed - connection problem" + err.Message);
             }
-            bm = false;
+
         }
 
         private void load_btn_Click(object sender, EventArgs e)

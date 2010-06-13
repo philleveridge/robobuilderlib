@@ -1683,7 +1683,8 @@ void basic()
 {
 	int ch;
 	rprintfStr("Basic $Rev$\r\nCommands: i r l c z q\r\n");
-
+	nos=readservos();
+	rprintf("Servos: %d\r\n", nos);	
 	while (1)
 	{
 		rprintfStr(": ");
