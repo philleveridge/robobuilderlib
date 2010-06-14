@@ -61,59 +61,18 @@ PUT PORT:A:8 = 3 //set DDR of Port A = 3 (PIN0,PIN1 readable)
 PUT PORT:A:2 = 1 //set Port A bit 1 =1 (assuming writeable)
 
 Example Programs are now available from examples folder
-
-
 */
 
 #ifdef AVR
 #include <avr/io.h>
 #include <avr/eeprom.h> 
-//#include <util/delay.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
-
 #include "uart.h"
 #include "rprintf.h"
 #include "math.h"
 #else
-//windows mods
-
-#define uint16_t unsigned int
-#define uint8_t  unsigned char
-#define EEMEM
-#define prog_char char
-#define PINA 1
-#define PINB 2
-#define PINC 3
-#define PIND 4
-#define PINE 5
-#define PINF 6
-#define PING 7
-
-char port[8];
-
-#define PORTA port[1]
-#define PORTB port[2]
-#define PORTC port[3]
-#define PORTD port[4]
-#define PORTE port[5]
-#define PORTF port[6]
-#define PORTG port[7]
-
-#define rprintf			printf 
-#define rprintfChar		putchar 
-#define rprintfStr		printf 
-
-//from win.c
-extern void			eeprom_read_block (char *b, char *d, int l);
-extern unsigned int	eeprom_read_word  (char *p);
-extern char			eeprom_read_byte  (char *p);
-extern void			eeprom_write_block(char *d, char *b, int l);
-extern void			eeprom_write_word (char *b, unsigned int  w);
-extern void			eeprom_write_byte (char *b, unsigned char c);
-extern int			uartGetByte();
-extern void			rprintfStrLen(char *p, int s, int l);
-
+#include "win.h"
 #endif
 
 // Standard Input/Output functions
@@ -128,6 +87,7 @@ extern void			rprintfStrLen(char *p, int s, int l);
 #include "ir.h"
 #include "accelerometer.h"
 #include "wck.h"
+#include "edit.h"
 
 #define DPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
 
@@ -153,18 +113,21 @@ extern void			rprintfStrLen(char *p, int s, int l);
 /***********************************/
 
 uint8_t EEMEM FIRMWARE[64];  					// leave blank - used by Robobuilder OS
-
-uint8_t EEMEM HUNO_TYPE[1];  			// this is where the tokenised code will be stored
-
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
 extern void Perform_Action(BYTE action);
-
 static unsigned char *motionBuf;
 extern void print_motionBuf(int bytes);
 extern int getHex(int d);
-
 extern int delay_ms(int d);
+extern void SampleMotion(unsigned char); 
+
+/***********************************/
+
+
+
+static BYTE cpos[32];
+static BYTE nos=0;
 
 //wait for byte
 int  GetByte()
@@ -208,24 +171,7 @@ char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RN
 
 enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE};
 							
-struct basic_line {
-    int lineno;
-	unsigned char token;
-	unsigned char var;
-	int value;
-	char *text; // rest of line - unproceesed
-};
 
-
-void set_type(uint8_t c)
-{
-	eeprom_write_byte(HUNO_TYPE, c);	
-}
-
-uint8_t get_type()
-{
-	return eeprom_read_byte(HUNO_TYPE);
-}
 
 
 void send_bus_str(char *bus_str, int n)
@@ -259,24 +205,6 @@ void send_bus_str(char *bus_str, int n)
 		wckFlush(); // flush the buffer
 }
 
-
-uint8_t get_noservos()
-{
-	int noservos=0;
-	switch (get_type())
-	{
-	case HUNO_BASIC: 
-	    noservos=16;
-		break;
-	case HUNO_ADVANCED: 
-	    noservos=19;
-		break;
-	case HUNO_OTHER: 
-	    noservos=18;
-		break;	
-	}
-	return noservos;
-}
 
 int errno;
 
@@ -362,7 +290,6 @@ int getNum(char **p_line)
 //simple token match
 //i points to next char after toek
 //returns token ID or -1 if not found
-//
 
 int getToken(char *str, char *tok)
 {
@@ -460,14 +387,12 @@ void basic_load()
 	char line[MAX_LINE];
 	int n=0;
 	int lc=0;
-//	int i=0;
 	char *cp;
 	
 	uint16_t psize=0;
 	
 	char forbuf[MAX_FOR_NEST][MAX_FOR_EXPR];
 	int fb=0;
-
 			
 	struct basic_line newline;	
 	
@@ -509,17 +434,17 @@ void basic_load()
 		newline.value=0;
 		newline.text=0;
 			
-		newline.lineno = getNum(&cp) ;
-		
-		if (cp>line+n || *cp  !=' ') 
-		{
-			errno=1;
-			continue;
+		if ((newline.lineno = getNum(&cp))!=0)
+		{	
+			if (cp>line+n || *cp  !=' ')
+			{
+				errno=1;
+				continue;
+			}
+			cp++;
 		}
-		cp++;
-		//int token_match(char *list[], char **p_line, int n)
-		//if ( (newline.token=token_match(tokens, &cp, sizeof(tokens)))<0)
-		if ( (newline.token=token_match((char **)tokens, &cp, sizeof(tokens)))<0)
+
+		if ( (newline.token=token_match((char **)tokens, &cp, 19))==255)           // sizeof(tokens)/))<0)
 		{
 			errno=2;
 			continue;
@@ -683,41 +608,19 @@ void basic_load()
 		default:
 			errno=2;
 			break;
-		}		
-		
-		// store struct in eeprom
+		}			
 		
 		if (errno==0)
 		{	
-			uint8_t l=0;
-			lc++;
-			if (psize==0)
+			if (newline.lineno==0)
 			{
-				//write header
-				uint8_t data= 0xAA; // start of program byte		
-				eeprom_write_byte(BASIC_PROG_SPACE, data);
-				psize++;
+				execute(newline,0); // immediate execute
 			}
-			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+psize), newline.lineno);	
-			psize+=2;
-			eeprom_write_byte(BASIC_PROG_SPACE+psize, newline.token);	
-			psize++;		
-			eeprom_write_byte(BASIC_PROG_SPACE+psize, newline.var);	
-			psize++;	
-			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+psize), newline.value);	
-			psize+=2;
-			
-
-			if (newline.text != 0) l = strlen(newline.text);
-			eeprom_write_byte(BASIC_PROG_SPACE+psize, l);	
-			psize++;
-			if (l>0)
+			else
 			{
-				eeprom_write_block(newline.text, BASIC_PROG_SPACE+psize, l);			
-				psize+=l;
+				lc++;
+				insertln(newline); 	// store struct in eeprom
 			}
-
-			eeprom_write_byte(BASIC_PROG_SPACE+psize, 0xCC);	// terminator character
 		}
 	}
 }
@@ -862,7 +765,7 @@ int get_special(char *str, int *res)
 		v=adc_volt();
 		break;
 	case sTYPE:
-		v=get_type(); 				// Robot configuration
+		v=nos;
 		break;
 	case sIR:
 		while ((v= irGetByte())<0) ; //wait for IR
@@ -1127,321 +1030,331 @@ int put_special(int var, int n)
 		}
 	return 0;
 }
+
+int forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
+int fp; 
+int gosub[MAX_GOSUB_NEST];  // 3 nested gosubs
+int gp;  
+
+int execute(line_t line, int dbf);
 		
 void basic_run(int dbf)
 {
 	// Repeat
-	//   Get token
+	//   load from memory
 	//   Execute action
-	//	 Move to next line
 	// Loop
-	int ptr=1;
-	int tm;
-	int fm;
-	uint8_t tmp=0;
-	char *p;	
-	
-	struct basic_line line;
-	
-	int forptr[MAX_FOR_NEST]; int fp=0; // Upto 3 nested for/next
-	int gosub[MAX_GOSUB_NEST]; int gp=0;  // 3 nested gosubs
-	
+
+	uint8_t tmp=0;	
+	line_t line;
 	char buf[64];
-	char scene[16];
-	int n;
+	
+	fp=0; // Upto 3 nested for/next
+	gp=0;  // 3 nested gosubs
+	
+	nxtline=0;
 
-	uint8_t data = eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE));
-	line.text=buf;
-
-	if (data==0xAA) {
-		rprintfStr("Run Program \r\n");
-	}
-	else
-	{
+	if (nextchar()!=0xAA) {
 		rprintfStr("No program loaded\r\n");
 		return;
 	}
 	
 	//point top at EEPROM
-	
+	rprintfStr("Run Program \r\n");	
 	errno=0;
+	firstline();
 	
-	while (tmp != 0xCC && ptr < EEPROM_MEM_SZ )
+	while (tmp != 0xCC && nxtline < EEPROM_MEM_SZ )
 	{
-		uint8_t l;
+		int tc;
 		if (errno !=0)
 		{
 			rprintf("Runtime error %d\r\n", errno);
 			return;
 		}
-		line.lineno=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
-		ptr+=2;
-		line.token=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
-		ptr++;		
-		line.var=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
-		ptr++;	
-		line.value=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
-		ptr+=2;
-		
-		l=eeprom_read_byte((uint8_t *)(BASIC_PROG_SPACE+ptr));	
 
-		eeprom_read_block(line.text, BASIC_PROG_SPACE+ptr+1, l);	
-		line.text[l]='\0';
+		line = readln(buf);
 		
-		ptr += (l+1);
-		
-		tmp = eeprom_read_byte(BASIC_PROG_SPACE+ptr);	// terminator character ?
-
-		/* execute code */
-	
-		if (dbf) rprintf (": %d - ", line.lineno); // debug mode
+		tc = nextchar();	// terminator character ?
 		
 		if (uartGetByte() == 27)  {
 			rprintf ("User Break on line %d\r\n", line.lineno); 
 			return;
 		}
-		
-		switch (line.token)
+
+		/* execute code */
+		tmp = execute(line, dbf);
+		if (tmp == 0) tmp=tc;
+	}
+}
+
+int execute(line_t line, int dbf)
+{
+	//   Get token
+	//   Execute action
+	//	 Move to next line
+
+	int tm;
+	int fm;
+	uint8_t tmp=0;
+	char *p;		
+	
+	char scene[16];
+	int n;
+	
+	if (dbf) rprintf (": %d - ", line.lineno); // debug mode
+
+	switch (line.token)
+	{
+	case FOR: 
+		// remember where next in struction is
+		forptr[fp++] = nxtline;
+		// eval expr1 of line.text = "expr1 TO expr2"
+		// i.e var=expr1
+		n=0;
+		p=line.text;
+		if (eval_expr(&p, &n)==NUMBER)
+			variable[line.var] = n;					
+		break;
+	case NEXT: 
+		// increment var and check condiiton
+		if (fp>0) {
+			int t_ptr=forptr[fp-1];
+			// increment var
+			variable[line.var]++;
+			// test against expr2 i.e var<=expr2
+			n=0;
+			p=line.text;
+			if (eval_expr(&p, &n)!=NUMBER)
+			{
+				errno=1;
+				break; //need to handle error	
+			}			
+			if (variable[line.var] <= n) { 
+				// if true set ptr=stack; 
+				setline(t_ptr); tmp=0 ;
+			}	
+			else
+			{
+				fp--;
+			}
+		}
+		break;
+	case GET: 
+		n=0;
+		if (get_special(line.text, &n)<0)
+			errno=2;
+		variable[line.var]=n;	
+		break;
+	case POKE:
+ 		n=0;
+		p=line.text;
+		if (eval_expr(&p, &n)==NUMBER)
 		{
-		case FOR: 
-			// remember where next in struction is
-			forptr[fp++] = ptr;
-			// eval expr1 of line.text = "expr1 TO expr2"
-			// i.e var=expr1
-			n=0;
-			p=line.text;
-			if (eval_expr(&p, &n)==NUMBER)
-				variable[line.var] = n;					
-			break;
-		case NEXT: 
-			// increment var and check condiiton
-			if (fp>0) {
-				int t_ptr=forptr[fp-1];
-				// increment var
-				variable[line.var]++;
-				// test against expr2 i.e var<=expr2
-				n=0;
-				p=line.text;
-				if (eval_expr(&p, &n)!=NUMBER)
-				{
-					errno=1;
-					break; //need to handle error	
-				}			
-				if (variable[line.var] <= n) { 
-					// if true set ptr=stack; 
-					ptr = t_ptr; tmp=0 ;
-					//rprintf ("T dbg %d %d %d\r\n", n, variable[line.var], ptr ); 
-				}	
-				else
-				{
-					//rprintf ("F dbg %d %d %d\r\n", n, variable[line.var], ptr ); 
-					fp--;
-				}
-			}
-			break;
-		case GET: 
-			n=0;
-			if (get_special(line.text, &n)<0)
-				errno=2;
-			variable[line.var]=n;	
-			break;
-		case POKE:
- 			n=0;
-			p=line.text;
-			if (eval_expr(&p, &n)==NUMBER)
+			// put result into address line.var
+			uint8_t addr=line.var;
+			eeprom_write_byte(FIRMWARE+addr, n);
+		}
+		else
+			errno=1;
+		break;
+	case PUT: 
+		n=0;
+		p=line.text;
+		if (eval_expr(&p, &n)==NUMBER)
+			put_special(line.var, n);
+		else
+			errno=1;
+		break;
+	case LET: 
+		n=0;
+		p=line.text;
+		if (eval_expr(&p, &n)==NUMBER)
+			variable[line.var] = n;
+		else
+			errno=1;
+		//else
+		//handle error
+		//rprintf ("assign %c= %d\r\n", line.var, n); // DEBUG
+		break;
+	case SERVO:
+		n=0;
+		p=line.text;
+		if (*p=='@') // set passive mode
+		{
+			// set pass servo id=line.var
+			wckSetPassive(line.var);
+		}
+		else
+		{
+			eval_expr(&p, &n);
+			if (n>00 && n<=254)
 			{
-				// put result into address line.var
-				uint8_t addr=line.var;
-				eeprom_write_byte(FIRMWARE+addr, n);
+				// set pos servo id=line.var, n
+				// char SpeedLevel
+				wckPosSend(line.var, 2, n);
 			}
-			else
-				errno=1;
-			break;
-		case PUT: 
-			n=0;
-			p=line.text;
-			if (eval_expr(&p, &n)==NUMBER)
-				put_special(line.var, n);
-			else
-				errno=1;
-			break;
-		case LET: 
-			n=0;
-			p=line.text;
-			if (eval_expr(&p, &n)==NUMBER)
-				variable[line.var] = n;
-			else
-				errno=1;
-			//else
-			//handle error
-			//rprintf ("assign %c= %d\r\n", line.var, n); // DEBUG
-			break;
-		case SERVO:
-			n=0;
-			p=line.text;
-			if (*p=='@') // set passive mode
-			{
-				// set pass servo id=line.var
-				wckSetPassive(line.var);
-			}
-			else
-			{
-				eval_expr(&p, &n);
-				if (n>00 && n<=254)
-				{
-					// set pos servo id=line.var, n
-					// char SpeedLevel
-					wckPosSend(line.var, 2, n);
-				}
-			}
-			break;
-		case GOTO: 
-			if ((ptr = gotoln(line.value))<0)
+		}
+		break;
+	case GOTO: 
+		{
+			int t = gotoln(line.value);
+			if (t<0)
 			{
 				errno=3; return;	
 			}		
+			setline(t);
 			tmp=0;
-			break;	
-		case PRINT: 
-			n=0;
-			p=line.text;
-			while (1)
+		}
+		break;	
+	case PRINT: 
+		n=0;
+		p=line.text;
+		while (1)
+		{
+			switch (eval_expr(&p, &n))
 			{
-				switch (eval_expr(&p, &n))
+			case NUMBER:
+				rprintf ("%d", n);
+				break;
+			case STRING:
+				n=str_expr(p);
+				if (line.var==1)
 				{
-				case NUMBER:
-					rprintf ("%d", n);
-					break;
-				case STRING:
-					n=str_expr(p);
-					if (line.var==1)
-					{
-						send_bus_str(p, n);
-					}
-					else
-					{
-						rprintfStrLen(p,0,n);
-					}
-					p=p+n+1;
-					break;
+					send_bus_str(p, n);
 				}
-				if (*p=='\0') break; // done
-				
-				if (*p!=';' && *p!=',') {
-					errno=4; //rprintf ("synatx prob= [%d]\r\n", *p); // DEBUG
-					break;
+				else
+				{
+					rprintfStrLen(p,0,n);
 				}
-				if (*p==';' && *(p+1)=='\0') // last one
-					break;
-				p++;
+				p=p+n+1;
+				break;
 			}
-			// check for last ; (no crlf)
-			if (*p!=';')	
-				rprintfStr ("\r\n"); 			
-			break;	
-		case IF:		
+			if (*p=='\0') break; // done
+				
+			if (*p!=';' && *p!=',') {
+				errno=4; //rprintf ("synatx prob= [%d]\r\n", *p); // DEBUG
+				break;
+			}
+			if (*p==';' && *(p+1)=='\0') // last one
+				break;
+			p++;
+		}
+		// check for last ; (no crlf)
+		if (*p!=';')	
+			rprintfStr ("\r\n"); 			
+		break;	
+	case IF:		
+		n=0;
+		p=line.text;
+
+		if (eval_expr(&p, &n)==NUMBER)
+		{
+			if (n != 0)
+			{	
+				int t = gotoln(line.value);
+				if (t<0)
+					errno=5; 	
+				else
+					setline(t);
+				tmp=0;		
+			}
+		}
+		break;		
+	case MOVE: 
+		// No args - send servo positions syncronously
+		// with args (No Frames / Time in Ms) - use MotionBuffer
+		fm=0; tm=0;
+		p=line.text;
+		if (p!=0)
+		{
+			eval_expr(&p, &fm);
+			if (*p++ != ',') { errno=5; break;}
+			eval_expr(&p, &tm);
+			//rprintf ("Move %d, %d\r\n", fm, tm); // DEBUG
+				
+			motionBuf = GetNextMotionBuffer();
+			motionBuf[0]= (unsigned char)1; //number of scenes
+			motionBuf[1]= (unsigned char)C; //number of servos
+				
+			for (n=0;n<C;n++) { motionBuf[2+n]= PGAIN; } //PGAIN
+
+			for (n=0;n<C;n++) { motionBuf[2+C+n]=DGAIN; } //DGAIN
+
+			for (n=0;n<C;n++) { motionBuf[2+2*C+n]=IGAIN; } //IGAIN		
+				
+			motionBuf[S]   =(WORD)tm;
+			motionBuf[S+1] =(WORD)(tm)>>8;
+			motionBuf[S+2] =(WORD)fm;
+			motionBuf[S+3] =(WORD)(fm)>>8;
+				
+			for (n=0;n<C;n++) { motionBuf[S+4+n]=scene[n]; }
+			for (n=0;n<C;n++) { motionBuf[S+4+n+C]=3; } //torquw
+			for (n=0;n<C;n++) { motionBuf[S+4+n+C*2]=0; } //ext data
+				
+			LoadMotionFromBuffer(motionBuf);
+				
+			//rprintf ("Play? "); DPAUSE
+			PlaySceneFromBuffer(motionBuf, 0);
+			complete_motion(motionBuf);
+		}
+		else
+		{
+			wckSyncPosSend(15, 0, scene, 0);
+		}
+		//
+		break;
+	case SCENE: 
+		// read in 16 servo position values and store
+		{
+		int i;
+		p=line.text;
+		for (i=0;i<16;i++)
+		{
 			n=0;
-			p=line.text;
-
-			if (eval_expr(&p, &n)==NUMBER)
-			{
-				if (n != 0)
-				{	
-					if ((ptr = gotoln(n))<0) {errno=5; }			
-					tmp=0;		
-				}
-			}
-			break;		
-		case MOVE: 
-			// No args - send servo positions syncronously
-			// with args (No Frames / Time in Ms) - use MotionBuffer
-			fm=0; tm=0;
-			p=line.text;
-			if (p!=0)
-			{
-				eval_expr(&p, &fm);
-				if (*p++ != ',') { errno=5; break;}
-				eval_expr(&p, &tm);
-				//rprintf ("Move %d, %d\r\n", fm, tm); // DEBUG
-				
-				motionBuf = GetNextMotionBuffer();
-				motionBuf[0]= (unsigned char)1; //number of scenes
-				motionBuf[1]= (unsigned char)C; //number of servos
-				
-				for (n=0;n<C;n++) { motionBuf[2+n]= PGAIN; } //PGAIN
-
-				for (n=0;n<C;n++) { motionBuf[2+C+n]=DGAIN; } //DGAIN
-
-				for (n=0;n<C;n++) { motionBuf[2+2*C+n]=IGAIN; } //IGAIN		
-				
-				motionBuf[S]   =(WORD)tm;
-				motionBuf[S+1] =(WORD)(tm)>>8;
-				motionBuf[S+2] =(WORD)fm;
-				motionBuf[S+3] =(WORD)(fm)>>8;
-				
-				for (n=0;n<C;n++) { motionBuf[S+4+n]=scene[n]; }
-				for (n=0;n<C;n++) { motionBuf[S+4+n+C]=3; } //torquw
-				for (n=0;n<C;n++) { motionBuf[S+4+n+C*2]=0; } //ext data
-				
-				LoadMotionFromBuffer(motionBuf);
-				
-				//rprintf ("Play? "); DPAUSE
-				PlaySceneFromBuffer(motionBuf, 0);
-				complete_motion(motionBuf);
-			}
-			else
-			{
-				wckSyncPosSend(15, 0, scene, 0);
-			}
-			//
-			break;
-		case SCENE: 
-			// read in 16 servo position values and store
-			{
-			int i;
-			p=line.text;
-			for (i=0;i<16;i++)
-			{
-				n=0;
-				eval_expr(&p, &n);
-				if (i!=15 && *p++ != ',') { errno=6;break; }
-				scene[i]=n;
-			}
-			}
-			//
-			break;
+			eval_expr(&p, &n);
+			if (i!=15 && *p++ != ',') { errno=6;break; }
+			scene[i]=n;
+		}
+		}
+		//
+		break;
 			
-		case XACT: 
-			PerformAction(line.value);
-			break;
-		case WAIT: 
-			delay_ms(line.value);
-			break;
-		case END: 
-			rprintfStr ("End of program\r\n"); 
-			return;
-		case GOSUB: 
-			//rprintfStr ("gosub\r\n");  //debug
-			gosub[gp++]=ptr;
-			if ((ptr = gotoln(line.value))<0)
-				return;	// this needs an error message		
-			tmp=0;		
-			break;
-		case RETURN: 
-			//rprintfStr ("return\r\n"); //debug
-			if (gp>0) {
-				ptr=gosub[--gp];
-				tmp=0;
-			} else {
-				errno=7;
-			}
-			break;
-		default:
-			errno=8; // DEBUG
-			tmp=0xCC;
-		}		
-	}
-	
+	case XACT: 
+		PerformAction(line.value);
+		break;
+	case WAIT: 
+		delay_ms(line.value);
+		break;
+	case END: 
+		rprintfStr ("End of program\r\n"); 
+		return 0xCC;
+	case GOSUB: 
+		//rprintfStr ("gosub\r\n");  //debug
+		{
+			int t;
+			gosub[gp++]=nxtline;
+			t=gotoln(line.value);
+			if (t<0)
+				return 0xCC;	// this needs an error message		
+			setline(t);
+			tmp=0;	
+		}
+		break;
+	case RETURN: 
+		//rprintfStr ("return\r\n"); //debug
+		if (gp>0) {
+			setline(gosub[--gp]);
+			tmp=0;
+		} else {
+			errno=7;
+		}
+		break;
+	default:
+		errno=8; // DEBUG
+		tmp=0xCC;
+	}		
+	return tmp;
 }
 
 void basic_clear()
@@ -1455,6 +1368,8 @@ void basic_clear()
 	{
 		eeprom_write_byte(BASIC_PROG_SPACE+i, data);
 	}
+
+	clearln();
 	
 	rprintf("Cleared %d bytes \r\n", EEPROM_MEM_SZ);
 }
@@ -1505,42 +1420,26 @@ void dump_firmware()
 
 void basic_list()
 {
-	// TBD -  Dump EEprom for the Moment
-	int ptr=1;
-	uint8_t tmp=0;
-	
-	struct basic_line line;
+	line_t line;
 	char buf[64];
+
+	uint8_t tmp=0;
+	nxtline = 0;	
 
 	rprintfStr("List Program \r\n");
 
-	if (eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE)) != 0xAA ) {
+	if (nextchar() != 0xAA ) {
 		rprintfStr("No program loaded\r\n");
 		dump();
 		return;
 	}	
 	
-	line.text=buf;
-	while (tmp != 0xCC && ptr < EEPROM_MEM_SZ )
-	{
-		uint8_t l;
-		line.lineno=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
-		ptr+=2;
-		line.token=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
-		ptr++;		
-		line.var=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
-		ptr++;	
-		line.value=eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+ptr));	
-		ptr+=2;
-		
-		l=eeprom_read_byte(BASIC_PROG_SPACE+ptr);	
+	firstline();
 
-		eeprom_read_block(line.text, BASIC_PROG_SPACE+ptr+1, l);	
-		line.text[l]='\0';
-		
-		ptr += (l+1);
-		
-		tmp = eeprom_read_byte(BASIC_PROG_SPACE+ptr);	// terminator character ?
+	while (tmp != 0xCC && nxtline < EEPROM_MEM_SZ )
+	{
+		line = readln(buf);
+		tmp = nextchar();
 
 		/* list code */
 	
@@ -1603,13 +1502,13 @@ void SendResponse(char mt, uint8_t d)
 int bin_downloadbasic()
 {
 	int i;
-	int b0=0, b1=0;
+	int b0=0, b1=0, bytes;
 	int cs = 0;
 
 	b0 = GetByte();    
 	b1 = GetByte();
 		
-	int bytes = (b1 << 8) | b0;
+	bytes = (b1 << 8) | b0;
 	cs ^= b0;
 	cs ^= b1;
 	
@@ -1621,7 +1520,7 @@ int bin_downloadbasic()
 	}	
 	
 	b0 = GetByte();
-	return (b0 = (cs&0x7f));
+	return (b0 == (cs&0x7f));
 }
 
 int bin_read_request()
@@ -1660,10 +1559,6 @@ void binmode()
 	RUN_LED2_OFF;
 }
 
-// if flag set read initial positions
-
-static BYTE cpos[32];
-static BYTE nos=0;
 
 BYTE readservos()
 {
@@ -1672,10 +1567,9 @@ BYTE readservos()
 	{
 		int p = wckPosRead(i);		
 		if (p<0 || p>255) break;
-		rprintfStr("+");
 		cpos[i]=p;	
 	}
-	rprintfStr("\r\n");
+	rprintf("Servos: %d\r\n", i);	
 	return i;
 }
 
@@ -1684,7 +1578,7 @@ void basic()
 	int ch;
 	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q\r\n");
 	nos=readservos();
-	rprintf("Servos: %d\r\n", nos);	
+
 	while (1)
 	{
 		rprintfStr(": ");
@@ -1713,7 +1607,6 @@ void basic()
 			break;
 		case 'q': // download 
 			nos=readservos();
-			rprintf("Servos: %d\r\n", nos);	
 			break;
 		default:
 			rprintfStr("??\r\n");
