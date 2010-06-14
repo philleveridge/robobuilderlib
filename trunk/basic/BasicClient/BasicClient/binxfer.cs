@@ -49,7 +49,13 @@ namespace RobobuilderLib
             header[4] = (byte)(cs & 0x7f);
 
             sp1.Write(header, 0, 4);
-            sp1.Write(buffer, 0, bfsz);
+
+            // slow down output - sp1.Write(buffer, 0, bfsz);
+            for (int i = 0; i < bfsz; i++)
+            {
+                sp1.Write(buffer, i, 1);
+                System.Threading.Thread.Sleep(2);
+            }
             sp1.Write(header, 4, 1);
             
             if (dbg) Console.WriteLine("DBG: sendm={0}", BitConverter.ToString(buffer));
@@ -65,7 +71,6 @@ namespace RobobuilderLib
             header[2] = (byte)(n & 0xFF);
             header[3] = (byte)((n >> 8) & 0xFF);
 
-            sp1.Write(header, 0, 4);
 
             cs ^= header[2]; cs ^= header[3];
 
@@ -82,7 +87,14 @@ namespace RobobuilderLib
             {
                 Console.WriteLine("DBG: [{1}] : [{2}] send={0}", BitConverter.ToString(b), n + 1, b.Length);
             }
-            sp1.Write(b, 0, n + 1);
+
+            sp1.Write(header, 0, 4);
+            // slow down output
+            for (int i = 0; i < n + 1; i++)
+            {
+                sp1.Write(b, i, 1);
+                System.Threading.Thread.Sleep(2);
+            }
         }
 
         public void send_msg_raw_bin(char mt, byte[] bytes)
@@ -102,7 +114,13 @@ namespace RobobuilderLib
 
             sp1.Write(header, 0, 3);
             if (dbg) Console.WriteLine("DBG: sendrb={0} {1}", BitConverter.ToString(header), BitConverter.ToString(bytes));
-            sp1.Write(bytes, 0, n);
+
+            // slow down output
+            for (int i = 0; i < n; i++)
+            {
+                sp1.Write(bytes, i, 1);
+                System.Threading.Thread.Sleep(2);
+            }
             sp1.Write(new byte[] {cs}, 0, 1);
         }
 
