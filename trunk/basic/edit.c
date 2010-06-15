@@ -67,7 +67,7 @@ void insertln(line_t newline)
 
 	eeprom_write_byte(BASIC_PROG_SPACE+psize, 0xCC);// terminator character
 
-	if (nxt == 1)
+	if (nxt == 3)
 	{
 		// top - updaing first line
 		int n = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxt));	
@@ -85,9 +85,9 @@ void insertln(line_t newline)
 		}
 	}
 
-	if (nxt > 1)
+	if (nxt > 3)
 	{
-		int n = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxt));	
+		int n = getlineno(nxt);	
 
 		if (newline.lineno == n)
 		{
@@ -112,6 +112,11 @@ void insertln(line_t newline)
 			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+la+6), srt + 6 + l + 3);	
 		}
 	}		
+}
+
+int getlineno(int p)
+{
+	return (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+p));	
 }
 
 void deleteln(int lineno)
@@ -143,9 +148,9 @@ void clearln()
 
 int findln(int lineno)
 {
-	int nl=firstline();
-	int lno=1;
-	int prv=1;
+	int nl  = firstline();
+	int prv = nl;
+	int lno = 1;
 
 	while (lno != 0)
 	{
@@ -157,10 +162,16 @@ int findln(int lineno)
 		}	
 		lno += (eeprom_read_byte(BASIC_PROG_SPACE+nl+1)<<8);	
 		
-		if (lno >= lineno)
+		if (lno == lineno)
+		{
+			return nl;
+		}
+				
+		if (lno > lineno)
 		{
 			return prv;
 		}
+
 		prv=nl;
 		nl=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nl+6));	
 	}

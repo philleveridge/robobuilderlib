@@ -24,4 +24,4 @@ extern uint8_t 	nextchar();
 extern int     	nxtline;
 extern void    	setline(uint8_t);
 extern int		firstline();
-
+extern int		getlineno(int p);

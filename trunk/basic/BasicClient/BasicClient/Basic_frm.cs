@@ -2,6 +2,8 @@
 using System.Windows.Forms;
 using System.IO;
 using System.IO.Ports;
+using System.Diagnostics;
+
 
 namespace RobobuilderLib
 {
@@ -10,6 +12,8 @@ namespace RobobuilderLib
         Basic       compiler;
         SerialPort  s;
 
+        bool readyDownload = false;
+
         string rx = ".";
 
         bool bm = false;
@@ -17,7 +21,7 @@ namespace RobobuilderLib
         public Basic_frm()
         {
             InitializeComponent();
-            download_btn.Enabled = false;
+            readyDownload = false;
 
             compiler = new Basic();
             s = new SerialPort(comPort.Text, 115200);
@@ -29,39 +33,174 @@ namespace RobobuilderLib
         void output_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (bm) return;
-            //throw new NotImplementedException();
+
             rx = e.KeyChar.ToString();
             if (s.IsOpen)
             {
                 s.Write(rx);
             }
+
+            //if (p != null)
+            //{
+            //    sw.Write(rx);
+            //}
             //this.Invoke(new EventHandler(DisplayText));     //echo      
         }
 
-        private void close_btn_Click(object sender, EventArgs e)
+
+        TestProcessCaller.ProcessCaller pc;
+
+        private void writeStreamInfo(object sender, TestProcessCaller.DataReceivedEventArgs e)
+        {
+            output.AppendText(e.Text + Environment.NewLine);
+        }
+
+        private void processCompletedOrCanceled(object sender, EventArgs e)
+        {
+            button1.BackColor = System.Drawing.Color.Red;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (comPort.Text == "!")
+            {
+                pc = new TestProcessCaller.ProcessCaller(this);
+                button1.BackColor = System.Drawing.Color.Blue;
+                pc.FileName = "basic.exe";
+                pc.StdErrReceived += new TestProcessCaller.DataReceivedHandler(writeStreamInfo);
+                pc.StdOutReceived += new TestProcessCaller.DataReceivedHandler(writeStreamInfo);
+                pc.Completed += new EventHandler(processCompletedOrCanceled);
+                pc.Cancelled += new EventHandler(processCompletedOrCanceled);
+                pc.Start();
+                return;
+            }
+
+            try
+            {
+                if (s.IsOpen)
+                {
+                    s.Close();
+                    button1.BackColor = System.Drawing.Color.Red;
+                }
+                else
+                {
+                    s.PortName = comPort.Text;
+                    s.Open();
+                    button1.BackColor = System.Drawing.Color.Green;
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Error - can't connect to serial port - " + comPort.Text, "Error", MessageBoxButtons.OK);
+            }
+        }
+
+        void p_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            rx = e.Data;
+            this.Invoke(new EventHandler(DisplayText));
+        }
+
+        private void DisplayText(object sender, EventArgs e)
+        {
+            if (rx != null) output.AppendText(rx);
+        }
+
+        void s_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            //throw new NotImplementedException();
+            if (bm) return;
+
+            switch (e.EventType)
+            {
+                case SerialData.Chars:
+                    rx = s.ReadExisting();
+                    this.Invoke(new EventHandler(DisplayText));
+                    break;
+                case SerialData.Eof:
+                    rx = "@@";
+                    this.Invoke(new EventHandler(DisplayText));
+                    break;
+            }
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Hide();
         }
 
-        private void compile_btn_Click(object sender, EventArgs e)
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog s = new SaveFileDialog();
+            if (s.ShowDialog() != DialogResult.OK)
+                return;
+            try
+            {
+                File.WriteAllText(s.FileName, input.Text);
+                fname.Text = s.FileName;
+            }
+            catch (Exception e1)
+            {
+                MessageBox.Show("can't save file - " + e1.Message);
+                fname.Text = "";
+            }
+        }
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog s = new OpenFileDialog();
+            if (s.ShowDialog() != DialogResult.OK)
+                return;
+            try
+            {
+                input.Text = File.ReadAllText(s.FileName);
+                output.Text = "";
+                //download_btn.Enabled = false;
+                fname.Text = s.FileName;
+            }
+            catch (Exception e1)
+            {
+                MessageBox.Show("can't open file - " + e1.Message);
+                output.Text = "";
+                //download_btn.Enabled = false;
+                fname.Text = "";
+            }
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("About Me (v 0.1)\r\nl3v3rz","About ... ",MessageBoxButtons.OK);
+        }
+
+        private void compileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (compiler.Compile(input.Text))
             {
                 output.Text = "Complete - ready to download\r\n";
                 output.Text += compiler.Dump();
-                download_btn.Enabled = true;
+                readyDownload = true;
             }
             else
             {
                 output.Text = "error on line " + compiler.lineno + " : " + compiler.error_msgs[compiler.errno] + "\r\n";
                 output.Text += compiler.Dump();
-                download_btn.Enabled = false;
+                readyDownload = false;
             }
         }
 
-        private void download_btn_Click(object sender, EventArgs e)
+        private void downloadToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string c= compiler.Download();
+
+            if (!readyDownload) // if not already built
+            {
+                compileToolStripMenuItem_Click(sender, e);
+                if (!readyDownload)
+                {
+                    return; // if failed return
+                }
+            }
+
+            string c = compiler.Download();
             bm = true;
 
             try
@@ -87,81 +226,6 @@ namespace RobobuilderLib
                 MessageBox.Show("Download failed - connection problem" + err.Message);
             }
 
-        }
-
-        private void load_btn_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog s = new OpenFileDialog();
-            if (s.ShowDialog() != DialogResult.OK)
-                return;
-            try
-            {
-                input.Text = File.ReadAllText(s.FileName);
-                output.Text = "";
-                download_btn.Enabled = false;
-                fname.Text = s.FileName;
-            }
-            catch (Exception e1)
-            {
-                MessageBox.Show("can't open file - " + e1.Message);
-                output.Text = "";
-                download_btn.Enabled = false;
-                fname.Text = "";
-            }
-        }
-
-        private void save_btn_Click(object sender, EventArgs e)
-        {
-            SaveFileDialog s = new SaveFileDialog();
-            if (s.ShowDialog() != DialogResult.OK)
-                return;
-            try
-            {
-                File.WriteAllText(s.FileName, input.Text);
-                fname.Text = s.FileName;
-            }
-            catch (Exception e1)
-            {
-                MessageBox.Show("can't save file - " + e1.Message);
-                fname.Text = "";
-            }
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (s.IsOpen)
-            {
-                s.Close();
-                button1.BackColor = System.Drawing.Color.Red;
-            }
-            else
-            {
-                s.Open();
-                button1.BackColor = System.Drawing.Color.Green;
-            }
-        }
-
-        private void DisplayText(object sender, EventArgs e)
-        {
-            output.AppendText(rx);
-        }
-
-        void s_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            //throw new NotImplementedException();
-            if (bm) return;
-
-            switch (e.EventType)
-            {
-                case SerialData.Chars:
-                    rx = s.ReadExisting();
-                    this.Invoke(new EventHandler(DisplayText));
-                    break;
-                case SerialData.Eof:
-                    rx = "@@";
-                    this.Invoke(new EventHandler(DisplayText));
-                    break;
-            }
         }
 
     }
