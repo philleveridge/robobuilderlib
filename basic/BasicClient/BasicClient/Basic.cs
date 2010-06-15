@@ -408,6 +408,8 @@ namespace RobobuilderLib
                 if (codeptr == 0)
                 {
                     code[codeptr++] = (byte)0xAA; // start of code
+                    code[codeptr++] = (byte)0x03; // start pointer
+                    code[codeptr++] = (byte)0x00; // 
                 }
 
                 code[codeptr++] = (byte)(ln.lineno % 256);
@@ -416,12 +418,14 @@ namespace RobobuilderLib
                 code[codeptr++] = ln.var;
                 code[codeptr++] = (byte)(ln.value % 256);
                 code[codeptr++] = (byte)(ln.value / 256);
-                int l = ln.text.Length;
+                int l = codeptr + ln.text.Length + 3;
                 code[codeptr++] = (byte)(l % 256);
-                for (int k = 0; k < l; k++)
+                code[codeptr++] = (byte)(l / 256);
+                for (int k = 0; k < ln.text.Length; k++)
                 {
                     code[codeptr++] = (byte)ln.text[k];
                 }
+                code[codeptr++] = 0;
                 code[codeptr] = (byte)0xCC; // start of code
 
                 /*************/

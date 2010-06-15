@@ -977,33 +977,10 @@ unsigned char eval_expr(char **str, int *res)
 
 int gotoln(int gl)
 {
-	int nl=1;
-	int lno=1;
+	int p = findln(gl);
+	if (p==0) return -1; // no such line
 
-	while (lno != 0)
-	{
-		uint8_t b;
-		//rprintf("debug: %d,%d ??\r\n", lno, nl);
-		//DPAUSE
-
-		lno=eeprom_read_byte(BASIC_PROG_SPACE+nl);					
-		if (lno == 0xCC)
-		{
-			rprintf("Goto line missing ??\r\n");
-			return -1;
-		}	
-		lno += (eeprom_read_byte(BASIC_PROG_SPACE+nl+1)<<8);	
-		
-		if (lno == gl)
-			break;				
-		b=eeprom_read_byte(BASIC_PROG_SPACE+nl+6);	
-		nl = nl + 6+ b +1;
-	}
-	if (lno!=0) 
-	{
-		return nl;
-	}
-	return -1;
+	return p;
 }
 
 
@@ -1430,7 +1407,6 @@ void basic_list()
 
 	if (nextchar() != 0xAA ) {
 		rprintfStr("No program loaded\r\n");
-		dump();
 		return;
 	}	
 	
