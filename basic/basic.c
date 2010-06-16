@@ -117,15 +117,17 @@ extern int getHex(int d);
 extern int delay_ms(int d);
 extern void SampleMotion(unsigned char); 
 
+extern void sound_init();
+extern void SendToSoundIC(BYTE cmd) ;
+
 /***********************************/
 
 extern BYTE sData[];
 extern int 	sDcnt;
 extern void sample_sound(int);
 extern volatile BYTE   MIC_SAMPLING;
-
-
 extern  BYTE nos;
+volatile BYTE	PLAY_SOUND;
 
 //wait for byte or IR press
 int  GetByte()
@@ -204,7 +206,6 @@ void PerformAction (BYTE Action)
 		0x12:  //kick left front turn
 	*/
 		SampleMotion(Action); 
-		//ptime(); 
 		rprintf("Do Motion %x\r\n", Action);
 	}
 }
@@ -1511,6 +1512,7 @@ void basic()
 	int ch;
 	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q\r\n");
 	readservos();
+	sound_init();
 	sample_sound(1);
 
 	while (1)
