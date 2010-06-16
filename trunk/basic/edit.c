@@ -115,6 +115,7 @@ void insertln(line_t newline)
 
 int getlineno(int p)
 {
+	if (p<3) return 0;
 	return (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+p));	
 }
 
