@@ -119,16 +119,25 @@ extern void SampleMotion(unsigned char);
 
 /***********************************/
 
+extern BYTE sData[];
+extern int 	sDcnt;
+extern void sample_sound(int);
+extern volatile BYTE   MIC_SAMPLING;
+
 
 extern  BYTE nos;
 
-//wait for byte
+//wait for byte or IR press
 int  GetByte()
 {
 	int b;
 	
 	RUN_LED1_OFF;
-	while ((b=uartGetByte())<0) ;
+	while (1) 
+	{
+		if ((b=uartGetByte())>0) break;
+		if ((b=irGetByte())>0)   break;
+	}
 	RUN_LED1_ON;
 	
 	return b;
@@ -343,7 +352,7 @@ int readLine(char *line)
 //   Store in Eprom
 // Loop
 
-int execute(line_t line, int dbf);
+int execute(line_t line);
 
 void basic_load()
 {	
@@ -576,7 +585,7 @@ void basic_load()
 		{	
 			if (newline.lineno==0)
 			{
-				execute(newline,0); // immediate execute
+				execute(newline); // immediate execute
 			}
 			else
 			{
@@ -706,7 +715,17 @@ int get_special(char *str, int *res)
 		v=0;
 		break;
 	case sMIC:
-		v=adc_mic();
+		{
+		WORD t=0;
+		int lc;
+		for (lc=0; lc<SDATASZ; lc++) 
+		{
+			lights(sData[lc]);
+			t += sData[lc];  // sum the buffer
+			sData[lc]=0;     // and clear
+		}
+		v = t;
+		}
 		break;
 	case sGX:
 		tilt_read(0);
@@ -721,10 +740,12 @@ int get_special(char *str, int *res)
 		v=z_value;
 		break;			
 	case sPSD:
-		v=adc_psd();
+		Get_AD_PSD();
+		v = gDistance;
 		break;
 	case sVOLT:
-		v=adc_volt();
+		Get_VOLTAGE();
+		v = gVOLTAGE;
 		break;
 	case sTYPE:
 		v=nos;
@@ -942,8 +963,7 @@ unsigned char eval_expr(char **str, int *res)
 int gotoln(int gl)
 {
 	int p = findln(gl);
-	if (p==0) return -1; // no such line
-
+	if (p<3 || getlineno(p) != gl ) return -1; // no such line
 	return p;
 }
 
@@ -979,9 +999,9 @@ int gp;
 BYTE scene[32];
 int nis=0;
 
-int execute(line_t line, int dbf);
+int execute(line_t line);
 		
-void basic_run(int dbf)
+void basic_run()
 {
 	// Repeat
 	//   load from memory
@@ -1026,12 +1046,12 @@ void basic_run(int dbf)
 		}
 
 		/* execute code */
-		tmp = execute(line, dbf);
+		tmp = execute(line);
 		if (tmp == 0) tmp=tc;
 	}
 }
 
-int execute(line_t line, int dbf)
+int execute(line_t line)
 {
 	//   Get token
 	//   Execute action
@@ -1043,8 +1063,6 @@ int execute(line_t line, int dbf)
 	char *p;		
 	
 	int n;
-	
-	if (dbf) rprintf (": %d - ", line.lineno); // debug mode
 
 	switch (line.token)
 	{
@@ -1149,7 +1167,7 @@ int execute(line_t line, int dbf)
 				errno=3; return 0xcc;	
 			}		
 			setline(t);
-			tmp=0;
+			tmp=t;
 		}
 		break;	
 	case PRINT: 
@@ -1200,7 +1218,7 @@ int execute(line_t line, int dbf)
 		{
 			if (n != 0)
 			{	
-				int t = gotoln(line.value);
+				int t = gotoln(n);
 				if (t<0)
 					errno=5; 	
 				else
@@ -1272,10 +1290,9 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case RETURN: 
-		//rprintfStr ("return\r\n"); //debug
 		if (gp>0) {
-			setline(gosub[--gp]);
-			tmp=0;
+			tmp=gosub[--gp];
+			setline(tmp);
 		} else {
 			errno=7;
 		}
@@ -1364,6 +1381,7 @@ void basic_list()
 	}	
 	
 	firstline();
+	tmp=nextchar();
 
 	while (tmp != 0xCC && nxtline < EEPROM_MEM_SZ )
 	{
@@ -1493,19 +1511,24 @@ void basic()
 	int ch;
 	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q\r\n");
 	readservos();
+	sample_sound(1);
 
 	while (1)
 	{
 		rprintfStr(": ");
+
 		ch = GetByte();			
-		rprintfChar(ch);rprintfChar(10);rprintfChar(13);	
+		if (ch > 26) {
+			rprintfChar(ch);rprintfChar(10);rprintfChar(13);
+		}
 		switch (ch)
 		{
 		case 'i': // input
 			basic_load();
 			break;
+		case   7:  // IR red "stop" button
 		case 'r': // run
-			basic_run(0);
+			basic_run();
 			break;
 		case 'l': // list 
 			basic_list();
@@ -1520,7 +1543,7 @@ void basic()
 			rprintfStr("start download\r\n");
 			binmode(); // enter binary mode
 			break;
-		case 'q': // download 
+		case 'q': // query 
 			readservos();
 			break;
 		default:

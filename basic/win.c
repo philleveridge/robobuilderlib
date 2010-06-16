@@ -2,7 +2,7 @@
 #include <windows.h>
 
 /* wck commands */
-void wckPosSend(char ServoID, char Torque, char Position)			{printf ("WIN: Servo Send %d [%d] -> $d\n", ServoID, Torque, Position);}
+void wckPosSend(char ServoID, char Torque, char Position)			{printf ("WIN: Servo Send %d [%d] -> %d\n", ServoID, Torque, Position);}
 int  wckPosRead(char ServoID)										{printf ("WIN: Servo Read %d\n", ServoID); return (ServoID<20)?120:-1;}
 void wckSetPassive(char ServoID)									{printf ("WIN: Servo Passive %d\n", ServoID); }
 void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)		
@@ -45,7 +45,7 @@ int z_value=0;
 int y_value=0;
 int x_value=0;
 
-int irGetByte()			{return -1;}
+int irGetByte()			{return uartGetByte();}
 int adc_volt()			{return 0;}
 int adc_psd()			{return 0;}
 int tilt_read()			{return 0;}

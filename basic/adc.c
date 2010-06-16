@@ -22,7 +22,6 @@ signed char	gAD_val;
 BYTE	gAD_Ch_Index;
 
 volatile BYTE     F_AD_CONVERTING=0;
-volatile BYTE     F_DOWNLOAD=0;
 
 volatile BYTE	gPSD_val;
 volatile BYTE	gMIC_val;
@@ -31,80 +30,52 @@ volatile WORD	gVOLTAGE;
 volatile BYTE	gDistance;
 volatile BYTE	gSoundLevel;
 
+volatile BYTE 	sData[SDATASZ];
+int 	sDcnt;
 
-BYTE adc_psd()
+void ADC_set(BYTE);
+
+volatile BYTE   MIC_SAMPLING=0;
+
+void  lights(int n) // power bar meter!
 {
-/*
-	PSD_ON;
-	_delay_ms(50);	
-	adc_start_conversion(0, 0xDC);							
-	while (bit_is_set(ADCSRA, ADSC));	    // wait until value ready
-	PSD_OFF;	
-	return psd_value;
-*/
-	PSD_on();
-	Get_AD_PSD();
-	PSD_off();
-	return gDistance;
+		RUN_LED1_OFF;
+		RUN_LED2_OFF;
+		ERR_LED_OFF;
+		PWR_LED1_OFF;
+		PWR_LED2_OFF;	
+
+		if (n > 1)    ERR_LED_ON;
+		if (n > 4)    RUN_LED1_ON;		
+		if (n > 8)    RUN_LED2_ON;		
+		if (n > 16)   PWR_LED1_ON;		
+		if (n > 32)   PWR_LED2_ON;		
 }
 
-WORD adc_volt()
+void sample_sound(int status)
 {
-/*
-	adc_start_conversion(1, 0xDC);	
-	while (bit_is_set(ADCSRA, ADSC));	    // wait until value ready
-	return volts;
-	*/
-	
-	Get_VOLTAGE();
-	return gVOLTAGE;
-	
-}
-
-BYTE adc_mic()
-{
-	/*
-	mic_vol=0;
-	int i;
-	for (i=0; i<50; i++)
+	if (status)
 	{
-		adc_start_conversion(15, 0xDC);	
-		while (bit_is_set(ADCSRA, ADSC));	// wait until value ready
-	
-		mic_vol = mic_vol + mic_value;	
+		// 	set timer interupt on
+		sDcnt=0;
+
+		TIMSK |= 0x01;
+		EIMSK |= 0x40;
+		RUN_LED1_ON;		
+		MIC_SAMPLING=1;
 	}
-	return mic_vol;
-	*/
-	Get_AD_MIC();
-	return gSoundLevel;
-	
+	else
+	{
+		// 	set timer interupt off	
+		TIMSK &= 0xFE;
+		EIMSK &= 0xBF;
+		lights(0);
+		MIC_SAMPLING=0;
+	}
 }
 
-int adc_test(BYTE debug){	
-	//read PSD	
-	if (debug) rprintf("PSD=");
-	adc_psd();
-	if (debug) rprintf("%x", gDistance);
-	
-	//read Voltage	
-	_delay_ms(50);	
-	if (debug) rprintf(" VOLT=");
-	adc_volt();
-	if (debug) rprintf("%dmV", gVOLTAGE);
-
-	//read MIC	
-	_delay_ms(50);	
-	if (debug) rprintf(" MIC=");
-	adc_mic();
-	if (debug) rprintf("%d\r\n", gSoundLevel);		
-
-	return 0;
-}
 
 /********************************************************************************/
-
-/********************************************************************************/
-
 
 ISR(ADC_vect)
 {
@@ -153,11 +124,13 @@ void Get_AD_PSD(void)
 	EIMSK &= 0xBF;
 
 	gAD_Ch_Index = PSD_CH;
-   	F_AD_CONVERTING = 1;
+	
    	ADC_set(ADC_MODE_SINGLE);
-   	while(F_AD_CONVERTING);            
+	
+    while (bit_is_set(ADCSRA, ADSC));
+	            
    	tmp = tmp + gPSD_val;
-	EIMSK |= 0x40;
+	//EIMSK |= 0x40;
 
 	dist = 1117.2 / (tmp - 6.89);
 	if(dist < 0) dist = 50;
@@ -193,9 +166,7 @@ void Get_AD_MIC(void)
 //------------------------------------------------------------------------------
 void Get_VOLTAGE(void)
 {
-	if(F_DOWNLOAD) return;
 	gAD_Ch_Index = VOLTAGE_CH;
-	F_AD_CONVERTING = 1;
-   	ADC_set(ADC_MODE_SINGLE);
-	while(F_AD_CONVERTING);
+	ADC_set(ADC_MODE_SINGLE);
+	while (bit_is_set(ADCSRA, ADSC));	    // wait until value ready
 }
