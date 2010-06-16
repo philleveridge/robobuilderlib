@@ -1151,3 +1151,65 @@ void send_bus_str(char *bus_str, int n)
 		wckFlush(); // flush the buffer
 }
 
+/************************************************************************/
+//
+// Support for sound chip
+//
+/************************************************************************/
+
+WORD Sound_Length[25]={
+2268,1001,832,365,838,417,5671,5916,780,2907,552,522,1525,2494,438,402,433,461,343,472,354,461,458,442,371};
+
+void SendToSoundIC(BYTE cmd) 
+{
+	BYTE	CheckSum; 
+	
+	if (cmd <1 || cmd>25)
+	{
+		wckSendByte(0x00);
+		wckSendByte(0xff);
+		return;
+	}
+	
+	TIMSK |= 0x01;
+	EIMSK |= 0x40;
+		
+	PWR_LED2_ON;	// RED on
+	UCSR0B = (1<<RXEN)|(1<<TXEN); //enable reads for GetPos !!
+
+	CheckSum = (29^cmd)&0x7f;
+	wckSendByte(0xFF);
+	delay_ms(1);
+
+	wckSendByte(29);
+
+	delay_ms(1);
+	wckSendByte(cmd);
+	delay_ms(1);
+	wckSendByte(CheckSum);
+	
+	PWR_LED2_OFF; // RED off	
+		
+	//wait for response?
+	
+	PWR_LED1_ON;	// RED on
+	
+	WORD timeo = Sound_Length[cmd-1] + 200;
+	
+	int b1 = wckGetByte(timeo);
+	
+	wckSendByte(b1);
+	wckSendByte(b1);
+	
+	UCSR0B = (1<<RXEN)|(1<<TXEN) |(1<<RXCIE); //enable reads for GetPos !!
+	PWR_LED1_OFF; // RED off	
+} 
+
+void sound_init()
+{
+	// low -> high PIN
+	// defined in main.h
+	P_BMC504_RESET(0);
+	delay_ms(20);
+	P_BMC504_RESET(1);
+}

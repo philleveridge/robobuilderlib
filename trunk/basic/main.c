@@ -31,6 +31,11 @@ extern WORD				gNumOfFrame;
 volatile BYTE 	F_PLAYING;				// state: playing from Flash
 volatile BYTE	F_NEXTFRAME;			// trigger to start the next frame
 
+//adc.c
+extern BYTE				gAD_Ch_Index;
+extern void 			ADC_set(BYTE );
+extern volatile BYTE   	MIC_SAMPLING;
+
 // global variables------------------------------------------------------------
 WORD    gBtnCnt;						// counter for PF button press
 
@@ -48,6 +53,7 @@ volatile BYTE    gHOUR;
 volatile WORD	mstimer;
 volatile WORD	gSEC_DCOUNT;
 volatile WORD	gMIN_DCOUNT;
+
 
 void heart()
 {
@@ -92,6 +98,13 @@ ISR(TIMER0_OVF_vect)
 	if (mstimer>0) mstimer--;
 	
 	heart(); // beating
+	
+	if (MIC_SAMPLING && gMSEC%4==0)
+	{
+		//every 4ms
+		gAD_Ch_Index = MIC_CH;		
+		ADC_set(ADC_MODE_SINGLE);
+	}
 	
     if(++gMSEC>999){
 		// 1s 
