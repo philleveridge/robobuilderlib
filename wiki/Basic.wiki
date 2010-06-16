@@ -4,7 +4,7 @@
 
 This is still in an early development stage !!! 
 
-This gives Robobuilder the ability to create simple actions in an elementary basic language. Download [http://code.google.com/p/robobuilderlib/source/browse/trunk/basic/Basic.hex basic.hex] on to the RBC module using the RBCUpgrade tool as per manual.
+This gives Robobuilder the ability to create simple actions in an elementary basic language. Download [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.hex basic.hex] on to the RBC module using the RBCUpgrade tool as per manual.
 
 Turn of the RBC and connect a vt100 terminal emulator. You should see the following:
 {{{
@@ -18,7 +18,7 @@ At the prompt type
   * r - run current program
   * l - list current program
   * c - clear memory
-  * z - download (tbc)
+  * z - download (requires client)
 
 See examples below of programs that have been tested
 
@@ -69,6 +69,7 @@ LET A=$IR           //get char from IR and transfer to A
 LET A=$SERVO:id     //let A get position of servo id 
 
 Special Commands
+STAND
 SERVO ID=POS  set servo id to position POS / @
 PUT 	      enable access to PORTS/SPECIAL REGISTER
 SCENE         sends a Scene - 16 Servo Positions, Plus time, no frames
@@ -94,7 +95,6 @@ Built in motions:
 0x10:  sitdown
 0x11:  hi
 0x12:  kick left front turn
-0x20:  basic Pose
 }}}
 
 = Examples  =
