@@ -30,7 +30,7 @@ SYNTAX:
 [Line No] GOSUB [Line No]
 [Line No] RETURN
 [Line No] SERVO VAR '=' EXPR | '@'
-[LINE No] SCENE LIST
+[LINE No] SCENE N, LIST(of N items)
 [LINE No] MOVE LIST
 --------------------- UNDER TEST -----------------------
 
@@ -71,6 +71,7 @@ Example Programs are now available from examples folder
 #include "uart.h"
 #include "rprintf.h"
 #include "math.h"
+#include "wckmotion.h"
 #else
 #include "win.h"
 #endif
@@ -86,16 +87,12 @@ Example Programs are now available from examples folder
 #include "adc.h"
 #include "ir.h"
 #include "accelerometer.h"
-#include "wck.h"
 #include "edit.h"
 
 #define DPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
 
-#define BR9600		95 
-#define BR115200	7 
-
 #define EEPROM_MEM_SZ 	1024
-#define MAX_LINE  		40 
+#define MAX_LINE  		100 
 #define MAX_TOKEN 		8
 #define MAX_FOR_NEST	3
 #define MAX_GOSUB_NEST	3
@@ -116,8 +113,6 @@ uint8_t EEMEM FIRMWARE[64];  					// leave blank - used by Robobuilder OS
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
 extern void Perform_Action(BYTE action);
-static unsigned char *motionBuf;
-extern void print_motionBuf(int bytes);
 extern int getHex(int d);
 extern int delay_ms(int d);
 extern void SampleMotion(unsigned char); 
@@ -125,9 +120,7 @@ extern void SampleMotion(unsigned char);
 /***********************************/
 
 
-
-static BYTE cpos[32];
-static BYTE nos=0;
+extern  BYTE nos;
 
 //wait for byte
 int  GetByte()
@@ -155,15 +148,17 @@ enum {
 	ELSE, GOTO, PRINT, GET, 
 	PUT, END, SCENE, XACT, 
 	WAIT, NEXT, SERVO, MOVE,
-	GOSUB, RETURN, POKE
+	GOSUB, RETURN, POKE, STAND
 	};
-	
+
+#define NOTOKENS 20
+
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
 	"ELSE","GOTO","PRINT","GET",
 	"PUT", "END", "SCENE", "XACT",
 	"WAIT", "NEXT", "SERVO", "MOVE",
-	"GOSUB", "RETURN", "POKE"
+	"GOSUB", "RETURN", "POKE", "STAND"
 };
 
 char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
@@ -171,40 +166,6 @@ char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RN
 
 enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE};
 							
-
-
-
-void send_bus_str(char *bus_str, int n)
-{
-			
-		BYTE b;
-		int ch;
-		char *eos = bus_str+n;
-
-		wckReInit(BR9600);
-	
-		while  ((bus_str<eos) && (b=*bus_str++) != 0)
-		{			
-			wckSendByte('S');
-			wckSendByte(b);
-			
-			if (b=='p' || b=='t')
-			{
-				delay_ms(100);	
-				if (*bus_str != 0) wckSendByte(*bus_str++);
-				delay_ms(100);	
-				if (*bus_str != 0) wckSendByte(*bus_str++);
-				
-			}		
-			delay_ms(100);		
-			ch = wckGetByte(1000);
-			rprintf ("BUS=%d\r\n", ch);
-		}
-		
-		wckReInit(BR115200);
-		wckFlush(); // flush the buffer
-}
-
 
 int errno;
 
@@ -382,6 +343,8 @@ int readLine(char *line)
 //   Store in Eprom
 // Loop
 
+int execute(line_t line, int dbf);
+
 void basic_load()
 {	
 	char line[MAX_LINE];
@@ -444,13 +407,13 @@ void basic_load()
 			cp++;
 		}
 
-		if ( (newline.token=token_match((char **)tokens, &cp, 19))==255)           // sizeof(tokens)/))<0)
+		if ( (newline.token=token_match((char **)tokens, &cp, NOTOKENS))==255)           // sizeof(tokens)/))<0)
 		{
 			errno=2;
 			continue;
 		}
 			
-		cp++;
+		if (*cp == ' ') cp++;
 		
 		switch (newline.token)
 		{
@@ -527,8 +490,6 @@ void basic_load()
 				//Now have PORT:$pn:$pb
 				
 				newline.var = 30 + (pn-'A')*10 + (pb-'0') ;
-				
-				//rprintf("debug: %d %c %c \r\n", newline.var, pn, pb);
 			}
 			// '='
 			if (getNext(&cp) != '=')
@@ -581,6 +542,7 @@ void basic_load()
 			//rprintf("["); rprintfStr(newline.text); rprintf("]\r\n"); //debug
 			}
 			break;
+		case STAND: 
 		case WAIT: 
 		case GOTO: 
 		case XACT:
@@ -863,6 +825,8 @@ int math(int n1, int n2, char op)
 int str_expr(char *str)
 {
 	char *p=str;
+	if (*str == '\0') return 0;
+
 	while (*str != '"') str++;
 	return str-p;
 }
@@ -1012,6 +976,8 @@ int forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
 int fp; 
 int gosub[MAX_GOSUB_NEST];  // 3 nested gosubs
 int gp;  
+BYTE scene[32];
+int nis=0;
 
 int execute(line_t line, int dbf);
 		
@@ -1024,7 +990,7 @@ void basic_run(int dbf)
 
 	uint8_t tmp=0;	
 	line_t line;
-	char buf[64];
+	char buf[MAX_LINE];
 	
 	fp=0; // Upto 3 nested for/next
 	gp=0;  // 3 nested gosubs
@@ -1076,7 +1042,6 @@ int execute(line_t line, int dbf)
 	uint8_t tmp=0;
 	char *p;		
 	
-	char scene[16];
 	int n;
 	
 	if (dbf) rprintf (": %d - ", line.lineno); // debug mode
@@ -1173,12 +1138,15 @@ int execute(line_t line, int dbf)
 			}
 		}
 		break;
+	case STAND: 
+		standup(line.value);
+		break;
 	case GOTO: 
 		{
 			int t = gotoln(line.value);
 			if (t<0)
 			{
-				errno=3; return;	
+				errno=3; return 0xcc;	
 			}		
 			setline(t);
 			tmp=0;
@@ -1189,6 +1157,8 @@ int execute(line_t line, int dbf)
 		p=line.text;
 		while (1)
 		{
+			if (*p=='\0') break; // done
+
 			switch (eval_expr(&p, &n))
 			{
 			case NUMBER:
@@ -1207,8 +1177,9 @@ int execute(line_t line, int dbf)
 				p=p+n+1;
 				break;
 			}
+
 			if (*p=='\0') break; // done
-				
+
 			if (*p!=';' && *p!=',') {
 				errno=4; //rprintf ("synatx prob= [%d]\r\n", *p); // DEBUG
 				break;
@@ -1243,54 +1214,36 @@ int execute(line_t line, int dbf)
 		// with args (No Frames / Time in Ms) - use MotionBuffer
 		fm=0; tm=0;
 		p=line.text;
-		if (p!=0)
+		if (p!=0 && *p != 0)
 		{
 			eval_expr(&p, &fm);
-			if (*p++ != ',') { errno=5; break;}
+			if (*p++ != ',') { errno=1; break;}
 			eval_expr(&p, &tm);
-			//rprintf ("Move %d, %d\r\n", fm, tm); // DEBUG
-				
-			motionBuf = GetNextMotionBuffer();
-			motionBuf[0]= (unsigned char)1; //number of scenes
-			motionBuf[1]= (unsigned char)C; //number of servos
-				
-			for (n=0;n<C;n++) { motionBuf[2+n]= PGAIN; } //PGAIN
 
-			for (n=0;n<C;n++) { motionBuf[2+C+n]=DGAIN; } //DGAIN
-
-			for (n=0;n<C;n++) { motionBuf[2+2*C+n]=IGAIN; } //IGAIN		
-				
-			motionBuf[S]   =(WORD)tm;
-			motionBuf[S+1] =(WORD)(tm)>>8;
-			motionBuf[S+2] =(WORD)fm;
-			motionBuf[S+3] =(WORD)(fm)>>8;
-				
-			for (n=0;n<C;n++) { motionBuf[S+4+n]=scene[n]; }
-			for (n=0;n<C;n++) { motionBuf[S+4+n+C]=3; } //torquw
-			for (n=0;n<C;n++) { motionBuf[S+4+n+C*2]=0; } //ext data
-				
-			LoadMotionFromBuffer(motionBuf);
-				
-			//rprintf ("Play? "); DPAUSE
-			PlaySceneFromBuffer(motionBuf, 0);
-			complete_motion(motionBuf);
+			//playpose(fm,tm,scene);
+			PlayPose(tm, fm, scene, nis);
 		}
 		else
 		{
-			wckSyncPosSend(15, 0, scene, 0);
+			if (nis>0) 
+				wckSyncPosSend(nis-1, 4, scene, 0);
+			else 
+				errno=1;
 		}
 		//
 		break;
 	case SCENE: 
-		// read in 16 servo position values and store
+		// read in 'n' servo position values and store
 		{
 		int i;
 		p=line.text;
-		for (i=0;i<16;i++)
+		eval_expr(&p, &nis);
+		if (*p++ != ',') { errno=6;break; }
+		for (i=0;i<nis;i++)
 		{
 			n=0;
 			eval_expr(&p, &n);
-			if (i!=15 && *p++ != ',') { errno=6;break; }
+			if (i!=(nis-1) && *p++ != ',') { errno=6;break; }
 			scene[i]=n;
 		}
 		}
@@ -1398,7 +1351,7 @@ void dump_firmware()
 void basic_list()
 {
 	line_t line;
-	char buf[64];
+	char buf[MAX_LINE];
 
 	uint8_t tmp=0;
 	nxtline = 0;	
@@ -1535,25 +1488,11 @@ void binmode()
 	RUN_LED2_OFF;
 }
 
-
-BYTE readservos()
-{
-	BYTE i;
-	for (i=0; i<31; i++)
-	{
-		int p = wckPosRead(i);		
-		if (p<0 || p>255) break;
-		cpos[i]=p;	
-	}
-	rprintf("Servos: %d\r\n", i);	
-	return i;
-}
-
 void basic()
 {
 	int ch;
 	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q\r\n");
-	nos=readservos();
+	readservos();
 
 	while (1)
 	{
@@ -1582,7 +1521,7 @@ void basic()
 			binmode(); // enter binary mode
 			break;
 		case 'q': // download 
-			nos=readservos();
+			readservos();
 			break;
 		default:
 			rprintfStr("??\r\n");

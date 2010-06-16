@@ -1,16 +1,15 @@
-/*
+//==============================================================================
+// edit functions - include file for edit.c
+//==============================================================================
 
-edit functions
-
-*/
 
 typedef struct basic_line {
-    int lineno;
-	struct basic_line *next;
+    int           lineno;
+	unsigned int  next;
 	unsigned char token;
 	unsigned char var;
-	int value;
-	char *text; // rest of line - unproceesed
+	int           value;
+	char          *text; // rest of line - unproceesed
 } line_t;
 
 

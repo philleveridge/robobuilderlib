@@ -40,22 +40,9 @@
 //==============================================================================
 //						UART constants
 //==============================================================================
-#define TX0_BUF_SIZE    186     // UART0 TX buffer size (equals 31*6 = 186)
+#define TX0_BUF_SIZE    40      // ?? Longest single command
 #define RX0_BUF_SIZE    8		// UART0 RX buffer size
 #define RX1_BUF_SIZE    20      // UART1 RX buffer size
-
-//enumerated parameters (event trigger levels)
-// (we should probably move these over into the experimental module)
-#define TIMR  0
-#define TLT   1
-#define TORQ  2
-#define PSDL  3
-#define PSDL2 4
-#define PSDL3 5
-#define MICL  6
-#define MICL2 7
-#define MICL3 8
-#define VOLT  9
 
 
 // timer variables----------------------------------------------------------------
@@ -74,9 +61,3 @@ extern volatile BYTE	gTx0Cnt;					// UART0 transmit length
 extern volatile BYTE	gRx0Cnt;					// UART0 receive length
 extern volatile BYTE	gTx0BufIdx;					// UART0 transmit pointer
 extern volatile BYTE	gRx0Buf[RX0_BUF_SIZE];		// UART0 receive buffer
-
-#ifndef HUNO_MODEL
-#define HUNO_MODEL
-enum {HUNO_BASIC, HUNO_ADVANCED, HUNO_OTHER};
-#endif
-

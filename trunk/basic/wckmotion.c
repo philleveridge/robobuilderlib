@@ -1,19 +1,20 @@
-//==============================================================================
-//						Communication & Command Routines
-//==============================================================================
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <string.h>
+
 #include "global.h"
 #include "main.h"
 #include "Macro.h"
-#include "motion.h"
 #include "rprintf.h"
+#include <util/delay.h>
+
+#include "wckmotion.h"
 #include "HunoBasic.h"
 #include "e-motion.h"    //extra-motions (gedit??)
-#include "wck.h"
-#include <util/delay.h>
+
+extern void delay_ms(int);
+
 
 unsigned char PROGMEM wCK_IDs[16]={
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
@@ -89,78 +90,307 @@ struct TScene{			    // Structure for a scene
 	struct	TwCK_in_Scene   wCK[MAX_wCK];	// scene data for each wCK
 }Scene;
 
-//------------------------------------------------------------------------------
-//  Motion Buffer Layout (where C is number of wCK)
-//  
-//  Offset  Length  Description
-//  ------  ------  -----------
-//  0       1       number of scenes
-//  1       1       number of wCK servos (C)
-//  2       C       P gain for each wCK
-//  C+2     C       D gain for each wCK
-//  2*C+2   C       I gain for each wCK
-//  3*C+2   3*C+4   data for first scene (scene 0)
-//  6*C+6   3*C+4   data for scene 1
-//  9*C+10  3*C+4   data for scene 2
-//  (3+3*i)*C+(4*i)+2		start of data for scene i
-//  (etc.)
-//  
-//  For each scene, the data has the following structure:
-//  
-//  Offset  Length  Description
-//  ------  ------  -----------
-//  0       2       scene transition (run) time, in milliseconds
-//  2       2       desired number of interpolation frames (1-100)
-//  4       C       destination position for each wCK
-//  C+4     C       torque (0-4) for each wCK
-//  2*C+4   C       external port data (LEDs?) for each wCK
-//  3*C+4	(end)
-//------------------------------------------------------------------------------
 
-static unsigned char motionBuf1[kMaxMotionBufSize];
-static unsigned char motionBuf2[kMaxMotionBufSize];
-static unsigned char *curMotionBuf = motionBuf2;	// buffer of motion currently being played
-static unsigned char *nextMotionBuf = motionBuf2;	// next motion buffer, or the one being written to
+//////////////////////////////// Serial Interface Functions ///////////////////////////
 
-
-unsigned char* GetNextMotionBuffer(void)
+void wckReInit(unsigned int ubrr)
 {
-	nextMotionBuf = (nextMotionBuf == motionBuf1 ? motionBuf2 : motionBuf1);
-	return nextMotionBuf;
+	while ((UCSR0A & (1 << TXC)) == 0) ; //wait until any transmission complete
+
+	/* Dis-able receiver and transmitter */
+	UCSR0B &= ~((1<<RXEN)|(1<<TXEN));
+
+	/* Set baud rate */
+	UBRR0H = (unsigned char)(ubrr>>8);
+	UBRR0L = (unsigned char)ubrr;
+	
+	/* Set frame format: 8data, 2stop bit */
+	//UCSR0C = (1<<USBS)|(3<<UCSZ0);
+
+	/* Enable receiver and transmitter */
+	UCSR0B = (1<<RXEN)|(1<<TXEN);
 }
-
-// internal method forward declarations
-static void ClearMotionData(void);
-
 
 //------------------------------------------------------------------------------
 // Transmit char to UART when UART is ready
 //------------------------------------------------------------------------------
-void sciTx0Data(BYTE td)
+void wckFlush( void )
+{
+	unsigned char dummy;
+	while ( UCSR0A & (1<<RXC) ) dummy = UDR0;
+}
+
+//------------------------------------------------------------------------------
+// Transmit char to UART when UART is ready
+//------------------------------------------------------------------------------
+void wckSendByte(char td)
 {
 	while(!(UCSR0A&(1<<UDRE))); 	// wait until data register is empty
 	UDR0=td;
 }
 
-
 //------------------------------------------------------------------------------
 // Get character when received. or timeout
 //------------------------------------------------------------------------------
-BYTE sciRx0Ready(void)
+extern volatile WORD	mstimer;
+
+int wckGetByte(WORD timeout)
 {
-	WORD	startT;
-	startT = gMSEC;
+	mstimer = timeout;
+	
 	while(!(UCSR0A&(1<<RXC)) ){ 	// test for received character
-        if(gMSEC<startT){
-			// wait RX_T_OUT for a character
-            if((1000 - startT + gMSEC)>RX_T_OUT) break;
-        }
-		else if((gMSEC-startT)>RX_T_OUT) break;
+		if (mstimer==0) return -1;
 	}
 	return UDR0;
 }
 
+//////////////////////////////// Definition of Basic Functions ///////////////////////////
 
+/******************************************************************************/
+/* Function that sends Operation Command Packet(4 Byte) to wCK module */
+/* Input : Data1, Data2 */
+/* Output : None */
+/******************************************************************************/
+void wckSendOperCommand(char Data1, char Data2)
+{
+	char CheckSum;
+	CheckSum = (Data1^Data2)&0x7f;
+	wckSendByte(HEADER);
+	wckSendByte(Data1);
+	wckSendByte(Data2);
+	wckSendByte(CheckSum);
+}
+/******************************************************************************/
+/* Function that sends Set Command Packet(6 Byte) to wCK module */
+/* Input : Data1, Data2, Data3, Data4 */
+/* Output : None */
+/******************************************************************************/
+void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
+{
+	char CheckSum;
+	CheckSum = (Data1^Data2^Data3^Data4)&0x7f;
+	wckSendByte(HEADER);
+	wckSendByte(Data1);
+	wckSendByte(Data2);
+	wckSendByte(Data3);
+	wckSendByte(Data4);
+	wckSendByte(CheckSum);
+}
+/*************************************************************************************************/
+/* Function that sends Position Move Command to wCK module */
+/* Input : ServoID, Torque (0(Max) to 4 (Min)), Position */
+/* Output : Load * 256 + Position */
+/*************************************************************************************************/
+WORD wckPosSend(char ServoID, char Torque, char Position)
+{
+	WORD Load, curPosition;
+	wckSendOperCommand((Torque<<5)|ServoID, Position);
+	Load = wckGetByte(TIME_OUT1);
+	curPosition = wckGetByte(TIME_OUT1);
+	return (Load << 8) | curPosition;
+}
+
+/************************************************************************************************/
+/* Function that sends Position Read Command to wCK module, and returns the Position. */
+/* Input : ServoID */
+/* Output : Position */
+/************************************************************************************************/
+int wckPosRead(char ServoID)
+{
+	int Position;
+	wckSendOperCommand(0xa0|ServoID, 0x00);
+	wckGetByte(TIME_OUT1);
+	Position = wckGetByte(TIME_OUT1);
+	return Position;
+}
+
+
+/******************************************************************************/
+/* Function that sends Passive wCK Command to wCK module */
+/* Input : ServoID */
+/* Output : Position */
+/******************************************************************************/
+char wckSetPassive(char ServoID)
+{
+	char Position;
+	wckSendOperCommand(0xc0|ServoID, 0x10);
+	wckGetByte(TIME_OUT1);
+	Position = wckGetByte(TIME_OUT1);
+	return Position;
+}
+
+/*************************************************************************/
+/* Function that sends Break wCK Command to wCK module */
+/* Input : None */
+/* Output : ServoID if succeed, 0xff if fail */
+/**************************************************************************/
+char wckPowerDown(void)
+{
+	char ServoID;
+	wckSendOperCommand(0xdf, 0x20);
+	ServoID = wckGetByte(TIME_OUT1);
+	wckGetByte(TIME_OUT1);
+	if(ServoID<31) 
+		return ServoID;
+	return 0xff; //Receive error
+}
+/******************************************************************/
+/* Function that sends 360 degree Wheel wCK Command */
+/* Input : ServoID, SpeedLevel, RotationDir */
+/* Return : Rotation Number */
+/*****************************************************************/
+char wckRotation360(char ServoID, char SpeedLevel, char RotationDir)
+{
+	char RotNum;
+	if (RotationDir == ROTATE_CCW) {
+		wckSendOperCommand((6<<5)|ServoID, (ROTATE_CCW<<4)|SpeedLevel);
+	} else if (RotationDir == ROTATE_CW) {
+		wckSendOperCommand((6<<5)|ServoID, (ROTATE_CW<<4)|SpeedLevel);
+	}
+	RotNum = wckGetByte(TIME_OUT1);
+	wckGetByte(TIME_OUT1);
+	return RotNum;
+}
+/*****************************************************************************/
+/* Function that sends Synchronized Position Move Command to wCK module */
+/* Input : LastID, SpeedLevel, *TargetArray, Index */
+/* Return : None */
+/****************************************************************************/
+void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
+{
+	int i;
+	char CheckSum;
+	i = 0;
+	CheckSum = 0;
+	wckSendByte(HEADER);
+	wckSendByte((SpeedLevel<<5)|0x1f);
+	wckSendByte(LastID+1);
+	while(1) 
+	{
+		if(i>LastID) 
+			break;
+		wckSendByte(TargetArray[Index*(LastID+1)+i]);
+		CheckSum = CheckSum ^ TargetArray[Index*(LastID+1)+i];
+		i++;
+	}
+	CheckSum = CheckSum & 0x7f;
+	wckSendByte(CheckSum);
+}
+/********************************************************************/
+/* Function that sends Baud rate Set Command to wCK module */
+/* Input : ServoID, NewBaud */
+/* Return : New Baudrate if succeed, 0xff if fail */
+/********************************************************************/
+char wckBaudrateSet(char ServoID, char NewBaud)
+{
+	wckSendSetCommand((7<<5)|ServoID, 0x08, NewBaud, NewBaud);
+	wckGetByte(TIME_OUT2);
+	if(wckGetByte(TIME_OUT2)==NewBaud) 
+		return NewBaud;
+	return 0xff;
+}
+/*********************************************************************/
+/* Function that sends Gain Set Command to wCK module */
+/* Input : ServoID, *NewPgain, *NewDgain */
+/* Return : 1 if succeed, 0 if fail */
+/********************************************************************/
+char wckGainSet(char ServoID, char *NewPgain, char *NewDgain)
+{
+	char Data1,Data2;
+	wckSendSetCommand((7<<5)|ServoID, 0x09, *NewPgain, *NewDgain);
+	Data1 = wckGetByte(TIME_OUT2);
+	Data2 = wckGetByte(TIME_OUT2);
+	if((Data1==*NewPgain) && (Data2==*NewDgain)) 
+		return 1;
+	return 0;
+}
+/************************************************************/
+/* Function that sends ID Set Command to wCK module */
+/* Input : ServoID, NewId */
+/* Return : New ID if succeed, 0xff if fail */
+/***********************************************************/
+char wckIdSet(char ServoID, char NewId)
+{
+	wckSendSetCommand((7<<5)|ServoID, 0x0a, NewId, NewId);
+	wckGetByte(TIME_OUT2);
+	if(wckGetByte(TIME_OUT2)==NewId) 
+		return NewId;
+	return 0xff;
+}
+/******************************************************************/
+/* Function that sends Gain Read Command to wCK module */
+/* Input : ServoID, *NewPgain, *NewDgain */
+/* Return : 1 if succeed, 0 if fail */
+/*****************************************************************/
+char wckGainRead(char ServoID, char *Pgain, char *Dgain)
+{
+	wckSendSetCommand((7<<5)|ServoID, 0x0c, 0, 0);
+	*Pgain = wckGetByte(TIME_OUT1);
+	*Dgain = wckGetByte(TIME_OUT1);
+	if((*Pgain>0) && (*Pgain<51) && (*Dgain<101)) 
+		return 1;
+	return 0;
+}
+/**********************************************************************************/
+/* Function that sends Over Load Set Command to wCK module */
+/* Input : ServoID, NewOverCT */
+/* Return : New Overcurrent Threshold if succeed, 0xff if fail */
+/**********************************************************************************/
+char wckOverCTSet(char ServoID, char NewOverCT)
+{
+	char Data1;
+	wckSendSetCommand((7<<5)|ServoID, 0x0f, NewOverCT, NewOverCT);
+	wckGetByte(TIME_OUT2);
+	Data1=wckGetByte(TIME_OUT2);
+	if(Data1!=0xff) 
+		return Data1;
+	return 0xff;
+}
+/******************************************************************************/
+/* Function that sends Over Load Read Command to wCK module */
+/* Input : ServoID */
+/* Return : Overcurrent Threshold if succeed, 0xff if fail */
+/******************************************************************************/
+char wckOverCTRead(char ServoID)
+{
+	char Data1;
+	wckSendSetCommand((7<<5)|ServoID, 0x10, 0, 0);
+	wckGetByte(TIME_OUT1);
+	Data1=wckGetByte(TIME_OUT1);
+	if(Data1!=0xff) 
+		return Data1;
+	return 0xff;
+}
+/***********************************************************************/
+/* Function that sends Boundary Set Command to wCK module */
+/* Input : ServoID, *NewLBound, *NewUBound */
+/* Return : 1 if succeed, 0 if fail */
+/**********************************************************************/
+char wckBoundSet(char ServoID, char *NewLBound, char *NewUBound)
+{
+	char Data1,Data2;
+	wckSendSetCommand((7<<5)|ServoID, 0x11, *NewLBound, *NewUBound);
+	Data1 = wckGetByte(TIME_OUT2);
+	Data2 = wckGetByte(TIME_OUT2);
+	if((Data1==*NewLBound) && (Data2==*NewUBound)) 
+		return 1;
+	return 0;
+}
+/**************************************************************************/
+/* Function that sends Boundary Read Command to wCK module */
+/* Input : ServoID, *NewLBound, *NewUBound */
+/* Return : 1 if succeed, 0 if fail */
+/*************************************************************************/
+char wckBoundRead(char ServoID, char *LBound, char *UBound)
+{
+	wckSendSetCommand((7<<5)|ServoID, 0x12, 0, 0);
+	*LBound = wckGetByte(TIME_OUT1);
+	*UBound = wckGetByte(TIME_OUT1);
+	if(*LBound<*UBound) 
+		return 1;
+	return 0;
+}
+//////////////////////////////// End of Basic Functions Definition /////////////////////////////
 
 
 //------------------------------------------------------------------------------
@@ -204,19 +434,6 @@ static void SyncPosSend(void)
 	gTx0Cnt++;			// put into transmit buffer
 } 
 
-void set_break_mode()
-{
-	sciTx0Data(HEADER);
-	sciTx0Data(0xDF);
-	sciTx0Data(0x20);		
-	sciTx0Data((0xDF^0x20)&0x7f);
-	
-	sciRx0Ready();
-	sciRx0Ready();
-	return;
-}
-
-
 void ClearMotionData(void)
 {
 	WORD i;
@@ -254,36 +471,6 @@ static void GetMotionFromFlash(void)
 	}
 }
 
-//------------------------------------------------------------------------------
-// Fill the motion data structure from a buffer in RAM.
-//------------------------------------------------------------------------------
-static void GetMotionFromBuffer(unsigned char *motionBuf)
-{
-	WORD i;
-	unsigned char *pGains;
-	unsigned char *dGains;
-	unsigned char *iGains;
-	
-	ClearMotionData();
-	
-	Motion.NumOfScene = motionBuf[0];  // (See "Motion Buffer Layout" at top of file)
-	Motion.NumOfwCK = motionBuf[1];
-	
-	//rprintf("GMBF: %d, %d\n", Motion.NumOfScene, Motion.NumOfwCK );
-
-	pGains = motionBuf + 2;
-	dGains = pGains + Motion.NumOfwCK;
-	iGains = dGains + Motion.NumOfwCK;
-	
-	for (i = 0; i < Motion.NumOfwCK; i++) {		// fill the wCK motion data
-		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].Exist	= 1;
-		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].RPgain	= pGains[i];
-		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].RDgain	= dGains[i];
-		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].RIgain	= iGains[i];
-		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].PortEn	= 1;
-		Motion.wCK[pgm_read_byte(&(wCK_IDs[i]))].InitPos = pgm_read_byte(gpZero_Table+i);
-	}
-}
 
 
 //------------------------------------------------------------------------------
@@ -293,7 +480,6 @@ static void GetMotionFromBuffer(unsigned char *motionBuf)
 void SendTGain(void)
 {
 	char reply1, reply2;
-	WORD TIME_OUT2 = 250;
 	for (int i=0; i<MAX_wCK;i++) {
 		if (Motion.wCK[i].Exist) {
 			char servoID = i;
@@ -316,7 +502,6 @@ void SendTGain(void)
 void SendExPortD(void)
 {
 	WORD i;
-	WORD TIME_OUT2 = 250;
 
 	for(i=0;i<MAX_wCK;i++){					// external data set from Motion structure
 		if(Scene.wCK[i].Exist) {			// set external data if wCK exists
@@ -363,59 +548,8 @@ static void GetSceneFromFlash(void)
 	UCSR0B &= 0x7F;   		// UART0 RxInterrupt disable
 	UCSR0B |= 0x40;   		// UART0 TxInterrupt enable
 	
-	
-
 	_delay_us(1300);
 }
-
-//------------------------------------------------------------------------------
-// Fill the scene data structure with scene data from the given motion buffer.
-// Uses:
-//		Motion			current motion header data
-//		gSceneIndex			current scene index
-//------------------------------------------------------------------------------
-static void GetSceneFromBuffer(unsigned char *motionBuffer)
-{
-	WORD i, NumOfwCK;
-	unsigned char *sceneBuffer;
-	unsigned char *prevScene;
-
-	NumOfwCK = Motion.NumOfwCK;
-	sceneBuffer = motionBuffer + (3 + 3 * gSceneIndex) * NumOfwCK + (4 * gSceneIndex) + 2;
-		
-	Scene.NumOfFrame = *((WORD*)(sceneBuffer+2));	// get the number of frames in scene
-	gNumOfFrame = Scene.NumOfFrame;
-			
-	Scene.RTime = *((WORD*)(sceneBuffer+0));		// get the run time of scene[msec]
-	
-	// Get the starting position for each wCK -- this will be the previous
-	// scene destination, unless we're on scene 0, in which case we'll
-	// assume the starting positions have been set by LoadMotionFromBuffer.
-	if (gSceneIndex > 0) {
-		prevScene = motionBuffer + (3 + 3 * (gSceneIndex-1)) * NumOfwCK + (4 * (gSceneIndex-1)) + 2;
-		for (i = 0; i < Motion.NumOfwCK; i++) {						
-			Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos = prevScene[ 4 + i ];
-		}		
-	}
-
-	// Now get rest of the scene data for each wCK, including the destination position.
-	for (i = 0; i < NumOfwCK; i++) {						
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Exist	= 1;
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos	= sceneBuffer[ 4 + i ];
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Torq	= sceneBuffer[ NumOfwCK + 4 + i ];
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].ExPortD	= sceneBuffer[ 2 * NumOfwCK + 4 + i ];
-
-	//rprintf("Servo %d: %d to %d\r\n", i, Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos,
-	//	Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos);
-	}
-	
-	// Serial port preparations (?).
-	UCSR0B &= 0x7F;   		// UART0 RxInterrupt disable
-	UCSR0B |= 0x40;   		// UART0 TxInterrupt enable
-	
-	_delay_us(1300);
-}
-
 
 
 //------------------------------------------------------------------------------
@@ -444,7 +578,6 @@ static void CalcFrameInterval(void)
 	TIFR |= 0x04;		// Clear the overflow flag
 	TIMSK |= 0x04;		// Timer1 Overflow Interrupt Enable
 }
-
 
 //------------------------------------------------------------------------------
 // Calculate the interpolation steps
@@ -491,7 +624,7 @@ static void SendFrame(void)
 {
 	if(gTx0Cnt==0)	return;	// return if no frame to send
 	gTx0BufIdx++;
-	sciTx0Data(gTx0Buf[gTx0BufIdx-1]);		// send first byte to start frame send
+	wckSendByte(gTx0Buf[gTx0BufIdx-1]);		// send first byte to start frame send
 }
 
 
@@ -520,39 +653,6 @@ void M_PlayFlash(void)
 	}
 }
 
-//------------------------------------------------------------------------------
-// Load a motion from a buffer in RAM, and return immediately.
-//------------------------------------------------------------------------------
-void LoadMotionFromBuffer(unsigned char *motionBuf)
-{
-	GetMotionFromBuffer( motionBuf );	// Load motion data into our Motion global
-	
-	// Initialize the starting positions of the first scene
-	// to the current servo positions
-	for (int i = 0; i < Motion.NumOfwCK; i++) {
-		BYTE id = pgm_read_byte(&(wCK_IDs[i]));
-		Scene.wCK[id].SPos = wckPosRead(id);
-		
-		//rprintf("SPos %d = %d\r\n", id, Scene.wCK[id].SPos);
-	}
-	
- 	SendTGain();						// set the runtime PID gain from motion structure
-}
-
-//------------------------------------------------------------------------------
-// Begin playing one scene of the motion previously loaded with
-// LoadMotionFromBuffer.  Return immediately, without waiting for it to finish.
-//------------------------------------------------------------------------------
-void PlaySceneFromBuffer(unsigned char *motionBuf, WORD sceneIndex)
-{
-	gSceneIndex = sceneIndex;
-	GetSceneFromBuffer( motionBuf );	// Load scene into global structure
-//	SendExPortD();						// Set external port data (commented out for now -- not needed)
-	CalcFrameInterval();				// Set the interrupt for the frames
-	CalcUnitMove();						// Calculate the interpolation steps
-	MakeFrame();						// build a frame to send
-	SendFrame();						// start sending frame
-}
 
 //------------------------------------------------------------------------------
 // Check the F_NEXTFRAME flag, and if it's set (which is done by an interrupt
@@ -565,27 +665,6 @@ void process_frames()
 		MakeFrame();
 		SendFrame();
 		F_NEXTFRAME = 0;
-	}
-}
-
-//------------------------------------------------------------------------------
-// This is a blocking routine which keeps the frames and scenes going until
-// the whole motion is complete.  (It's not used in serial slave mode, but
-// may be useful in other modes.)
-//------------------------------------------------------------------------------
-void complete_motion(unsigned char *motionBuf)
-{
-	while (1) {
-	
-		// wait for the current scene to end
-		while (F_PLAYING) process_frames();
-		
-		// if no more scenes, then we're done
-		if (gSceneIndex+1 >= motionBuf[0]) return;
-
-		// Otherwise, start the next scene.
-		PlaySceneFromBuffer(motionBuf, gSceneIndex+1);
-		_delay_ms(1);
 	}
 }
 
@@ -631,7 +710,7 @@ void BasicPose()
 	gTx0Cnt++;								// put into transmit buffer
 
 	gTx0BufIdx++;
-	sciTx0Data(gTx0Buf[gTx0BufIdx-1]);		// send first byte to start frame send
+	wckSendByte(gTx0Buf[gTx0BufIdx-1]);		// send first byte to start frame send
 	
 	PF1_LED1_OFF;
 	rprintf ("\r\n");
@@ -950,3 +1029,125 @@ void SampleMotion(int sm)	// Perform SampleMotion(s)
 	
 	M_PlayFlash();
 }
+
+
+/************************************************************************/
+
+
+// if flag set read initial positions
+
+static BYTE cpos[32];
+ BYTE nos=0;
+ 
+int getservo(int id)
+{
+	wckSendOperCommand(0xa0|id, NULL);
+	int b1 = wckGetByte(TIME_OUT1);
+	int b2 = wckGetByte(TIME_OUT1);
+	
+	if (b1<0 || b2<0)
+		return -1;
+	else
+		return b2;
+}
+
+BYTE readservos()
+{
+	BYTE i;
+	for (i=0; i<31; i++)
+	{
+		int p = wckPosRead(i);		
+		if (p<0 || p>255) break;
+		cpos[i]=p;	
+	}
+	rprintf("Servos: %d\r\n", i);	
+	nos=i;
+	return i;
+}
+
+
+// Play d ms per step, f frames, from current -> pos
+void PlayPose(int d, int f, BYTE pos[], int flag)
+{
+	int i;	
+	if (flag!=0) 
+	{
+		readservos();	// set nos and reads cpos
+		nos=flag;
+	}
+	
+	float intervals[nos];	
+	
+	int dur=d/f;
+	if (dur<25) dur=25; //25ms is quickest
+	
+	for (i=0; i<nos; i++)
+	{
+		intervals[i]=(float)(pos[i]-cpos[i])/(float)f;
+	}
+	
+	for (i=0; i<f; i++)
+	{
+		BYTE temp[nos];
+		for (int j=0; j<nos; j++)
+		{
+			temp[j] = cpos[j] + (float)((i)*intervals[j]+0.5);
+		}
+		wckSyncPosSend(nos-1, 4, temp, 0);
+		delay_ms(dur);
+	}
+}
+
+const BYTE basic18[] = { 143, 179, 198,  83, 106, 106,  69,  48, 167, 141,  47,  47,  49, 199, 192, 204, 122, 125};
+const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
+
+void standup (int n) 
+{
+	if (n<18)
+		PlayPose(1000, 10, basic16, 16); //huno basic
+	else
+		PlayPose(1000, 10, basic18, 18); //huno with hip
+}
+
+
+/************************************************************************/
+//
+// Support for Cyclon head - communicates at 9600 baud on wck BUS
+//
+/************************************************************************/
+
+#define BR9600		95 
+#define BR115200	7 
+void delay_ms(int);
+
+void send_bus_str(char *bus_str, int n)
+{
+			
+		BYTE b;
+		int ch;
+		char *eos = bus_str+n;
+
+		wckReInit(BR9600);
+	
+		while  ((bus_str<eos) && (b=*bus_str++) != 0)
+		{			
+			wckSendByte('S');
+			wckSendByte(b);
+			
+			if (b=='p' || b=='t')
+			{
+				delay_ms(100);	
+				if (*bus_str != 0) wckSendByte(*bus_str++);
+				delay_ms(100);	
+				if (*bus_str != 0) wckSendByte(*bus_str++);
+				
+			}		
+			delay_ms(100);		
+			ch = wckGetByte(1000);
+			rprintf ("BUS=%d\r\n", ch);
+		}
+		
+		wckReInit(BR115200);
+		wckFlush(); // flush the buffer
+}
+
