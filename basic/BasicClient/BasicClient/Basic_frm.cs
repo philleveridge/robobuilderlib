@@ -12,6 +12,8 @@ namespace RobobuilderLib
         Basic       compiler;
         SerialPort  s;
 
+        Process p;
+
         bool readyDownload = false;
 
         string rx = ".";
@@ -40,20 +42,12 @@ namespace RobobuilderLib
                 s.Write(rx);
             }
 
-            //if (p != null)
-            //{
+            if (p != null)
+            {
             //    sw.Write(rx);
-            //}
-            //this.Invoke(new EventHandler(DisplayText));     //echo      
+            } 
         }
 
-
-        TestProcessCaller.ProcessCaller pc;
-
-        private void writeStreamInfo(object sender, TestProcessCaller.DataReceivedEventArgs e)
-        {
-            output.AppendText(e.Text + Environment.NewLine);
-        }
 
         private void processCompletedOrCanceled(object sender, EventArgs e)
         {
@@ -64,14 +58,28 @@ namespace RobobuilderLib
         {
             if (comPort.Text == "!")
             {
-                pc = new TestProcessCaller.ProcessCaller(this);
+                if (button1.BackColor == System.Drawing.Color.Blue)
+                {
+                    button1.BackColor = System.Drawing.Color.Red;
+                    p.Kill();
+                    p.Close();
+                    return;
+                }
+
+                // connect to basic.exe
+                // and simulate connection
+                p = new Process();
+                p.StartInfo.FileName = "basic.exe";
+                //p.StartInfo.RedirectStandardInput = true;
+                p.StartInfo.RedirectStandardOutput = true;
+                p.StartInfo.UseShellExecute = false;
                 button1.BackColor = System.Drawing.Color.Blue;
-                pc.FileName = "basic.exe";
-                pc.StdErrReceived += new TestProcessCaller.DataReceivedHandler(writeStreamInfo);
-                pc.StdOutReceived += new TestProcessCaller.DataReceivedHandler(writeStreamInfo);
-                pc.Completed += new EventHandler(processCompletedOrCanceled);
-                pc.Cancelled += new EventHandler(processCompletedOrCanceled);
-                pc.Start();
+                p.Start();
+
+                //p.StandardInput.Write("test");
+                string t = p.StandardOutput.ReadToEnd() ;
+                //Console.WriteLine(t);
+
                 return;
             }
 
@@ -126,7 +134,7 @@ namespace RobobuilderLib
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Hide();
+            this.Close();
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -169,7 +177,7 @@ namespace RobobuilderLib
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("About Me (v 0.1)\r\nl3v3rz","About ... ",MessageBoxButtons.OK);
+            MessageBox.Show("Basic IDE (v 0.1)\r\n$Revsion$\r\nby l3v3rz","About ... ",MessageBoxButtons.OK);
         }
 
         private void compileToolStripMenuItem_Click(object sender, EventArgs e)

@@ -19,7 +19,9 @@
 extern uint8_t EEMEM BASIC_PROG_SPACE[];  // this is where the tokenised code will be stored
 extern int strlen(char *p);
 
-uint16_t psize=0; // pints to next elemt
+uint16_t psize   =0; // points to next elemt
+uint16_t lastline=0; // 
+uint16_t pll     =0; // 
 
 //insert newline into BASIC_PROG_SPACE
 
@@ -65,27 +67,21 @@ void insertln(line_t newline)
 	eeprom_write_byte(BASIC_PROG_SPACE+psize, 0x0);	// eo string  character
 	psize++;
 
+	lastline = psize;
 	eeprom_write_byte(BASIC_PROG_SPACE+psize, 0xCC);// terminator character
 
-	if (nxt == 3)
+	if (nxt == 1)
 	{
-		// top - updaing first line
-		int n = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxt));	
-		if (n == newline.lineno)
-		{
-			//updaing first line
-		}
-		else if (n == newline.lineno)
-		{
-			//inserting before first line
-		}
-		else
-		{
-			//inserting after first line
-		}
+		// pointing to before first line
+		// set to this line
+		int fl = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+1));
+		eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+1),  srt);       //top points new first line
+		eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+srt+6), fl);	//this now points to old firstline
+		//need to terminate list if firstline=lastline
+		eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+pll), lastline);	//this now points to old firstline
 	}
 
-	if (nxt > 3)
+	if (nxt > 1)
 	{
 		int n = getlineno(nxt);	
 
@@ -111,7 +107,10 @@ void insertln(line_t newline)
 			//next line [la] now to point to end 
 			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+la+6), srt + 6 + l + 3);	
 		}
-	}		
+	}
+
+	if (nxt==0)
+		pll = psize-l-3;
 }
 
 int getlineno(int p)
@@ -149,12 +148,11 @@ void clearln()
 int findln(int lineno)
 {
 	int nl  = firstline();
-	int prv = nl;
+	int prv = 1;
 	int lno = 1;
 
 	while (lno != 0)
 	{
-		uint8_t b;
 		lno=eeprom_read_byte(BASIC_PROG_SPACE+nl);					
 		if (lno == 0xCC)
 		{
@@ -185,21 +183,21 @@ line_t readln(char *bp)
 {
 	int i;
 	line_t   line;
-	uint8_t l, tmp=0;
 	line.text = bp;
 
 
-	line.lineno=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxtline));	
+	line.lineno= (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxtline));	
 	nxtline+=2;
-	line.token=eeprom_read_byte(BASIC_PROG_SPACE+nxtline);	
+	line.token = eeprom_read_byte(BASIC_PROG_SPACE+nxtline);	
 	nxtline++;		
-	line.var=eeprom_read_byte(BASIC_PROG_SPACE+nxtline);	
+	line.var   = eeprom_read_byte(BASIC_PROG_SPACE+nxtline);	
 	nxtline++;	
-	line.value=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxtline));	
+	line.value = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxtline));	
 	nxtline+=2;
+	line.next  = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxtline));	
 		
 	//eeprom_read_block(bp, BASIC_PROG_SPACE+nxtline+2, l);	
-	for (i=0; i<64;i++)
+	for (i=0; i<100;i++) // MAX_LINE
 	{
 		line.text[i] =eeprom_read_byte((uint8_t *)(BASIC_PROG_SPACE+nxtline+2+i));	
 	    if (line.text[i]==0) break;

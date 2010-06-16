@@ -39,7 +39,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncOperation.cs" />
     <Compile Include="Basic.cs" />
     <Compile Include="Basic_frm.cs">
       <SubType>Form</SubType>
@@ -48,7 +47,6 @@
       <DependentUpon>Basic_frm.cs</DependentUpon>
     </Compile>
     <Compile Include="binxfer.cs" />
-    <Compile Include="ProcessCaller.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Basic_frm.resx">

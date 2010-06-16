@@ -1,14 +1,36 @@
 #include <stdio.h>
+#include <windows.h>
 
 /* wck commands */
-void wckPosSend()			{}
-void wckSetPassive()		{}
+void wckPosSend(char ServoID, char Torque, char Position)			{printf ("WIN: Servo Send %d [%d] -> $d\n", ServoID, Torque, Position);}
+int  wckPosRead(char ServoID)										{printf ("WIN: Servo Read %d\n", ServoID); return (ServoID<20)?120:-1;}
+void wckSetPassive(char ServoID)									{printf ("WIN: Servo Passive %d\n", ServoID); }
+void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)		
+{
+	int i=0;
+	printf ("WIN: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);
+	for (i=Index; i<=LastID; i++)
+			printf ("WIN: Servo [%d] = %d\n", i, TargetArray[i]);
+}
+
 void wckGetByte()			{}
 void wckFlush()				{}
 void wckSendByte()			{}
 void wckReInit()			{}
-void wckPosRead()			{}
-void wckSyncPosSend()		{}
+void send_bus_str()			{} // support for PIC based Cylon head
+
+int nos;
+
+void PlayPose(int d, int s, unsigned char data[], int n)
+{
+	int i=0;
+	printf ("WIN: Playpose  [%d , %d]\n", d,s);
+	for (i=0; i<n; i++)
+			printf ("WIN: Data [%d] = %d\n", i, data[i]);
+}
+
+void standup      	(int n)	{printf ("WIN: standup %d\n", n);}
+void readservos ()  {nos=20;}
 
 /* eeprom */
 void			eeprom_read_block (char *b, char *d, int l)		{int i=0; for(i=0; i<l;i++) *b++=*d++;}
@@ -34,11 +56,6 @@ int uartGetByte() 							{return kbhit()?getch():-1; }
 void rprintfStrLen(char *p, int s, int l)	{int i; for (i=0; i<l; i++) putchar(*(p+i));}
 
 /* misc */
-void delay_ms(int x)  				{}
-
-void complete_motion()  			{}
-void PlaySceneFromBuffer()  		{}
-void LoadMotionFromBuffer()  		{}
-void GetNextMotionBuffer()  		{}
+void delay_ms(int x)  				{Sleep(x);}
 
 void SampleMotion(char action)	{printf ("Win:  sample motion %d\n", action);}
