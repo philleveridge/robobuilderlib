@@ -85,6 +85,7 @@ namespace RobobuilderLib
 
             if (dbg)
             {
+                Console.WriteLine("DBG: [{1}] : [{2}] send={0}", BitConverter.ToString(header), 4, header.Length);
                 Console.WriteLine("DBG: [{1}] : [{2}] send={0}", BitConverter.ToString(b), n + 1, b.Length);
             }
 
@@ -208,6 +209,7 @@ namespace RobobuilderLib
                     if (mt == 'z')
                     {
                         Console.WriteLine("Protocol error {0}", buff[0]);
+                        return false;
                     }
                     break;
                 case (byte)'Q':

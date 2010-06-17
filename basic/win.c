@@ -44,18 +44,24 @@ void			eeprom_write_byte (char *b, unsigned char c) 	{*b=c;}
 int z_value=0;
 int y_value=0;
 int x_value=0;
+int gVOLTAGE=10000;
+int gDistance=35;
+unsigned char sData[64];
+
+void sample_sound(int n){printf ("WIN: Sample sound %d\n", n);}
+void sound_init()		{printf ("WIN: Sound init\n");}
 
 int irGetByte()			{return uartGetByte();}
-int adc_volt()			{return 0;}
-int adc_psd()			{return 0;}
+int Get_VOLTAGE()		{return 0;}
+int Get_AD_PSD()		{return 0;}
 int tilt_read()			{return 0;}
 int adc_mic()			{return 0;}
+void lights() {}
 
 /* priotf  */
 int uartGetByte() 							{return kbhit()?getch():-1; }
 void rprintfStrLen(char *p, int s, int l)	{int i; for (i=0; i<l; i++) putchar(*(p+i));}
 
 /* misc */
-void delay_ms(int x)  				{Sleep(x);}
-
-void SampleMotion(char action)	{printf ("Win:  sample motion %d\n", action);}
+void delay_ms(int x)  						{Sleep(x);}
+void SampleMotion(char action)				{printf ("Win:  sample motion %d\n", action);}

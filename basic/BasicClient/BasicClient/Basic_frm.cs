@@ -177,7 +177,7 @@ namespace RobobuilderLib
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Basic IDE (v 0.1)\r\n$Revsion$\r\nby l3v3rz","About ... ",MessageBoxButtons.OK);
+            MessageBox.Show("Basic IDE (v 0.1)\r\n$Revision$\r\n(c) l3v3rz 2010","About ... ",MessageBoxButtons.OK);
         }
 
         private void compileToolStripMenuItem_Click(object sender, EventArgs e)

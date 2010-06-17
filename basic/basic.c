@@ -113,8 +113,8 @@ uint8_t EEMEM FIRMWARE[64];  					// leave blank - used by Robobuilder OS
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
 extern void Perform_Action(BYTE action);
-extern int getHex(int d);
-extern int delay_ms(int d);
+extern int	getHex(int d);
+extern int	delay_ms(int d);
 extern void SampleMotion(unsigned char); 
 
 extern void sound_init();
@@ -126,8 +126,9 @@ extern BYTE sData[];
 extern int 	sDcnt;
 extern void sample_sound(int);
 extern volatile BYTE   MIC_SAMPLING;
-extern  BYTE nos;
-volatile BYTE	PLAY_SOUND;
+extern BYTE nos;
+
+volatile	BYTE	PLAY_SOUND;
 
 //wait for byte or IR press
 int  GetByte()
@@ -137,7 +138,7 @@ int  GetByte()
 	RUN_LED1_OFF;
 	while (1) 
 	{
-		if ((b=uartGetByte())>0) break;
+		if ((b=uartGetByte())>=0) break;
 		if ((b=irGetByte())>0)   break;
 	}
 	RUN_LED1_ON;
@@ -157,7 +158,7 @@ const  prog_char *error_msgs[] = {
 enum {
 	LET=0, FOR, IF, THEN, 
 	ELSE, GOTO, PRINT, GET, 
-	PUT, END, SCENE, XACT, 
+	PUT, END, LIST, XACT, 
 	WAIT, NEXT, SERVO, MOVE,
 	GOSUB, RETURN, POKE, STAND
 	};
@@ -167,7 +168,7 @@ enum {
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
 	"ELSE","GOTO","PRINT","GET",
-	"PUT", "END", "SCENE", "XACT",
+	"PUT", "END", "LIST", "XACT",
 	"WAIT", "NEXT", "SERVO", "MOVE",
 	"GOSUB", "RETURN", "POKE", "STAND"
 };
@@ -411,11 +412,13 @@ void basic_load()
 		{	
 			if (cp>line+n || *cp  !=' ')
 			{
-				errno=1;
+				printf ("Delete - %d\r\n", newline.lineno);
+				deleteln(newline.lineno);
 				continue;
 			}
 			cp++;
 		}
+
 
 		if ( (newline.token=token_match((char **)tokens, &cp, NOTOKENS))==255)           // sizeof(tokens)/))<0)
 		{
@@ -524,8 +527,22 @@ void basic_load()
 			break;
 		case PRINT:
 		    if (*cp=='#') { newline.var=1; cp++;}
-		case MOVE:
-		case SCENE:
+			newline.text=cp;
+			break;
+		case MOVE:	
+			newline.text=cp;
+			break;
+		case LIST:
+			// read Variable		
+			if ((newline.var = getVar(&cp))<0)
+			{
+				errno=3;
+			}
+			// '='
+			if (getNext(&cp) != '=')
+			{
+				errno=1;
+			}
 			newline.text=cp;
 			break;
 		case IF:
@@ -548,8 +565,6 @@ void basic_load()
 				strncpy(p_else,":   ",4);
 			else
 				strcat(cp,":0");
-			
-			//rprintf("["); rprintfStr(newline.text); rprintf("]\r\n"); //debug
 			}
 			break;
 		case STAND: 
@@ -604,6 +619,9 @@ RUNTIME routines
 *************************************************************************************************************/
 
 int variable[26]; // only A-Z at moment
+BYTE scene[32];	  // array
+int nis=0;
+void eval_list(char *p);
 
 int get_bit(int pn, int bn)
 {
@@ -706,11 +724,6 @@ int get_special(char *str, int *res)
 	int t=token_match(specials, &str, sizeof(specials));
 	int v=0;
 	
-	//if (t==sPSD || t==sVOLT || t==sMIC)
-	//{
-	//	adc_test(0);
-	//}
-	
 	switch(t) {
 	case sPF1:
 		v=0;
@@ -721,7 +734,7 @@ int get_special(char *str, int *res)
 		int lc;
 		for (lc=0; lc<SDATASZ; lc++) 
 		{
-			lights(sData[lc]);
+			//lights(sData[lc]);
 			t += sData[lc];  // sum the buffer
 			sData[lc]=0;     // and clear
 		}
@@ -813,7 +826,7 @@ int get_special(char *str, int *res)
 	return t;
 }
 
-enum {STRING, NUMBER, ERROR, CONDITION } ;
+enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 
 int math(int n1, int n2, char op)
 {
@@ -915,6 +928,26 @@ unsigned char eval_expr(char **str, int *res)
 			return STRING;
 		case ' ':
 			break; //ignore sp
+		case '@':
+			{
+				n1 = variable[**str-'A'];
+				(*str)++;
+				if (**str == '[')
+				{
+					char tmpA[100];
+					(*str)++;
+					eval_expr(str, &tmp);
+					//
+					readtext(n1, tmpA);
+					eval_list(tmpA);
+					//
+					n1 = scene[tmp];
+					(*str)++;
+				}
+				else
+					return ARRAY;
+			}
+			break;
 		case '$':
 			//special var?
 			if ((tmp=get_special(*str, &n1))>0) 
@@ -993,12 +1026,26 @@ int put_special(int var, int n)
 	return 0;
 }
 
+void eval_list(char *p)
+{
+	// eval list "5,1,2,3,4,5" ->scene[5]
+	int i,n;
+	eval_expr(&p, &nis);
+	if (*p++ != ',') { errno=6;return; }
+	for (i=0;i<nis;i++)
+	{
+		n=0;
+		eval_expr(&p, &n);
+		if (i!=(nis-1) && *p++ != ',') { errno=6;return; }
+		scene[i]=n;
+	}
+}
+
 int forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
 int fp; 
 int gosub[MAX_GOSUB_NEST];  // 3 nested gosubs
 int gp;  
-BYTE scene[32];
-int nis=0;
+
 
 int execute(line_t line);
 		
@@ -1045,6 +1092,8 @@ void basic_run()
 			rprintf ("User Break on line %d\r\n", line.lineno); 
 			return;
 		}
+
+		if (line.lineno==0) break;
 
 		/* execute code */
 		tmp = execute(line);
@@ -1195,6 +1244,15 @@ int execute(line_t line)
 				}
 				p=p+n+1;
 				break;
+			case ARRAY:
+				if (nis>0)
+				{
+					printf ("%d", scene[0]);
+					for (n=1; n<nis; n++) {printf (",%d",scene[n]);}
+				}
+				else
+					printf("Null");
+				printf ("\r\n");
 			}
 
 			if (*p=='\0') break; // done
@@ -1229,46 +1287,39 @@ int execute(line_t line)
 		}
 		break;		
 	case MOVE: 
+		// MOVE @A,500,10
+		// MOVE @A
 		// No args - send servo positions syncronously
 		// with args (No Frames / Time in Ms) - use MotionBuffer
 		fm=0; tm=0;
 		p=line.text;
 		if (p!=0 && *p != 0)
-		{
+		{			
+			if (eval_expr(&p, &fm) != ARRAY)
+			{
+				errno=4;
+				break;
+			}
+			if (*p=='\0')
+			{
+				if (nis>0) 
+					wckSyncPosSend(nis-1, 4, scene, 0);
+			}
+
+			if (*p++ != ',') { errno=1; break;}
 			eval_expr(&p, &fm);
 			if (*p++ != ',') { errno=1; break;}
 			eval_expr(&p, &tm);
 
-			//playpose(fm,tm,scene);
 			PlayPose(tm, fm, scene, nis);
 		}
-		else
-		{
-			if (nis>0) 
-				wckSyncPosSend(nis-1, 4, scene, 0);
-			else 
-				errno=1;
-		}
 		//
 		break;
-	case SCENE: 
-		// read in 'n' servo position values and store
-		{
-		int i;
-		p=line.text;
-		eval_expr(&p, &nis);
-		if (*p++ != ',') { errno=6;break; }
-		for (i=0;i<nis;i++)
-		{
-			n=0;
-			eval_expr(&p, &n);
-			if (i!=(nis-1) && *p++ != ',') { errno=6;break; }
-			scene[i]=n;
-		}
-		}
-		//
-		break;
-			
+	case LIST: 
+		//LIST A=5,12,3,4,5
+		variable[line.var] = lastline+8;
+		eval_list(line.text);
+		break;		
 	case XACT: 
 		PerformAction(line.value);
 		break;
@@ -1279,7 +1330,6 @@ int execute(line_t line)
 		rprintfStr ("End of program\r\n"); 
 		return 0xCC;
 	case GOSUB: 
-		//rprintfStr ("gosub\r\n");  //debug
 		{
 			int t;
 			gosub[gp++]=nxtline;
@@ -1308,18 +1358,21 @@ int execute(line_t line)
 void basic_clear()
 {
 	// Set Init pointer to Zero
+	rprintfStr("Clear Program \r\n");
+	clearln();
+}
+
+void basic_zero()
+{
+	// Set Init pointer to Zero
 	int i;	
 	uint8_t data= 0xFF; 				// start of program byte	
-	rprintfStr("Clear Program \r\n");
 			
 	for (i=0; i<EEPROM_MEM_SZ; i++) 	
 	{
 		eeprom_write_byte(BASIC_PROG_SPACE+i, data);
 	}
-
-	clearln();
-	
-	rprintf("Cleared %d bytes \r\n", EEPROM_MEM_SZ);
+	basic_clear();
 }
 
 
@@ -1389,13 +1442,15 @@ void basic_list()
 		line = readln(buf);
 		tmp = nextchar();
 
+		if (line.lineno==0) continue;
+
 		/* list code */
 	
 		rprintf ("%d ", line.lineno); 
 		rprintfStr (tokens[line.token]);
 		rprintf (" "); 
 		
-		if (line.token==LET || line.token==GET || line.token==FOR)
+		if (line.token==LET || line.token==GET || line.token==FOR || line.token==LIST)
 			rprintf ("%c = ", line.var+'A');
 			
 		if (line.token==PUT)
@@ -1420,10 +1475,25 @@ void basic_list()
 		if (line.token==PRINT && line.var==1)
 			rprintf ("# ");
 			
+		if (line.token==IF)
+		{
+			// replace ? THEN,  : ELSE
+			char *p_then, *p_else, *cp = line.text;
+			p_then = strstr(cp, ")?  ");
+			p_else = strstr(cp, ":   ");
+			if (p_then != 0) 
+				strncpy(p_then, "THEN",4);
+				
+			if (p_else != 0) 
+				strncpy(p_else,"ELSE",4);
+
+			rprintfStr (cp+1);
+		}
+		else
 		if (line.token==NEXT) 
 			rprintf ("%c", line.var+'A');
 		else
-		if (line.token==GOTO || line.token==WAIT ) 
+		if (line.token==GOTO || line.token==WAIT  || line.token==STAND ) 
 			rprintf ("%d", line.value);
 		else
 			rprintfStr (line.text);
@@ -1485,10 +1555,10 @@ int bin_read_request()
 			if (bin_downloadbasic())
 				return mt;
 			else
-				return -1;
+				return 7; //dowload not ok
 		}
 	}
-	return -1;
+	return 4; // not got MAG request
 }
 
 void binmode()
@@ -1502,7 +1572,7 @@ void binmode()
 	if (r == 'l')
 		SendResponse('l', VERSION);
 	else
-		SendResponse('z', PROTOCOL_ERROR);
+		SendResponse('z', r);
 		
 	RUN_LED2_OFF;
 }
@@ -1537,6 +1607,9 @@ void basic()
 			break;
 		case 'c': // clear 
 			basic_clear();
+			break;
+		case 'C': // zero &clear 
+			basic_zero();
 			break;
 		case 'd': // dump 
 			dump();
