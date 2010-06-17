@@ -94,6 +94,10 @@ ISR(ADC_vect)
 				gMIC_val = (BYTE)gAD_val;
 			else
 				gMIC_val = 0;
+				
+			lights(gMIC_val);
+			sData[sDcnt] = (sData[sDcnt] + gMIC_val)/2;
+			sDcnt = (sDcnt + 1) % SDATASZ;  // store sample
 			break; 
 	}  
 	F_AD_CONVERTING = 0;    
@@ -120,6 +124,8 @@ void Get_AD_PSD(void)
 {
 	float	tmp = 0;
 	float	dist;
+		
+	if (CHK_BIT5(PORTB)==0) PSD_on();
 	
 	EIMSK &= 0xBF;
 

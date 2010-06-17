@@ -96,17 +96,17 @@ namespace RobobuilderLib
         enum KEY {
 	        LET=0, FOR, IF, THEN, 
 	        ELSE, GOTO, PRINT, GET, 
-	        PUT, END, SCENE, XACT, 
+	        PUT, END, LIST, XACT, 
 	        WAIT, NEXT, SERVO, MOVE,
-	        GOSUB, RETURN, POKE
+	        GOSUB, RETURN, POKE, STAND
 	        };
 	
         string[] tokens = new string[] {
             "LET", "FOR", "IF","THEN", 
             "ELSE","GOTO","PRINT","GET",
-            "PUT", "END", "SCENE", "XACT",
+            "PUT", "END", "LIST", "XACT",
             "WAIT", "NEXT", "SERVO", "MOVE",
-            "GOSUB", "RETURN", "POKE"
+            "GOSUB", "RETURN", "POKE", "STAND"
         };
 
         enum SKEY {sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM};
@@ -326,7 +326,12 @@ namespace RobobuilderLib
                         ln.text = process_arg(z);
                         break;
                     case KEY.MOVE:
-                    case KEY.SCENE:
+                        ln.text = z;
+                        break;
+                    case KEY.LIST:
+                        t1 = GetVar(GetWord(ref z));
+                        if (t1 < 0) errno = 3; else ln.var = (byte)t1;
+                        if (GetNext(ref z) != "=") { errno = 1; }
                         ln.text = z;
                         break;
                     case KEY.SERVO:
@@ -358,6 +363,7 @@ namespace RobobuilderLib
                         ln.text = z;
                         break;
                     case KEY.WAIT:
+                    case KEY.STAND:
                     case KEY.GOTO:
                     case KEY.XACT:
                     case KEY.GOSUB:

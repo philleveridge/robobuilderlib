@@ -24,3 +24,5 @@ extern int     	nxtline;
 extern void    	setline(uint8_t);
 extern int		firstline();
 extern int		getlineno(int p);
+extern uint16_t lastline;  // last line added
+extern void		readtext(int ln, char *b);
