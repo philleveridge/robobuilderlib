@@ -1,0 +1,15 @@
+#Basic Client (0.1) is a windows front end to Basic firmware
+
+= Introduction =
+
+A windows based edit and compiler to simplify working with basic programs. It is not necessary to use it as all that is required is a terminal program, however it does make transferring programs from PC to robot much simpler.
+
+The upper window is a standard text editor. Note it auto-generates line number and allows the use of labels (unlike the firmware version). 
+
+The bottom windows shows the output of a compile. his can be transfer to the robot by connecting to it over serial link - use the red button (edit COM5 to be the port you use). 
+
+The windows is then an interactive console on to the robot. Press z (to put robot in download mode) and then select download from the menu.
+
+= Details =
+
+http://robobuilderlib.googlecode.com/files/basiccleint.jpg
