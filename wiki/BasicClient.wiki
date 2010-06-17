@@ -6,7 +6,7 @@ A windows based edit and compiler to simplify working with basic programs. It is
 
 The upper window is a standard text editor. Note it auto-generates line number and allows the use of labels (unlike the firmware version). 
 
-The bottom windows shows the output of a compile. his can be transfer to the robot by connecting to it over serial link - use the red button (edit COM5 to be the port you use). 
+The bottom windows shows the output of a compile. This can be transfer to the robot by connecting to it over serial link - use the red button (edit COM5 to be the port you use). 
 
 The windows is then an interactive console on to the robot. Press z (to put robot in download mode) and then select download from the menu.
 
