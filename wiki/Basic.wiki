@@ -49,9 +49,11 @@ SYNTAX:
 [LINE No] XACT EXPR
 [LINE No] WAIT number
 [Line No] SERVO ID=EXPR | '@'
-[LINE No] SCENE LIST
+[LINE No] LIST [VAR]=N,1,2,3 ..
+[LINE No] MOVE @[VAR],100,20
 [Line No] GOSUB [Line No]
 [Line No] RETURN
+[Line No] STAND [16 | 18]  ; basic pose for either 16 or 18 servo bots
 
 --------------------------TBD ---------------------------
 [LINE No] PUT VAR '=' $PORTA|B|C:0-7
@@ -71,10 +73,9 @@ LET A=$IR           //get char from IR and transfer to A
 LET A=$SERVO:id     //let A get position of servo id 
 
 Special Commands
-STAND
 SERVO ID=POS  set servo id to position POS / @
 PUT 	      enable access to PORTS/SPECIAL REGISTER
-SCENE         sends a Scene - 16 Servo Positions, Plus time, no frames
+LIST/MOVE     sends a Scene - 'n' Servo Positions, Plus time, no frames
 WAIT          Wait for a an amount of time in ms
 XACT          *TBC* - Call any action using code i.e. XACT 0, would punch left, XACT 17 a wave
 Built in motions:
