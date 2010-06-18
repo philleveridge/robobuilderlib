@@ -1,4 +1,4 @@
-Femto -  a Micro-LISP interpreter running natively on the Robobuilder RBC unit
+#summary Femto -  a Micro-LISP interpreter running natively on the Robobuilder RBC unit
 
 = Introduction =
 
