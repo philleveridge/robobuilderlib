@@ -1,12 +1,14 @@
-#Binary mode for control of robot from a remote PC
+#summary Binary protocol for control of robot from a remote PC
 
 = Introduction =
 
-Binary mode is entered by sending a 'b' on boot up from the default mode ( Idle mode )
+_This has been supperceeded by DCMP_
 
-Once in binary mode the protocol is as follows:
 
 == Basic Protocol ==
+Binary mode is entered by sending a 'b' on boot up from the default mode ( Idle mode )
+
+Protocol spec:
 
 {{{
 PC -> Robot (Over serial comms at 115200 baud)
@@ -38,4 +40,3 @@ Message types:
   * l  basic download
   * H  low speed wck bus comms 
   * p  exit Binary mode (back to idle)
-
