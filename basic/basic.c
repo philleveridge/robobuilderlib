@@ -1,66 +1,14 @@
 /*
+An elementry basic language for Robobuilder Humanoid Robot
 
-The ability to create simple actions in an elemntry basic language
-
-basic_load		read a program from the serial port and store in EEPROM
-basic_run		run the program in eeprom (option debuf flag for testing)
-basic_clear		clear eeprom program(s)
-basic_list 		show contents of eeprom
+By l3v3rz 
+c 2010
 
 Language Spec:
-VAR    A-Z  INTEGER
-OPER   +-*\()=<>
-CMD    LET:FOR:NEXT:GOTO:IF:THEN:ELSE:PRINT:END:SET
-STRING " ... "
-EXPR1  VAR | LITERAL
-EXPR2  EXPR1 | STRING
-LIST   EXPR2 [,EXPR2]
-EXPR   EXPR1 OPER EXPR1  
+See wiki for details
 
-SYNTAX:
-[LINE no] LET  VAR '=' EXPR 
-[LINE no] GOTO [Line No]
-[LINE no] PRINT [#] LIST [;]
-[LINE No] END
-[LINE no] IF  EXPR THEN LINE no ELSE Line No
-[LINE No] FOR VAR '=' EXPR 'To' EXPR
-[LINE No] NEXT
-[LINE No] XACT EXPR
-[LINE No] WAIT EXPR
-[Line No] GOSUB [Line No]
-[Line No] RETURN
-[Line No] SERVO VAR '=' EXPR | '@'
-[LINE No] SCENE N, LIST(of N items)
-[LINE No] MOVE LIST
---------------------- UNDER TEST -----------------------
+http://code.google.com/p/robobuilderlib/wiki/Basic
 
-[LINE No] PUT [Special] = [Expr]
-[LINE No] LET A=$ROM:addr
-
---------------------------TBD --------------------------
-[LINE No] POKE val, Address
-
-
-Rbas Cmd		 Description
-==============   ==============
-XACT       		 Call any Experimental action using literal code i.e. XACT 0, would do basic pose, XACT 17 a wave
-PUT PF1=1	   	 access to PORTS/SPECIAL REGISTER, This would set PF1_led1 on
-SERVO ID=POS     set servo id to positon POS / @
-LET A=$SERVO:id  let A get position of servo id 
-SCENE            set up a Scene - 16 Servo Positions
-MOVE             sends a loaded Scene  (time ms, no frames)
-
-
-Special register access ($)
-LET A=$IR  		 //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
-LET A=$PORT:A:6  //Read Bit 6 of Port A
-LET A=$ROM:10    // read byte 10 of ROM
-
-POKE 10,A         // Put A into Byte 10
-PUT PORT:A:8 = 3 //set DDR of Port A = 3 (PIN0,PIN1 readable)
-PUT PORT:A:2 = 1 //set Port A bit 1 =1 (assuming writeable)
-
-Example Programs are now available from examples folder
 */
 
 #ifdef AVR
@@ -99,13 +47,7 @@ Example Programs are now available from examples folder
 #define MAX_FOR_EXPR	20 
 #define MAX_DEPTH 		5
 
-/***********************************/
 
-#define C 		16
-#define PGAIN 	(unsigned char)20
-#define DGAIN 	(unsigned char)30
-#define IGAIN 	(unsigned char)0
-#define S 		(2+3*C)
 
 /***********************************/
 
@@ -120,6 +62,7 @@ extern void SampleMotion(unsigned char);
 extern void sound_init();
 extern void SendToSoundIC(BYTE cmd) ;
 
+
 /***********************************/
 
 extern BYTE sData[];
@@ -127,8 +70,6 @@ extern int 	sDcnt;
 extern void sample_sound(int);
 extern volatile BYTE   MIC_SAMPLING;
 extern BYTE nos;
-
-volatile	BYTE	PLAY_SOUND;
 
 //wait for byte or IR press
 int  GetByte()
@@ -160,23 +101,25 @@ enum {
 	ELSE, GOTO, PRINT, GET, 
 	PUT, END, LIST, XACT, 
 	WAIT, NEXT, SERVO, MOVE,
-	GOSUB, RETURN, POKE, STAND
+	GOSUB, RETURN, POKE, STAND,
+	PLAY, OUT
 	};
 
-#define NOTOKENS 20
+#define NOTOKENS 22
 
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
 	"ELSE","GOTO","PRINT","GET",
 	"PUT", "END", "LIST", "XACT",
 	"WAIT", "NEXT", "SERVO", "MOVE",
-	"GOSUB", "RETURN", "POKE", "STAND"
+	"GOSUB", "RETURN", "POKE", "STAND",
+	"PLAY", "OUT"
 };
 
 char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		"PORT", "ROM", "TYPE" };
+		"PORT", "ROM", "TYPE", "ABS" };
 
-enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE};
+enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE, sABS};
 							
 
 int errno;
@@ -356,18 +299,21 @@ int readLine(char *line)
 
 int execute(line_t line);
 
+int fnptr[26];
+extern uint16_t psize;
+
 void basic_load()
 {	
 	char line[MAX_LINE];
 	int n=0;
 	int lc=0;
 	char *cp;
-	
-	uint16_t psize=0;
-	
+
 	char forbuf[MAX_FOR_NEST][MAX_FOR_EXPR];
 	int fb=0;
-			
+	
+
+				
 	struct basic_line newline;	
 	
 	errno=0;
@@ -530,6 +476,7 @@ void basic_load()
 			newline.text=cp;
 			break;
 		case MOVE:	
+		case OUT:	
 			newline.text=cp;
 			break;
 		case LIST:
@@ -567,14 +514,13 @@ void basic_load()
 				strcat(cp,":0");
 			}
 			break;
+		case PLAY: 
 		case STAND: 
 		case WAIT: 
 		case GOTO: 
 		case XACT:
 		case GOSUB:
-			// read line
-			newline.value = getNum(&cp);			
-			//rprintf ("val=%d\r\n", newline.value); 		//DEBUG
+			newline.value = getNum(&cp);	// read line	
 			break;
 		case END:
 		case RETURN:
@@ -586,7 +532,8 @@ void basic_load()
 				errno=3;
 			}
 			if (fb>0) {
-				newline.text=forbuf[--fb];
+				newline.text=forbuf[--fb];  //
+				fnptr[newline.var]=psize;   //line pointer
 			} else {
 				// next without FOR
 				errno=5;
@@ -622,6 +569,8 @@ int variable[26]; // only A-Z at moment
 BYTE scene[32];	  // array
 int nis=0;
 void eval_list(char *p);
+unsigned char eval_expr(char **str, int *res);
+enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 
 int get_bit(int pn, int bn)
 {
@@ -718,10 +667,10 @@ void set_bit(int p, int b, int n)
 	}
 }
 
-int get_special(char *str, int *res)
+int get_special(char **str, int *res)
 {
-	char *p=str;
-	int t=token_match(specials, &str, sizeof(specials));
+	char *p=*str;
+	int t=token_match(specials, str, sizeof(specials));
 	int v=0;
 	
 	switch(t) {
@@ -761,6 +710,16 @@ int get_special(char *str, int *res)
 		Get_VOLTAGE();
 		v = gVOLTAGE;
 		break;
+	case sABS: // $ABS(x)
+		v=0; 
+		if (**str=='(') {
+			(*str)++;
+			eval_expr(str, &v);
+			*res=(v<0)?-v:v;
+			(*str)++;
+			return (*str-p);
+		}
+		break;
 	case sTYPE:
 		v=nos;
 		break;
@@ -776,45 +735,45 @@ int get_special(char *str, int *res)
 	case sSERVO: // SERVO:nn
 		// get position of servo id=nn
 		v=0;
-		if (*str==':') {
-			str++;
-			v=getNum(&str);
+		if (**str==':') {
+			(*str)++;
+			v=getNum(str);
 			v = wckPosRead(v); 			// get pos of servo id=v
 			*res=v;
-			return (str-p);
+			return (*str-p);
 		}
 		break;	
 	case sPORT: // PORT:A:n
 		// get position of servo id=nn
 		v=0;
-		if (*str==':') {
-			str++;
+		if (**str==':') {
+			(*str)++;
 			}
-		if (*str>='A' && *str<='G' ) {
-			v= (*str-'A');
-			str++;
+		if (**str>='A' && **str<='G' ) {
+			v= (**str-'A');
+			(*str)++;
 			}	
 		t=8;
-		if (*str==':') {   // Optional Bit specficied
-			str++;
-			if (*str>='0' && *str<='7' ) {
-				t=  (*str+ '0');
-				str++;
+		if (**str==':') {   // Optional Bit specficied
+			(*str)++;
+			if (**str>='0' && **str<='7' ) {
+				t=  (**str + '0');
+				(*str)++;
 				}
 		}				
 		*res=get_bit(v, t);         //need to read port with PINA etc 
-		return (str-p); // not finished yet
+		return (*str-p); // not finished yet
 	case sROM: // ROM(x)
 		{
-		int i=0; // x
-		if (*str=='(') 
+		if (**str=='(') 
 		{   //(Addr)
-			str++;
-			i=getNum(&str);
-			if (*str==')')
+			(*str)++;
+			eval_expr(str, &v);
+			if (**str==')')
 			{
-				v = eeprom_read_byte((uint8_t*)(FIRMWARE+i));
+				v = eeprom_read_byte((uint8_t*)(FIRMWARE+v));
 			}
+			(*str)++;
 		}
 		}
 		break;
@@ -826,7 +785,6 @@ int get_special(char *str, int *res)
 	return t;
 }
 
-enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 
 int math(int n1, int n2, char op)
 {
@@ -839,6 +797,10 @@ int math(int n1, int n2, char op)
 		n1=n2*n1; break;
 	case '/':
 		n1=n1/n2; break;
+	case '&':
+		n1=n2 && n1; break;
+	case '|':
+		n1=n1 || n2; break;
 	case '%':
 		n1=n1%n2; break;
 	case '>':
@@ -915,6 +877,8 @@ unsigned char eval_expr(char **str, int *res)
 		case '>' :
 		case '<' :
 		case '=' :
+		case '&' :
+		case '|' :
 		case '%' :
 		case ':' :
 			if (c=='>' && **str=='=') {c='g'; (*str)++;}
@@ -950,10 +914,7 @@ unsigned char eval_expr(char **str, int *res)
 			break;
 		case '$':
 			//special var?
-			if ((tmp=get_special(*str, &n1))>0) 
-			{
-				*str += tmp;
-			}
+			get_special(str, &n1);
 			break;
 		default:
 			done=1;
@@ -1118,7 +1079,7 @@ int execute(line_t line)
 	{
 	case FOR: 
 		// remember where next in struction is
-		forptr[fp++] = nxtline;
+ 		forptr[fp++] = nxtline;
 		// eval expr1 of line.text = "expr1 TO expr2"
 		// i.e var=expr1
 		n=0;
@@ -1142,7 +1103,7 @@ int execute(line_t line)
 			}			
 			if (variable[line.var] <= n) { 
 				// if true set ptr=stack; 
-				setline(t_ptr); tmp=0 ;
+				setline(t_ptr); tmp=variable[line.var] ;
 			}	
 			else
 			{
@@ -1152,7 +1113,7 @@ int execute(line_t line)
 		break;
 	case GET: 
 		n=0;
-		if (get_special(line.text, &n)<0)
+		if (get_special(&(line.text), &n)<0)
 			errno=2;
 		variable[line.var]=n;	
 		break;
@@ -1194,6 +1155,13 @@ int execute(line_t line)
 		{
 			// set pass servo id=line.var
 			wckSetPassive(line.var);
+		}
+		else
+		if (*p=='~') // set IO mode
+		{
+			p++;
+			eval_expr(&p, &n);
+			wckWriteIO(line.var, n) ;
 		}
 		else
 		{
@@ -1326,6 +1294,25 @@ int execute(line_t line)
 	case WAIT: 
 		delay_ms(line.value);
 		break;
+	case OUT: 
+		{
+		int l=1;
+		n=0;
+		p=line.text;
+		if (eval_expr(&p, &n)==NUMBER)
+		{
+			if (*p==',')
+			{
+				p++;
+				eval_expr(&p, &l);
+			}
+			while (l-->0) rprintfChar(n);
+		}
+		}
+		break;
+	case PLAY: 
+		SendToSoundIC(line.value);
+		break;
 	case END: 
 		rprintfStr ("End of program\r\n"); 
 		return 0xCC;
@@ -1427,6 +1414,7 @@ void basic_list()
 	uint8_t tmp=0;
 	nxtline = 0;	
 
+
 	rprintfStr("List Program \r\n");
 
 	if (nextchar() != 0xAA ) {
@@ -1491,12 +1479,24 @@ void basic_list()
 		}
 		else
 		if (line.token==NEXT) 
+		{
 			rprintf ("%c", line.var+'A');
+		}
 		else
-		if (line.token==GOTO || line.token==WAIT  || line.token==STAND ) 
+		if (line.token==GOTO || line.token==WAIT  || line.token==STAND  || line.token==PLAY  ) 
 			rprintf ("%d", line.value);
 		else
 			rprintfStr (line.text);
+
+		if (line.token==FOR)
+		{
+			char temp[100];
+			rprintfStr (" TO ");
+			//last bit is stored with next !
+			//printf (" (%d) ", fnptr[line.var]);
+			readtext(fnptr[line.var]+8, temp);
+			rprintfStr(temp);
+		}
 		rprintf ("\r\n");
 	}
 }
@@ -1584,6 +1584,10 @@ void basic()
 	readservos();
 	sound_init();
 	sample_sound(1);
+	
+#ifndef AVR
+	initfirmware();
+#endif
 
 	while (1)
 	{

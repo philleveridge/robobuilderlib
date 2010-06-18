@@ -4,66 +4,13 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Text.RegularExpressions;
 
-// enable download of basic programs direct to Robos
-// will need new version of Robos to support
-
 /*
-The ability to create simple actions in an elemntry basic language
+An elementry basic language for Robobuilder Humanoid Robot
 
 Language Spec:
-VAR    A-Z  INTEGER
-OPER   +-*\()=<>
-CMD    LET:FOR:NEXT:GOTO:IF:THEN:ELSE:PRINT:END:SET
-STRING " ... "
-EXPR1  VAR | LITERAL
-EXPR2  EXPR1 | STRING
-LIST   EXPR2 [,EXPR2]
-EXPR   EXPR1 OPER EXPR1  
+See wiki for details
 
-SYNTAX:
-[LINE no] LET  VAR '=' EXPR 
-[LINE no] GOTO [Line No]
-[LINE no] PRINT LIST [;]
-[LINE No] END
-[LINE no] IF  EXPR THEN LINE no ELSE Line No
-[LINE No] FOR VAR '=' EXPR 'To' EXPR
-[LINE No] NEXT
-[LINE No] XACT EXPR
-[LINE No] WAIT EXPR
-[Line No] GOSUB [Line No]
-[Line No] RETURN
-[Line No] SERVO VAR '=' EXPR | '@'
-[LINE No] SCENE LIST
-[LINE No] MOVE LIST
---------------------- UNDER TEST -----------------------
-
-[LINE No] PUT [Special] = [Expr]
-
---------------------------TBD --------------------------
-
-[LINE No] SENDOP   expr, expr
-[Line No] SENDSET  expr, expr, expr,  expr
-
-Rbas Cmd		 Description
-==============   ==============
-XACT       		 Call any Experimental action using literal code i.e. XACT 0, would do basic pose, XACT 17 a wave
-PUT PF1=1	   	 access to PORTS/SPECIAL REGISTER, This would set PF1_led1 on
-SERVO ID=POS     set servo id to positon POS / @
-LET A=$SERVO:id  let A get position of servo id 
-SCENE            set up a Scene - 16 Servo Positions
-MOVE             sends a loaded Scene  (time ms, no frames)
-
-Special register access ($)
-LET A=$IR  		 //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
-LET A=$PORT:A:6  //Read Bit 6 of Port A
-LET A=$ROM:10    // read byte 10 of ROM
-
-POKE 10,A         // Put A into Byte 10
-PUT PORT:A:8 = 3 //set DDR of Port A = 3 (PIN0,PIN1 readable)
-PUT PORT:A:2 = 1 //set Port A bit 1 =1 (assuming writeable)
-
-Example Programs are now available from examples folder
-
+http://code.google.com/p/robobuilderlib/wiki/Basic
 
 */
 
@@ -91,14 +38,15 @@ namespace RobobuilderLib
 	        };
 	
         string[] specials = new string[] { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		        "PORT", "ROM", "TYPE" };
+		        "PORT", "ROM", "TYPE", "ABS"  };
         
         enum KEY {
 	        LET=0, FOR, IF, THEN, 
 	        ELSE, GOTO, PRINT, GET, 
 	        PUT, END, LIST, XACT, 
 	        WAIT, NEXT, SERVO, MOVE,
-	        GOSUB, RETURN, POKE, STAND
+	        GOSUB, RETURN, POKE, STAND,
+            PLAY, OUT
 	        };
 	
         string[] tokens = new string[] {
@@ -106,10 +54,11 @@ namespace RobobuilderLib
             "ELSE","GOTO","PRINT","GET",
             "PUT", "END", "LIST", "XACT",
             "WAIT", "NEXT", "SERVO", "MOVE",
-            "GOSUB", "RETURN", "POKE", "STAND"
+            "GOSUB", "RETURN", "POKE", "STAND",
+            "PLAY", "OUT"
         };
 
-        enum SKEY {sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM};
+        enum SKEY {sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sABS};
 							
         struct basic_line {
             public int lineno;
@@ -326,6 +275,7 @@ namespace RobobuilderLib
                         ln.text = process_arg(z);
                         break;
                     case KEY.MOVE:
+                    case KEY.OUT: 
                         ln.text = z;
                         break;
                     case KEY.LIST:
@@ -367,6 +317,7 @@ namespace RobobuilderLib
                     case KEY.GOTO:
                     case KEY.XACT:
                     case KEY.GOSUB:
+                    case KEY.PLAY: 
                         tok = GetWord(ref z);
 
                         if (labels.Contains(tok))

@@ -95,11 +95,18 @@ void insertln(line_t newline)
 			// update
 			la  = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxt+6));	// start of line after
 			// this line to old line next
-			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+nxt+6), srt);	
+			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+nxt+6), srt);
 
-			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+srt+6), la);	
-			// last lines now to this terminator
-			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+pll), lastline);	
+			if (la == srt)
+			{
+				//this was the last line - so terminator already correct
+			}
+			else
+			{
+				eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+srt+6), la);	
+				// last lines now to this terminator
+				eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+pll), lastline);	
+			}
 		}
 		else
 		{

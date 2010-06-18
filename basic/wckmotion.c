@@ -219,6 +219,18 @@ char wckSetPassive(char ServoID)
 	return Position;
 }
 
+//------------------------------------------------------------------------------
+// Send external data for a scene
+// 		
+//------------------------------------------------------------------------------
+void wckWriteIO(char ServoID, char IO)
+{
+	wckSendSetCommand((7<<5)|ServoID, 0x64, IO, IO);
+	wckGetByte(TIME_OUT2);
+	wckGetByte(TIME_OUT2);			
+}
+
+
 /*************************************************************************/
 /* Function that sends Break wCK Command to wCK module */
 /* Input : None */
@@ -501,14 +513,10 @@ void SendTGain(void)
 //------------------------------------------------------------------------------
 void SendExPortD(void)
 {
-	WORD i;
-
+	BYTE i;
 	for(i=0;i<MAX_wCK;i++){					// external data set from Motion structure
 		if(Scene.wCK[i].Exist) {			// set external data if wCK exists
-			wckSendSetCommand((7<<5)|i, 100, Scene.wCK[i].ExPortD, Scene.wCK[i].ExPortD);
-
-			wckGetByte(TIME_OUT2);
-			wckGetByte(TIME_OUT2);			
+			wckWriteIO(i, Scene.wCK[i].ExPortD);	
 		}
 	}
 }
@@ -1041,7 +1049,7 @@ static BYTE cpos[32];
  
 int getservo(int id)
 {
-	wckSendOperCommand(0xa0|id, NULL);
+	wckSendOperCommand(0xa0|id, 0);
 	int b1 = wckGetByte(TIME_OUT1);
 	int b2 = wckGetByte(TIME_OUT1);
 	

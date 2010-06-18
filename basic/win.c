@@ -2,7 +2,7 @@
 #include <windows.h>
 
 /* wck commands */
-void wckPosSend(char ServoID, char Torque, char Position)			{printf ("WIN: Servo Send %d [%d] -> %d\n", ServoID, Torque, Position);}
+void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)			{printf ("WIN: Servo Send %d [%d] -> %d\n", ServoID, Torque, Position);}
 int  wckPosRead(char ServoID)										{printf ("WIN: Servo Read %d\n", ServoID); return (ServoID<20)?120:-1;}
 void wckSetPassive(char ServoID)									{printf ("WIN: Servo Passive %d\n", ServoID); }
 void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)		
@@ -19,6 +19,8 @@ void wckSendByte()			{}
 void wckReInit()			{}
 void send_bus_str()			{} // support for PIC based Cylon head
 
+void wckWriteIO(unsigned char ServoID, unsigned char IO)    {printf ("WIN: Servo write IO %d=%d\n", ServoID, IO); }
+
 int nos;
 
 void PlayPose(int d, int s, unsigned char data[], int n)
@@ -31,6 +33,8 @@ void PlayPose(int d, int s, unsigned char data[], int n)
 
 void standup      	(int n)	{printf ("WIN: standup %d\n", n);}
 void readservos ()  {nos=20;}
+
+void SendToSoundIC(int n)	{printf ("WIN: Play Sound %d\n", n);}
 
 /* eeprom */
 void			eeprom_read_block (char *b, char *d, int l)		{int i=0; for(i=0; i<l;i++) *b++=*d++;}
@@ -65,3 +69,17 @@ void rprintfStrLen(char *p, int s, int l)	{int i; for (i=0; i<l; i++) putchar(*(
 /* misc */
 void delay_ms(int x)  						{Sleep(x);}
 void SampleMotion(char action)				{printf ("Win:  sample motion %d\n", action);}
+
+extern char FIRMWARE[64];  
+void initfirmware() {	
+	char  fixb[] = {0, 
+		0x31, 0x30, 0x34, 0x31, 0x31, 0x30, 0x30, 0x30, 0x31, 0x30, 0x36, 0x39, 0x30,
+		0x00, 0x00, 0x00
+		};
+	int i;
+		
+	for (i=0; i<16; i++)
+	{
+		eeprom_write_byte(FIRMWARE+i, fixb[i]);
+	}
+}
