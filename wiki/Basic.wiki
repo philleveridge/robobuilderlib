@@ -9,16 +9,17 @@ This gives Robobuilder the ability to create simple actions in an elementary bas
 Turn of the RBC and connect a vt100 terminal emulator. You should see the following:
 {{{
 Basic 0.1
-Commands: i r l c z
+Commands: i r l c z q
 :
 }}}
 
 At the prompt type 
   * i - input a new program
-  * r - run current program
+  * r - run current program [or press Red button on IR remote]
   * l - list current program
   * c - clear memory
   * z - download (requires client - see below)
+  * q - check servos connected
 
 There is also a [http://code.google.com/p/robobuilderlib/downloads/detail?name=BasicClient.exe windows client application] to simplify the download of programs - http://code.google.com/p/robobuilderlib/wiki/BasicClient - for more details
 
@@ -55,6 +56,7 @@ SYNTAX:
 [Line No] RETURN
 [Line No] STAND [16 | 18]  ; basic pose for either 16 or 18 servo bots
 [LINE No] PUT VAR '=' $PORTA|B|C:0-7
+[LINE No] OUT EXPR,EXPR
 
 Special register access ($)
 LET A=$IR  		 //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
@@ -84,8 +86,6 @@ LIST/MOVE     sends a Scene - 'n' Servo Positions, Plus time, no frames
 POKE 10,A     Put A into Byte 10
 PUT PORT:A:8 = 3 //set DDR of Port A = 3 (PIN0,PIN1 readable)
 PUT PORT:A:2 = 1 //set Port A bit 1 =1 (assuming writeable)
-
-
 WAIT          Wait for a an amount of time in ms
 XACT          *TBC* - Call any action using code i.e. XACT 0, would punch left, XACT 17 a wave
 Built in motions:
