@@ -1,4 +1,4 @@
-#Basic Client (0.1) is a windows front end to Basic firmware
+#summary Windows Basic Client (0.1) -  A front end editor and download for Basic firmware
 
 = Introduction =
 
