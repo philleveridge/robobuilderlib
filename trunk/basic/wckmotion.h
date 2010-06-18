@@ -23,7 +23,7 @@ char wckSetPassive 	(char ServoID);
 void wckSyncPosSend	(char LastID, char SpeedLevel, char *TargetArray, char Index);  
 int  wckPosRead    	(char ServoID);
 WORD wckPosSend    	(char ServoID, char Torque, char Position);
-  
+void wckWriteIO		(char ServoID, char Position) ;  
 /*------------------  ----------------*/  
 
 BYTE readservos   	();

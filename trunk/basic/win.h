@@ -27,12 +27,13 @@ char _port[8];
 #define rprintfStr		printf 
 
 //from win.c
-extern void			eeprom_read_block (char *b, char *d, int l);
-extern uint16_t 	eeprom_read_word  (char *p);
-extern uint8_t		eeprom_read_byte  (char *p);
-extern void			eeprom_write_block(char *d, char *b, int l);
-extern void			eeprom_write_word (char *b, unsigned int  w);
-extern void			eeprom_write_byte (char *b, unsigned char c);
+extern void			eeprom_read_block (unsigned char *b, char *d, int l);
+extern uint16_t 	eeprom_read_word  (unsigned char *p);
+extern uint8_t		eeprom_read_byte  (unsigned char *p);
+extern void			eeprom_write_block(char *d, unsigned char *b, int l);
+extern void			eeprom_write_word (unsigned char *b, unsigned int  w);
+extern void			eeprom_write_byte (unsigned char *b, unsigned char c);
 extern int			uartGetByte();
 extern void			rprintfStrLen(char *p, int s, int l);
 
+extern void			initfirmware();
