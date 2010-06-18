@@ -70,6 +70,7 @@ extern int 	sDcnt;
 extern void sample_sound(int);
 extern volatile BYTE   MIC_SAMPLING;
 extern BYTE nos;
+extern volatile WORD	gtick;
 
 //wait for byte or IR press
 int  GetByte()
@@ -690,6 +691,9 @@ int get_special(char **str, int *res)
 		v = t;
 		}
 		break;
+	case sTICK:
+		v=gtick;
+		break;	
 	case sGX:
 		tilt_read(0);
 		v=x_value;

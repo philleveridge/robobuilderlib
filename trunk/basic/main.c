@@ -50,6 +50,7 @@ volatile BYTE    gSEC;
 volatile BYTE    gMIN;
 volatile BYTE    gHOUR;
 
+volatile WORD	gtick;
 volatile WORD	mstimer;
 volatile WORD	gSEC_DCOUNT;
 volatile WORD	gMIN_DCOUNT;
@@ -93,7 +94,9 @@ void delay_ms(int m)
 ISR(TIMER0_OVF_vect)
 {
 	TCNT0 = 25; 		//reset the timer
+	
 	// 1ms 
+	gtick++;
 	
 	if (mstimer>0) mstimer--;
 	
