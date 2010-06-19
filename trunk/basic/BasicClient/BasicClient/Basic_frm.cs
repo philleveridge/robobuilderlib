@@ -184,14 +184,15 @@ namespace RobobuilderLib
         {
             if (compiler.Compile(input.Text))
             {
-                output.Text = "Complete - ready to download\r\n";
+                MessageBox.Show(String.Format("Complete - ready to download [{0} Bytes]",compiler.Download().Length), "Compiler");
                 output.Text += compiler.Dump();
                 readyDownload = true;
             }
             else
             {
-                output.Text = "error on line " + compiler.lineno + " : " + compiler.error_msgs[compiler.errno] + "\r\n";
-                output.Text += compiler.Dump();
+                output.Text = "Error on line " + compiler.lineno + " : " + compiler.error_msgs[compiler.errno] + "\r\n";
+                output.Text = "Error ::      " + compiler.curline;              
+
                 readyDownload = false;
             }
         }

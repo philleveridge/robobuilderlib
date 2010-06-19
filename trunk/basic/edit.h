@@ -20,8 +20,8 @@ extern void    	deleteln(int lineno);
 extern void    	clearln();
 extern line_t 	readln(char *bp);
 extern uint8_t 	nextchar();
-extern int     	nxtline;
-extern void    	setline(uint8_t);
+extern uint16_t nxtline;
+extern void    	setline(uint16_t);
 extern int		firstline();
 extern int		getlineno(int p);
 extern uint16_t lastline;  // last line added

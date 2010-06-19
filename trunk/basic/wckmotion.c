@@ -1106,6 +1106,21 @@ void PlayPose(int d, int f, BYTE pos[], int flag)
 	}
 }
 
+void PlayMotion(int n)
+{
+	int i=0;
+	int nos = mlist[n].NoS;	
+	int now = mlist[n].Now;
+	
+	PGM_P p = mlist[n].PoT;
+	PGM_P f = mlist[n].FT;
+	PGM_P t = mlist[n].RT;
+
+	for (i=0; i<nos; i++)
+	{
+	}
+}
+
 const BYTE basic18[] = { 143, 179, 198,  83, 106, 106,  69,  48, 167, 141,  47,  47,  49, 199, 192, 204, 122, 125};
 const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
 

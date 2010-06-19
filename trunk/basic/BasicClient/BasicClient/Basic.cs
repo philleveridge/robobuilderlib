@@ -6,7 +6,8 @@ using System.Text.RegularExpressions;
 
 /*
 An elementry basic language for Robobuilder Humanoid Robot
-
+$Revision$
+ 
 Language Spec:
 See wiki for details
 
@@ -24,7 +25,8 @@ namespace RobobuilderLib
         int codeptr;
 
         public int errno;
-        public int lineno;
+        public int lineno; 
+        public string curline;
 
         /**********************************************************/
 
@@ -74,9 +76,7 @@ namespace RobobuilderLib
             codeptr = 0;
         }
 
-        /*-------------------------------------
-
-        -------------------------------------*/
+        /*------------------------------------- -------------------------------------*/
 
         string GetWord(ref string w)
         {
@@ -203,6 +203,7 @@ namespace RobobuilderLib
             {
                 String z = s;
                 lineno++;
+                curline = s;
                 ln.lineno = lineno;
                 Console.Write(s);
 

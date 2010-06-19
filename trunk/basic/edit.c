@@ -22,6 +22,7 @@ extern int strlen(char *p);
 uint16_t psize   =0; // points to next elemt
 uint16_t lastline=0; // 
 uint16_t pll     =0; // 
+uint16_t nxtline =0;
 
 //insert newline into BASIC_PROG_SPACE
 
@@ -193,8 +194,6 @@ int findln(int lineno)
 
 void readtext(int ln, char *b);
 
-int nxtline=0;
-
 line_t readln2(char *bp)
 {
 	line_t   line;
@@ -214,7 +213,7 @@ line_t readln2(char *bp)
 		
 	readtext(nxtline+2, line.text);
 
-	nxtline=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxtline));	
+	nxtline=(int)eeprom_read_word((char *)(BASIC_PROG_SPACE+nxtline));	
 	return line;
 }
 
@@ -238,7 +237,7 @@ int firstline()
 	return nxtline;
 }
 
-void setline(uint8_t p)
+void setline(uint16_t p)
 {
 	nxtline =p;
 }

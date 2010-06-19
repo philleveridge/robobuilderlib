@@ -54,7 +54,8 @@ namespace RobobuilderLib
             for (int i = 0; i < bfsz; i++)
             {
                 sp1.Write(buffer, i, 1);
-                System.Threading.Thread.Sleep(2);
+                System.Threading.Thread.Sleep(5);
+                Console.Write(".");
             }
             sp1.Write(header, 4, 1);
             
@@ -94,7 +95,7 @@ namespace RobobuilderLib
             for (int i = 0; i < n + 1; i++)
             {
                 sp1.Write(b, i, 1);
-                System.Threading.Thread.Sleep(2);
+                System.Threading.Thread.Sleep(8);
             }
         }
 

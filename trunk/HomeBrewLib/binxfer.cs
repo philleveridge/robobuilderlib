@@ -74,7 +74,10 @@ namespace RobobuilderLib
 
             sp1.Write(header, 0, 2);
 
-            if (dbg) Console.WriteLine("DBG: send={0}", BitConverter.ToString(b));
+            if (dbg)
+            {
+                Console.WriteLine("DBG: [{1}] : [{2}] send={0}", BitConverter.ToString(b), n + 2, b.Length);
+            }
             sp1.Write(b, 0, n + 2);
         }
 
@@ -175,7 +178,7 @@ namespace RobobuilderLib
                     good_packet = test_packet(mt, 3);
                     break;
                 case (byte)'v':
-                case (byte)'m':
+                case (byte)'l':
                 case (byte)'z':
                 case (byte)'P':
                 case (byte)'D':
