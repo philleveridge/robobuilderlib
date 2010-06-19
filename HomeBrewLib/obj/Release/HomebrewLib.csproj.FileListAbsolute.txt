@@ -8,3 +8,8 @@ C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomebrewLib\obj
 C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomebrewLib\obj\Release\HomebrewLib.pdb
 C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomebrewLib\bin\Release\HomebrewLib.exe
 C:\Users\Phil\Desktop\Robobuilder\Code development\robobuildervc\HomebrewLib\obj\Release\HomebrewLib.exe
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\HomeBrewLib\bin\Release\HomebrewLib.exe
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\HomeBrewLib\bin\Release\HomebrewLib.pdb
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\HomeBrewLib\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\HomeBrewLib\obj\Release\HomebrewLib.exe
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\HomeBrewLib\obj\Release\HomebrewLib.pdb

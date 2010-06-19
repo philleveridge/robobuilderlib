@@ -39,8 +39,8 @@ http://code.google.com/p/robobuilderlib/wiki/Basic
 
 #define DPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
 
-#define EEPROM_MEM_SZ 	1024
-#define MAX_LINE  		100 
+#define EEPROM_MEM_SZ 	3072 // 3K
+#define MAX_LINE  		150 
 #define MAX_TOKEN 		8
 #define MAX_FOR_NEST	3
 #define MAX_GOSUB_NEST	3
@@ -51,7 +51,7 @@ http://code.google.com/p/robobuilderlib/wiki/Basic
 
 /***********************************/
 
-uint8_t EEMEM FIRMWARE[64];  					// leave blank - used by Robobuilder OS
+uint8_t EEMEM FIRMWARE        [64];  			// leave blank - used by Robobuilder OS
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
 extern void Perform_Action(BYTE action);
@@ -832,10 +832,6 @@ int str_expr(char *str)
 	return str-p;
 }
 
-/*
-
-*/
-
 unsigned char eval_expr(char **str, int *res)
 {
 	char c;
@@ -898,22 +894,24 @@ unsigned char eval_expr(char **str, int *res)
 			break; //ignore sp
 		case '@':
 			{
+				char tmpA[100];
 				n1 = variable[**str-'A'];
+				//
+				readtext(n1, tmpA);
+				eval_list(tmpA);
+				//
 				(*str)++;
 				if (**str == '[')
 				{
-					char tmpA[100];
 					(*str)++;
 					eval_expr(str, &tmp);
-					//
-					readtext(n1, tmpA);
-					eval_list(tmpA);
-					//
 					n1 = scene[tmp];
 					(*str)++;
 				}
 				else
+				{
 					return ARRAY;
+				}
 			}
 			break;
 		case '$':
