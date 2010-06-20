@@ -8,13 +8,13 @@ This gives Robobuilder the ability to create simple actions in an elementary bas
 
 Turn of the RBC and connect a vt100 terminal emulator. You should see the following:
 {{{
-Basic 0.1
+Basic v=$Revision: 202 $
 Commands: i r l c z q
 :
 }}}
 
 At the prompt type 
-  * i - input a new program
+  * i - input a new program [. at start of line will exit input mode]
   * r - run current program [or press Red button on IR remote]
   * l - list current program
   * c - clear memory
@@ -23,7 +23,43 @@ At the prompt type
 
 There is also a [http://code.google.com/p/robobuilderlib/downloads/detail?name=BasicClient.exe windows client application] to simplify the download of programs - http://code.google.com/p/robobuilderlib/wiki/BasicClient - for more details
 
-See examples below of programs that have been tested
+_See examples below of programs that have been tested. If the program ever gets into a recurring loop (either accidentally or deliberately) then press 'Esc' on the PC keyboard. If that fails then hit the 'OFF' button (on the robot!)_
+
+Note in input mode you get a '>' prompt, in command mode a ':'. In input mode a command with a line number is stored in flash - and will be there after you turn the robot off. With no line number the command will be immediately executed. 
+
+So for instance - and example session :
+
+{{{
+Basic v=$Revision: 202 $
+Commands: i r l c z q
+: i
+Enter Program '.' to Finish
+> print "hello world"
+hello world
+> 10 print "hello world"
+> .
+
+1 lines entered, [25/3072] Bytes
+: l
+List Program
+10 PRINT "hello world"
+: i
+Enter Program '.' to Finish
+> 20 goto 10
+> .
+
+1 lines entered, [28/3072] Bytes
+: l
+List Program
+10 PRINT "hello"
+20 GOTO 10
+: c
+Clear Program
+: l
+List Program
+}}}
+
+Notice how each time you enter input mode its adds to the current program. If you want to start over then press 'c'
 
 = Details =
 
@@ -118,7 +154,7 @@ These are available from examples sub- folder
 http://code.google.com/p/robobuilderlib/source/browse/#svn/trunk/examples
 
 {{{
-a) simple loop
+1) simple loop
 10 LET A=1
 20 PRINT A
 30 LET A=A+1
@@ -126,45 +162,77 @@ a) simple loop
 40 IF A<10 THEN 20 
 50 END
 
-b) read from console and IR port
+2) read from console and IR port
 10 LET A=$KBD
 20 PRINT A
 30 LET A=$IR
 40 PRINT A
 50 GOTO 10
 
-c) Loops
+3) Loops
 10 FOR A=1 to 5
 20 PRINT A
 30 NEXT A
 
-d) compound PRINT
+4) compound PRINT
 10 LET A=(5+3)*(2+1)
 20 PRINT "The answer is ";A
 30 END
 
-e) read and set servo
+5) read and set servo
 This reads current position of servo 12 and then moves and extra 5
 10 let a=$servo:12
 20 print "Pos=";a
 30 servo 12=a+5
 
-f) read accelerometer values
+6) read accelerometer values
 10 print $TICK;" X=";$X;" Y=";$Y;" Z=";$Z
 20 wait 500
 30 goto 10
 
-g) When fwd button pressed on IR do built in motion (8) - "walk forward"
+7) When fwd button pressed on IR do built in motion (8) - "walk forward"
 10 let A=$IR
 20 print "Received=";A
 30 if a=4 then 40 else 10
 40 xact 8
 50 goto 10
 
-h)Simple press a button on IR - do action (like standard firmware)
+8) More  complex - press a button on IR and do action (like standard firmware)
 10 STAND 16
 20 xact $mapir($ir)
 30 Goto 20
+
+9) Simple LISTS
+10 print "List test"
+20 list a=5,4,3,2,1,5
+30 print @a[1]
+40 print @a
+
+10) OUT - show PSD sensor output as a bar
+10 out 45,$psd
+20 out 42
+30 print
+40 goto 10
+
+11) ROM  and OUT - displays serial number
+10 FOR I=1 to 13
+20 OUT $ROM(I)
+30 NEXT I
+40 PRINT 
+
+12) Use of  Passive
+10 SERVO 12=@
+20 Print "Servo 12 = "; $SERVO:12
+30 wait 500
+40 goto 20
+
+13) Gosub and Return
+10 print "Hello";
+20 gosub 50
+30 print " back";
+40 end
+50 print " Here";
+60 return
 
 
 }}}
