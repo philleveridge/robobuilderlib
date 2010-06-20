@@ -276,7 +276,8 @@ namespace RobobuilderLib
                         ln.text = process_arg(z);
                         break;
                     case KEY.MOVE:
-                    case KEY.OUT: 
+                    case KEY.OUT:
+                    case KEY.XACT:
                         ln.text = z;
                         break;
                     case KEY.LIST:
@@ -316,7 +317,6 @@ namespace RobobuilderLib
                     case KEY.WAIT:
                     case KEY.STAND:
                     case KEY.GOTO:
-                    case KEY.XACT:
                     case KEY.GOSUB:
                     case KEY.PLAY: 
                         tok = GetWord(ref z);

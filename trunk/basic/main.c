@@ -23,13 +23,6 @@
 #define BR115200			7 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
 
-volatile extern int		gFrameIdx;	    	// frame counter
-extern WORD	   			TxInterval;			// Timer 1 interval
-extern WORD				gNumOfFrame;
-
-// software states----------------------------------------------------------------------
-volatile BYTE 	F_PLAYING;				// state: playing from Flash
-volatile BYTE	F_NEXTFRAME;			// trigger to start the next frame
 
 //adc.c
 extern BYTE				gAD_Ch_Index;
@@ -54,7 +47,6 @@ volatile WORD	gtick;
 volatile WORD	mstimer;
 volatile WORD	gSEC_DCOUNT;
 volatile WORD	gMIN_DCOUNT;
-
 
 void heart()
 {
@@ -136,20 +128,6 @@ ISR(TIMER0_OVF_vect)
 //------------------------------------------------------------------------------
 ISR(TIMER1_OVF_vect) 
 {
-	if (gFrameIdx == gNumOfFrame) {   // are we at the end of the scene ?
-		gFrameIdx = 0;
-		RUN_LED1_OFF;
-		F_PLAYING=0;						// clear F_PLAYING state
-		TIMSK &= 0xfb;  					// Timer1 Overflow Interrupt disable
-		TCCR1B=0x00;
-		return;
-	}
-
-	TCNT1=TxInterval;
-	TIFR |= 0x04;							// restart timer
-	TIMSK |= 0x04;							// Timer1 Overflow Interrupt enable
-	
-	F_NEXTFRAME = TRUE;			// trigger start of next frame (in process_frames)
 }
 
 
@@ -347,12 +325,6 @@ void SW_init(void) {
 	RUN_LED1_OFF;
 	RUN_LED2_OFF;
 	ERR_LED_OFF;
-
-	F_PLAYING = 0;          // clear F_Playing
-	F_NEXTFRAME = 0;		// clear the next-frame trigger
-
-	gTx0Cnt = 0;			// UART0 clear length
-	gTx0BufIdx = 0;			// TX0 clear pointer
 
 	PSD_OFF;                // PSD distance sensor off
 

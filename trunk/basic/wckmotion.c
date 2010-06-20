@@ -15,40 +15,6 @@
 
 extern void delay_ms(int);
 
-
-unsigned char PROGMEM wCK_IDs[16]={
-	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
-};
-
-// UART variables-----------------------------------------------------------------
-volatile BYTE	gTx0Buf[TX0_BUF_SIZE];		// UART0 transmit buffer
-volatile BYTE	gTx0Cnt;					// UART0 transmit length
-volatile BYTE	gRx0Cnt;					// UART0 receive length
-volatile BYTE	gTx0BufIdx;					// UART0 transmit pointer
-volatile BYTE	gRx0Buf[RX0_BUF_SIZE];		// UART0 receive buffer
-
-
-// Frame variables-----------------------------------------------------------------
-volatile WORD	gFrameIdx=0;	    // Frame counter
-WORD	TxInterval=0;				// Timer1 interval
-float	gUnitD[MAX_wCK];			// interpolation values
-volatile WORD	gSceneIndex = -1;	// current scene playing, or -1 if none
-WORD	gNumOfFrame;
-
-// Program Memory pointers ------------------------------------------------------------------------
-// (All are unsigned char*, except where noted below)
-
-PGM_P			gpT_Table;		// Pointer to flash torque table
-PGM_P			gpE_Table;		// Pointer to flash Port table
-PGM_P			gpPg_Table;		// Pointer to flash runtime P table
-PGM_P			gpDg_Table;		// Pointer to flash runtime D table
-PGM_P			gpIg_Table;		// Pointer to flash runtime I table
-PGM_P			gpZero_Table;	// Pointer to flash zero table
-PGM_P			gpFN_Table;		// Pointer to flash frames table (int*)
-PGM_P			gpRT_Table;		// Pointer to flash transition time table (int*)
-PGM_P			gpPos_Table;	// Pointer to flash position table
-//--------------------------------------------------------------------------------------------------
-
 // Data structure for the Motion Data-------------------------------------------------------------
 //      - hierarchy is : wCK < Frame < Scene < Motion < Action
 //      - data is sent to the wCK for each frame on the timer
@@ -405,68 +371,14 @@ char wckBoundRead(char ServoID, char *LBound, char *UBound)
 //////////////////////////////// End of Basic Functions Definition /////////////////////////////
 
 
-//------------------------------------------------------------------------------
-// Send a Synchronized Position Send Command for the scene and frame defined
-// by our Scene global, gFrameIdx, and gUnitD.
-// (Actually, just stuff such a command into our transmit buffer, gTx0Buf;
-// the actual sending of this buffer is done elsewhere.)
-//------------------------------------------------------------------------------
-static void SyncPosSend(void) 
-{
-	int lwtmp;
-	BYTE CheckSum; 
-	BYTE i, tmp, Data;
 
-	Data = (Scene.wCK[0].Torq<<5) | 31; // get the torque for the scene
-
-	gTx0Buf[gTx0Cnt]=HEADER;
-	gTx0Cnt++;		
-
-	gTx0Buf[gTx0Cnt]=Data;
-	gTx0Cnt++;		
-
-	gTx0Buf[gTx0Cnt]=16;  // This is the (last ID - 1) why is it hardcoded ?
-	gTx0Cnt++;		
-
-	CheckSum = 0;
-	for(i=0;i<MAX_wCK;i++){	// for all wCK 
-		if(Scene.wCK[i].Exist){	// if wCK exists add the interpolation step
-			lwtmp = (int)Scene.wCK[i].SPos + (int)((float)gFrameIdx*gUnitD[i]);
-			if(lwtmp>254)		lwtmp = 254; // bound result 1 to 254
-			else if(lwtmp<1)	lwtmp = 1;
-			tmp = (BYTE)lwtmp;
-			gTx0Buf[gTx0Cnt] = tmp;
-			gTx0Cnt++;			// put into transmit buffer
-			CheckSum = CheckSum^tmp;
-		}
-	}
-	CheckSum = CheckSum & 0x7f;
-
-	gTx0Buf[gTx0Cnt]=CheckSum;
-	gTx0Cnt++;			// put into transmit buffer
-} 
-
-void ClearMotionData(void)
-{
-	WORD i;
-	for (i = 0; i < MAX_wCK; i++) {				// clear the wCK motion data
-		Motion.wCK[i].Exist		= 0;
-		Motion.wCK[i].RPgain	= 0;
-		Motion.wCK[i].RDgain	= 0;
-		Motion.wCK[i].RIgain	= 0;
-		Motion.wCK[i].PortEn	= 0;
-		Motion.wCK[i].InitPos	= 0;
-	}
-}
-
-
-//------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
 // Fill the motion data structure from flash.  Uses:
 //		gpPg_Table: pointer to array of P gain component for each servo in flash
 //		gpDp_Table: pointer to array of D gain component for each servo in flash
 //		gpIg_Table: pointer to array of I gain component for each servo in flash
 //		gpZero_Table: pointer to servo initial positions (ultimately ignored)
-//------------------------------------------------------------------------------
+
 static void GetMotionFromFlash(void)
 {
 	WORD i;
@@ -483,246 +395,7 @@ static void GetMotionFromFlash(void)
 	}
 }
 
-
-
-//------------------------------------------------------------------------------
-// Set P,D,I parameters of each servo's PID loop from current Motion data.
-// 	
-//------------------------------------------------------------------------------
-void SendTGain(void)
-{
-	char reply1, reply2;
-	for (int i=0; i<MAX_wCK;i++) {
-		if (Motion.wCK[i].Exist) {
-			char servoID = i;
-			wckSendSetCommand((7<<5)|servoID, 11, Motion.wCK[i].RPgain, Motion.wCK[i].RDgain);
-			reply1 = wckGetByte(TIME_OUT2);		// should match the P gain we just set
-			reply2 = wckGetByte(TIME_OUT2);		// should match the D gain we just set
-
-			wckSendSetCommand((7<<5)|servoID, 24, Motion.wCK[i].RIgain, Motion.wCK[i].RIgain);
-			reply1 = wckGetByte(TIME_OUT2);		// P gain again
-			reply2 = wckGetByte(TIME_OUT2);		// D gain again
-		}
-	}
-}
-
-
-//------------------------------------------------------------------------------
-// Send external data for a scene
-// 		
-//------------------------------------------------------------------------------
-void SendExPortD(void)
-{
-	BYTE i;
-	for(i=0;i<MAX_wCK;i++){					// external data set from Motion structure
-		if(Scene.wCK[i].Exist) {			// set external data if wCK exists
-			wckWriteIO(i, Scene.wCK[i].ExPortD);	
-		}
-	}
-}
-
-
-//------------------------------------------------------------------------------
-// Fill the scene data structure with the scene data from flash pointed to by gSceneIndex
-// Uses:
-//		gSceneIndex;			// current scene index
-//		gpT_Table;		// Pointer to flash torque table
-//		gpE_Table;		// Pointer to flash Port table
-//		gpFN_Table;		// Pointer to flash frames table (int*)
-//		gpRT_Table;		// Pointer to flash transition time table (int*)
-//		gpPos_Table;	// Pointer to flash position table
-//------------------------------------------------------------------------------
-static void GetSceneFromFlash(void)
-{
-	WORD i;
-	
-	Scene.NumOfFrame = pgm_read_word(gpFN_Table+(gSceneIndex * 2));	// get the number of frames in scene
-	gNumOfFrame = Scene.NumOfFrame;
-	Scene.RTime = pgm_read_word(gpRT_Table+(gSceneIndex * 2));		// get the run time of scene[msec]
-	for(i=0;i<Motion.NumOfwCK;i++){			// clear the data for the wCK in scene
-		Scene.wCK[i].Exist		= 0;
-		Scene.wCK[i].SPos		= 0;
-		Scene.wCK[i].DPos		= 0;
-		Scene.wCK[i].Torq		= 0;
-		Scene.wCK[i].ExPortD	= 0;
-	}
-	for(i=0;i<Motion.NumOfwCK;i++){			// get the flash data for the wCK
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Exist		= 1;
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].SPos		= pgm_read_byte(gpPos_Table+(Motion.NumOfwCK*gSceneIndex+i));
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].DPos		= pgm_read_byte(gpPos_Table+(Motion.NumOfwCK*(gSceneIndex+1)+i));
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].Torq		= pgm_read_byte(gpT_Table+(Motion.NumOfwCK*gSceneIndex+i));
-		Scene.wCK[pgm_read_byte(&(wCK_IDs[i]))].ExPortD		= pgm_read_byte(gpE_Table+(Motion.NumOfwCK*gSceneIndex+i));
-	}
-	UCSR0B &= 0x7F;   		// UART0 RxInterrupt disable
-	UCSR0B |= 0x40;   		// UART0 TxInterrupt enable
-	
-	_delay_us(1300);
-}
-
-
-//------------------------------------------------------------------------------
-// Set the Timer1 interrupt based on the number of frames and the run time of the scene
-// 		
-//------------------------------------------------------------------------------
-static void CalcFrameInterval(void)
-{
-	float tmp;
-	if((Scene.RTime / Scene.NumOfFrame)<20){ // is each scene < 20 ms ?
-		return;
-	}
-	tmp = (float)Scene.RTime * 14.4;		// Timer  is clocked at 14.4KHz
-	tmp = tmp  / (float)Scene.NumOfFrame;
-	TxInterval = 65535 - (WORD)tmp - 43;
-
-	RUN_LED1_ON;
-	F_PLAYING=1;		// set flag to say we are busy playing frames
-	TCCR1B=0x05;		// clock on div 1024
-
-	if(TxInterval<=65509)	
-		TCNT1=TxInterval+26;
-	else
-		TCNT1=65535;
-
-	TIFR |= 0x04;		// Clear the overflow flag
-	TIMSK |= 0x04;		// Timer1 Overflow Interrupt Enable
-}
-
-//------------------------------------------------------------------------------
-// Calculate the interpolation steps
-// gUnitD[] is in range -254 to +254
-//------------------------------------------------------------------------------
-static void CalcUnitMove(void)
-{
-	WORD i;
-
-	for(i=0;i<MAX_wCK;i++){
-		if(Scene.wCK[i].Exist){	// if the wCK exists
-			if(Scene.wCK[i].SPos!=Scene.wCK[i].DPos){
-				// if any movement is required
-				gUnitD[i] = (float)((int)Scene.wCK[i].DPos-(int)Scene.wCK[i].SPos);
-				gUnitD[i] = (float)(gUnitD[i]/Scene.NumOfFrame);
-				if(gUnitD[i]>253)	gUnitD[i]=254;
-				else if(gUnitD[i]<-253)	gUnitD[i]=-254;
-			}
-			else
-				gUnitD[i] = 0;
-		}
-	}
-	gFrameIdx=0;				// reset frame to start of scene
-}
-
-
-//------------------------------------------------------------------------------
-// Build a frame to send: that is, stuff the next frame into our transmit
-// buffer.
-//------------------------------------------------------------------------------
-static void MakeFrame(void)
-{
-	while(gTx0Cnt);			// wait until the transmit buffer is empty
-	gFrameIdx++;			// next frame
-	SyncPosSend();			// build new frame
-}
-
-
-//------------------------------------------------------------------------------
-// Start sending the frame (or whatever else happens to be in our transmit
-// buffer, gTx0Buf).
-//------------------------------------------------------------------------------
-static void SendFrame(void)
-{
-	if(gTx0Cnt==0)	return;	// return if no frame to send
-	gTx0BufIdx++;
-	wckSendByte(gTx0Buf[gTx0BufIdx-1]);		// send first byte to start frame send
-}
-
-
-//------------------------------------------------------------------------------
-// Load and play a motion that's already partially loaded into our Motion
-// global data (Motion.NumOfScene and Motion.NumOfwCK), and partially defined
-// by a bunch of global pointers into flash data (gpPos_Table, gpT_Table, etc.).
-// This method blocks until the whole motion is done playing.
-//------------------------------------------------------------------------------
-void M_PlayFlash(void)
-{
-	WORD i;
-
-	GetMotionFromFlash();		// Get the motion data from flash
-	SendTGain();				// set the runtime P,D and I from motion structure
-	for(i=0;i<Motion.NumOfScene;i++){
-		gSceneIndex = i;
-		GetSceneFromFlash();	// Get the scene data from flash
-		SendExPortD();			// Set external port data
-		CalcFrameInterval();	// Set the interrupt for the frames
-		CalcUnitMove();			// Calculate the interpolation steps
-		MakeFrame();			// build a frame to send
-		SendFrame();			// start sending frame
-		//while(F_PLAYING)
-		//	process_frames();		// wait till scene interpolation complete
-	}
-}
-
-
-//------------------------------------------------------------------------------
-// Check the F_NEXTFRAME flag, and if it's set (which is done by an interrupt
-// scheduled to fire at the desired frame interval), make and send the next
-// frame of the current scene.
-//------------------------------------------------------------------------------
-void process_frames()
-{
-	if (F_NEXTFRAME) {
-		MakeFrame();
-		SendFrame();
-		F_NEXTFRAME = 0;
-	}
-}
-
-
-//------------------------------------------------------------------------------
-// Assume the basic standing position.
-//------------------------------------------------------------------------------
-void BasicPose()
-{
-	PF1_LED1_ON;
-	
-	UCSR0B &= 0x7F;   		// UART0 Rx Interrupt disable
-	UCSR0B |= 0x40;   		// UART0 Tx Interrupt enable
-
-	
-	BYTE CheckSum; 
-	BYTE i, tmp, Data;
-
-	Data = (3<<5) | 31; // get the torque for the scene
-
-	gTx0Buf[gTx0Cnt]=HEADER;
-	gTx0Cnt++;		
-
-	gTx0Buf[gTx0Cnt]=Data;
-	gTx0Cnt++;		
-
-	gTx0Buf[gTx0Cnt]=16;  // This is the (last ID - 1) why is it hardcoded ?
-	gTx0Cnt++;		
-
-	CheckSum = 0;
-	for(i=0;i<16;i++){				// for all wCK 		
-		tmp = pgm_read_byte((PGM_P) HunoBasicPose +i);
-		
-		gTx0Buf[gTx0Cnt] = tmp;
-		gTx0Cnt++;						// put into transmit buffer
-		CheckSum = CheckSum^tmp;
-		
-		rprintf (" %d %x,", i, tmp);
-	}
-	CheckSum = CheckSum & 0x7f;
-
-	gTx0Buf[gTx0Cnt]=CheckSum;
-	gTx0Cnt++;								// put into transmit buffer
-
-	gTx0BufIdx++;
-	wckSendByte(gTx0Buf[gTx0BufIdx-1]);		// send first byte to start frame send
-	
-	PF1_LED1_OFF;
-	rprintf ("\r\n");
-}
+------------------------------------------------------------------------------*/
 
 
 
@@ -890,7 +563,7 @@ struct FlashMotionData mlist[] =
 		LSHOOT_NUM_OF_WCKS
 	},	
 	
-	// 10. E-motion RSHOOT
+	// 11. E-motion RSHOOT
 	{
 		(PGM_P) RSHOOT_Torque,
 		(PGM_P) RSHOOT_Port,
@@ -904,7 +577,7 @@ struct FlashMotionData mlist[] =
 		RSHOOT_NUM_OF_WCKS
 	},	
 	
-	// 11. E-motion RSIDEWALK
+	// 12. E-motion RSIDEWALK
 	{
 		(PGM_P) RSIDEWALK_Torque,
 		(PGM_P) RSIDEWALK_Port,
@@ -918,7 +591,7 @@ struct FlashMotionData mlist[] =
 		RSIDEWALK_NUM_OF_WCKS
 	},	
 	
-	// 12. E-motion LSIDEWALK
+	// 13. E-motion LSIDEWALK
 	{
 		(PGM_P) LSIDEWALK_Torque,
 		(PGM_P) LSIDEWALK_Port,
@@ -932,7 +605,7 @@ struct FlashMotionData mlist[] =
 		LSIDEWALK_NUM_OF_WCKS
 	},	
 	
-	// 13. E-motion STANDUPR
+	// 14. E-motion STANDUPR
 	{
 		(PGM_P) STANDUPR_Torque,
 		(PGM_P) STANDUPR_Port,
@@ -946,7 +619,7 @@ struct FlashMotionData mlist[] =
 		STANDUPR_NUM_OF_WCKS
 	},	
 	
-	// 14. E-motion STANDUPF
+	// 15. E-motion STANDUPF
 	{
 		(PGM_P) STANDUPF_Torque,
 		(PGM_P) STANDUPF_Port,
@@ -960,7 +633,7 @@ struct FlashMotionData mlist[] =
 		STANDUPF_NUM_OF_WCKS
 	},	
 	
-	// 15. E-motion HUNODEMO_SITDOWN
+	// 16. E-motion HUNODEMO_SITDOWN
 	{
 		(PGM_P) HUNODEMO_SITDOWN_Torque,
 		(PGM_P) HUNODEMO_SITDOWN_Port,
@@ -974,7 +647,7 @@ struct FlashMotionData mlist[] =
 		HUNODEMO_SITDOWN_NUM_OF_WCKS
 	},	
 	
-	// 16. E-motion HUNODEMO_HI
+	// 17. E-motion HUNODEMO_HI
 	{
 		(PGM_P) HUNODEMO_HI_Torque,
 		(PGM_P) HUNODEMO_HI_Port,
@@ -988,7 +661,7 @@ struct FlashMotionData mlist[] =
 		HUNODEMO_HI_NUM_OF_WCKS
 	},	
 	
-	// 17. E-motion HUNODEMO_KICKLEFTFRONTTURN
+	// 18. E-motion HUNODEMO_KICKLEFTFRONTTURN
 	{
 		(PGM_P) HUNODEMO_KICKLEFTFRONTTURN_Torque,
 		(PGM_P) HUNODEMO_KICKLEFTFRONTTURN_Port,
@@ -1002,7 +675,7 @@ struct FlashMotionData mlist[] =
 		HUNODEMO_KICKLEFTFRONTTURN_NUM_OF_WCKS
 	},	
 	
-	// 18. E-motion HANDSTANDS1
+	// 19. E-motion HANDSTANDS1
 	{
 		(PGM_P) HANDSTANDS1_Torque,
 		(PGM_P) HANDSTANDS1_Port,
@@ -1016,27 +689,7 @@ struct FlashMotionData mlist[] =
 		HANDSTANDS1_NUM_OF_WCKS
 	}				
 	
-	};
-
-
-
-void SampleMotion(int sm)	// Perform SampleMotion(s)
-{
-	PF2_LED_ON;
-	gpT_Table			= mlist[sm].TT;
-	gpE_Table			= mlist[sm].ET;
-	gpPg_Table 			= mlist[sm].PT;
-	gpDg_Table 			= mlist[sm].DT;
-	gpIg_Table 			= mlist[sm].IT;
-	gpFN_Table			= mlist[sm].FT;
-	gpRT_Table			= mlist[sm].RT;
-	gpPos_Table			= mlist[sm].PoT;
-	gpZero_Table		= (PGM_P) MotionZeroPos;
-	Motion.NumOfScene 	= mlist[sm].NoS;
-	Motion.NumOfwCK 	= mlist[sm].Now;
-	
-	M_PlayFlash();
-}
+};
 
 
 /************************************************************************/
@@ -1045,7 +698,7 @@ void SampleMotion(int sm)	// Perform SampleMotion(s)
 // if flag set read initial positions
 
 static BYTE cpos[32];
- BYTE nos=0;
+BYTE nos=0;
  
 int getservo(int id)
 {
@@ -1075,7 +728,7 @@ BYTE readservos()
 
 
 // Play d ms per step, f frames, from current -> pos
-void PlayPose(int d, int f, BYTE pos[], int flag)
+void PlayPose(int d, int f, int tq, BYTE pos[], int flag)
 {
 	int i;	
 	if (flag!=0) 
@@ -1101,35 +754,60 @@ void PlayPose(int d, int f, BYTE pos[], int flag)
 		{
 			temp[j] = cpos[j] + (float)((i)*intervals[j]+0.5);
 		}
-		wckSyncPosSend(nos-1, 4, temp, 0);
+		wckSyncPosSend(nos-1, tq, temp, 0);
 		delay_ms(dur);
 	}
+	
+	for (i=0; i<nos; i++)
+	{
+		cpos[i]=pos[i];
+	}
+	
+	wckSyncPosSend(nos-1, tq, cpos, 0);
+	delay_ms(dur);
 }
 
-void PlayMotion(int n)
+const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
+const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
+
+void PlayMotion(BYTE n, int flg)
 {
 	int i=0;
-	int nos = mlist[n].NoS;	
-	int now = mlist[n].Now;
+
+	int ns = mlist[n].NoS;	
+	int nw = mlist[n].Now;
 	
 	PGM_P p = mlist[n].PoT;
 	PGM_P f = mlist[n].FT;
 	PGM_P t = mlist[n].RT;
 
-	for (i=0; i<nos; i++)
+	for (i=1; i<=ns; i++) //for each scene
 	{
+		BYTE temp[nw];
+		for (int j=0; j<nw; j++)
+		{
+			temp[j] = pgm_read_byte(p+j+i*nw);  
+			if (flg && j<16)
+			{
+				temp[j] += (basic18[j]-basic16[j]);
+			}
+			//rprintf("S[%d]: %d=%d\r\n", i, j, temp[j]);	
+		}
+
+		int dur=pgm_read_word(t+(i-1)*2);
+		int frt=pgm_read_word(f+(i-1)*2);
+		//rprintf("PP[%d]: %d,%d\r\n", i, dur,frt);	
+		PlayPose(dur, frt, 4, temp, (i==1)?16:0);
 	}
 }
 
-const BYTE basic18[] = { 143, 179, 198,  83, 106, 106,  69,  48, 167, 141,  47,  47,  49, 199, 192, 204, 122, 125};
-const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
 
 void standup (int n) 
 {
 	if (n<18)
-		PlayPose(1000, 10, basic16, 16); //huno basic
+		PlayPose(1000, 10, 4, basic16, 16); //huno basic
 	else
-		PlayPose(1000, 10, basic18, 18); //huno with hip
+		PlayPose(1000, 10, 4, basic18, 18); //huno with hip
 }
 
 
