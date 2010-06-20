@@ -4,7 +4,7 @@
 
 This is still in an early development stage !!! 
 
-This gives Robobuilder the ability to create simple actions in an elementary basic language. Download [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.hex basic.hex] on to the RBC module using the RBCUpgrade tool as per manual.
+This gives Robobuilder the ability to create simple actions in an elementary basic language. Download [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.hex basic.hex] on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per manual.
 
 Turn of the RBC and connect a vt100 terminal emulator. You should see the following:
 {{{
@@ -57,6 +57,7 @@ SYNTAX:
 [Line No] STAND [16 | 18]  ; basic pose for either 16 or 18 servo bots
 [LINE No] PUT VAR '=' $PORTA|B|C:0-7
 [LINE No] OUT EXPR,EXPR
+[Line No] PLAY number
 
 Special register access ($)
 LET A=$IR  		 //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
@@ -76,8 +77,9 @@ $TICK        Number of tenths of a second
 $RND         Random number  - (not tested)
 $MIC         Microphone level
 $TYPE        Number of servos i.e. 16
-$ABS         Absolute value returned
-$ROM:x       Contents of ROM location x
+$ABS(x)      Absolute value of x returned
+$ROM(x)      Contents of ROM location x
+$MAPIR(x)    Maps value from IR to built in action code
 
 Special Commands
 SERVO ID=POS  set servo id to position POS / @ / ~
@@ -87,7 +89,7 @@ POKE 10,A     Put A into Byte 10
 PUT PORT:A:8 = 3 //set DDR of Port A = 3 (PIN0,PIN1 readable)
 PUT PORT:A:2 = 1 //set Port A bit 1 =1 (assuming writeable)
 WAIT          Wait for a an amount of time in ms
-XACT          *TBC* - Call any action using code i.e. XACT 0, would punch left, XACT 17 a wave
+XACT          Call Built in action using code i.e. XACT 0, would punch left
 Built in motions:
 0x00:  PunchLeft
 0x01:  PunchRight
@@ -158,5 +160,11 @@ g) When fwd button pressed on IR do built in motion (8) - "walk forward"
 30 if a=4 then 40 else 10
 40 xact 8
 50 goto 10
+
+h)Simple press a button on IR - do action (like standard firmware)
+10 STAND 16
+20 xact $mapir($ir)
+30 Goto 20
+
 
 }}}
