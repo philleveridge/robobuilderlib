@@ -13,8 +13,11 @@ namespace RobobuilderLib
         SerialPort  s;
 
         Process p;
+        binxfer btf;
 
         bool readyDownload = false;
+
+        string version = "$Revision$";  //$Revision$
 
         string rx = ".";
 
@@ -30,6 +33,11 @@ namespace RobobuilderLib
             s.DataReceived += new SerialDataReceivedEventHandler(s_DataReceived);
 
             output.KeyPress += new KeyPressEventHandler(output_KeyPress);
+
+            if (version.StartsWith("$Revision: "))
+                version = version.Substring(11, 4);
+
+            this.Text += version;
         }
 
         void output_KeyPress(object sender, KeyPressEventArgs e)
@@ -177,7 +185,7 @@ namespace RobobuilderLib
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Basic IDE (v 0.1)\r\n$Revision$\r\n(c) l3v3rz 2010","About ... ",MessageBoxButtons.OK);
+            MessageBox.Show("Basic IDE (v 0.1)\r\n" + version + "\r\n(c) l3v3rz 2010","About ... ",MessageBoxButtons.OK);
         }
 
         private void compileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -209,12 +217,16 @@ namespace RobobuilderLib
                 }
             }
 
+            progressBar1.Visible = true;
+            progressBar1.Value = 0;
+            timer1.Enabled = true;
+
             string c = compiler.Download();
             bm = true;
 
             try
             {
-                binxfer btf = new binxfer(s);
+                btf = new binxfer(s);
                 btf.dbg = true;
                 btf.send_msg_raw('l', c);
 
@@ -235,6 +247,17 @@ namespace RobobuilderLib
                 MessageBox.Show("Download failed - connection problem" + err.Message);
             }
 
+            timer1.Enabled = false;
+            progressBar1.Visible = false;
+
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (btf != null && progressBar1.Visible)
+            {
+                progressBar1.Value = (int)(100.0*btf.progress);
+            }
         }
 
     }

@@ -73,8 +73,10 @@ int uartGetByte() 							{return kbhit()?getch():-1; }
 void rprintfStrLen(char *p, int s, int l)	{int i; for (i=0; i<l; i++) putchar(*(p+i));}
 
 /* misc */
-void delay_ms(int x)  						{Sleep(x);}
-void SampleMotion(char action)				{printf ("Win:  sample motion %d\n", action);}
+void delay_ms(int x)  					{Sleep(x);}
+
+void SampleMotion(char action)			{printf ("Win:  sample motion %d\n", action);}
+void PlayMotion(char action, int f)		{printf ("Win:  Play %d\n", action);}
 
 extern char FIRMWARE[64];  
 void initfirmware() {	

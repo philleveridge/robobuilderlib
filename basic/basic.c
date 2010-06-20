@@ -118,14 +118,16 @@ const prog_char *tokens[] ={
 };
 
 char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		"PORT", "ROM", "TYPE", "ABS" };
+		"PORT", "ROM", "TYPE", "ABS", "MAPIR" };
 
-enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE, sABS};
+enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
+		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE, sABS,
+		sIR2ACT};
 							
 
 int errno;
 
-void PerformAction (BYTE Action)
+void PerformAction (int Action, int f)
 {	
 	if (Action>=0 && Action <=0x12)
 	{
@@ -150,8 +152,12 @@ void PerformAction (BYTE Action)
 		0x11:  //hi
 		0x12:  //kick left front turn
 	*/
-		SampleMotion(Action); 
-		rprintf("Do Motion %x\r\n", Action);
+		rprintf("Play Motion %d\r\n", Action);
+		PlayMotion(Action, f);
+	}
+	else
+	{
+		rprintf("Motion must 0 - 17\r\n", Action);
 	}
 }
 
@@ -478,6 +484,7 @@ void basic_load()
 			break;
 		case MOVE:	
 		case OUT:	
+		case XACT:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -519,7 +526,6 @@ void basic_load()
 		case STAND: 
 		case WAIT: 
 		case GOTO: 
-		case XACT:
 		case GOSUB:
 			newline.value = getNum(&cp);	// read line	
 			break;
@@ -668,6 +674,24 @@ void set_bit(int p, int b, int n)
 	}
 }
 
+int getArg(char **str, int *res)
+{
+	if (**str=='(') 
+	{
+		(*str)++;
+		eval_expr(str, res);
+		if (**str==')')
+		{
+			(*str)++;
+			return 1;
+		}
+
+	}
+	return 0;
+}
+
+unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
+
 int get_special(char **str, int *res)
 {
 	char *p=*str;
@@ -714,14 +738,18 @@ int get_special(char **str, int *res)
 		Get_VOLTAGE();
 		v = gVOLTAGE;
 		break;
+	case sIR2ACT: //$IR2ACT(10) -> x
+		v=0;
+		if (getArg(str,&v))
+		{
+			v=map[v];
+		}
+		break;
 	case sABS: // $ABS(x)
 		v=0; 
-		if (**str=='(') {
-			(*str)++;
-			eval_expr(str, &v);
-			*res=(v<0)?-v:v;
-			(*str)++;
-			return (*str-p);
+		if (getArg(str,&v))
+		{
+			v = v<0?-v:v;
 		}
 		break;
 	case sTYPE:
@@ -768,17 +796,9 @@ int get_special(char **str, int *res)
 		*res=get_bit(v, t);         //need to read port with PINA etc 
 		return (*str-p); // not finished yet
 	case sROM: // ROM(x)
+		if (getArg(str,&v))
 		{
-		if (**str=='(') 
-		{   //(Addr)
-			(*str)++;
-			eval_expr(str, &v);
-			if (**str==')')
-			{
-				v = eeprom_read_byte((uint8_t*)(FIRMWARE+v));
-			}
-			(*str)++;
-		}
+			v = eeprom_read_byte((uint8_t*)(FIRMWARE+v));
 		}
 		break;
 	default:
@@ -1281,7 +1301,7 @@ int execute(line_t line)
 			if (*p++ != ',') { errno=1; break;}
 			eval_expr(&p, &tm);
 
-			PlayPose(tm, fm, scene, nis);
+			PlayPose(tm, fm, 4, scene, nis);
 		}
 		//
 		break;
@@ -1290,8 +1310,18 @@ int execute(line_t line)
 		variable[line.var] = lastline+8;
 		eval_list(line.text);
 		break;		
-	case XACT: 
-		PerformAction(line.value);
+	case XACT:				
+		n=0;
+		p=line.text;
+		if (eval_expr(&p, &n) != NUMBER)
+		{
+			errno=4;
+			break;
+		}
+		if (n>=32)
+			PerformAction(n-32,1);
+		else
+			PerformAction(n,0);		
 		break;
 	case WAIT: 
 		delay_ms(line.value);

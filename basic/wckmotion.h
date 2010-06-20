@@ -28,7 +28,8 @@ void wckWriteIO		(char ServoID, char Position) ;
 
 BYTE readservos   	();
 void standup      	(int n);
-void PlayPose     	(int d, int s, unsigned char data[], int n);
+void PlayPose     	(int d, int s, int tq, unsigned char data[], int n);
+void PlayMotion		(BYTE Action, int f);
 
 /*------------------  ----------------*/  
 

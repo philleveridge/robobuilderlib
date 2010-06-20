@@ -15,6 +15,8 @@ namespace RobobuilderLib
 
         public bool dbg = false;
 
+        public double progress = 0.0;
+
         public binxfer(SerialPort s)
         {
             sp1 = s;
@@ -95,6 +97,7 @@ namespace RobobuilderLib
             for (int i = 0; i < n + 1; i++)
             {
                 sp1.Write(b, i, 1);
+                progress = (double)i / (double)(n + 1); 
                 System.Threading.Thread.Sleep(8);
             }
         }
