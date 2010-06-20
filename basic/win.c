@@ -23,12 +23,14 @@ void wckWriteIO(unsigned char ServoID, unsigned char IO)    {printf ("WIN: Servo
 
 int nos;
 
-void PlayPose(int d, int s, unsigned char data[], int n)
+void PlayPose(int d, int s, int f, unsigned char data[], int n)
 {
 	int i=0;
-	printf ("WIN: Playpose  [%d , %d]\n", d,s);
+	printf ("WIN: Playpose  [d=%d , f=%d] :: Data=", d,s);
 	for (i=0; i<n; i++)
-			printf ("WIN: Data [%d] = %d\n", i, data[i]);
+			printf ("%d,", data[i]);
+	printf ("\n");
+	Sleep(d);
 }
 
 void standup      	(int n)	{printf ("WIN: standup %d\n", n);}

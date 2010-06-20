@@ -55,11 +55,11 @@ uint8_t EEMEM FIRMWARE        [64];  			// leave blank - used by Robobuilder OS
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
 extern void Perform_Action(BYTE action);
-extern int	getHex(int d);
-extern int	delay_ms(int d);
+extern int	getHex		(int d);
+extern int	delay_ms	(int d);
 extern void SampleMotion(unsigned char); 
 
-extern void sound_init();
+extern void sound_init	();
 extern void SendToSoundIC(BYTE cmd) ;
 
 
@@ -94,7 +94,8 @@ const  prog_char *error_msgs[] = {
 	"Invalid Command",
 	"Illegal var",
 	"Bad number",
-	"Next without for",
+	"Bad Line",
+	"Bad List"
 	};
 	
 enum {
@@ -118,14 +119,16 @@ const prog_char *tokens[] ={
 };
 
 char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		"PORT", "ROM", "TYPE", "ABS", "MAPIR" };
+		"PORT", "ROM", "TYPE", "ABS", "MAPIR", "KIR" };
 
 enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
 		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE, sABS,
-		sIR2ACT};
+		sIR2ACT, sKIR};
 							
 
 int errno;
+int fmflg;
+
 
 void PerformAction (int Action, int f)
 {	
@@ -304,8 +307,7 @@ int readLine(char *line)
 //   Store in Eprom
 // Loop
 
-int execute(line_t line);
-
+int execute(line_t line, int f);
 int fnptr[26];
 extern uint16_t psize;
 
@@ -555,7 +557,8 @@ void basic_load()
 		{	
 			if (newline.lineno==0)
 			{
-				execute(newline); // immediate execute
+				fmflg=0;
+				execute(newline,0); // immediate execute
 			}
 			else
 			{
@@ -761,6 +764,9 @@ int get_special(char **str, int *res)
 	case sKBD:
 		while ((v= uartGetByte())<0) ; // wait for input
 		break;	
+	case sKIR:
+		v = GetByte();
+		break;
 	case sRND:
 		v=rand();
 		break;	
@@ -915,9 +921,13 @@ unsigned char eval_expr(char **str, int *res)
 		case '@':
 			{
 				char tmpA[100];
-				n1 = variable[**str-'A'];
-				//
-				readtext(n1, tmpA);
+				n1 = **str-'A';
+				if (n1<0 || n1 >25)
+				{
+					break;
+				}
+				n1 = variable[n1];
+				readtext(n1, tmpA);				
 				eval_list(tmpA);
 				//
 				(*str)++;
@@ -1013,13 +1023,19 @@ void eval_list(char *p)
 {
 	// eval list "5,1,2,3,4,5" ->scene[5]
 	int i,n;
+		
+	//rprintf ("Str=");
+	//rprintfStr(p);
+	//rprintfCRLF();
+	
 	eval_expr(&p, &nis);
-	if (*p++ != ',') { errno=6;return; }
+		
+	if (*p++ != ',') { errno=6; return; }
 	for (i=0;i<nis;i++)
 	{
 		n=0;
 		eval_expr(&p, &n);
-		if (i!=(nis-1) && *p++ != ',') { errno=6;return; }
+		if (i!=(nis-1) && *p++ != ',') { errno=6; return; }
 		scene[i]=n;
 	}
 }
@@ -1028,11 +1044,8 @@ int forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
 int fp; 
 int gosub[MAX_GOSUB_NEST];  // 3 nested gosubs
 int gp;  
-
-
-int execute(line_t line);
 		
-void basic_run()
+void basic_run(int dbf)
 {
 	// Repeat
 	//   load from memory
@@ -1045,6 +1058,8 @@ void basic_run()
 	
 	fp=0; // Upto 3 nested for/next
 	gp=0;  // 3 nested gosubs
+	
+	fmflg=0;
 	
 	nxtline=0;
 
@@ -1071,6 +1086,13 @@ void basic_run()
 		
 		tc = nextchar();	// terminator character ?
 		
+		if (dbf) {
+			rprintf ("TRACE :: %d - ", line.lineno); 
+			rprintfStr (tokens[line.token]);;
+			while (uartGetByte()<0) ; // wait for input
+			rprintfCRLF();
+		}
+		
 		if (uartGetByte() == 27)  {
 			rprintf ("User Break on line %d\r\n", line.lineno); 
 			return;
@@ -1079,12 +1101,12 @@ void basic_run()
 		if (line.lineno==0) break;
 
 		/* execute code */
-		tmp = execute(line);
+		tmp = execute(line, dbf);
 		if (tmp == 0) tmp=tc;
 	}
 }
 
-int execute(line_t line)
+int execute(line_t line, int dbf)
 {
 	//   Get token
 	//   Execute action
@@ -1242,7 +1264,6 @@ int execute(line_t line)
 				}
 				else
 					printf("Null");
-				printf ("\r\n");
 			}
 
 			if (*p=='\0') break; // done
@@ -1283,11 +1304,12 @@ int execute(line_t line)
 		// with args (No Frames / Time in Ms) - use MotionBuffer
 		fm=0; tm=0;
 		p=line.text;
+			
 		if (p!=0 && *p != 0)
 		{			
 			if (eval_expr(&p, &fm) != ARRAY)
 			{
-				errno=4;
+				errno=1;
 				break;
 			}
 			if (*p=='\0')
@@ -1301,7 +1323,8 @@ int execute(line_t line)
 			if (*p++ != ',') { errno=1; break;}
 			eval_expr(&p, &tm);
 
-			PlayPose(tm, fm, 4, scene, nis);
+			PlayPose(tm, fm, 4, scene, 	(fmflg==0)?nis:0);
+			fmflg=1;
 		}
 		//
 		break;
@@ -1315,7 +1338,7 @@ int execute(line_t line)
 		p=line.text;
 		if (eval_expr(&p, &n) != NUMBER)
 		{
-			errno=4;
+			errno=1;
 			break;
 		}
 		if (n>=32)
@@ -1395,23 +1418,26 @@ void basic_zero()
 }
 
 
-void dump()
+void dump(int sz)
 {
 	int i;
 	
-	for (i=0; i<EEPROM_MEM_SZ; i+=8) 	
+	for (i=0; i<EEPROM_MEM_SZ; i+=sz) 	
 	{
 		int j;
 		char asciis[9];
 		rprintf ("%x ", i);
-		for (j=0; j<8;  j++)
+		for (j=0; j<sz;  j++)
 		{
 			uint8_t data = eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE+i+j));
 			rprintf ("%x ", data);
-			if (data>27 && data<127) asciis[j]=data; else asciis[j]='.';
+			if (sz==8) {if (data>27 && data<127) asciis[j]=data; else asciis[j]='.';}
 		}
-		asciis[8]='\0';
-		rprintfStr (asciis);
+		if (sz==8) 
+		{ 
+			asciis[8]='\0';
+			rprintfStr (asciis);
+		}
 		rprintfStr ("\r\n");	
 	}
 }
@@ -1627,7 +1653,7 @@ void basic()
 
 		ch = GetByte();			
 		if (ch > 26) {
-			rprintfChar(ch);rprintfChar(10);rprintfChar(13);
+			rprintfChar(ch);rprintfCRLF();
 		}
 		switch (ch)
 		{
@@ -1636,7 +1662,10 @@ void basic()
 			break;
 		case   7:  // IR red "stop" button
 		case 'r': // run
-			basic_run();
+			basic_run(0);
+			break;
+		case 'R': // run
+			basic_run(1);
 			break;
 		case 'l': // list 
 			basic_list();
@@ -1648,7 +1677,13 @@ void basic()
 			basic_zero();
 			break;
 		case 'd': // dump 
-			dump();
+			dump(8);
+			break;
+		case 'D': // dump 
+			dump(24);
+			break;
+		case 'F': // dump 
+			dump_firmware();
 			break;
 		case 'z': // download 
 			rprintfStr("start download\r\n");

@@ -256,9 +256,11 @@ namespace RobobuilderLib
         {
             if (btf != null && progressBar1.Visible)
             {
-                progressBar1.Value = (int)(100.0*btf.progress);
+                progressBar1.Increment((int)(100.0*btf.progress));
             }
+            Application.DoEvents();
         }
+
 
     }
 }
