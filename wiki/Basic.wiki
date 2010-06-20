@@ -23,9 +23,8 @@ At the prompt type
 
 There is also a [http://code.google.com/p/robobuilderlib/downloads/detail?name=BasicClient.exe windows client application] to simplify the download of programs - http://code.google.com/p/robobuilderlib/wiki/BasicClient - for more details
 
-_See examples below of programs that have been tested. If the program ever gets into a recurring loop (either accidentally or deliberately) then press 'Esc' on the PC keyboard. If that fails then hit the 'OFF' button (on the robot!)_
 
-Note in input mode you get a '>' prompt, in command mode a ':'. In input mode a command with a line number is stored in flash - and will be there after you turn the robot off. With no line number the command will be immediately executed. 
+In input mode you get a '>' prompt, in command mode a ':'. In input mode a command with a line number is stored in flash - and will be there after you turn the robot off. With no line number the command will be immediately executed. 
 
 So for instance - and example session :
 
@@ -59,7 +58,11 @@ Clear Program
 List Program
 }}}
 
-Notice how each time you enter input mode its adds to the current program. If you want to start over then press 'c'
+If the program ever gets into a recurring loop (either accidentally or deliberately) then press 'Esc' on the PC keyboard. If that fails then hit the 'OFF' button (on the robot!)
+
+Notice how each time you enter input mode its adds to the current program. If you want to start over then press 'c.  To run the program press 'r' (and then Esc!)
+
+_See examples below of programs that have been tested. 
 
 = Details =
 
