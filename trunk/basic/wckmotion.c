@@ -731,6 +731,9 @@ BYTE readservos()
 void PlayPose(int d, int f, int tq, BYTE pos[], int flag)
 {
 	int i;	
+	
+	//rprintf("DEBG:: %d %d\n", d,f);
+	
 	if (flag!=0) 
 	{
 		readservos();	// set nos and reads cpos

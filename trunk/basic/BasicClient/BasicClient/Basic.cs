@@ -157,6 +157,21 @@ namespace RobobuilderLib
             return -1;
         }
 
+        string upperIt(string txt)
+        {
+            string r = "";
+            bool uf=true;
+            for (int i = 0; i < txt.Length; i++)
+            {
+                if (txt[i] == '"') uf = !uf;
+                if (uf && Char.IsLower(txt[i]))
+                    r += Char.ToUpper(txt[i]);
+                else
+                    r += txt[i];
+            }
+            return r;
+        }
+
         string process_arg(string a)
         {
             string r = "";
@@ -257,8 +272,8 @@ namespace RobobuilderLib
                         if (GetNext(ref z) != "=") { errno = 1; }
                         if ((KEY)t == KEY.FOR)
                         {
-                            int p=z.ToUpper().IndexOf(" TO ");
-                            if (p>0)
+                            int p = z.ToUpper().IndexOf(" TO ");
+                            if (p > 0)
                             {
                                 ln.text = z.Substring(0, p);
                                 forbuf[fb++] = z.Substring(p + 4);
@@ -269,34 +284,35 @@ namespace RobobuilderLib
                             }
                         }
                         else
-                            ln.text = z;
+                            ln.text = upperIt(z);
                         break;
                     case KEY.PRINT:
+                        z = upperIt(z);
                         if (z[0] == '#') {ln.var=1; z=z.Substring(1); }
                         ln.text = process_arg(z);
                         break;
                     case KEY.MOVE:
                     case KEY.OUT:
                     case KEY.XACT:
-                        ln.text = z;
+                        ln.text = upperIt(z);
                         break;
                     case KEY.LIST:
                         t1 = GetVar(GetWord(ref z));
                         if (t1 < 0) errno = 3; else ln.var = (byte)t1;
                         if (GetNext(ref z) != "=") { errno = 1; }
-                        ln.text = z;
+                        ln.text = upperIt(z);
                         break;
                     case KEY.SERVO:
                         t = GetNumber(GetWord(ref z));
                         if (t < 0) errno = 3; else ln.var = (byte)t;
                         if (GetNext(ref z) != "=") { errno = 1; }
-                        ln.text = z;
+                        ln.text = upperIt(z);
                         break;
                     case KEY.POKE:
                         t = GetNumber(GetWord(ref z));
                         if (t < 0) errno = 3; else ln.var = (byte)t;
                         if (GetNext(ref z) != ",") { errno = 1; }
-                        ln.text = z;
+                        ln.text = upperIt(z);
                         break;
                     case KEY.PUT:
                         t = GetSpecial(ref z);
@@ -312,7 +328,7 @@ namespace RobobuilderLib
                             ln.var = (byte)(30 + (int)(pn[0] - 'A') * 10 + (int)(pb[0] - '0'));
                         }
                         if (GetNext(ref z) != "=") { errno = 1; }
-                        ln.text = z;
+                        ln.text = upperIt(z);
                         break;
                     case KEY.WAIT:
                     case KEY.STAND:
@@ -352,7 +368,7 @@ namespace RobobuilderLib
                         z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "($1)?$2:$3");
                         z = Regex.Replace(z, "(.*) THEN (.*)", "($1)?$2:0");
                         //Console.WriteLine("IF=" + z);
-                        ln.text = z;
+                        ln.text = upperIt(z);
                         break;
                     default:
                         errno = 2;
