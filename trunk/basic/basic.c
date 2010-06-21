@@ -118,12 +118,14 @@ const prog_char *tokens[] ={
 	"PLAY", "OUT"
 };
 
+#define NOSPECS 19
+
 char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		"PORT", "ROM", "TYPE", "ABS", "MAPIR", "KIR" };
+		"PORT", "ROM", "TYPE", "ABS", "MAPIR", "KIR", "FIND" };
 
 enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
 		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE, sABS,
-		sIR2ACT, sKIR};
+		sIR2ACT, sKIR, sFIND};
 							
 
 int errno;
@@ -578,7 +580,7 @@ RUNTIME routines
 int variable[26]; // only A-Z at moment
 BYTE scene[32];	  // array
 int nis=0;
-void eval_list(char *p);
+int  eval_list(char *p);
 unsigned char eval_expr(char **str, int *res);
 enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 
@@ -698,7 +700,7 @@ unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 
 int get_special(char **str, int *res)
 {
 	char *p=*str;
-	int t=token_match(specials, str, sizeof(specials));
+	int t=token_match(specials, str, NOSPECS);
 	int v=0;
 	
 	switch(t) {
@@ -766,6 +768,41 @@ int get_special(char **str, int *res)
 		break;	
 	case sKIR:
 		v = GetByte();
+		break;
+	case sFIND:
+		//$FIND(x,@A)
+		if (**str=='(') 
+		{
+			(*str)++;
+			eval_expr(str, res); 
+			if (**str==',')
+			{
+				int n=*res;
+				(*str)++;
+				if (eval_expr(str, res)==ARRAY)
+				{
+					int i;
+					v=0;
+					for (i=0; i<nis; i++)
+					{
+						if (scene[i]==n)
+						{
+							v=i; break;
+						}
+						if (scene[i]>n)
+						{
+							if (i>0) v=i-1; 
+							break;
+						}
+					}
+					if (i==nis) v=nis-1; // no match
+					if (**str==')')
+					{
+						(*str)++;
+					}
+				}
+			}
+		}
 		break;
 	case sRND:
 		v=rand();
@@ -919,7 +956,21 @@ unsigned char eval_expr(char **str, int *res)
 		case ' ':
 			break; //ignore sp
 		case '@':
-			{
+            if (**str=='{')
+            {
+                // literal
+                int cnt;
+                (*str)++;
+                cnt=eval_list(*str);
+                *str = *str+cnt;
+                if (**str!='}')
+                {
+					break;
+                }
+				(*str)++;
+            }
+            else
+            {
 				char tmpA[100];
 				n1 = **str-'A';
 				if (n1<0 || n1 >25)
@@ -937,12 +988,29 @@ unsigned char eval_expr(char **str, int *res)
 					eval_expr(str, &tmp);
 					n1 = scene[tmp];
 					(*str)++;
-				}
-				else
-				{
-					return ARRAY;
+					break;
 				}
 			}
+			if (**str == '+' || **str == '-')
+			{
+				//add array
+				int i;
+				int tempB[32];
+				char o = **str;
+				(*str)++;
+				for (i=0;i<32; i++)
+				{
+					tempB[i]=scene[i];
+				}
+				if (eval_expr(str,res)==ARRAY)
+				{
+					for (i=0;i<32; i++)
+					{
+						if (o == '+') scene[i] = tempB[i] + scene[i]; else scene[i] = tempB[i] - scene[i];
+					}
+				}
+			}
+			return ARRAY;
 			break;
 		case '$':
 			//special var?
@@ -1019,25 +1087,23 @@ int put_special(int var, int n)
 	return 0;
 }
 
-void eval_list(char *p)
+int eval_list(char *p)
 {
 	// eval list "5,1,2,3,4,5" ->scene[5]
 	int i,n;
-		
-	//rprintf ("Str=");
-	//rprintfStr(p);
-	//rprintfCRLF();
+	char *t=p;
 	
 	eval_expr(&p, &nis);
 		
-	if (*p++ != ',') { errno=6; return; }
+	if (*p++ != ',') { errno=6; return 0; }
 	for (i=0;i<nis;i++)
 	{
 		n=0;
 		eval_expr(&p, &n);
-		if (i!=(nis-1) && *p++ != ',') { errno=6; return; }
+		if (i!=(nis-1) && *p++ != ',') { errno=6; return 0; }
 		scene[i]=n;
 	}
+	return p-t;
 }
 
 int forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
@@ -1323,6 +1389,19 @@ int execute(line_t line, int dbf)
 			if (*p++ != ',') { errno=1; break;}
 			eval_expr(&p, &tm);
 
+			if (*p++ == '#') 
+			{ 
+				int j;
+				// do conversion
+				for (j=0; j<nis; j++)
+				{
+					if (j<16)
+					{
+						scene[j] += (basic18[j]-basic16[j]);
+					}
+				}
+			}
+
 			PlayPose(tm, fm, 4, scene, 	(fmflg==0)?nis:0);
 			fmflg=1;
 		}
@@ -1331,7 +1410,7 @@ int execute(line_t line, int dbf)
 	case LIST: 
 		//LIST A=5,12,3,4,5
 		variable[line.var] = lastline+8;
-		eval_list(line.text);
+		//eval_list(line.text);
 		break;		
 	case XACT:				
 		n=0;
@@ -1559,6 +1638,7 @@ void basic_list()
 	}
 }
 
+#ifdef AVR
 #define MAGIC_RESPONSE	0xEA
 #define MAGIC_REQUEST	0xCD
 #define VERSION			0x12     /* BIN API VERSION */
@@ -1634,6 +1714,7 @@ void binmode()
 		
 	RUN_LED2_OFF;
 }
+#endif
 
 void basic()
 {
@@ -1693,7 +1774,7 @@ void basic()
 			readservos();
 			break;
 		default:
-			rprintfStr("??\r\n");
+			rprintfStr("\r\n");
 			break;
 		}
 	}

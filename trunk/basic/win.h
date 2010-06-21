@@ -37,3 +37,7 @@ extern int			uartGetByte();
 extern void			rprintfStrLen(char *p, int s, int l);
 
 extern void			initfirmware();
+extern void			binmode();
+
+const unsigned char  basic18[];
+const unsigned char  basic16[];

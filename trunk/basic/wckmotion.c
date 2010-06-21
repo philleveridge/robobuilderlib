@@ -699,6 +699,9 @@ struct FlashMotionData mlist[] =
 
 static BYTE cpos[32];
 BYTE nos=0;
+
+const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
+const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
  
 int getservo(int id)
 {
@@ -769,9 +772,6 @@ void PlayPose(int d, int f, int tq, BYTE pos[], int flag)
 	wckSyncPosSend(nos-1, tq, cpos, 0);
 	delay_ms(dur);
 }
-
-const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
-const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
 
 void PlayMotion(BYTE n, int flg)
 {
