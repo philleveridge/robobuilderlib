@@ -26,6 +26,9 @@ WORD wckPosSend    	(char ServoID, char Torque, char Position);
 void wckWriteIO		(char ServoID, char Position) ;  
 /*------------------  ----------------*/  
 
+const BYTE basic18[18];
+const BYTE basic16[16];
+
 BYTE readservos   	();
 void standup      	(int n);
 void PlayPose     	(int d, int s, int tq, unsigned char data[], int n);
@@ -37,7 +40,3 @@ void send_bus_str 	(char *bus_str, int n);
 
 /*------------------  ----------------*/  
 
-extern volatile BYTE 	F_PLAYING;				// state: playing from Flash
-extern volatile BYTE	F_NEXTFRAME;			// trigger to start the next frame
-
-/*------------------  ----------------*/  

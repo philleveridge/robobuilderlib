@@ -217,12 +217,18 @@ namespace RobobuilderLib
                 }
             }
 
+            string c = compiler.Download();
+            bm = true;
+
+            if (comPort.Text == "!")
+            {
+                File.WriteAllText("bindata.txt", c);
+                return;
+            }
+
             progressBar1.Visible = true;
             progressBar1.Value = 0;
             timer1.Enabled = true;
-
-            string c = compiler.Download();
-            bm = true;
 
             try
             {
