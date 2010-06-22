@@ -49,11 +49,6 @@ namespace RobobuilderLib
             {
                 s.Write(rx);
             }
-
-            if (p != null)
-            {
-            //    sw.Write(rx);
-            } 
         }
 
 
@@ -264,6 +259,7 @@ namespace RobobuilderLib
             {
                 progressBar1.Increment((int)(100.0*btf.progress));
             }
+            this.Update();
             Application.DoEvents();
         }
 

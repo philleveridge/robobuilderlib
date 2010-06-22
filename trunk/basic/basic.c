@@ -104,10 +104,10 @@ enum {
 	PUT, END, LIST, XACT, 
 	WAIT, NEXT, SERVO, MOVE,
 	GOSUB, RETURN, POKE, STAND,
-	PLAY, OUT
+	PLAY, OUT, OFFSET, RUN
 	};
 
-#define NOTOKENS 22
+#define NOTOKENS 24
 
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
@@ -115,7 +115,7 @@ const prog_char *tokens[] ={
 	"PUT", "END", "LIST", "XACT",
 	"WAIT", "NEXT", "SERVO", "MOVE",
 	"GOSUB", "RETURN", "POKE", "STAND",
-	"PLAY", "OUT"
+	"PLAY", "OUT", "OFFSET", "RUN"
 };
 
 #define NOSPECS 19
@@ -132,15 +132,15 @@ int errno;
 int fmflg;
 
 
-void PerformAction (int Action, int f)
+void PerformAction (int Action)
 {	
-	if (Action>=0 && Action <=0x12)
+	if (Action>=0 && Action <=19)
 	{
 	/*
 		0x00:  //PunchLeft
 		0x01:  //PunchRight
 		0x02:  //SidewalkLeft
-		0x03:	//SidewalkRight
+		0x03:  //SidewalkRight
 		0x04:  //TurnLeft
 		0x05:  //TurnRight
 		0x06:  //GetupBack
@@ -158,11 +158,11 @@ void PerformAction (int Action, int f)
 		0x12:  //kick left front turn
 	*/
 		rprintf("Play Motion %d\r\n", Action);
-		PlayMotion(Action, f);
+		PlayMotion(Action);
 	}
 	else
 	{
-		rprintf("Motion must 0 - 17\r\n", Action);
+		rprintf("Motion must 0 - 19\r\n", Action);
 	}
 }
 
@@ -322,9 +322,7 @@ void basic_load()
 
 	char forbuf[MAX_FOR_NEST][MAX_FOR_EXPR];
 	int fb=0;
-	
-
-				
+					
 	struct basic_line newline;	
 	
 	errno=0;
@@ -488,7 +486,9 @@ void basic_load()
 			break;
 		case MOVE:	
 		case OUT:	
-		case XACT:
+		case RUN:
+		case XACT: 
+		case OFFSET:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -578,7 +578,7 @@ RUNTIME routines
 *************************************************************************************************************/
 
 int variable[26]; // only A-Z at moment
-BYTE scene[32];	  // array
+int scene[32];	  // array
 int nis=0;
 int  eval_list(char *p);
 unsigned char eval_expr(char **str, int *res);
@@ -709,15 +709,12 @@ int get_special(char **str, int *res)
 		break;
 	case sMIC:
 		{
-		WORD t=0;
 		int lc;
 		for (lc=0; lc<SDATASZ; lc++) 
 		{
-			//lights(sData[lc]);
-			t += sData[lc];  // sum the buffer
+			v += sData[lc];  // sum the buffer
 			sData[lc]=0;     // and clear
 		}
-		v = t;
 		}
 		break;
 	case sTICK:
@@ -956,6 +953,17 @@ unsigned char eval_expr(char **str, int *res)
 		case ' ':
 			break; //ignore sp
 		case '@':
+			if (**str=='#')
+            {
+				int i;
+				(*str)++;
+				for (i=0;i<32; i++)
+				{
+					scene[i] = offset[i];
+				}
+				nis=32;
+			}
+			else
             if (**str=='{')
             {
                 // literal
@@ -994,7 +1002,7 @@ unsigned char eval_expr(char **str, int *res)
 			if (**str == '+' || **str == '-')
 			{
 				//add array
-				int i;
+				int i,tnis;
 				int tempB[32];
 				char o = **str;
 				(*str)++;
@@ -1002,8 +1010,10 @@ unsigned char eval_expr(char **str, int *res)
 				{
 					tempB[i]=scene[i];
 				}
+				tnis=nis;
 				if (eval_expr(str,res)==ARRAY)
 				{
+					if (tnis>nis) nis=tnis;
 					for (i=0;i<32; i++)
 					{
 						if (o == '+') scene[i] = tempB[i] + scene[i]; else scene[i] = tempB[i] - scene[i];
@@ -1177,12 +1187,8 @@ int execute(line_t line, int dbf)
 	//   Get token
 	//   Execute action
 	//	 Move to next line
-
-	int tm;
-	int fm;
 	uint8_t tmp=0;
-	char *p;		
-	
+	char *p;			
 	int n;
 
 	switch (line.token)
@@ -1213,7 +1219,7 @@ int execute(line_t line, int dbf)
 			}			
 			if (variable[line.var] <= n) { 
 				// if true set ptr=stack; 
-				setline(t_ptr); tmp=variable[line.var] ;
+				setline(t_ptr); tmp=1;
 			}	
 			else
 			{
@@ -1295,7 +1301,7 @@ int execute(line_t line, int dbf)
 				errno=3; return 0xcc;	
 			}		
 			setline(t);
-			tmp=t;
+			tmp=1;
 		}
 		break;	
 	case PRINT: 
@@ -1325,11 +1331,11 @@ int execute(line_t line, int dbf)
 			case ARRAY:
 				if (nis>0)
 				{
-					printf ("%d", scene[0]);
-					for (n=1; n<nis; n++) {printf (",%d",scene[n]);}
+					rprintf ("%d", scene[0]);
+					for (n=1; n<nis; n++) {rprintf (",%d",scene[n]);}
 				}
 				else
-					printf("Null");
+					rprintfStr("Null");
 			}
 
 			if (*p=='\0') break; // done
@@ -1359,7 +1365,7 @@ int execute(line_t line, int dbf)
 					errno=5; 	
 				else
 					setline(t);
-				tmp=0;		
+				tmp=1;		
 			}
 		}
 		break;		
@@ -1368,11 +1374,11 @@ int execute(line_t line, int dbf)
 		// MOVE @A
 		// No args - send servo positions syncronously
 		// with args (No Frames / Time in Ms) - use MotionBuffer
-		fm=0; tm=0;
 		p=line.text;
 			
 		if (p!=0 && *p != 0)
-		{			
+		{	
+			int j, fm=0, tm=0;
 			if (eval_expr(&p, &fm) != ARRAY)
 			{
 				errno=1;
@@ -1389,20 +1395,24 @@ int execute(line_t line, int dbf)
 			if (*p++ != ',') { errno=1; break;}
 			eval_expr(&p, &tm);
 
-			if (*p++ == '#') 
-			{ 
-				int j;
-				// do conversion
+			for (j=0; j<nis; j++)
+			{
+				if (j<16) scene[j] += offset[j];
+
+			}
+			{
+				BYTE pos[32];
 				for (j=0; j<nis; j++)
 				{
-					if (j<16)
-					{
-						scene[j] += (basic18[j]-basic16[j]);
-					}
+					if (scene[j]>=0 && scene[j]<=254) 
+						pos[j] = scene[j];
+					if (scene[j]<0) 
+						pos[j] = 0;
+					if (scene[j]>254) 
+						pos[j] = 254;
 				}
+				PlayPose(tm, fm, 4, pos, (fmflg==0)?nis:0);
 			}
-
-			PlayPose(tm, fm, 4, scene, 	(fmflg==0)?nis:0);
 			fmflg=1;
 		}
 		//
@@ -1412,7 +1422,7 @@ int execute(line_t line, int dbf)
 		variable[line.var] = lastline+8;
 		//eval_list(line.text);
 		break;		
-	case XACT:				
+	case XACT:	case RUN:			
 		n=0;
 		p=line.text;
 		if (eval_expr(&p, &n) != NUMBER)
@@ -1420,13 +1430,50 @@ int execute(line_t line, int dbf)
 			errno=1;
 			break;
 		}
-		if (n>=32)
-			PerformAction(n-32,1);
-		else
-			PerformAction(n,0);		
+		PerformAction(n);		
 		break;
 	case WAIT: 
 		delay_ms(line.value);
+		break;
+	case OFFSET: 
+		{
+			// OFFSET @A	load @A into offset
+			// OFFSET #		load Basic18-Basic16 into offset
+			// OFFSET		zero offset
+			int i;
+			p=line.text;
+			if (p==0 || *p=='\0')
+			{				
+				for (i=0; i<32; i++)
+				{
+					offset[i]=0;
+				}
+			}
+			else if (*p == '#')
+			{
+				for (i=0; i<16; i++)
+				{
+					offset[i]=(basic18[i]-basic16[i]);
+				}
+				for (i=16; i<32; i++)
+				{
+					offset[i]=0;
+				}
+			}
+			else if (eval_expr(&p, &n)==ARRAY)
+			{
+				for (i=0; i<nis; i++)
+				{
+					offset[i]=scene[i];
+				}
+				for (i=nis; i<32; i++)
+				{
+					offset[i]=0;
+				}
+			}
+			else
+				errno=1;
+		}
 		break;
 	case OUT: 
 		{
@@ -1458,7 +1505,7 @@ int execute(line_t line, int dbf)
 			if (t<0)
 				return 0xCC;	// this needs an error message		
 			setline(t);
-			tmp=0;	
+			tmp=1;	
 		}
 		break;
 	case RETURN: 
@@ -1702,9 +1749,9 @@ int bin_read_request()
 void binmode()
 {
 	int r;
-	
+	rprintfStr("start download\r\n");
 	RUN_LED2_ON;
-
+	
 	r=bin_read_request();
 			
 	if (r == 'l')
@@ -1743,7 +1790,9 @@ void basic()
 			break;
 		case   7:  // IR red "stop" button
 		case 'r': // run
+			gtick=0;
 			basic_run(0);
+			rprintf("Elapsed Time %dms\r\n", gtick);
 			break;
 		case 'R': // run
 			basic_run(1);
@@ -1767,7 +1816,6 @@ void basic()
 			dump_firmware();
 			break;
 		case 'z': // download 
-			rprintfStr("start download\r\n");
 			binmode(); // enter binary mode
 			break;
 		case 'q': // query 

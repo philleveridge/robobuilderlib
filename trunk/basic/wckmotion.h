@@ -28,11 +28,12 @@ void wckWriteIO		(char ServoID, char Position) ;
 
 const BYTE basic18[18];
 const BYTE basic16[16];
+extern int offset[32];
 
 BYTE readservos   	();
 void standup      	(int n);
 void PlayPose     	(int d, int s, int tq, unsigned char data[], int n);
-void PlayMotion		(BYTE Action, int f);
+void PlayMotion		(BYTE Action);
 
 /*------------------  ----------------*/  
 
