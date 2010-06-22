@@ -48,7 +48,7 @@ namespace RobobuilderLib
 	        PUT, END, LIST, XACT, 
 	        WAIT, NEXT, SERVO, MOVE,
 	        GOSUB, RETURN, POKE, STAND,
-            PLAY, OUT
+            PLAY, OUT, OFFSET, RUN
 	        };
 	
         string[] tokens = new string[] {
@@ -57,10 +57,12 @@ namespace RobobuilderLib
             "PUT", "END", "LIST", "XACT",
             "WAIT", "NEXT", "SERVO", "MOVE",
             "GOSUB", "RETURN", "POKE", "STAND",
-            "PLAY", "OUT"
+            "PLAY", "OUT", "OFFSET", "RUN"
         };
 
-        enum SKEY {sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sABS};
+        enum SKEY {sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD,
+        sRND, sSERVO, sTICK, sPORT, sROM, sABS, sIR2ACT, sKIR, sFIND
+        };
 							
         struct basic_line {
             public int lineno;
@@ -294,6 +296,8 @@ namespace RobobuilderLib
                     case KEY.MOVE:
                     case KEY.OUT:
                     case KEY.XACT:
+                    case KEY.RUN:
+                    case KEY.OFFSET:
                         ln.text = upperIt(z);
                         break;
                     case KEY.LIST:

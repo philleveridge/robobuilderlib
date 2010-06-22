@@ -62,7 +62,9 @@ int x_value=0;
 int gtick=0;
 int gVOLTAGE=10000;
 int gDistance=35;
+
 unsigned char sData[64];
+int offset[32];
 
 void sample_sound(int n){printf ("WIN: Sample sound %d\n", n);}
 void sound_init()		{printf ("WIN: Sound init\n");}
@@ -80,7 +82,7 @@ void rprintfStrLen(char *p, int s, int l)	{int i; for (i=0; i<l; i++) putchar(*(
 void rprintfCRLF()						{printf ("\n");}
 
 /* misc */
-void delay_ms(int x)  					{Sleep(x);}
+void delay_ms(int x)  					{printf ("Win:  wait %d\n",x); Sleep(x);}
 
 void SampleMotion(char action)			{printf ("Win:  sample motion %d\n", action);}
 void PlayMotion (char action, int f)	{printf ("Win:  Play %d\n", action);}

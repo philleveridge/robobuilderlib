@@ -397,12 +397,6 @@ static void GetMotionFromFlash(void)
 
 ------------------------------------------------------------------------------*/
 
-
-
-//------------------------------------------------------------------------------
-// 
-//------------------------------------------------------------------------------
-
 struct FlashMotionData {
 	PGM_P TT;
 	PGM_P ET;
@@ -698,6 +692,7 @@ struct FlashMotionData mlist[] =
 // if flag set read initial positions
 
 static BYTE cpos[32];
+int offset[32];
 BYTE nos=0;
 
 const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
@@ -734,9 +729,7 @@ BYTE readservos()
 void PlayPose(int d, int f, int tq, BYTE pos[], int flag)
 {
 	int i;	
-	
-	//rprintf("DEBG:: %d %d\n", d,f);
-	
+
 	if (flag!=0) 
 	{
 		readservos();	// set nos and reads cpos
@@ -773,7 +766,7 @@ void PlayPose(int d, int f, int tq, BYTE pos[], int flag)
 	delay_ms(dur);
 }
 
-void PlayMotion(BYTE n, int flg)
+void PlayMotion(BYTE n)
 {
 	int i=0;
 
@@ -790,16 +783,15 @@ void PlayMotion(BYTE n, int flg)
 		for (int j=0; j<nw; j++)
 		{
 			temp[j] = pgm_read_byte(p+j+i*nw);  
-			if (flg && j<16)
+			if (j<16)
 			{
-				temp[j] += (basic18[j]-basic16[j]);
+				temp[j] += offset[j];
 			}
-			//rprintf("S[%d]: %d=%d\r\n", i, j, temp[j]);	
 		}
 
 		int dur=pgm_read_word(t+(i-1)*2);
 		int frt=pgm_read_word(f+(i-1)*2);
-		//rprintf("PP[%d]: %d,%d\r\n", i, dur,frt);	
+
 		PlayPose(dur, frt, 4, temp, (i==1)?16:0);
 	}
 }
