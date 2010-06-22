@@ -86,7 +86,6 @@ SYNTAX:
 [LINE no] IF  EXPR THEN LINE no ELSE Line No
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
 [LINE No] NEXT VAR
-[LINE No] XACT EXPR
 [LINE No] WAIT number
 [Line No] SERVO ID=EXPR | '@'
 [LINE No] LIST [VAR]=N,1,2,3 ..
@@ -97,6 +96,7 @@ SYNTAX:
 [LINE No] PUT VAR '=' $PORTA|B|C:0-7
 [LINE No] OUT EXPR,EXPR
 [Line No] PLAY number
+[Line No] OFFSET [List]
 
 Special register access ($)
 LET A=$IR  		 //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
@@ -119,6 +119,7 @@ $TYPE        Number of servos i.e. 16
 $ABS(x)      Absolute value of x returned
 $ROM(x)      Contents of ROM location x
 $MAPIR(x)    Maps value from IR to built in action code
+$FIND(x, @A) Look for item less than or equal to X and return index
 
 Special Commands
 SERVO ID=POS  set servo id to position POS / @ / ~
@@ -128,27 +129,27 @@ POKE 10,A     Put A into Byte 10
 PUT PORT:A:8 = 3 //set DDR of Port A = 3 (PIN0,PIN1 readable)
 PUT PORT:A:2 = 1 //set Port A bit 1 =1 (assuming writeable)
 WAIT          Wait for a an amount of time in ms
-XACT          Call Built in action using code i.e. XACT 0, would punch left
+RUN           Call Built in action using code i.e. RUN 0, would punch left
 Built in motions:
-0x00:  PunchLeft
-0x01:  PunchRight
-0x02:  SidewalkLeft
-0x03:  SidewalkRight
-0x04:  TurnLeft
-0x05:  TurnRight
-0x06:  GetupBack
-0x07:  GetupFront
-0x08:  WalkForward
-0x09:  WalkBackward
-0x0A:  lshoot
-0x0B:  rshoot
-0x0C:  rsidewalk
-0x0D:  lsidewalk
-0x0E:  standupr
-0x0F:  standupf
-0x10:  sitdown
-0x11:  hi
-0x12:  kick left front turn
+0) PunchLeft
+1) PunchRight
+2) SidewalkLeft
+3) SidewalkRight
+4) TurnLeft
+5) TurnRight
+6) GetupBack
+7) GetupFront
+8) WalkForward
+9) WalkBackward
+10)lshoot
+11)rshoot
+12)rsidewalk
+13)lsidewalk
+14)standupr
+15)standupf
+16)sitdown
+17)hi
+18)kick left front turn
 }}}
 
 = Examples  =
@@ -193,16 +194,13 @@ This reads current position of servo 12 and then moves and extra 5
 20 wait 500
 30 goto 10
 
-7) When fwd button pressed on IR do built in motion (8) - "walk forward"
+7) Read button pressed 
 10 let A=$IR
 20 print "Received=";A
-30 if a=4 then 40 else 10
-40 xact 8
-50 goto 10
 
 8) More  complex - press a button on IR and do action (like standard firmware)
 10 STAND 16
-20 xact $mapir($ir)
+20 RUN $mapir($ir)
 30 Goto 20
 
 9) Simple LISTS
@@ -237,5 +235,16 @@ This reads current position of servo 12 and then moves and extra 5
 50 print " Here";
 60 return
 
+14) Take up basic pose 
+10 MOVE @{16,125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},10,1000
+Its simpler to use STAND 16 - but this show use of the MOVE command with a literal/inline LIST
+
+15) Index through a list
+10 list a=5,65,66,67,68,69
+20 for i=0 to 4
+30 out @a[i]
+40 next i
+50 print
+will output ABCDE
 
 }}}
