@@ -8,8 +8,10 @@ Download [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.he
 
 Turn of the RBC and connect a vt100 terminal emulator. You should see the following:
 {{{
-Basic v=$Revision: 202 $
+Basic v=$Revision: 209 $
 Commands: i r l c z q
+16 servos connected
+0 lines in memory
 :
 }}}
 
@@ -67,7 +69,6 @@ _See examples below of programs that have been tested.
 = Details =
 
 {{{
-
 Language Spec:
 VAR    A-Z  (integer only)
 OPER   + - * \ ( ) = < > % <= >= <>
@@ -87,27 +88,20 @@ SYNTAX:
 [LINE No] FOR VAR '=' EXPR 'To' EXPR
 [LINE No] NEXT VAR
 [LINE No] WAIT number
-[Line No] SERVO ID=EXPR | '@'
+[Line No] SERVO ID=EXPR | '@' | '~'
 [LINE No] LIST [VAR]=N,1,2,3 ..
 [LINE No] MOVE @[VAR],100,20
 [Line No] GOSUB [Line No]
 [Line No] RETURN
-[Line No] STAND [16 | 18]  ; basic pose for either 16 or 18 servo bots
+[Line No] STAND [16 | 18]  
 [LINE No] PUT VAR '=' $PORTA|B|C:0-7
 [LINE No] OUT EXPR,EXPR
+[Line No] RUN number
 [Line No] PLAY number
-[Line No] OFFSET [List]
+[Line No] OFFSET [# | List | "blank"]
 
 Special register access ($)
-LET A=$IR  		 //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
-LET A=$PORT:A:6  //Read Bit 6 of Port A
-LET A=$ROM:10    // read byte 10 of ROM
-LET A=$IR           //get char from IR and transfer to A 
-LET A=$SERVO:id     //let A get position of servo id 
-
-Special register access ($)
-$X, $Y, $Z   accelerometer
-$SERVO:id    position of servo id 
+$X, $Y, $Z   accelerometer values
 $IR          wait for OR input
 $KBD         wait for keyboard press
 $PSD         PSD sensor value
@@ -116,19 +110,29 @@ $TICK        Number of tenths of a second
 $RND         Random number  - (not tested)
 $MIC         Microphone level
 $TYPE        Number of servos i.e. 16
+$SERVO(id)   position of servo id 
 $ABS(x)      Absolute value of x returned
 $ROM(x)      Contents of ROM location x
 $MAPIR(x)    Maps value from IR to built in action code
 $FIND(x, @A) Look for item less than or equal to X and return index
 
+$pecial register examples :
+LET A=$IR        //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
+LET A=$ROM(10)   // read byte 10 of ROM
+LET A=$SERVO(id) //let A get position of servo id 
+LET A=$PORT:A:6  //Read Bit 6 of Port A
+
 Special Commands
 SERVO ID=POS  set servo id to position POS / @ / ~
-PUT 	      enable access to PORTS/SPECIAL REGISTER
+
 LIST/MOVE     sends a Scene - 'n' Servo Positions, Plus time, no frames
 POKE 10,A     Put A into Byte 10
+PUT 	      enable access to PORTS/SPECIAL REGISTER
 PUT PORT:A:8 = 3 //set DDR of Port A = 3 (PIN0,PIN1 readable)
 PUT PORT:A:2 = 1 //set Port A bit 1 =1 (assuming writeable)
 WAIT          Wait for a an amount of time in ms
+STAND 16      set servos to basic posture (for 16 or 18 servo bots)
+OFFSET        Defines a numeric offset array to be applied to MOVE and PLAY commands
 RUN           Call Built in action using code i.e. RUN 0, would punch left
 Built in motions:
 0) PunchLeft
@@ -156,7 +160,6 @@ Built in motions:
 
 These are available from examples sub- folder
 http://code.google.com/p/robobuilderlib/source/browse/#svn/trunk/examples
-
 {{{
 1) simple loop
 10 LET A=1
@@ -185,7 +188,7 @@ http://code.google.com/p/robobuilderlib/source/browse/#svn/trunk/examples
 
 5) read and set servo
 This reads current position of servo 12 and then moves and extra 5
-10 let a=$servo:12
+10 let a=$servo(12)
 20 print "Pos=";a
 30 servo 12=a+5
 
@@ -200,8 +203,8 @@ This reads current position of servo 12 and then moves and extra 5
 
 8) More  complex - press a button on IR and do action (like standard firmware)
 10 STAND 16
-20 RUN $mapir($ir)
-30 Goto 20
+20 RUN $MAP($IR)
+30 GOTO 20
 
 9) Simple LISTS
 10 print "List test"
@@ -223,7 +226,7 @@ This reads current position of servo 12 and then moves and extra 5
 
 12) Use of  Passive
 10 SERVO 12=@
-20 Print "Servo 12 = "; $SERVO:12
+20 Print "Servo 12 = "; $SERVO(12)
 30 wait 500
 40 goto 20
 
