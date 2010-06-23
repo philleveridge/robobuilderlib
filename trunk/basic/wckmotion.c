@@ -718,8 +718,7 @@ BYTE readservos()
 		int p = wckPosRead(i);		
 		if (p<0 || p>255) break;
 		cpos[i]=p;	
-	}
-	rprintf("Servos: %d\r\n", i);	
+	}	
 	nos=i;
 	return i;
 }

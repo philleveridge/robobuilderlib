@@ -167,7 +167,7 @@ int findln(int lineno)
 	int prv = 1;
 	int lno = 1;
 
-	while (nl<2048)
+	while (nl<EEPROM_MEM_SZ)
 	{
 		lno=eeprom_read_byte(BASIC_PROG_SPACE+nl);					
 		if (lno == 0xCC)
@@ -251,4 +251,31 @@ void readtext(int ln, char *b)
 		b[i] =eeprom_read_byte((uint8_t *)(BASIC_PROG_SPACE+ln+i));	
 	    if (b[i]==0) break;
 	}
+}
+
+int findend()
+{
+	int c=0;
+	int nl;
+	int ln;
+	
+	nxtline = 0;	
+
+	if (nextchar() != 0xAA ) {
+		clearln();
+		return 0;
+	}	
+	
+	nl = firstline();
+
+	while (nl<EEPROM_MEM_SZ)
+	{
+		ln=eeprom_read_byte(BASIC_PROG_SPACE+nl);					
+		if (ln == 0xCC)
+			break;	
+		nl=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nl+6));	
+		c++;
+	}
+	psize=nl;
+	return c;
 }

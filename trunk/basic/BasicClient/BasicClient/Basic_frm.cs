@@ -11,8 +11,6 @@ namespace RobobuilderLib
     {
         Basic       compiler;
         SerialPort  s;
-
-        Process p;
         binxfer btf;
 
         bool readyDownload = false;
@@ -51,7 +49,6 @@ namespace RobobuilderLib
             }
         }
 
-
         private void processCompletedOrCanceled(object sender, EventArgs e)
         {
             button1.BackColor = System.Drawing.Color.Red;
@@ -59,33 +56,6 @@ namespace RobobuilderLib
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (comPort.Text == "!")
-            {
-                if (button1.BackColor == System.Drawing.Color.Blue)
-                {
-                    button1.BackColor = System.Drawing.Color.Red;
-                    p.Kill();
-                    p.Close();
-                    return;
-                }
-
-                // connect to basic.exe
-                // and simulate connection
-                p = new Process();
-                p.StartInfo.FileName = "basic.exe";
-                //p.StartInfo.RedirectStandardInput = true;
-                p.StartInfo.RedirectStandardOutput = true;
-                p.StartInfo.UseShellExecute = false;
-                button1.BackColor = System.Drawing.Color.Blue;
-                p.Start();
-
-                //p.StandardInput.Write("test");
-                string t = p.StandardOutput.ReadToEnd() ;
-                //Console.WriteLine(t);
-
-                return;
-            }
-
             try
             {
                 if (s.IsOpen)
@@ -257,10 +227,10 @@ namespace RobobuilderLib
         {
             if (btf != null && progressBar1.Visible)
             {
+            
                 progressBar1.Increment((int)(100.0*btf.progress));
             }
             this.Update();
-            Application.DoEvents();
         }
 
 

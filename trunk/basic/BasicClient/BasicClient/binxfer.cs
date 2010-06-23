@@ -97,7 +97,8 @@ namespace RobobuilderLib
             for (int i = 0; i < n + 1; i++)
             {
                 sp1.Write(b, i, 1);
-                progress = (double)i / (double)(n + 1); 
+                progress = (double)i / (double)(n + 1);
+                System.Windows.Forms.Application.DoEvents();
                 System.Threading.Thread.Sleep(8);
             }
         }

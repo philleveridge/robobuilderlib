@@ -56,11 +56,11 @@
             this.input.Multiline = true;
             this.input.Name = "input";
             this.input.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.input.Size = new System.Drawing.Size(523, 191);
+            this.input.Size = new System.Drawing.Size(764, 191);
             this.input.TabIndex = 0;
             this.input.Text = "\'      test program\r\n\'\r\n       PRINT \"Test Passive\"\r\nLoop:  SERVO 12=@ \'set servo" +
-                " passive\r\n       Print \"Servo 12 = \"; $SERVO:12\r\n       wait 500   \'0.5secs\r\n   " +
-                "    goto Loop\r\n";
+                " passive\r\n       Print \"Servo 12 = \"; $SERVO(12)\r\n       wait 500   \'0.5secs\r\n  " +
+                "     goto Loop\r\n";
             // 
             // output
             // 
@@ -70,7 +70,7 @@
             this.output.Name = "output";
             this.output.ReadOnly = true;
             this.output.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.output.Size = new System.Drawing.Size(523, 107);
+            this.output.Size = new System.Drawing.Size(764, 107);
             this.output.TabIndex = 4;
             // 
             // comPort
@@ -100,7 +100,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(549, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(788, 24);
             this.menuStrip1.TabIndex = 11;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -197,7 +197,8 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(549, 371);
+            this.AutoSize = true;
+            this.ClientSize = new System.Drawing.Size(788, 371);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.fname);
             this.Controls.Add(this.button1);
