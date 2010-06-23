@@ -212,18 +212,18 @@ This reads current position of servo 12 and then moves and extra 5
 30 print @a[1]
 40 print @a
 Output:
-4,3,2,1,5
 3
-Note: lists are number from zero
+4,3,2,1,5
+Note: lists are number from zero. First element (5) is the length of the list
 
 10) OUT - show PSD sensor output as a bar
 10 out 45,$psd
 20 out 42
 30 print
 40 goto 10
-Ascii value '-' 45, '*' 42, and If $PSD value is say 10 
-output:
+Output:
 ----------*
+Ascii value '-' 45, '*' 42, and If $PSD value is say 10 
 
 11) ROM  and OUT - displays serial number
 10 FOR I=1 to 13
@@ -236,6 +236,16 @@ output:
 20 Print "Servo 12 = "; $SERVO(12)
 30 wait 500
 40 goto 20
+
+12a) Changing Red/Blue IO port values
+10 LET A=0
+20 SERVO 12=~A
+25 WAIT 50
+30 LET A=A+1
+40 GOTO 20
+Output:
+Servo 12 will flash red/blue light (assuming its a transparent servo!)
+IO ports. ~0, ~1, ~2, ~3
 
 13) Gosub and Return
 10 print "Hello";
