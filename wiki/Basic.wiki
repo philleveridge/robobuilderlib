@@ -8,7 +8,7 @@ Download [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.he
 
 Turn of the RBC and connect a vt100 terminal emulator. You should see the following:
 {{{
-Basic v=$Revision: 209 $
+Basic v=$Revision: 211 $
 Commands: i r l c z q
 16 servos connected
 0 lines in memory
