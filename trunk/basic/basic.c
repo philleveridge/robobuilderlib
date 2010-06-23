@@ -1644,8 +1644,13 @@ void basic_list()
 			
 		if (line.token==IF)
 		{
-			// replace ? THEN,  : ELSE
+			// replace ? THEN,  : ELSE (unless :0)
 			char *p_then, *p_else, *cp = line.text;
+			int l = strlen(cp);
+			if (l>2 && cp[l-2]==':' && cp[l-1]=='0')
+			{
+				cp[l-2]=' ';  cp[l-1]=' ';
+			}
 			p_then = strstr(cp, ")?  ");
 			p_else = strstr(cp, ":   ");
 			if (p_then != 0) 
