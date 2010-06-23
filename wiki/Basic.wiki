@@ -203,7 +203,7 @@ This reads current position of servo 12 and then moves and extra 5
 
 8) More  complex - press a button on IR and do action (like standard firmware)
 10 STAND 16
-20 RUN $MAP($IR)
+20 RUN $MAPIR($IR)
 30 GOTO 20
 
 9) Simple LISTS
@@ -211,12 +211,19 @@ This reads current position of servo 12 and then moves and extra 5
 20 list a=5,4,3,2,1,5
 30 print @a[1]
 40 print @a
+Output:
+4,3,2,1,5
+3
+Note: lists are number from zero
 
 10) OUT - show PSD sensor output as a bar
 10 out 45,$psd
 20 out 42
 30 print
 40 goto 10
+Ascii value '-' 45, '*' 42, and If $PSD value is say 10 
+output:
+----------*
 
 11) ROM  and OUT - displays serial number
 10 FOR I=1 to 13
@@ -237,6 +244,8 @@ This reads current position of servo 12 and then moves and extra 5
 40 end
 50 print " Here";
 60 return
+Output:
+Hello Here back
 
 14) Take up basic pose 
 10 MOVE @{16,125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},10,1000
@@ -248,6 +257,7 @@ Its simpler to use STAND 16 - but this show use of the MOVE command with a liter
 30 out @a[i]
 40 next i
 50 print
-will output ABCDE
+output:
+ABCDE
 
 }}}
