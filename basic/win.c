@@ -35,7 +35,7 @@ void PlayPose(int d, int s, int f, unsigned char data[], int n)
 }
 
 void standup      	(int n)	{printf ("WIN: standup %d\n", n);}
-void readservos ()  {nos=20;}
+int readservos ()  {nos=20;return nos;}
 
 void SendToSoundIC(int n)	{printf ("WIN: Play Sound %d\n", n);}
 

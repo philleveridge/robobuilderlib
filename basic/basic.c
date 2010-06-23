@@ -9,6 +9,7 @@ See wiki for details
 
 http://code.google.com/p/robobuilderlib/wiki/Basic
 
+$Revision$
 */
 
 #ifdef AVR
@@ -39,7 +40,6 @@ http://code.google.com/p/robobuilderlib/wiki/Basic
 
 #define DPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
 
-#define EEPROM_MEM_SZ 	3072 // 3K
 #define MAX_LINE  		150 
 #define MAX_TOKEN 		8
 #define MAX_FOR_NEST	3
@@ -134,7 +134,7 @@ int fmflg;
 
 void PerformAction (int Action)
 {	
-	if (Action>=0 && Action <=19)
+	if (Action>=0 && Action <=18)
 	{
 	/*
 		0x00:  //PunchLeft
@@ -162,7 +162,7 @@ void PerformAction (int Action)
 	}
 	else
 	{
-		rprintf("Motion must 0 - 19\r\n", Action);
+		rprintf("Motion range:  0 - 18\r\n", Action);
 	}
 }
 
@@ -740,6 +740,22 @@ int get_special(char **str, int *res)
 		Get_VOLTAGE();
 		v = gVOLTAGE;
 		break;
+	case sTYPE:
+		v=nos;
+		break;
+	case sIR:
+		while ((v= irGetByte())<0) ; //wait for IR
+		break;
+	case sKBD:
+		while ((v= uartGetByte())<0) ; // wait for input
+		break;	
+	case sKIR:
+		v=uartGetByte();
+		if (v<0) v=irGetByte();
+		break;
+	case sRND:
+		v=rand();
+		break;
 	case sIR2ACT: //$IR2ACT(10) -> x
 		v=0;
 		if (getArg(str,&v))
@@ -754,17 +770,18 @@ int get_special(char **str, int *res)
 			v = v<0?-v:v;
 		}
 		break;
-	case sTYPE:
-		v=nos;
+	case sROM: // ROM(x)
+		if (getArg(str,&v))
+		{
+			v = eeprom_read_byte((uint8_t*)(FIRMWARE+v));
+		}
 		break;
-	case sIR:
-		while ((v= irGetByte())<0) ; //wait for IR
-		break;
-	case sKBD:
-		while ((v= uartGetByte())<0) ; // wait for input
-		break;	
-	case sKIR:
-		v = GetByte();
+	case sSERVO: // SERVO(nn)
+		// get position of servo id=nn
+		if (getArg(str,&v))
+		{
+			v = wckPosRead(v);
+		}
 		break;
 	case sFIND:
 		//$FIND(x,@A)
@@ -800,21 +817,7 @@ int get_special(char **str, int *res)
 				}
 			}
 		}
-		break;
-	case sRND:
-		v=rand();
-		break;	
-	case sSERVO: // SERVO:nn
-		// get position of servo id=nn
-		v=0;
-		if (**str==':') {
-			(*str)++;
-			v=getNum(str);
-			v = wckPosRead(v); 			// get pos of servo id=v
-			*res=v;
-			return (*str-p);
-		}
-		break;	
+		break;		
 	case sPORT: // PORT:A:n
 		// get position of servo id=nn
 		v=0;
@@ -835,12 +838,6 @@ int get_special(char **str, int *res)
 		}				
 		*res=get_bit(v, t);         //need to read port with PINA etc 
 		return (*str-p); // not finished yet
-	case sROM: // ROM(x)
-		if (getArg(str,&v))
-		{
-			v = eeprom_read_byte((uint8_t*)(FIRMWARE+v));
-		}
-		break;
 	default:
 		return -1;
 	}
@@ -990,14 +987,14 @@ unsigned char eval_expr(char **str, int *res)
 				eval_list(tmpA);
 				//
 				(*str)++;
-				if (**str == '[')
-				{
-					(*str)++;
-					eval_expr(str, &tmp);
-					n1 = scene[tmp];
-					(*str)++;
-					break;
-				}
+			}
+			if (**str == '[')
+			{
+				(*str)++;
+				eval_expr(str, &tmp);
+				n1 = scene[tmp];
+				(*str)++;
+				break;
 			}
 			if (**str == '+' || **str == '-')
 			{
@@ -1418,9 +1415,7 @@ int execute(line_t line, int dbf)
 		//
 		break;
 	case LIST: 
-		//LIST A=5,12,3,4,5
 		variable[line.var] = lastline+8;
-		//eval_list(line.text);
 		break;		
 	case XACT:	case RUN:			
 		n=0;
@@ -1767,10 +1762,11 @@ void basic()
 {
 	int ch;
 	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q\r\n");
-	readservos();
-	sound_init();
-	sample_sound(1);
-	
+	rprintf   ("%d servos connected\r\n", readservos());
+	rprintf   ("%d lines in memory\r\n", findend());
+	sound_init();	// sound output chip on (if available)
+	sample_sound(1); // sound meter on
+
 #ifndef AVR
 	initfirmware();
 #endif
@@ -1816,10 +1812,13 @@ void basic()
 			dump_firmware();
 			break;
 		case 'z': // download 
+			basic_clear();
 			binmode(); // enter binary mode
+			rprintf ("%d lines loaded\r\n", findend());
 			break;
 		case 'q': // query 
 			readservos();
+			rprintf ("%d lines stored\r\n", findend());
 			break;
 		default:
 			rprintfStr("\r\n");
