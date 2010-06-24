@@ -12,4 +12,4 @@ The windows is then an interactive console on to the robot. Press z (to put robo
 
 = Details =
 
-http://robobuilderlib.googlecode.com/files/basiccleint.jpg
+http://robobuilderlib.googlecode.com/files/bc.jpg
