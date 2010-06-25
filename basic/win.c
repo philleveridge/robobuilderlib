@@ -112,11 +112,14 @@ void binmode()
 
        printf ("WIN:: Binary mode\n");
 
-       if ((fp = fopen(path, "r")) == 0)
+	   if ((fp = fopen("bindata.txt", "r")) == 0)
        {
-              printf ("? can't find file - bindata.txt\n");
-              return;
-       }
+		   if ((fp = fopen(path, "r")) == 0)
+		   {
+				  printf ("? can't find file - bindata.txt\n");
+				  return;
+		   }
+	   }
        while ((ch=fgetc(fp)) != EOF)
        {
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Drawing;
 using System.IO;
 using System.IO.Ports;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 
 namespace RobobuilderLib
@@ -36,6 +38,8 @@ namespace RobobuilderLib
                 version = version.Substring(11, 4);
 
             this.Text += version;
+
+            syntaxcheck(); //!
         }
 
         void output_KeyPress(object sender, KeyPressEventArgs e)
@@ -138,6 +142,8 @@ namespace RobobuilderLib
                 output.Text = "";
                 //download_btn.Enabled = false;
                 fname.Text = s.FileName;
+
+                syntaxcheck(); //!
             }
             catch (Exception e1)
             {
@@ -150,11 +156,68 @@ namespace RobobuilderLib
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Basic IDE (v 0.1)\r\n" + version + "\r\n(c) l3v3rz 2010","About ... ",MessageBoxButtons.OK);
+            AboutBox1 n = new AboutBox1(version);
+            n.Show();
+        }
+
+        private void syntaxcheck()
+        {
+            int n;
+            input.SelectAll();
+            input.SelectionColor = Color.Black;
+
+            foreach (string s in Basic.tokens)
+            {
+                n = -1;
+                while ((n = input.Find(s, n + 1, RichTextBoxFinds.WholeWord)) > 0)
+                    input.SelectionColor = Color.Red;
+            }
+            n = -1;
+            while ((n = input.Find("TO", n + 1, RichTextBoxFinds.WholeWord)) > 0)
+                input.SelectionColor = Color.Red;
+
+            foreach (string s in Basic.specials)
+            {
+                n = -1;
+                while ((n = input.Find("$" + s, n + 1, RichTextBoxFinds.WholeWord)) > 0)
+                    input.SelectionColor = Color.Blue;
+            }
+            int sc = -1; int cc = -1;
+            for (int c = 0; c < input.Text.Length; c++)
+            {
+                char ch = input.Text[c];
+                if (ch == '\"' && sc < 0)
+                {
+                    sc = c;
+                    continue;
+                }
+                if (ch == '\'' && cc < 0)
+                {
+                    cc = c;
+                    continue;
+                }
+
+                if (ch == '\"' && sc >= 0)
+                {
+                    input.SelectionStart = sc;
+                    input.SelectionLength = c - sc + 1;
+                    input.SelectionColor = Color.Green;
+                    sc = -1;
+                }
+
+                if (ch == 10 && cc >= 0)
+                {
+                    input.SelectionStart = cc;
+                    input.SelectionLength = c - cc;
+                    input.SelectionColor = Color.Gray;
+                    cc = -1;
+                }
+            }
         }
 
         private void compileToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            syntaxcheck();
             if (compiler.Compile(input.Text))
             {
                 MessageBox.Show(String.Format("Complete - ready to download [{0} Bytes]",compiler.Download().Length), "Compiler");
@@ -185,8 +248,9 @@ namespace RobobuilderLib
             string c = compiler.Download();
             bm = true;
 
-            if (comPort.Text == "!")
+            if (!s.IsOpen)
             {
+                Console.WriteLine("com port not open ..."); 
                 File.WriteAllText("bindata.txt", c);
                 return;
             }

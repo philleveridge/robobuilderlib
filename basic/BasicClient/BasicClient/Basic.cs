@@ -39,8 +39,18 @@ namespace RobobuilderLib
 	        "Next without for",
 	        };
 	
-        string[] specials = new string[] { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
+        public static string[] specials = new string[] { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
 		        "PORT", "ROM", "TYPE", "ABS"  };
+        
+         public static  string[] tokens = new string[] {
+            "LET", "FOR", "IF", "THEN", 
+            "ELSE","GOTO","PRINT","GET",
+            "PUT", "END", "LIST", "XACT",
+            "WAIT", "NEXT", "SERVO", "MOVE",
+            "GOSUB", "RETURN", "POKE", "STAND",
+            "PLAY", "OUT", "OFFSET", "RUN", 
+            "ENDIF" // leave at end
+        };
         
         enum KEY {
 	        LET=0, FOR, IF, THEN, 
@@ -48,17 +58,11 @@ namespace RobobuilderLib
 	        PUT, END, LIST, XACT, 
 	        WAIT, NEXT, SERVO, MOVE,
 	        GOSUB, RETURN, POKE, STAND,
-            PLAY, OUT, OFFSET, RUN
+            PLAY, OUT, OFFSET, RUN,
+            ENDIF
 	        };
 	
-        string[] tokens = new string[] {
-            "LET", "FOR", "IF","THEN", 
-            "ELSE","GOTO","PRINT","GET",
-            "PUT", "END", "LIST", "XACT",
-            "WAIT", "NEXT", "SERVO", "MOVE",
-            "GOSUB", "RETURN", "POKE", "STAND",
-            "PLAY", "OUT", "OFFSET", "RUN"
-        };
+
 
         enum SKEY {sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD,
         sRND, sSERVO, sTICK, sPORT, sROM, sABS, sIR2ACT, sKIR, sFIND
@@ -208,6 +212,10 @@ namespace RobobuilderLib
             lineno = 0;
             codeptr = 0;
 
+            int[] nestedif   = new int[10];
+
+            int nif = 0;
+
             basic_line ln;
             ln.token = 0;
             ln.lineno = lineno;
@@ -221,7 +229,7 @@ namespace RobobuilderLib
                 String z = s;
                 lineno++;
                 curline = s;
-                ln.lineno = lineno;
+                ln.lineno = 5*lineno;
                 Console.Write(s);
 
                 if (z.IndexOf('\'') >= 0) z = z.Substring(0, z.IndexOf('\''));
@@ -233,7 +241,7 @@ namespace RobobuilderLib
                 if (z != "" && z[0]==':')
                 {
                     //label
-                    labels.Add(tok, lineno);
+                    labels.Add(tok, 5 * lineno);
                     z = z.Substring(1);
                     if (GetNext(ref z) != " ") { errno = 1; return false; }
                     z = z.Trim();
@@ -290,7 +298,7 @@ namespace RobobuilderLib
                         break;
                     case KEY.PRINT:
                         z = upperIt(z);
-                        if (z[0] == '#') {ln.var=1; z=z.Substring(1); }
+                        if (z.Length>0 && z[0] == '#') {ln.var=1; z=z.Substring(1); }
                         ln.text = process_arg(z);
                         break;
                     case KEY.MOVE:
@@ -350,6 +358,8 @@ namespace RobobuilderLib
                             ln.value = GetNumber(tok);
                         }
                         break;
+
+
                     case KEY.END:
                     case KEY.RETURN:
                         ln.text = "";
@@ -369,10 +379,61 @@ namespace RobobuilderLib
                     case KEY.IF:
                         // IF A THEN B ELSE C =>  GOTO (A)?B:C
                         z = z.ToUpper();
-                        z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "($1)?$2:$3");
-                        z = Regex.Replace(z, "(.*) THEN (.*)", "($1)?$2:0");
-                        //Console.WriteLine("IF=" + z);
-                        ln.text = upperIt(z);
+
+                        // mutliline else
+                        if (z.EndsWith("THEN"))
+                        {
+                            nestedif[nif++]   = codeptr;
+                            z = Regex.Replace(z, "(.*) THEN", String.Format("($1)?{0}:0000",ln.lineno+5));
+                        }
+                        else
+                        {
+
+                            z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "($1)?$2:$3");
+                            z = Regex.Replace(z, "(.*) THEN (.*)", "($1)?$2:0");
+                        }
+                        ln.text = z;
+                        break;
+                    case KEY.ELSE:
+                        // multilines else
+                        if (nif > 0)
+                        {
+                            // update IF THEN to ELSE+5 line
+                            int n = nestedif[nif - 1];
+                            int ls = code[n + 6] + code[n + 7] * 256;
+                            //
+                            string tx = (ln.lineno + 5).ToString();
+                            for (int x = 0; x < 4; x++)
+                            {
+                                if (x < tx.Length)
+                                    code[ls - 5+x] = (byte)tx[x];
+                                else
+                                    code[ls - 5+x] = (byte)0;
+                            }
+
+                            nestedif[nif-1] = codeptr;
+                            ln.token = (byte)KEY.GOTO;
+                            ln.value = 0;
+                        }
+                        break;
+                    case KEY.ENDIF:
+                        if (nif > 0)
+                        {
+                            // update ELSE/GOTO to here
+                            nif--;
+                            int n = nestedif[nif];
+                            if (n > 0)
+                            {
+                                code[n + 4] = (byte)((ln.lineno + 5) % 256);
+                                code[n + 5] = (byte)((ln.lineno + 5) / 256);
+                            }
+
+                            continue;
+                        }
+                        else
+                        {
+                            errno = 5;
+                        }
                         break;
                     default:
                         errno = 2;

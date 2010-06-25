@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.input = new System.Windows.Forms.TextBox();
             this.output = new System.Windows.Forms.TextBox();
             this.comPort = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
@@ -46,21 +45,9 @@
             this.fname = new System.Windows.Forms.TextBox();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.input = new System.Windows.Forms.RichTextBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // input
-            // 
-            this.input.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.input.Location = new System.Drawing.Point(12, 27);
-            this.input.Multiline = true;
-            this.input.Name = "input";
-            this.input.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.input.Size = new System.Drawing.Size(764, 191);
-            this.input.TabIndex = 0;
-            this.input.Text = "\'      test program\r\n\'\r\n       PRINT \"Test Passive\"\r\nLoop:  SERVO 12=@ \'set servo" +
-                " passive\r\n       Print \"Servo 12 = \"; $SERVO(12)\r\n       wait 500   \'0.5secs\r\n  " +
-                "     goto Loop\r\n";
             // 
             // output
             // 
@@ -75,7 +62,7 @@
             // 
             // comPort
             // 
-            this.comPort.Location = new System.Drawing.Point(367, 337);
+            this.comPort.Location = new System.Drawing.Point(461, 335);
             this.comPort.Name = "comPort";
             this.comPort.Size = new System.Drawing.Size(87, 20);
             this.comPort.TabIndex = 9;
@@ -84,7 +71,7 @@
             // button1
             // 
             this.button1.BackColor = System.Drawing.Color.Red;
-            this.button1.Location = new System.Drawing.Point(499, 337);
+            this.button1.Location = new System.Drawing.Point(554, 335);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(36, 21);
             this.button1.TabIndex = 10;
@@ -177,13 +164,13 @@
             // 
             this.fname.Location = new System.Drawing.Point(12, 337);
             this.fname.Name = "fname";
-            this.fname.Size = new System.Drawing.Size(155, 20);
+            this.fname.Size = new System.Drawing.Size(354, 20);
             this.fname.TabIndex = 12;
             // 
             // progressBar1
             // 
             this.progressBar1.ForeColor = System.Drawing.Color.HotPink;
-            this.progressBar1.Location = new System.Drawing.Point(183, 337);
+            this.progressBar1.Location = new System.Drawing.Point(616, 337);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(159, 19);
             this.progressBar1.TabIndex = 13;
@@ -193,18 +180,29 @@
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // input
+            // 
+            this.input.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.input.Location = new System.Drawing.Point(12, 31);
+            this.input.Name = "input";
+            this.input.Size = new System.Drawing.Size(763, 187);
+            this.input.TabIndex = 14;
+            this.input.Text = "\'      test program\n\'\n       PRINT \"Test Passive\"\nLoop:  SERVO 12=@ \'set servo pa" +
+                "ssive\n       Print \"Servo 12 = \"; $SERVO(12)\n       wait 500   \'0.5secs\n       g" +
+                "oto Loop";
+            // 
             // Basic_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(788, 371);
+            this.Controls.Add(this.input);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.fname);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.comPort);
             this.Controls.Add(this.output);
-            this.Controls.Add(this.input);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Basic_frm";
@@ -218,7 +216,6 @@
 
         #endregion
 
-        private System.Windows.Forms.TextBox input;
         private System.Windows.Forms.TextBox output;
         private System.Windows.Forms.TextBox comPort;
         private System.Windows.Forms.Button button1;
@@ -235,5 +232,6 @@
         private System.Windows.Forms.TextBox fname;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.RichTextBox input;
     }
 }
