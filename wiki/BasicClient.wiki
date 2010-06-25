@@ -1,4 +1,4 @@
-#summary Windows Basic Client (0.1) -  A front end editor and download for Basic firmware
+#summary Windows Basic Client (219) -  A front end editor and download for Basic firmware
 
 = Introduction =
 
@@ -8,8 +8,17 @@ The upper window is a standard text editor. Note it auto-generates line number a
 
 The bottom windows shows the output of a compile. This can be transfered to the robot by connecting  via a serial link - use the red button (edit COM5 to be the port you use). 
 
-The windows is then an interactive console on to the robot. Press z (to put robot in download mode) and then select download from the menu.
+The windows is then an interactive console on to the robot. Press z (to put robot in download mode) and then select download from the menu. The program will automatically compile if not already been performed.
 
-= Details =
+== Key advantages of client ==
 
-http://robobuilderlib.googlecode.com/files/bc.jpg
+  * enable programs to be stored on PC and transfered to robot when required
+  * auto generates line numbers (int increments of 5)
+  * allows comments to be added (using ' )
+  * allows labels
+  * provides context sensitive colour coding
+  * allows multi-line if/then/else/endif statements
+
+== Details ==
+
+|| http://robobuilderlib.googlecode.com/files/bc.jpg ||
