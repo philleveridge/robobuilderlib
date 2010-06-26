@@ -40,7 +40,7 @@ namespace RobobuilderLib
 	        };
 	
         public static string[] specials = new string[] { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		        "PORT", "ROM", "TYPE", "ABS"  };
+		        "PORT", "ROM", "TYPE", "ABS", "KIR", "FIND"  };
         
          public static  string[] tokens = new string[] {
             "LET", "FOR", "IF", "THEN", 
@@ -392,6 +392,10 @@ namespace RobobuilderLib
                         }
                         else
                         {
+                            foreach (string n in labels.Keys)
+                            {
+                                z = Regex.Replace(z, n, labels[n].ToString());
+                            }
 
                             z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "($1 )?   $2 :   $3");
                             z = Regex.Replace(z, "(.*) THEN (.*)", "($1 )?    $2:0");

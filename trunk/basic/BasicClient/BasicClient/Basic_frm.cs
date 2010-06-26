@@ -220,7 +220,7 @@ namespace RobobuilderLib
             syntaxcheck();
             if (compiler.Compile(input.Text))
             {
-                MessageBox.Show(String.Format("Complete - ready to download [{0} Bytes]",compiler.Download().Length), "Compiler");
+                MessageBox.Show(String.Format("Complete - ready to download [{0} Bytes]",compiler.Download().Length/2), "Compiler");
                 output.Text += compiler.Dump();
                 readyDownload = true;
             }
