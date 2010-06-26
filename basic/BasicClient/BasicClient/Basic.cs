@@ -213,8 +213,8 @@ namespace RobobuilderLib
             codeptr = 0;
 
             int[] nestedif   = new int[10];
-
             int nif = 0;
+            int lnc = 5;
 
             basic_line ln;
             ln.token = 0;
@@ -229,7 +229,7 @@ namespace RobobuilderLib
                 String z = s;
                 lineno++;
                 curline = s;
-                ln.lineno = 5*lineno;
+                ln.lineno = lnc;
                 Console.Write(s);
 
                 if (z.IndexOf('\'') >= 0) z = z.Substring(0, z.IndexOf('\''));
@@ -241,7 +241,7 @@ namespace RobobuilderLib
                 if (z != "" && z[0]==':')
                 {
                     //label
-                    labels.Add(tok, 5 * lineno);
+                    labels.Add(tok, lnc);
                     z = z.Substring(1);
                     if (GetNext(ref z) != " ") { errno = 1; return false; }
                     z = z.Trim();
@@ -265,6 +265,7 @@ namespace RobobuilderLib
                 ln.var = (byte)'\0';
                 ln.text = "";
                 ln.value = 0;
+                lnc += 5;
 
                 if ((z != "") && (GetNext(ref z) != " ")) { errno = 1; return false; }
 
@@ -383,14 +384,17 @@ namespace RobobuilderLib
                         // mutliline else
                         if (z.EndsWith("THEN"))
                         {
-                            nestedif[nif++]   = codeptr;
-                            z = Regex.Replace(z, "(.*) THEN", String.Format("($1)?{0}:0000",ln.lineno+5));
+                            if (codeptr==0) // first line
+                                nestedif[nif++] = 3;
+                            else
+                                nestedif[nif++]   = codeptr;
+                            z = Regex.Replace(z, "(.*) THEN", String.Format("($1 )?   {0} :    0000",ln.lineno+5));
                         }
                         else
                         {
 
-                            z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "($1)?$2:$3");
-                            z = Regex.Replace(z, "(.*) THEN (.*)", "($1)?$2:0");
+                            z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "($1 )?   $2 :   $3");
+                            z = Regex.Replace(z, "(.*) THEN (.*)", "($1 )?    $2:0");
                         }
                         ln.text = z;
                         break;
@@ -424,10 +428,25 @@ namespace RobobuilderLib
                             int n = nestedif[nif];
                             if (n > 0)
                             {
-                                code[n + 4] = (byte)((ln.lineno + 5) % 256);
-                                code[n + 5] = (byte)((ln.lineno + 5) / 256);
+                                if (code[n + 2] == (byte)KEY.IF)
+                                {
+                                    int ls = code[n + 6] + code[n + 7] * 256;
+                                    //
+                                    string tx = (ln.lineno + 5).ToString();
+                                    for (int x = 0; x < 4; x++)
+                                    {
+                                        if (x < tx.Length)
+                                            code[ls - 5 + x] = (byte)tx[x];
+                                        else
+                                            code[ls - 5 + x] = (byte)0;
+                                    }
+                                }
+                                else
+                                {
+                                    code[n + 4] = (byte)((ln.lineno + 5) % 256);
+                                    code[n + 5] = (byte)((ln.lineno + 5) / 256);
+                                }
                             }
-
                             continue;
                         }
                         else
