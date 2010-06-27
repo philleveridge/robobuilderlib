@@ -1675,10 +1675,12 @@ void basic_list()
 		if (line.token==FOR)
 		{
 			char temp[100];
-			rprintfStr (" TO ");
+
 			//last bit is stored with next !
 			//printf (" (%d) ", fnptr[line.var]);
-			readtext(fnptr[line.var]+8, temp);
+			int p = findnext(nxtline, line.var);
+			readtext(p+8, temp);
+			rprintfStr (" TO ");
 			rprintfStr(temp);
 		}
 		rprintf ("\r\n");
@@ -1766,15 +1768,18 @@ void binmode()
 void basic()
 {
 	int ch;
+
+#ifndef AVR
+	initfirmware();
+#endif
+
 	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q\r\n");
 	rprintf   ("%d servos connected\r\n", readservos());
 	rprintf   ("%d lines in memory\r\n", findend());
 	sound_init();	// sound output chip on (if available)
 	sample_sound(1); // sound meter on
 
-#ifndef AVR
-	initfirmware();
-#endif
+
 
 	while (1)
 	{

@@ -279,3 +279,18 @@ int findend()
 	psize=nl;
 	return c;
 }
+
+int findnext(int nl, int v)
+{
+	char ln;
+	while (nl<EEPROM_MEM_SZ)
+	{
+		char cmd = eeprom_read_byte(BASIC_PROG_SPACE+nl+2);	
+		char var = eeprom_read_byte(BASIC_PROG_SPACE+nl+3);
+		ln = eeprom_read_byte(BASIC_PROG_SPACE+nl);	
+		if (ln == 0xCC || (cmd == 13 && var==v) )
+			break;	
+		nl=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nl+6));	
+	}
+	return (ln==0xCC)?0:nl;
+}

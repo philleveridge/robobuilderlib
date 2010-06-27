@@ -19,6 +19,7 @@
 #include "adc.h"
 #include "ir.h"
 #include "accelerometer.h"
+#include "wckmotion.h"
 
 #define BR115200			7 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
@@ -37,6 +38,14 @@ int 	autobalance;
 int     response;						//reponsd to event on/off
 
 // timer variables----------------------------------------------------------------
+
+BYTE 	F_PS_PLUGGED;
+BYTE 	F_CHARGING;
+
+volatile WORD   gPSplugCount;
+volatile WORD   gPSunplugCount;
+volatile WORD	gPwrLowCount;
+
 volatile WORD    g10MSEC;
 volatile WORD    gMSEC;
 volatile BYTE    gSEC;
@@ -128,6 +137,158 @@ ISR(TIMER0_OVF_vect)
 //------------------------------------------------------------------------------
 ISR(TIMER1_OVF_vect) 
 {
+}
+
+//------------------------------------------------------------------------------
+// 
+//------------------------------------------------------------------------------
+void DetectPower(void)
+{
+	if(F_PS_PLUGGED){
+		if(gVOLTAGE >= U_T_OF_POWER)
+			gPSunplugCount = 0;
+		else
+			gPSunplugCount++;
+		if(gPSunplugCount > 6){
+			F_PS_PLUGGED = 0;
+			gPSunplugCount = 0;
+		}
+	}
+	else{
+		if(gVOLTAGE >= U_T_OF_POWER){
+			gPSunplugCount = 0;
+			gPSplugCount++;
+		}
+		else{
+			gPSplugCount = 0;
+		}
+
+		if(gPSplugCount>2){
+			F_PS_PLUGGED = 1;
+			gPSplugCount = 0;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 
+//-----------------------------------------------------------------------------
+void ChargeNiMH(void)
+{
+	F_CHARGING = 1;
+	gMIN_DCOUNT = 5;
+	while(gMIN_DCOUNT)
+	{
+	    if (gSEC%5==0)
+		{
+			rprintf("%d:%d short 40ms charge pulses\r\n", gMIN, gSEC);
+		}
+		PWR_LED2_OFF;
+		PWR_LED1_ON;
+		Get_VOLTAGE();	DetectPower();
+		if(F_PS_PLUGGED == 0) break;
+		CHARGE_ENABLE;
+		delay_ms(40);
+		CHARGE_DISABLE;
+		delay_ms(500-40);
+		PWR_LED1_OFF;
+		Get_VOLTAGE();	DetectPower();
+		if(F_PS_PLUGGED == 0) break;
+		delay_ms(500);
+	}
+	gMIN_DCOUNT = 85;
+	while(gMIN_DCOUNT)
+	{
+		if (gSEC%5==0)
+		{
+			rprintf ("%d:%d full charge power\r\n", gMIN,gSEC);
+		}
+		PWR_LED2_OFF;
+		if(g10MSEC > 500)	
+			PWR_LED1_ON;
+		else			
+			PWR_LED1_OFF;
+		if(g10MSEC == 0 || g10MSEC == 500){
+			Get_VOLTAGE();
+			DetectPower();
+		}
+		if(F_PS_PLUGGED == 0) break;
+		CHARGE_ENABLE;
+	}
+	CHARGE_DISABLE;
+	F_CHARGING = 0;
+	rprintf ("Done\r\n");
+}
+
+#define PF1_BTN_PRESSED 1
+#define PF2_BTN_PRESSED 3
+
+BYTE	gBtn_val;
+WORD	gBtnCnt;
+
+
+//------------------------------------------------------------------------------
+//  Check Routine
+//------------------------------------------------------------------------------
+void ReadButton(void)
+{
+	if((PINA&03) == 1)  // PF1 on, PF2 off
+	{
+		delay_ms(10);
+		if((PINA&1) == 1)
+		{
+			gBtn_val = PF1_BTN_PRESSED;
+		}
+	}
+	if((PINA&3) == 2)  // PF1 on, PF2 off
+	{
+		delay_ms(10);
+		if((PINA&3) == 2)
+		{
+			gBtn_val = PF2_BTN_PRESSED;
+		}
+	}
+} 
+
+
+//-----------------------------------------------------------------------------
+// Process routine
+//-----------------------------------------------------------------------------
+
+void ProcButton(void)
+{
+	int cnt;
+	if(gBtn_val == PF1_BTN_PRESSED)
+	{
+		//look to see if PF2 held down
+		gBtn_val = 0;
+		
+		rprintf("charge mode - testing\r\n");
+		
+		for (cnt=0; cnt<10; cnt++)
+		{
+			PWR_LED2_ON;	// RED on
+			delay_ms(50);
+			Get_VOLTAGE();
+			DetectPower();
+			rprintf("%d mV", gVOLTAGE);
+			PWR_LED2_OFF;   // RED off
+			delay_ms(50);
+		}
+				
+		if(F_PS_PLUGGED)
+		{	
+			rprintf("Plugged in - charging\r\n");		
+			wckPowerDown();		// put servo in breakmode (power off)
+			ChargeNiMH();  			//initiate battery charging	
+			rprintf("Complete\r\n");	
+		}	
+		else
+		{
+			rprintf("Not plugged in\r\n");
+			PWR_LED2_ON	;	
+		}
+	}
 }
 
 
@@ -359,6 +520,9 @@ int main(void)
 	
 //	adc_init();		
 	tilt_setup();				// initialise acceleromter
+	
+	ReadButton();	
+	ProcButton();
 		
 	basic();
 	
