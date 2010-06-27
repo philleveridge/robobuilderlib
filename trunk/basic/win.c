@@ -88,38 +88,18 @@ void SampleMotion(char action)			{printf ("Win:  sample motion %d\n", action);}
 void PlayMotion (char action, int f)	{printf ("Win:  Play %d\n", action);}
 
 extern char FIRMWARE[64];  
-void initfirmware() {	
-	char  fixb[] = {0, 
-		0x31, 0x30, 0x34, 0x31, 0x31, 0x30, 0x30, 0x30, 0x31, 0x30, 0x36, 0x39, 0x30,
-		0x00, 0x00, 0x00
-		};
-	int i;
-		
-	for (i=0; i<16; i++)
-	{
-		eeprom_write_byte(FIRMWARE+i, fixb[i]);
-	}
-}
 
-char *path= "\\Users\\Phil\\Desktop\\Robobuilder\\Code development\\robobuilderlib\\basic\\BasicClient\\BasicClient\\bin\\Release\\bindata.txt";
 extern unsigned char BASIC_PROG_SPACE[];
 
-void binmode()
+int binmode2()
 {
        FILE *fp;
        char ch;
        int i=0,n=0;
 
-       printf ("WIN:: Binary mode\n");
-
 	   if ((fp = fopen("bindata.txt", "r")) == 0)
-       {
-		   if ((fp = fopen(path, "r")) == 0)
-		   {
-				  printf ("? can't find file - bindata.txt\n");
-				  return;
-		   }
-	   }
+			return -1;
+
        while ((ch=fgetc(fp)) != EOF)
        {
 
@@ -133,7 +113,32 @@ void binmode()
 
        }
        fclose(fp);
+	   return 0;
+}
+
+void binmode()
+{
+       printf ("WIN:: Binary mode\n");
+	   if (binmode2()<0)
+			printf ("? can't find file - bindata.txt\n");
        printf ("Loaded - bindata.txt\n");
 }
+
+
+void initfirmware() {	
+	char  fixb[] = {0, 
+		0x31, 0x30, 0x34, 0x31, 0x31, 0x30, 0x30, 0x30, 0x31, 0x30, 0x36, 0x39, 0x30,
+		0x00, 0x00, 0x00
+		};
+	int i;
+		
+	for (i=0; i<16; i++)
+	{
+		eeprom_write_byte(FIRMWARE+i, fixb[i]);
+	}
+
+	binmode2();
+}
+
 
  

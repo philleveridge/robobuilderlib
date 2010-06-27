@@ -24,6 +24,7 @@ void wckSyncPosSend	(char LastID, char SpeedLevel, char *TargetArray, char Index
 int  wckPosRead    	(char ServoID);
 WORD wckPosSend    	(char ServoID, char Torque, char Position);
 void wckWriteIO		(char ServoID, char Position) ;  
+char wckPowerDown	(void);
 /*------------------  ----------------*/  
 
 const BYTE basic18[18];
