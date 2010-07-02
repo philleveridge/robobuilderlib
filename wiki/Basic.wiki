@@ -8,7 +8,7 @@ Download [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.he
 
 A windows OS build is available - [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.exe basic.exe]
 
-Turn of the RBC and connect a vt100 terminal emulator. You should see the following:
+Turn on the RBC and connect a vt100 terminal emulator. You should see the following:
 {{{
 Basic v=$Revision: 216 $
 Commands: i r l c z q
