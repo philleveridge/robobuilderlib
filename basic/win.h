@@ -24,7 +24,7 @@ char _port[8];
 
 #define rprintf			printf 
 #define rprintfChar		putchar 
-#define rprintfStr		printf 
+#define rprintfStr(z)	printf("%s", z) 
 
 //from win.c
 extern void			eeprom_read_block (unsigned char *b, char *d, int l);
