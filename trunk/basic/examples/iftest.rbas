@@ -1,0 +1,53 @@
+'multiline if test
+
+
+'requires basic client to compile
+'
+
+if 1=1 then
+
+  print "t"
+
+  print "next"
+
+else
+
+  print "failed"
+
+endif
+
+
+
+if 1=2 then
+
+  print "failed"
+
+  end
+
+else
+
+  print "t"
+
+endif
+
+
+
+if 2=2 then
+
+  print "good"
+
+endif
+
+
+
+if 2=1 then
+
+  print "failed"
+
+  end
+
+endif
+
+
+
+print "done"
