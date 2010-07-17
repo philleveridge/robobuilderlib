@@ -6,7 +6,7 @@ This gives Robobuilder the ability to create simple actions in an elementary bas
 
 Download [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.hex basic.hex] on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
 
-A windows OS build is available - [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.exe basic.exe]
+A windows OS build is available - [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.exe basic.exe]. it input/outputs using windows console. Robot hardware functions are stubbed out. 
 
 Turn on the RBC and connect a vt100 terminal emulator. You should see the following:
 {{{
@@ -26,7 +26,6 @@ At the prompt type
   * q - check servos connected
 
 There is also a [http://code.google.com/p/robobuilderlib/downloads/detail?name=BasicClient.exe windows client application] to simplify the download of programs - http://code.google.com/p/robobuilderlib/wiki/BasicClient - for more details
-
 
 In input mode you get a '>' prompt, in command mode a ':'. In input mode a command with a line number is stored in flash - and will be there after you turn the robot off. With no line number the command will be immediately executed. 
 
@@ -111,7 +110,7 @@ $KBD         wait for keyboard press
 $PSD         PSD sensor value
 $VOLT        Battery voltage
 $TICK        Number of tenths of a second
-$RND         Random number  - (not tested)
+$RND         Random numbers - different number each time called 
 $MIC         Microphone level
 $TYPE        Number of servos i.e. 16
 $SERVO(id)   position of servo id 
@@ -274,4 +273,14 @@ Its simpler to use STAND 16 - but this show use of the MOVE command with a liter
 output:
 ABCDE
 
+16) Generate random numbers
+Also use % to get modulo of $rnd - so example return 10 numbers between 0 and 5
+10 for i=1 to 10
+20 print $rnd % 6
+30 next i
+output:
+5
+5
+0
+etc ..
 }}}
