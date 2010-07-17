@@ -1769,10 +1769,6 @@ void basic()
 {
 	int ch;
 
-#ifndef AVR
-	initfirmware();
-#endif
-
 	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q\r\n");
 	rprintf   ("%d servos connected\r\n", readservos());
 	rprintf   ("%d lines in memory\r\n", findend());
@@ -1836,10 +1832,3 @@ void basic()
 		}
 	}
 }
-
-#ifndef AVR
-main()
-{
-	basic();
-}
-#endif

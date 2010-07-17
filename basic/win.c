@@ -1,16 +1,57 @@
 #include <stdio.h>
 #include <windows.h>
 
+void basic();
+
+#ifdef SIMUL
+void	initsocket();
+int		testsocket(char *echoString);
+#define	DBO(x)
+#else
+#define initsocket(x)
+#define testsocket(x) 0
+#define DBO(x) x
+#endif
+
 /* wck commands */
-void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)			{printf ("WIN: Servo Send %d [%d] -> %d\n", ServoID, Torque, Position);}
-int  wckPosRead(char ServoID)										{printf ("WIN: Servo Read %d\n", ServoID); return (ServoID<20)?120:-1;}
-void wckSetPassive(char ServoID)									{printf ("WIN: Servo Passive %d\n", ServoID); }
+void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)			
+{
+	char buff[64];
+	sprintf(buff, "S:%d:%d$", ServoID, Position);
+	testsocket(buff);
+
+	DBO(printf ("WIN: Servo Send %d [%d] -> %d\n", ServoID, Torque, Position);)
+}
+int  wckPosRead(char ServoID)										
+{
+	int r;
+	char buff[64];
+	sprintf(buff, "R:%d$", ServoID);
+	r = testsocket(buff);
+
+	DBO(printf ("WIN: Servo Read %d\n", ServoID); )
+	return r;
+}
+void wckSetPassive(char ServoID)									
+{
+	char buff[64];
+	sprintf(buff, "P:%d$", ServoID);
+	testsocket(buff);
+
+	DBO(printf ("WIN: Servo Passive %d\n", ServoID); )
+}
 void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)		
 {
 	int i=0;
 	printf ("WIN: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);
 	for (i=Index; i<=LastID; i++)
+	{
+			char buff[64];
+			sprintf(buff, "S:%d:%d$", i, TargetArray[i]);
+			testsocket(buff);
+
 			printf ("WIN: Servo [%d] = %d\n", i, TargetArray[i]);
+	}
 }
 
 void wckGetByte()			{}
@@ -19,7 +60,13 @@ void wckSendByte()			{}
 void wckReInit()			{}
 void send_bus_str()			{} // support for PIC based Cylon head
 
-void wckWriteIO(unsigned char ServoID, unsigned char IO)    {printf ("WIN: Servo write IO %d=%d\n", ServoID, IO); }
+void wckWriteIO(unsigned char ServoID, unsigned char IO)    
+{
+	char buff[64];
+	sprintf(buff, "O:%d:%d$", ServoID, IO);
+	testsocket(buff);
+	DBO(printf ("WIN: Servo write IO %d=%d\n", ServoID, IO); )
+}
 
 int nos;
 
@@ -68,21 +115,45 @@ int offset[32];
 
 void sample_sound(int n){printf ("WIN: Sample sound %d\n", n);}
 void sound_init()		{printf ("WIN: Sound init\n");}
-
-int irGetByte()			{return uartGetByte();}
 int Get_VOLTAGE()		{return 0;}
-int Get_AD_PSD()		{return 0;}
-int tilt_read()			{return 0;}
+int irGetByte()			
+{
+	char buff[64];
+	sprintf(buff, "IR$");
+	return testsocket(buff);
+}
+
+int Get_AD_PSD()		
+{
+	char buff[64];
+	sprintf(buff, "PSD$");
+	gDistance = testsocket(buff);
+	return 0;
+}
+int tilt_read()			
+{
+	char buff[64];
+	sprintf(buff, "X$");
+	x_value = testsocket(buff);
+	sprintf(buff, "Y$");
+	y_value = testsocket(buff);
+	sprintf(buff, "Z$");
+	z_value = testsocket(buff);
+	return 0;
+}
 int adc_mic()			{return 0;}
 void lights() {}
 
 /* priotf  */
 int uartGetByte() 							{return kbhit()?getch():-1; }
 void rprintfStrLen(char *p, int s, int l)	{int i; for (i=0; i<l; i++) putchar(*(p+i));}
-void rprintfCRLF()						{printf ("\n");}
+void rprintfCRLF()							{printf ("\n");}
 
 /* misc */
-void delay_ms(int x)  					{printf ("Win:  wait %d\n",x); Sleep(x);}
+void delay_ms(int x)  					
+{//printf ("Win:  wait %d\n",x); 
+Sleep(x);
+}
 
 void SampleMotion(char action)			{printf ("Win:  sample motion %d\n", action);}
 void PlayMotion (char action, int f)	{printf ("Win:  Play %d\n", action);}
@@ -138,6 +209,14 @@ void initfirmware() {
 	}
 
 	binmode2();
+}
+
+
+int main(int argc, char *argv[])
+{
+	initsocket();
+	initfirmware();
+	basic();
 }
 
 
