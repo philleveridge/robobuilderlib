@@ -519,7 +519,7 @@ int main(void)
 	PWR_LED1_ON; 				// Power green light on
 	
 //	adc_init();		
-	tilt_setup();				// initialise acceleromter
+	Acc_init();				// initialise acceleromter
 	
 	ReadButton();	
 	ProcButton();

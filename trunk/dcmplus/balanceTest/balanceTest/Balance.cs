@@ -52,6 +52,7 @@ namespace Demo
                 if (i < min.Length && i < max.Length)
                     r[i] = (byte)((p[i] > max[i]) ? max[i] : ((p[i] < min[i]) ? min[i] : p[i]));
             }
+
             return r;
         }
 

@@ -112,7 +112,7 @@ ISR(TIMER0_OVF_vect)
 	}
 
 	//if (!MIC_SAMPLING)
-		heart();
+	heart();
 
 	
 	if(++g10MSEC > 999){

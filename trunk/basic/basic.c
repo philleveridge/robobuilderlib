@@ -65,6 +65,10 @@ extern void SendToSoundIC(BYTE cmd) ;
 
 /***********************************/
 
+//I2CIN  (SDApin, CLKpin, slaveADDR, outCNT, outLIST, inCNT, inLIST)  	Read  InputList via I2C device
+//I2COUT (SDApin, CLKpin, slaveADDR, outCNT, OutputList) 	            Write OutputList to I2C device
+
+
 extern BYTE sData[];
 extern int 	sDcnt;
 extern void sample_sound(int);
@@ -721,15 +725,15 @@ int get_special(char **str, int *res)
 		v=gtick;
 		break;	
 	case sGX:
-		tilt_read(0);
+		Acc_GetData();
 		v=x_value;
 		break;	
 	case sGY:
-		tilt_read(0);
+		Acc_GetData();
 		v=y_value;
 		break;		
 	case sGZ:
-		tilt_read(0);
+		Acc_GetData();
 		v=z_value;
 		break;			
 	case sPSD:

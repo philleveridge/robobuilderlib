@@ -6,177 +6,17 @@
 #include "global.h"
 #include "Macro.h"
 #include "math.h"
-#include "uart.h"
 #include "rprintf.h"
 #include "accelerometer.h"
 
-
-//
-//  PORTE PE5
-//  PORTE PE4
-//  DDRE  DDE4, DDE5
-//
-
-
-#define CLOCK_LOW      CLR_BIT4(PORTE)
-#define CLOCK_HIGH     SET_BIT4(PORTE)
-#define DATA_LOW       CLR_BIT5(PORTE)
-#define DATA_HIGH      SET_BIT5(PORTE)
 #define NOP			   asm("nop")
 
 #define Slave_Addr		0x70
-
 
 //current channel
 volatile int x_value;
 volatile int y_value;
 volatile int z_value;
-
-
-
-void start_accel()
-{
-    SET_BIT4(DDRE);
-	SET_BIT5(DDRE);	
-	DATA_HIGH;
-	CLOCK_HIGH;	
-	NOP;
-	NOP;
-	DATA_LOW;
-	NOP;
-	NOP;
-	CLOCK_LOW;
-	NOP;
-	NOP;
-}
-
-void stop_accel()
-{
-    SET_BIT4(DDRE);
-	SET_BIT5(DDRE);	
-	DATA_LOW;
-	CLOCK_HIGH;	
-	NOP;
-	NOP;
-	DATA_HIGH;
-	NOP;
-	NOP;
-    CLR_BIT4(DDRE);
-	CLR_BIT5(DDRE);	
-}
-
-// reads from tilt
-BYTE read_value()
-{
-	BYTE b=0;
-	CLR_BIT5(DDRE);	  		// I2C - input
-  	BYTE i;
-	for (i=0; i<8; i++)
-	{
-		b <<=(BYTE)1;
-		NOP;
-		NOP;
-		NOP;
-		NOP;
-		CLOCK_HIGH; 			
-		NOP;
-		NOP;
-		
-		if (PINE & BV(PINE5)) 	
-		{
-			b |= (BYTE)1;  
-		}
-
-		NOP;
-		NOP;
-		CLOCK_LOW; 	  
-	}  
-	SET_BIT5(DDRE);		  // I2C - output
-	return b; 
-}
-
-// write to tilt
-void write_value(BYTE data)
-{
-	BYTE i;
-	SET_BIT5(DDRE);	
-	for (i=0; i<8; i++)
-	{
-		if (data & (BYTE)0x80)
-		{
-			DATA_HIGH;
-		}
-		else
-		{
-			DATA_LOW;
-		}
-		NOP;
-		NOP;
-		CLOCK_HIGH;
-		NOP;
-		NOP;
-		NOP;
-		NOP;
-		CLOCK_LOW;
-		NOP;
-		NOP;
-		data <<= (BYTE)1;
-	}  
-}
-
-void ack()
-{
-	CLR_BIT5(DDRE);	
-	NOP;
-	NOP;
-	DATA_HIGH;
-	NOP;
-	NOP;
-	CLOCK_HIGH;
-	NOP;
-	NOP;
-	CLOCK_LOW;
-	NOP;
-	NOP;
-	SET_BIT5(DDRE);		
-	NOP;
-	NOP;
-}
-
-void next_byte()
-{
-	SET_BIT5(DDRE);	
-	NOP;
-	NOP;
-	DATA_LOW; 		
-	NOP;
-	NOP;
-	CLOCK_HIGH; 	
-	NOP;
-	NOP;
-	CLOCK_LOW; 		
-	NOP;
-	NOP;
-	DATA_HIGH; 	   
-	NOP;
-	NOP;
-}
-
-void done_read()
-{
-	SET_BIT5(DDRE);	
-	NOP;
-	NOP;
-	DATA_HIGH;  		
-	NOP;
-	NOP;
-	CLOCK_HIGH; 		
-	NOP;
-	NOP;
-	CLOCK_LOW;  		
-	NOP;
-	NOP;
-}
 
 int cbyte(BYTE b)
 {
@@ -192,83 +32,6 @@ int cbyte(BYTE b)
 	return i;
 }
 
-
-void tilt_read(BYTE debug)
-{
-	BYTE tmp;
-	
-	start_accel();
-	
-	write_value(Slave_Addr);	  	//? slave Addr write mode
-	ack();
-	 
-	write_value(0x02);  			//?   0000 0010
-
-	ack();
-
-	stop_accel();
-	
-	NOP; NOP; NOP; NOP;
-
-	start_accel();
-
-	write_value(Slave_Addr+0x01);	  //Save_Addr + ReadBit
-	
-	ack();
-
-	tmp = read_value();
-	
-	next_byte();
-
-	x_value = cbyte(read_value());
-
-	if (debug) rprintf ("Values x= %d", x_value);
-
-	next_byte();
-
-	tmp = read_value();
-
-	next_byte();
-
-	y_value = cbyte(read_value());
-	
-	if (debug) rprintf (", y=%d,", y_value);
-
-	next_byte();
-
-	tmp = read_value();
-	
-	next_byte();
-
-	z_value = cbyte(read_value());
-
-	done_read();
-	
-
-	stop_accel();
-
-	if (debug) rprintf (" z=%d\r\n", z_value);
-}
-
-void tilt_setup()
-{
-	start_accel();
-	
-	write_value(Slave_Addr);	 //write mode
-	
-	ack();
-	 
-	write_value(0x14);  		//0001 0100   (Guess - Data Rate and Resolution ?)
- 
-	ack();
-
-	write_value(0x03); 			//0000 0111   (Guess - Control register - enabel X, Y ,Z axis)
-	
-	ack();
-
-	stop_accel();
-}
-
 #define	SCK_HIGH            SET_BIT4(PORTE)
 #define	SCK_LOW             CLR_BIT4(PORTE)
 #define	SDI_HIGH            SET_BIT5(PORTE)
@@ -281,26 +44,21 @@ void tilt_setup()
 #define P_ACC_SDI(A)	    if(A) SET_BIT5(PORTE);else CLR_BIT5(PORTE)
 #define SDI_CHK				CHK_BIT5(PINE)
 
-//current channel
-volatile int gAccX;
-volatile int gAccY;
-volatile int gAccZ;
-
 
 //==============================================================//
 // Start
 //==============================================================//
-void AccStart(void)
+void I2C_Start(void)
 {
-SDI_SET_OUTPUT;
-SCK_SET_OUTPUT;
+	SDI_SET_OUTPUT;
+	SCK_SET_OUTPUT;
 	P_ACC_SDI(1);
 	P_ACC_SCK(1);
 	NOP;
 	NOP;
 	P_ACC_SDI(0);
 	NOP;
-	NOP;
+	NOP;	
 	P_ACC_SCK(0);
 	NOP;
 	NOP;
@@ -310,7 +68,7 @@ SCK_SET_OUTPUT;
 //==============================================================//
 // Stop
 //==============================================================//
-void AccStop(void)
+void I2C_Stop(void)
 {
 	SDI_SET_OUTPUT;
 	SCK_SET_OUTPUT;
@@ -329,17 +87,21 @@ void AccStop(void)
 //==============================================================//
 //
 //==============================================================//
-void AccByteWrite(BYTE bData)
+void I2C_ByteWrite(BYTE bData)
 {
 	BYTE	i;
 	BYTE	bTmp;
 
-SDI_SET_OUTPUT;
-	for(i=0; i<8; i++){
+	SDI_SET_OUTPUT;
+	for(i=0; i<8; i++)
+	{
 		bTmp = CHK_BIT7(bData);
-    	if(bTmp){
+    	if(bTmp)
+		{
 			P_ACC_SDI(1);
-		}else{
+		}
+		else
+		{
 			P_ACC_SDI(0);
 		}
 		NOP;
@@ -360,13 +122,14 @@ SDI_SET_OUTPUT;
 //==============================================================//
 //
 //==============================================================//
-char AccByteRead(void)
+char I2C_ByteRead(void)
 {
 	BYTE	i;
 	char	bTmp = 0;
 
 	SDI_SET_INPUT;
-	for(i = 0; i < 8;	i++){
+	for(i = 0; i < 8;	i++)
+	{
 		bTmp = bTmp << 1;
 		NOP;
 		NOP;
@@ -389,7 +152,7 @@ char AccByteRead(void)
 //==============================================================//
 //
 //==============================================================//
-void AccAckRead(void)
+void I2C_AckRead(void)
 {
 SDI_SET_INPUT;
 	NOP;
@@ -412,7 +175,7 @@ SDI_SET_OUTPUT;
 //==============================================================//
 //
 //==============================================================//
-void AccAckWrite(void)
+void I2C_AckWrite(void)
 {
 SDI_SET_OUTPUT;
 	NOP;
@@ -435,7 +198,7 @@ SDI_SET_OUTPUT;
 //==============================================================//
 //
 //==============================================================//
-void AccNotAckWrite(void)
+void I2C_NotAckWrite(void)
 {
 SDI_SET_OUTPUT;
 	NOP;
@@ -451,64 +214,161 @@ SDI_SET_OUTPUT;
 	NOP;
 }
 
+/*************************************************************************8
 
-//==============================================================//
-//==============================================================//
+Generic IC2 routines to support any device on the bus
+
+http://www.robot-electronics.co.uk/htm/using_the_i2c_bus.htm
+
+**************************************************************************/
+
+int I2C_write (int addr, int ocnt, BYTE * outbuff) 
+{
+// send ocnt bytes from outbuff to addr
+// return ack==1 or nak==0
+// TBD :: need to add timeout function around ack();
+
+	int i=0;
+	
+	I2C_Start();
+
+	I2C_ByteWrite(addr);	  	//? slave Addr write mode
+	I2C_AckRead();
+	 
+	for (i=0; i<ocnt; i++)
+	{
+		I2C_ByteWrite(outbuff[i]);
+		I2C_AckRead();
+	}
+	I2C_Stop();
+
+	return 1;
+}
+
+void I2C_read (int addr, int ocnt, BYTE *outbuff, int icnt, BYTE *inbuff)
+{
+	// send ocnt bytes from outbuff to addr and then read ibuf bytes into inbuff
+	int i=0;
+	
+	I2C_Start();
+
+	I2C_ByteWrite(addr);	  	//? slave Addr write mode
+	I2C_AckRead();
+	
+	for (i=0; i<ocnt; i++)
+	{
+		I2C_ByteWrite(outbuff[i]);
+		I2C_AckRead();
+	}
+	
+	// do I need a wait here ?
+	
+	for (i=0; i<icnt; i++)
+	{
+		inbuff[i] = I2C_ByteRead();
+		if (i<icnt-1) 
+			I2C_AckWrite();
+	}
+	
+	I2C_NotAckWrite();
+	I2C_Stop();
+}
+
+
+//==============================================================
+
+
+//==============================================================
+
 void Acc_init(void)
 {
-	AccStart();
-	AccByteWrite(0x70);
-	AccAckRead();
-	AccByteWrite(0x14);
-	AccAckRead();
-	AccByteWrite(0x03);
-	AccAckRead();
-	AccStop();
+	I2C_Start();
+	I2C_ByteWrite(Slave_Addr);
+	I2C_AckRead();
+	I2C_ByteWrite(0x14);
+	I2C_AckRead();
+	I2C_ByteWrite(0x03);
+	I2C_AckRead();
+	I2C_Stop();
 }
 
-//==============================================================//
-//==============================================================//
-void AccGetData(void)
+//==============================================================
+
+
+//==============================================================
+
+void Acc_GetData(void)
 {
-	signed char	bTmp = 0;
+	BYTE bTmp = 0;
 
-	AccStart();
-	AccByteWrite(0x70);
-	AccAckRead();
-	AccByteWrite(0x02);
-	AccAckRead();
-	AccStop();
+	I2C_Start();
+	I2C_ByteWrite(Slave_Addr);
+	I2C_AckRead();
+	I2C_ByteWrite(0x02);
+	I2C_AckRead();
+	I2C_Stop();
 
 	NOP;
 	NOP;
 	NOP;
 	NOP;
 
-	AccStart();
-	AccByteWrite(0x71);
-	AccAckRead();
+	I2C_Start();
+	I2C_ByteWrite(Slave_Addr + 1);
+	I2C_AckRead();
 
-	bTmp = AccByteRead();
-	AccAckWrite();
+	bTmp = I2C_ByteRead();
+	I2C_AckWrite();
 
-	bTmp = AccByteRead();
-	AccAckWrite();
-	gAccX = bTmp;
+	bTmp = I2C_ByteRead();
+	I2C_AckWrite();
+	x_value = bTmp;
 
-	bTmp = AccByteRead();
-	AccAckWrite();
+	bTmp = I2C_ByteRead();
+	I2C_AckWrite();
 
-	bTmp = AccByteRead();
-	AccAckWrite();
-	gAccY = bTmp;
+	bTmp = I2C_ByteRead();
+	I2C_AckWrite();
+	y_value = bTmp;
 
-	bTmp = AccByteRead();
-	AccAckWrite();
+	bTmp = I2C_ByteRead();
+	I2C_AckWrite();
 
-	bTmp = AccByteRead();
-	AccNotAckWrite();
-	gAccZ = bTmp;
+	bTmp = I2C_ByteRead();
+	I2C_NotAckWrite();
+	z_value = bTmp;
 
-	AccStop();
+	I2C_Stop();
 }
+
+//==============================================================
+// test I2C routines
+//==============================================================
+extern int	delay_ms	(int d);
+
+void testI2C()
+{
+	BYTE ob[10];
+	BYTE ib[10];
+	
+	rprintfStr ("I2C test");
+
+	// acc init
+	ob[0]=0x14; ob[1]=0x03;
+	I2C_write(0x70, 2, ob);
+	
+	for (int z=0; z<20; z++)
+	{
+		// acc get
+		ob[0]=0x02;
+		I2C_write(0x70, 1, ob);
+		I2C_read (0x71, 0, ob, 6, ib);
+		
+		rprintf ("%d, %d, %d\n", cbyte(ib[1]), cbyte(ib[3]), cbyte(ib[5]));
+		
+		delay_ms(250);
+	}
+}
+
+
 
