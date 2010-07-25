@@ -40,6 +40,7 @@ extern void DetectPower(void);
 //define ir.c
 extern int irGetByte(void);
 
+
 // UART variables-----------------------------------------------------------------
 
 WORD	gRx1Step;
@@ -89,6 +90,11 @@ extern volatile BYTE   gSoundLevel;
 extern void     lights(int n);
 extern void     Get_AD_MIC(void);
 
+BYTE 	outb[10];
+BYTE 	outbc;
+BYTE	gCNT;
+BYTE	gAddr;
+
 void SendToSoundIC(BYTE cmd) ;
 
 ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
@@ -105,10 +111,10 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 		gFileCheckSum = 0;
 		return;
 	}
-	// check for FF 101 11110   (read Position Servo 30)
+	
 	switch(gRx1_DStep){
 		case 1:
-			if(gRxData == 0xBE) 
+			if(gRxData == 0xBE) // check for 101 11110   (read Position Servo 30)
 			{
 				gRx1_DStep = 2;
 			}
@@ -118,10 +124,41 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 			break;
 		case 2:
 			gCMD = gRxData;
-			gRx1_DStep = 3;
+			if (gCMD==0x0D || gCMD==0x0E)
+				gRx1_DStep = 4;
+			else			
+				gRx1_DStep = 3;
 			gFileCheckSum ^= gRxData;
 			break;
+		case 4:
+			// IC2_on and IC2_out
+			// gRxData will be numer of bytes to follow
+			gAddr=gRxData;
+			gRx1_DStep=5;
+			break;
+		case 5:
+			// IC2_on and IC2_out
+			// gRxData will be numer of bytes to follow
+			gCNT=gRxData;
+			outbc=0;
+			gRx1_DStep=6;
+			gFileCheckSum=0;
+			break;
+		case 6:
+			if (outbc < gCNT)
+			{
+				gFileCheckSum ^= gRxData;
+				outb[outbc] = gRxData;
+				outbc++;
+			}
+			if(outbc==gCNT)
+			{
+				PF1_LED2_OFF; 
+				gRx1_DStep=3;
+			}			
+			break;
 		case 3:
+			PF1_LED1_ON;
 			if(gRxData == (gFileCheckSum & 0x7f))
 			{
 				// Depends on gGMD		
@@ -136,12 +173,12 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 				switch (gCMD)
 				{
 				case 0x01:  
-					tilt_read();
+					Acc_GetData();
 					b1 = y_value;
 					b2 = z_value;
 					break;
 				case 0x02:
-					tilt_read();
+					Acc_GetData();
 					b1 = x_value;
 					b2 = z_value;	
 					break;
@@ -192,6 +229,25 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					b1 = gSoundLevel;
 					lights(b1);
 					break;	
+				case 0x0D:
+					PF2_LED_ON; //yellow
+					{
+						BYTE inb[10];
+						int icnt=outb[0];
+						I2C_read (gAddr, gCNT-1, outb+1, icnt, inb);
+						for (int k=0; k<icnt; k++)
+						{
+							putByte(inb[k]);
+						}
+						gCMD=0;
+						return;
+					}
+					break;
+				case 0x0E:
+					PF2_LED_ON; //yellow
+					b1=I2C_write (gAddr, gCNT, outb) ;
+					b2=0;
+					break;				
 				}				
 				putByte(b1);
 				putByte(b2);
@@ -486,6 +542,7 @@ void ProcButton(void)
 	}
 }
 
+
 //------------------------------------------------------------------------------
 // Send message to Sound IC
 //------------------------------------------------------------------------------
@@ -618,6 +675,7 @@ void printint(int n)
 }
 
 
+void testI2C();
 //------------------------------------------------------------------------------
 // Main Routine
 //------------------------------------------------------------------------------
@@ -626,16 +684,17 @@ int main(void)
 {
 	HW_init();					// Initialise ATMega Ports
 	SW_init();					// Initialise software states
-	
-
 			
 	sei();						// enable interrupts	
 	TIMSK |= 0x01;		
 	
 	PWR_LED1_ON; 				// Power green light on
+	
+	//testI2C();
 		
 	sound_init();
-	tilt_setup();				// initialise acceleromter
+		
+	Acc_init();				// initialise acceleromter
 	
 	//call self test
 
@@ -653,9 +712,8 @@ int main(void)
 	
 	sample_sound(1);
 	RUN_LED2_OFF;
-	PF1_LED1_ON;    //DCmode
+	PF1_LED1_OFF;    //DCmode
 	PF1_LED2_OFF;
-	PF2_LED_ON;
 	
 	gCMD=0;
 	PLAY_SOUND=0;
