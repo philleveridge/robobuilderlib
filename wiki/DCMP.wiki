@@ -25,7 +25,10 @@ DCMP provides direct access to Wck Bus to enable Servos to be controlled via ser
 ||10||Read sound ||Returns the current sound buffer - 2 bytes, average of last 8 samples (4ms each)||
 ||11||Read timer ||gets the current up time of robot in second:minutes||
 ||12||Get MIC level ||Sample mic level 50 times and returns average||
+||13||I2C_read || *New* Send a byte sequence and return a byte sequence from I2C bus (START-SEND-ACK-{READ-ACK}n-STOP ||
+||14||I2C_write || *New* Send a byte sequence to I2C bus (START-SEND-ACK-STOP)||
 ||65 - 90||Play Sound: ||Plays built in sound i.e. 65 = sound1, 66 sound 2 etc ||
 
+Note: cmd 13,14 will be in *next* release (i.e. post 165)
 
 LISP example programs using the RobobuilderLib.dll that run on a PC will be available to demo the capabilities
