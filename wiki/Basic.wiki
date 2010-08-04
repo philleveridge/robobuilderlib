@@ -102,6 +102,8 @@ SYNTAX:
 [Line No] RUN number
 [Line No] PLAY number
 [Line No] OFFSET [# | List | "blank"]
+[Line No] IC2O number,List
+[Line No] IC2I number,number,List
 
 Special register access ($)
 $X, $Y, $Z   accelerometer values
@@ -118,6 +120,7 @@ $ABS(x)      Absolute value of x returned
 $ROM(x)      Contents of ROM location x
 $MAPIR(x)    Maps value from IR to built in action code
 $FIND(x, @A) Look for item less than or equal to X and return index
+$CVB2I(x)    Converts byte to int, i.e. 4 -> 4 and 254 -> -2
 
 $pecial register examples :
 LET A=$IR        //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
@@ -283,4 +286,12 @@ output:
 5
 0
 etc ..
+
+17) I2C comms example(s)
+I2CO 51,@{3,1,2,3}
+will send 3 bytes to I2C address 51
+
+I2CI 52,5,@{2,1,1}
+will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address. The bytes are available from current array @#
+
 }}}
