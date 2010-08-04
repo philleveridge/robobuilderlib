@@ -3,15 +3,21 @@
 
 void basic();
 
+
+
 #ifdef SIMUL
 void	initsocket();
 int		testsocket(char *echoString);
+int		simflg=1;
 #define	DBO(x)
 #else
 #define initsocket(x)
 #define testsocket(x) 0
 #define DBO(x) x
+int		simflg=0;
 #endif
+
+
 
 /* wck commands */
 void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)			
@@ -119,6 +125,7 @@ int Get_VOLTAGE()		{return 0;}
 int irGetByte()			
 {
 	char buff[64];
+	if (simflg==0) return 0;
 	sprintf(buff, "IR$");
 	return testsocket(buff);
 }
@@ -126,20 +133,25 @@ int irGetByte()
 int Get_AD_PSD()		
 {
 	char buff[64];
+	if (simflg==0) return 0;
 	sprintf(buff, "PSD$");
 	gDistance = testsocket(buff);
 	return 0;
 }
-int tilt_read()			
+
+void  Acc_init    (void) {}
+void  Acc_GetData ()			
 {
 	char buff[64];
+	if (simflg==0) return;
+
 	sprintf(buff, "X$");
 	x_value = testsocket(buff);
 	sprintf(buff, "Y$");
 	y_value = testsocket(buff);
 	sprintf(buff, "Z$");
 	z_value = testsocket(buff);
-	return 0;
+	return;
 }
 int adc_mic()			{return 0;}
 void lights() {}
@@ -157,6 +169,18 @@ Sleep(x);
 
 void SampleMotion(char action)			{printf ("Win:  sample motion %d\n", action);}
 void PlayMotion (char action, int f)	{printf ("Win:  Play %d\n", action);}
+
+void  I2C_read    (int addr, int ocnt, BYTE * outbuff, int icnt, BYTE * inbuff) 
+{
+	printf ("WIN: I2C read %d\n", addr);
+}
+int   I2C_write   (int addr, int ocnt, BYTE * outbuff)  
+{
+	printf ("WIN: I2C write %d\n", addr);
+	return 0;
+}
+int   cbyte       (BYTE b) {return b>127?b-256:b;}
+
 
 extern char FIRMWARE[64];  
 

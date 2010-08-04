@@ -41,11 +41,11 @@ void  lights(int n) // power bar meter!
 		PWR_LED1_OFF;
 		PWR_LED2_OFF;	
 
-		if (n > 1)    ERR_LED_ON;
-		if (n > 4)    RUN_LED1_ON;		
-		if (n > 8)    RUN_LED2_ON;		
-		if (n > 16)   PWR_LED1_ON;		
-		if (n > 32)   PWR_LED2_ON;		
+		if (n > 4)    ERR_LED_ON;
+		if (n > 8)    RUN_LED1_ON;		
+		if (n > 16)    RUN_LED2_ON;		
+		if (n > 32)   PWR_LED1_ON;		
+		if (n > 64)   PWR_LED2_ON;		
 }
 
 void sample_sound(int status)
