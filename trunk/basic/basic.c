@@ -65,8 +65,6 @@ extern void SendToSoundIC(BYTE cmd) ;
 
 /***********************************/
 
-//I2CIN  (SDApin, CLKpin, slaveADDR, outCNT, outLIST, inCNT, inLIST)  	Read  InputList via I2C device
-//I2COUT (SDApin, CLKpin, slaveADDR, outCNT, OutputList) 	            Write OutputList to I2C device
 
 
 extern BYTE sData[];
@@ -108,10 +106,10 @@ enum {
 	PUT, END, LIST, XACT, 
 	WAIT, NEXT, SERVO, MOVE,
 	GOSUB, RETURN, POKE, STAND,
-	PLAY, OUT, OFFSET, RUN
+	PLAY, OUT, OFFSET, RUN, I2CO, I2CI
 	};
 
-#define NOTOKENS 24
+#define NOTOKENS 26
 
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
@@ -119,17 +117,18 @@ const prog_char *tokens[] ={
 	"PUT", "END", "LIST", "XACT",
 	"WAIT", "NEXT", "SERVO", "MOVE",
 	"GOSUB", "RETURN", "POKE", "STAND",
-	"PLAY", "OUT", "OFFSET", "RUN"
+	"PLAY", "OUT", "OFFSET", "RUN",
+	"I2CO", "I2CI"
 };
 
-#define NOSPECS 19
+#define NOSPECS 20
 
 char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		"PORT", "ROM", "TYPE", "ABS", "MAPIR", "KIR", "FIND" };
+		"PORT", "ROM", "TYPE", "ABS", "MAPIR", "KIR", "FIND", "CVB2I" };
 
 enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
 		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE, sABS,
-		sIR2ACT, sKIR, sFIND};
+		sIR2ACT, sKIR, sFIND, sCVB2I};
 							
 
 int errno;
@@ -229,7 +228,7 @@ int getToken(char *str, char *tok)
 	while ((c=*str))
 	{
 		str++;
-		if (!(c>= 'A' && c <='Z') )  //must be alpha
+		if (!((c>= 'A' && c <='Z') || (c>= '0' && c <='9')) )  //must be alpha
 			break;
 		*tok++=c; //copy in dest buff
 		n++;
@@ -493,6 +492,8 @@ void basic_load()
 		case RUN:
 		case XACT: 
 		case OFFSET:
+		case I2CI:
+		case I2CO:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -772,6 +773,13 @@ int get_special(char **str, int *res)
 		if (getArg(str,&v))
 		{
 			v = v<0?-v:v;
+		}
+		break;
+	case sCVB2I: // $CVB2I(x)  255 -> -1
+		v=0; 
+		if (getArg(str,&v))
+		{
+			v = cbyte(v);
 		}
 		break;
 	case sROM: // ROM(x)
@@ -1418,6 +1426,61 @@ int execute(line_t line, int dbf)
 		}
 		//
 		break;
+	case I2CO: 	//IC2O Addr,@{5,1,1,1,1}
+	{
+		BYTE ob[20];
+		int i, addr=0;
+		p=line.text;
+		if (eval_expr(&p, &addr)==NUMBER)
+		{
+			if (*p++ != ',') { errno=1; break;}
+			if (eval_expr(&p, &n) != ARRAY)
+			{
+				errno=1;
+				break;
+			}
+			for (i=0; i<nis; i++)
+			  ob[i]=scene[i];
+			I2C_write(addr, nis, ob);
+		}
+		break;
+	}
+	case I2CI: 	//IC2I Addr,n[,@{}]
+		{
+		int i, addr=0, ibc=0;
+		p=line.text;			
+		if (eval_expr(&p, &addr)==NUMBER)
+		{
+			BYTE ob[20];
+			BYTE ib[20];
+			
+			if  (*p++ != ',')
+			{
+				errno=1;
+				break;	
+			}
+			if (eval_expr(&p, &ibc)==NUMBER)
+			{
+				if  (*p == ',')
+				{
+					if (eval_expr(&p, &n) != ARRAY)
+					{
+						errno=1;
+						break;
+					}
+				}
+				else
+					nis=0;
+			}	
+			for (i=0; i<nis; i++)
+			  ob[i]=scene[i];
+			I2C_read (addr, nis, ob, ibc, ib);
+			
+			for (i=0; i<ibc; i++)
+			  scene[i]=ib[i];					
+		}
+		}
+		break;			
 	case LIST: 
 		variable[line.var] = lastline+8;
 		break;		

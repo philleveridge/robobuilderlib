@@ -7,6 +7,7 @@ typedef char raw_type;       // Type used for raw data on this platform
 #include <errno.h>             // For errno
 
 const int RCVBUFSIZE = 32;    // Size of receive buffer
+extern int simflg;
 
 void initsocket()
 {
@@ -15,9 +16,9 @@ void initsocket()
     if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
 	{
         printf("WSAStartup() failed");
+		simflg=0;
 		return;
 	}
-
 }
 
 int testsocket(char *echoString)
@@ -33,9 +34,12 @@ int testsocket(char *echoString)
 
 	// Establish connection with the echo server
 
+	if (simflg==0) return;
+
 	if ((sockDesc = socket(PF_INET, SOCK_STREAM, IPPROTO_IP)) < 0)
 	{
 		printf ("Socket create failed");
+		simflg=0;
 		return 0;
 	}
 
@@ -48,6 +52,7 @@ int testsocket(char *echoString)
 	if (connect(sockDesc, (const struct sockaddr *)&stSockAddr, sizeof(struct sockaddr_in))<0)
 	{
 		printf ("Connect failed");
+		simflg=0;
 		return 0;
 	}
 
