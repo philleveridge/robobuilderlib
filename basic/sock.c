@@ -11,6 +11,7 @@ extern int simflg;
 
 void initsocket()
 {
+	int v;
 	WSADATA wsaData;
 	//init winsock
     if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
@@ -19,6 +20,9 @@ void initsocket()
 		simflg=0;
 		return;
 	}
+ 
+	v= testsocket("V$");
+	if (simflg==1) {printf ("Sim mode (%d)\n", v);}
 }
 
 int testsocket(char *echoString)
@@ -38,7 +42,7 @@ int testsocket(char *echoString)
 
 	if ((sockDesc = socket(PF_INET, SOCK_STREAM, IPPROTO_IP)) < 0)
 	{
-		printf ("Socket create failed");
+		printf ("Socket create failed\n");
 		simflg=0;
 		return 0;
 	}
@@ -51,7 +55,6 @@ int testsocket(char *echoString)
 
 	if (connect(sockDesc, (const struct sockaddr *)&stSockAddr, sizeof(struct sockaddr_in))<0)
 	{
-		printf ("Connect failed");
 		simflg=0;
 		return 0;
 	}

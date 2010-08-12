@@ -49,6 +49,8 @@ namespace RobobuilderLib
             "WAIT", "NEXT", "SERVO", "MOVE",
             "GOSUB", "RETURN", "POKE", "STAND",
             "PLAY", "OUT", "OFFSET", "RUN", 
+            "I2CO", "I2CI", "STEP", "SPEED", 
+	        "MTYPE",
             "ENDIF" // leave at end
         };
         
@@ -59,6 +61,7 @@ namespace RobobuilderLib
 	        WAIT, NEXT, SERVO, MOVE,
 	        GOSUB, RETURN, POKE, STAND,
             PLAY, OUT, OFFSET, RUN,
+            I2CO, I2CI, STEP, SPEED, MTYPE,
             ENDIF
 	        };
 	
@@ -307,6 +310,10 @@ namespace RobobuilderLib
                     case KEY.XACT:
                     case KEY.RUN:
                     case KEY.OFFSET:
+                    case KEY.I2CI:
+                    case KEY.I2CO:
+                    case KEY.SPEED:
+                    case KEY.MTYPE:
                         ln.text = upperIt(z);
                         break;
                     case KEY.LIST:
@@ -316,8 +323,17 @@ namespace RobobuilderLib
                         ln.text = upperIt(z);
                         break;
                     case KEY.SERVO:
-                        t = GetNumber(GetWord(ref z));
-                        if (t < 0) errno = 3; else ln.var = (byte)t;
+                    case KEY.STEP: 
+                    string tz = GetWord(ref z);
+                        if ((t = GetVar(tz)) < 0)
+                        {
+                            t = GetNumber(tz);
+                            if (t < 0) errno = 3; else ln.var = (byte)(t + 32);
+                        }
+                        else
+                        {
+                            ln.var = (byte)t;
+                        }
                         if (GetNext(ref z) != "=") { errno = 1; }
                         ln.text = upperIt(z);
                         break;

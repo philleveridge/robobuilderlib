@@ -31,6 +31,10 @@ const BYTE basic18[18];
 const BYTE basic16[16];
 extern int offset[32];
 
+enum { AccelDecel=0, Accel, Decel, Linear };
+
+extern int PP_mtype;
+
 BYTE readservos   	();
 void standup      	(int n);
 void PlayPose     	(int d, int s, int tq, unsigned char data[], int n);

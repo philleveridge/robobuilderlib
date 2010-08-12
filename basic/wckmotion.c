@@ -723,9 +723,78 @@ BYTE readservos()
 	return i;
 }
 
+// Different type of move interpolation
+// from http://robosavvy.com/forum/viewtopic.php?t=5306&start=30
+// orinial by RN1AsOf091407
 
-// Play d ms per step, f frames, from current -> pos
-void PlayPose(int d, int f, int tq, BYTE pos[], int flag)
+int PP_mtype=Linear;
+
+double CalculatePos_Accel(int Distance, double FractionOfMove) 
+{
+    return FractionOfMove * (Distance * FractionOfMove);
+}
+
+double CalculatePos_Decel(int Distance, double FractionOfMove)
+{
+    FractionOfMove = 1 - FractionOfMove;
+    return Distance - (FractionOfMove * (Distance * FractionOfMove));
+}
+
+double CalculatePos_Linear(int Distance, double FractionOfMove)
+{
+    return (Distance * FractionOfMove);
+}
+
+double CalculatePos_AccelDecel(int Distance, double FractionOfMove)
+{
+    if ( FractionOfMove < 0.5 )     // Accel:
+        return CalculatePos_Accel(Distance /2, FractionOfMove * 2);
+    else if (FractionOfMove > 0.5 ) //'Decel:
+        return CalculatePos_Decel(Distance/2, (FractionOfMove - 0.5) * 2) + (Distance * 0.5);
+    else                            //'= .5! Exact Middle.
+        return Distance / 2;
+}
+
+double GetMoveValue(int mt, int StartPos, int EndPos, double FractionOfMove)
+{
+    int Offset,Distance;
+    if (StartPos > EndPos)
+    {
+        Distance = StartPos - EndPos;
+        Offset = EndPos;
+        switch (mt)
+        {
+            case Accel:
+                return Distance - CalculatePos_Accel(Distance, FractionOfMove) + Offset;
+            case AccelDecel:
+                return Distance - CalculatePos_AccelDecel(Distance, FractionOfMove) + Offset;
+            case Decel:
+                return Distance - CalculatePos_Decel(Distance, FractionOfMove) + Offset;
+            case Linear:
+                return Distance - CalculatePos_Linear(Distance, FractionOfMove) + Offset;
+        }
+    }
+    else
+    {
+        Distance = EndPos - StartPos;
+        Offset = StartPos;
+        switch (mt)
+        {
+            case Accel:
+                return CalculatePos_Accel(Distance, FractionOfMove) + Offset;
+            case AccelDecel:
+                return CalculatePos_AccelDecel(Distance, FractionOfMove) + Offset;
+            case Decel:
+                return CalculatePos_Decel(Distance, FractionOfMove) + Offset;
+            case Linear:
+                return CalculatePos_Linear(Distance, FractionOfMove) + Offset;
+        }
+    }
+    return 0.0;
+}
+
+// Play d ms per step, f frames, from current -> spod
+void PlayPose(int d, int f, int tq, BYTE spod[], int flag)
 {
 	int i;	
 
@@ -735,22 +804,16 @@ void PlayPose(int d, int f, int tq, BYTE pos[], int flag)
 		nos=flag;
 	}
 	
-	float intervals[nos];	
-	
 	int dur=d/f;
 	if (dur<25) dur=25; //25ms is quickest
-	
-	for (i=0; i<nos; i++)
-	{
-		intervals[i]=(float)(pos[i]-cpos[i])/(float)f;
-	}
 	
 	for (i=0; i<f; i++)
 	{
 		BYTE temp[nos];
 		for (int j=0; j<nos; j++)
 		{
-			temp[j] = cpos[j] + (float)((i)*intervals[j]+0.5);
+			//temp[j] = cpos[j] + (float)((i)*intervals[j]+0.5);
+			temp[j] = (BYTE)GetMoveValue(PP_mtype, cpos[j], spod[j], (double)i / (double)f);
 		}
 		wckSyncPosSend(nos-1, tq, temp, 0);
 		delay_ms(dur);
@@ -758,7 +821,7 @@ void PlayPose(int d, int f, int tq, BYTE pos[], int flag)
 	
 	for (i=0; i<nos; i++)
 	{
-		cpos[i]=pos[i];
+		cpos[i]=spod[i];
 	}
 	
 	wckSyncPosSend(nos-1, tq, cpos, 0);
