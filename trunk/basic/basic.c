@@ -106,10 +106,11 @@ enum {
 	PUT, END, LIST, XACT, 
 	WAIT, NEXT, SERVO, MOVE,
 	GOSUB, RETURN, POKE, STAND,
-	PLAY, OUT, OFFSET, RUN, I2CO, I2CI
+	PLAY, OUT, OFFSET, RUN, I2CO, I2CI,
+	STEP, SPEED, MTYPE
 	};
 
-#define NOTOKENS 26
+#define NOTOKENS 29
 
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
@@ -118,7 +119,8 @@ const prog_char *tokens[] ={
 	"WAIT", "NEXT", "SERVO", "MOVE",
 	"GOSUB", "RETURN", "POKE", "STAND",
 	"PLAY", "OUT", "OFFSET", "RUN",
-	"I2CO", "I2CI"
+	"I2CO", "I2CI", "STEP", "SPEED", 
+	"MTYPE"
 };
 
 #define NOSPECS 20
@@ -471,10 +473,18 @@ void basic_load()
 			break;
 
 		case SERVO:
-			// read servo ID		
-			if ((newline.var = getNum(&cp))<0)
+		case STEP:
+			// read servo ID	
+			if ((newline.var = getVar(&cp))==255)
 			{
-				errno=3;
+				cp--;
+				newline.var = getNum(&cp);
+				if (newline.var<0 || newline.var>31)
+				{
+					errno=3;
+					break;
+				}
+				newline.var += 32;
 			}
 			// '='
 			if (getNext(&cp) != '=')
@@ -494,6 +504,8 @@ void basic_load()
 		case OFFSET:
 		case I2CI:
 		case I2CO:
+		case SPEED:
+		case MTYPE:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -583,11 +595,13 @@ RUNTIME routines
 *************************************************************************************************************/
 
 int variable[26]; // only A-Z at moment
-int scene[32];	  // array
-int nis=0;
+int scene[32];	  // generic array
+int nis=0;        // number of item isn array
 int  eval_list(char *p);
 unsigned char eval_expr(char **str, int *res);
 enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
+int speed=2;
+int mtype=2;
 
 int get_bit(int pn, int bn)
 {
@@ -986,6 +1000,12 @@ unsigned char eval_expr(char **str, int *res)
                 }
 				(*str)++;
             }
+						else
+            if (**str=='!')
+            {
+				//use current array
+				(*str)++;
+			}
             else
             {
 				char tmpA[100];
@@ -1274,28 +1294,35 @@ int execute(line_t line, int dbf)
 		//rprintf ("assign %c= %d\r\n", line.var, n); // DEBUG
 		break;
 	case SERVO:
-		n=0;
-		p=line.text;
-		if (*p=='@') // set passive mode
 		{
-			// set pass servo id=line.var
-			wckSetPassive(line.var);
-		}
-		else
-		if (*p=='~') // set IO mode
-		{
-			p++;
-			eval_expr(&p, &n);
-			wckWriteIO(line.var, n) ;
-		}
-		else
-		{
-			eval_expr(&p, &n);
-			if (n>00 && n<=254)
+			int v=line.var;
+			if (v>=0 && v<=31)
+				v=variable[v];
+			else
+				v=v-32;
+			n=0;
+			p=line.text;
+			if (*p=='@') // set passive mode
 			{
-				// set pos servo id=line.var, n
-				// char SpeedLevel
-				wckPosSend(line.var, 2, n);
+				// set pass servo id=line.var
+				wckSetPassive(v);
+			}
+			else
+			if (*p=='~') // set IO mode
+			{
+				p++;
+				eval_expr(&p, &n);
+				wckWriteIO(v, n) ;
+			}
+			else
+			{
+				eval_expr(&p, &n);
+				if (n>00 && n<=254)
+				{
+					// set pos servo id=line.var, n
+					// char SpeedLevel
+					wckPosSend(v, speed, n);
+				}
 			}
 		}
 		break;
@@ -1396,7 +1423,7 @@ int execute(line_t line, int dbf)
 			if (*p=='\0')
 			{
 				if (nis>0) 
-					wckSyncPosSend(nis-1, 4, scene, 0);
+					wckSyncPosSend(nis-1, speed, scene, 0);
 			}
 
 			if (*p++ != ',') { errno=1; break;}
@@ -1553,8 +1580,77 @@ int execute(line_t line, int dbf)
 		}
 		}
 		break;
+	case STEP: 
+		//STEP servo=from,to[,inc]
+		{
+			int sf, st, si=2, sp, sn, cnt=0;
+			int v=line.var;
+			if (v>=0 && v<=31)
+				v=variable[v];
+			else
+				v=v-32;
+			n=0;
+			p=line.text;
+			if (eval_expr(&p, &sf)!=NUMBER)
+			{
+				errno=3; break;
+			}
+			if (*p++ != ',')
+			{
+				errno=2; break;
+			}
+			if (eval_expr(&p, &st)!=NUMBER)
+			{
+				errno=3; break;
+			}
+			if (*p==',')
+			{
+				p++;
+				if (eval_expr(&p, &si)!=NUMBER)
+				{
+					errno=3; break;
+				}
+			}
+			//
+			if (st < sf || si < 0) 
+				break;
+
+			sp = wckPosRead(v); // get servo current position
+			if (sp > sf) sp=sf;
+			sn=sp+si;
+			while (cnt++<25 && (sp-sn)<si && sn<st)
+			{
+				sp += si;
+				if (sp>0 && sp<=254)
+				{
+					wckPosSend(v, speed, sp);
+				}
+				//sleep
+				delay_ms(50);
+				sn = wckPosRead(v);
+			}
+		}
+		break;
 	case PLAY: 
 		SendToSoundIC(line.value);
+		break;
+	case MTYPE:
+		p=line.text;
+		if (eval_expr(&p, &n)!=NUMBER)
+		{
+			errno=3; break;
+		}
+		if (n<0) PP_mtype=0;
+		PP_mtype=n%4;
+
+	case SPEED: 
+		p=line.text;
+		if (eval_expr(&p, &n)!=NUMBER)
+		{
+			errno=3; break;
+		}
+		if (speed<0) n=0;
+		speed=n%4;
 		break;
 	case END: 
 		rprintfStr ("End of program\r\n"); 
@@ -1703,8 +1799,13 @@ void basic_list()
 			rprintfStr (" = ");
 		}
 
-		if (line.token==SERVO)
-			rprintf ("%d = ", line.var);
+		if (line.token==SERVO || line.token==STEP)
+		{
+			if (line.var>=32)
+				rprintf ("%d=", line.var-32);
+			else
+				rprintf ("%c=", line.var+'A');
+		}
 			
 		if (line.token==PRINT && line.var==1)
 			rprintf ("# ");

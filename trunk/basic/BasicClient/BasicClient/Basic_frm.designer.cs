@@ -46,6 +46,8 @@
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.input = new System.Windows.Forms.RichTextBox();
+            this.simulatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startBasiclocalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -126,7 +128,9 @@
             // 
             this.compilerToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.compileToolStripMenuItem,
-            this.downloadToolStripMenuItem});
+            this.downloadToolStripMenuItem,
+            this.simulatorToolStripMenuItem,
+            this.startBasiclocalToolStripMenuItem});
             this.compilerToolStripMenuItem.Name = "compilerToolStripMenuItem";
             this.compilerToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
             this.compilerToolStripMenuItem.Text = "Compiler";
@@ -134,14 +138,14 @@
             // compileToolStripMenuItem
             // 
             this.compileToolStripMenuItem.Name = "compileToolStripMenuItem";
-            this.compileToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.compileToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.compileToolStripMenuItem.Text = "Compile";
             this.compileToolStripMenuItem.Click += new System.EventHandler(this.compileToolStripMenuItem_Click);
             // 
             // downloadToolStripMenuItem
             // 
             this.downloadToolStripMenuItem.Name = "downloadToolStripMenuItem";
-            this.downloadToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.downloadToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.downloadToolStripMenuItem.Text = "Download";
             this.downloadToolStripMenuItem.Click += new System.EventHandler(this.downloadToolStripMenuItem_Click);
             // 
@@ -191,6 +195,20 @@
                 "ssive\n       Print \"Servo 12 = \"; $SERVO(12)\n       wait 500   \'0.5secs\n       g" +
                 "oto Loop";
             // 
+            // simulatorToolStripMenuItem
+            // 
+            this.simulatorToolStripMenuItem.Name = "simulatorToolStripMenuItem";
+            this.simulatorToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.simulatorToolStripMenuItem.Text = "Simulator";
+            this.simulatorToolStripMenuItem.Click += new System.EventHandler(this.simulatorToolStripMenuItem_Click);
+            // 
+            // startBasiclocalToolStripMenuItem
+            // 
+            this.startBasiclocalToolStripMenuItem.Name = "startBasiclocalToolStripMenuItem";
+            this.startBasiclocalToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.startBasiclocalToolStripMenuItem.Text = "Start basic (local)";
+            this.startBasiclocalToolStripMenuItem.Click += new System.EventHandler(this.startBasiclocalToolStripMenuItem_Click);
+            // 
             // Basic_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -233,5 +251,7 @@
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.RichTextBox input;
+        private System.Windows.Forms.ToolStripMenuItem simulatorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startBasiclocalToolStripMenuItem;
     }
 }

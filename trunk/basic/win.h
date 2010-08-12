@@ -42,4 +42,5 @@ extern void			binmode();
 const unsigned char  basic18[];
 const unsigned char  basic16[];
 int  offset[];
+extern int PP_mtype;
 void PlayPose(int d, int s, int f, unsigned char data[], int n);

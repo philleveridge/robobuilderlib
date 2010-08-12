@@ -54,6 +54,12 @@
       <DependentUpon>Basic_frm.cs</DependentUpon>
     </Compile>
     <Compile Include="binxfer.cs" />
+    <Compile Include="ServoSim.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ServoSim.designer.cs">
+      <DependentUpon>ServoSim.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="AboutBox1.resx">
@@ -62,10 +68,16 @@
     <EmbeddedResource Include="Basic_frm.resx">
       <DependentUpon>Basic_frm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ServoSim.resx">
+      <DependentUpon>ServoSim.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="servoUC.resx">
+      <DependentUpon>servoUC.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -79,6 +91,12 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="servoUC.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="servoUC.designer.cs">
+      <DependentUpon>servoUC.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

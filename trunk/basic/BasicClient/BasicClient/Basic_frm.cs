@@ -6,7 +6,6 @@ using System.IO.Ports;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
-
 namespace RobobuilderLib
 {
     public partial class Basic_frm : Form
@@ -27,6 +26,12 @@ namespace RobobuilderLib
         {
             InitializeComponent();
             readyDownload = false;
+
+            if (!File.Exists("Basic.exe"))
+            {
+                startBasiclocalToolStripMenuItem.Visible = false;
+                simulatorToolStripMenuItem.Visible = false;
+            }
 
             compiler = new Basic();
             s = new SerialPort(comPort.Text, 115200);
@@ -295,6 +300,20 @@ namespace RobobuilderLib
                 progressBar1.Increment((int)(100.0*btf.progress));
             }
             this.Update();
+        }
+
+        private void simulatorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ServoSim s = new ServoSim();
+            s.Show();
+        }
+
+        private void startBasiclocalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (File.Exists("Basic.exe"))
+            {
+                Process.Start("Basic.exe");
+            }
         }
 
 

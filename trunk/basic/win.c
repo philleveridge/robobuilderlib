@@ -3,21 +3,14 @@
 
 void basic();
 
-
-
-#ifdef SIMUL
 void	initsocket();
 int		testsocket(char *echoString);
 int		simflg=1;
-#define	DBO(x)
-#else
-#define initsocket(x)
-#define testsocket(x) 0
-#define DBO(x) x
-int		simflg=0;
-#endif
+
+#define	DBO(x) x
 
 
+int  PP_mtype=4;
 
 /* wck commands */
 void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)			
