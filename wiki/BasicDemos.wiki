@@ -75,6 +75,8 @@ Line 10 causes the robot takes up Basic pose. Line 30 make it wait until keyboar
 
 =mirror moves=
 
+Run the program and then move the right arm - and watch the left arm follow!
+
 {{{
 5 stand 16
 10 servo 13=@
@@ -94,7 +96,7 @@ Line 10 causes the robot takes up Basic pose. Line 30 make it wait until keyboar
 
 == How it works ==
 
-The program first puts servos 13,14,15 into passive mode, this makes them free to move. These servo are the right arm of the robot. It then loops read their current position on line 60-80. Its then moves the left arm by corresponding amount. Because the left arm servos are reverse they move in the opposite direction, hence the 254-a.
+The program first lines 10-30 puts servos 13,14,15 into passive mode, this makes them free to move. These servos form the right arm of the robot. It then loops reading their current position on line 60-80. Its then moves the left arm by corresponding amount. Because the left arm servos are reverse they move in the opposite direction, hence the 254-a. 
 
 =dynamic distance sensor=
 
