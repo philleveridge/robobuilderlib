@@ -322,21 +322,21 @@ void Acc_GetData(void)
 
 	bTmp = I2C_ByteRead();
 	I2C_AckWrite();
-	x_value = bTmp;
+	x_value = cbyte(bTmp);
 
 	bTmp = I2C_ByteRead();
 	I2C_AckWrite();
 
 	bTmp = I2C_ByteRead();
 	I2C_AckWrite();
-	y_value = bTmp;
+	y_value = cbyte(bTmp);
 
 	bTmp = I2C_ByteRead();
 	I2C_AckWrite();
 
 	bTmp = I2C_ByteRead();
 	I2C_NotAckWrite();
-	z_value = bTmp;
+	z_value = cbyte(bTmp);
 
 	I2C_Stop();
 }

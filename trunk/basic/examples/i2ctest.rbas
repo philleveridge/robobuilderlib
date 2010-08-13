@@ -1,0 +1,10 @@
+'read acceleromter (using I2C)
+5 PRINT "X=";$X;" Y=";$Y;" Z=";$Z
+10 FOR I=1 to 10
+20 I2CO 112,@{1,2}
+30 I2CI 113,6
+40 PRINT "X=";$CVB2I(@![1]);" Y=";$CVB2I(@![3]);" Z=";$CVB2I(@![5])
+50 WAIT 250
+60 NEXT I
+	
+	

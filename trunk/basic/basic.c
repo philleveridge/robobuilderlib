@@ -265,7 +265,7 @@ int token_match(char *list[], char **p_line, int n)
 
 int readLine(char *line)
 {
-	int ch;
+	int ch=0,pch;
 	int qf=1;
 	char *start=line;
 	
@@ -274,6 +274,7 @@ int readLine(char *line)
 	while (1)
 	{
 		// foreach char entered
+		pch=ch;
 
 		while ((ch = uartGetByte())<0) ;
 			
@@ -282,10 +283,14 @@ int readLine(char *line)
 		if (ch==13 || (start==line && ch=='.') )
 		{
 			if (ch=='.') *line++='.';
+			if (pch==' ') line--; //get rid of trailling space
 			*line='\0'; 
 			rprintf("\r\n");	
 			break;
 		}
+
+		if (qf & ch==' ' && pch==' ')
+			continue;
 		
 		if (start==line && ch=='?' )
 		{
@@ -379,6 +384,7 @@ void basic_load()
 			cp++;
 		}
 
+		while (*cp == ' ') cp++;
 
 		if ( (newline.token=token_match((char **)tokens, &cp, NOTOKENS))==255)           // sizeof(tokens)/))<0)
 		{
@@ -386,7 +392,7 @@ void basic_load()
 			continue;
 		}
 			
-		if (*cp == ' ') cp++;
+		while (*cp == ' ') cp++;
 		
 		switch (newline.token)
 		{
@@ -1183,7 +1189,7 @@ void basic_run(int dbf)
 		int tc;
 		if (errno !=0)
 		{
-			rprintf("Runtime error %d\r\n", errno);
+			rprintf("Runtime error %d on line %d\r\n", errno, line.lineno);
 			return;
 		}
 
@@ -1581,9 +1587,9 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case STEP: 
-		//STEP servo=from,to[,inc]
+		//STEP servo=from,to[,inc][,dlay]
 		{
-			int sf, st, si=2, sp, sn, cnt=0;
+			int sf, st, si=2, sp, sn, sw=50, cnt=0, sd;
 			int v=line.var;
 			if (v>=0 && v<=31)
 				v=variable[v];
@@ -1610,24 +1616,54 @@ int execute(line_t line, int dbf)
 				{
 					errno=3; break;
 				}
+				if (*p==',')
+				{
+					p++;
+					if (eval_expr(&p, &sw)!=NUMBER)
+					{
+						errno=3; break;
+					}
+				}
 			}
 			//
-			if (st < sf || si < 0) 
+			if (si <= 0) 
 				break;
 
 			sp = wckPosRead(v); // get servo current position
-			if (sp > sf) sp=sf;
-			sn=sp+si;
-			while (cnt++<25 && (sp-sn)<si && sn<st)
+			sd = (si/2);
+			if (sd<=0) sd=1; 
+
+			if (sf < st) 
 			{
-				sp += si;
-				if (sp>0 && sp<=254)
+				if (sp < sf) sp=sf;
+				sn=sp;
+				while (cnt++<25 && (sp-sn)<sd && sn<st)
 				{
-					wckPosSend(v, speed, sp);
+					sp += si;
+					if (sp>0 && sp<=254)
+					{
+						wckPosSend(v, speed, sp);
+					}
+					//sleep
+					delay_ms(sw);
+					sn = wckPosRead(v);
 				}
-				//sleep
-				delay_ms(50);
-				sn = wckPosRead(v);
+			}
+			else
+			{
+				if (sp > sf) sp=sf;
+				sn=sp;
+				while (cnt++<25 && (sn-sp)<sd && sn>st)
+				{
+					sp -= si;
+					if (sp>0 && sp<=254)
+					{
+						wckPosSend(v, speed, sp);
+					}
+					//sleep
+					delay_ms(sw);
+					sn = wckPosRead(v);
+				}
 			}
 		}
 		break;
