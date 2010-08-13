@@ -96,6 +96,23 @@ Line 10 causes the robot takes up Basic pose. Line 30 make it wait until keyboar
 
 The program first puts servos 13,14,15 into passive mode, this makes them free to move. These servo are the right arm of the robot. It then loops read their current position on line 60-80. Its then moves the left arm by corresponding amount. Because the left arm servos are reverse they move in the opposite direction, hence the 254-a.
 
+=dynamic distance sensor=
+
+{{{
+10 stand 16
+20 servo 13=200
+30 servo 10=50
+40 let a=$psd
+45 print "Psd=";$PSD
+50 servo 13=250-a
+60 servo 10=a
+70 wait 200
+80 goto 40
+}}}
+
+==How it works==
+The arms dynamically move as the distance sensor detects your presence !! The value of the PSD sensor (always between 10 and 50) is used to set the position of servo 10 and 13 (the shoulders). These will move in unison based on the value. If nothing in range PSD will return 50, so servo 13 is set at 200 and servo 10=50, whilst at closet approach PSD will be 10 and Servo 13=240 and servo 10=10.
+
 =modify RBC Serial Number=
 
 Some times the firmware can get corrupted and the serial number is lost. When this happens the standard firmware won't download programs from the internet as they won't match the serial number. So to inspect the firmware you need to read the Flash memory using the $ROM() function. Type 'i' and enter the following program:
@@ -118,23 +135,6 @@ etc ...
 This will set the first digit to ASCII 48 or '0', second to '1' etc ... (Sorry you will have to covert your s/n to ASCII yourself - hint is 48 + digit [0-9]
 
 *Use this with CAUTION !!!!!*
-
-=dynamic distance sensor=
-
-{{{
-10 stand 16
-20 servo 13=200
-30 servo 10=50
-40 let a=$psd
-45 print "Psd=";$PSD
-50 servo 13=250-a
-60 servo 10=a
-70 wait 200
-80 goto 40
-}}}
-
-==How it works==
-The arms dynamically move as the distance sensor detects your presence !! The value of the PSD sensor (always between 10 and 50) is used to set the position of servo 10 and 13 (the shoulders). These will move in unison based on the value. If nothing in range PSD will return 50, so servo 13 is set at 200 and servo 10=50, whilst at closet approach PSD will be 10 and Servo 13=240 and servo 10=10.
 
 =Please Note=
 _Basic programs are stored in flash - it will overwrite any action or motion scripts you have created. If / when you revert to standard firmware you will need to reload them.
