@@ -292,6 +292,15 @@ I2CO 51,@{3,1,2,3}
 will send 3 bytes to I2C address 51
 
 I2CI 52,5,@{2,1,1}
-will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address. The bytes are available from current array @#
+will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address. The bytes are available from current array @![n].
+
+This examples reads values from the optional accelerometer (address 112). Note use of $CVB2I() - converts the read bytes values to integers i.e. 255 -> -1
+
+10 FOR I=1 to 10
+20 I2CO 112,@{1,2}
+30 I2CI 113,6
+40 PRINT "X=";$CVB2I(@![1]);" Y=";$CVB2I(@![3]);" Z=";$CVB2I(@![5])
+50 WAIT 250
+60 NEXT I
 
 }}}
