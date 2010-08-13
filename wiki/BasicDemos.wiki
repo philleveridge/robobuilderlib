@@ -73,14 +73,36 @@ Lots of mods to expand this are possible. The program could check for $PSD value
 
 Line 10 causes the robot takes up Basic pose. Line 30 make it wait until keyboard or IR input. Line 40 set up list of offset values. Lines 50 maps the output of the z axis of the accelerometer ($z) to a range using the $find function. Line 60 then translates that into a displacement to apply to the servo. In lines 90 and 100 it updates the current position of the servo $servo(x) with the offset o. Line 120 cause the program to loop until either keyboard or IR remote is pressed ($kir) is received. If -1 it means no input.
 
+=mirror moves=
+
+{{{
+5 stand 16
+10 servo 13=@
+20 servo 14=@
+30 servo 15=@
+40 print "ready"
+50 let k=$kir
+60 let a=$servo(13)
+70 let b=$servo(14)
+80 let c=$servo(15)
+90 servo 10=254-a
+100 servo 11=254-b
+110 servo 12=254-c
+120 wait 50
+130 goto 50
+}}}
+
+== How it works ==
+
+The program first puts servos 13,14,15 into passive mode, this makes them free to move. These servo are the right arm of the robot. It then loops read their current position on line 60-80. Its then moves the left arm by corresponding amount. Because the left arm servos are reverse they move in the opposite direction, hence the 254-a.
 
 =modify RBC Serial Number=
 
-To inspect the ROM type 'i' and enter the following program:
+Some times the firmware can get corrupted and the serial number is lost. When this happens the standard firmware won't download programs from the internet as they won't match the serial number. So to inspect the firmware you need to read the Flash memory using the $ROM() function. Type 'i' and enter the following program:
 
 {{{
 10 FOR I=1 to 13
-20 OUT $ROM(I)
+20 OUT $ROM(I);
 30 NEXT I
 40 PRINT
 }}}
