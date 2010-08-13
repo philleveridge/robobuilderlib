@@ -1,0 +1,120 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+A functional BASIC interpreter running on the Robobuilder RBC unit. So for all those who would like to try programming - but are daunted by the complexity of writing in C - and yet want more than Action builder, download and try it out !!
+
+Writing your first program couldn't be easier, after downloading the firmware and uploading on to the robot using the RBC upgrade tool, connect a terminal program such as hyper terminal or putty and reset the power.
+
+The firmware has 19 built-in motions to try out, including football kicks. Full access to all sensor such as PSD, accelerometer and IR port. Its fast enough to program in continuous walking and auto balance. 
+
+If you find bugs - please report them on the Google site.
+
+= continuous forward walking =
+
+{{{
+5 STAND 16
+10 PRINT "press any key start"
+15 LET K=$kbd
+20 LET A=25
+30 PRINT "R";
+35 MOVE @{16,123,156,212,80,108,126,73,40,150,141,68,44,40,138,208,195},1,A
+40 MOVE @{16,130,165,201,81,115,134,81,31,147,149,72,44,40,145,209,201},1,A
+45 MOVE @{16,132,171,197,83,117,137,86,28,148,152,78,43,41,154,209,206},1,A
+50 MOVE @{16,132,175,195,87,117,139,91,27,152,154,87,43,43,164,209,211},1,A
+55 MOVE @{16,132,178,197,91,117,137,95,28,157,152,97,43,48,172,209,213},1,A
+60 MOVE @{16,130,179,201,95,115,134,96,31,161,149,105,43,53,179,210,214},1,A
+65 MOVE @{16,127,178,206,98,112,130,95,35,166,145,111,42,57,182,210,214},1,A
+70 MOVE @{16,124,175,212,100,109,127,92,40,170,142,113,42,59,183,210,214},1,A
+75 PRINT "L";
+80 MOVE @{16,124,175,212,100,109,127,92,40,170,142,113,42,59,183,210,214},1,A
+85 MOVE @{16,120,172,217,102,105,123,88,46,170,138,111,42,57,182,210,214},1,A
+90 MOVE @{16,116,167,221,103,101,120,83,51,169,135,106,43,53,179,210,214},1,A
+95 MOVE @{16,113,162,224,102,98,118,77,55,167,133,97,43,48,173,209,213},1,A
+100 MOVE @{16,111,157,225,98,96,118,73,57,163,133,87,43,43,164,209,211},1,A
+105 MOVE @{16,113,153,224,93,98,118,70,55,159,133,79,43,41,154,209,206},1,A
+110 MOVE @{16,116,152,221,89,101,120,69,51,155,135,72,44,40,146,209,201},1,A
+115 MOVE @{16,120,153,217,84,105,123,70,46,152,138,69,44,40,140,208,197},1,A
+120 MOVE @{16,123,156,212,80,108,126,73,40,150,141,68,44,40,138,208,195},1,A
+125 GOTO 30
+}}}
+
+==How it works==
+
+Line 5 STAND - instructs the robot to take up basic posture. line 15 causes the program to wait for a key press - you could alternatively make it wait for IR remote by switch $KBD for $IR.
+
+Line 35 move @{...},1,A moves servos from their current position to the new position, as specified in the list @{...}. First number is length of list i.e. 16. There are two other parameters, the '1' is the number of increments to take and the 'A' is a variable containing 25, the total length of time i.e. 25ms. You can vary A or switch for a constant etc...
+
+Line 125 GOTO will cause the program to loop for ever (or until 'Esc' is pressed on keyboard). Line 25 and 70 produce 'RLRL... etc on the serial port.
+
+To run type 'r'. in command mode ':' prompt or the red square on IR. The program is in flash so its still there even after being turned off. Just turn back on and press the red button ! (you'll need to switch the KBD for IR first - or it after standing it will wait for keyboard input)
+
+Lots of mods to expand this are possible. The program could check for $PSD value or check, or see if its fallen over, by testing the accelerometer $X / $Y or $Z. You can vary the speed by changing the value 'A' -etc ...
+
+
+= simple auto-balance =
+
+{{{
+10 STAND 16
+20 Print "Press any key"
+30 if $kir<0 then 30
+40 list m=7,-4,-2,-1,0,1,2,4
+50 Let d=$find($z, @{7,-15,-10,-5,0,5,10,15}
+60 let o=@m[d]
+70 wait 10
+80 print $z;"-";d;"-";o
+90 servo 10=$servo(10)+o
+100 servo 13=$servo(13)-o
+110 wait 10
+120 if $kir<0 then 40
+}}}
+
+== How it works ==
+
+Line 10 causes the robot takes up Basic pose. Line 30 make it wait until keyboard or IR input. Line 40 set up list of offset values. Lines 50 maps the output of the z axis of the accelerometer ($z) to a range using the $find function. Line 60 then translates that into a displacement to apply to the servo. In lines 90 and 100 it updates the current position of the servo $servo(x) with the offset o. Line 120 cause the program to loop until either keyboard or IR remote is pressed ($kir) is received. If -1 it means no input.
+
+
+=modify RBC Serial Number=
+
+To inspect the ROM type 'i' and enter the following program:
+
+{{{
+10 FOR I=1 to 13
+20 OUT $ROM(I)
+30 NEXT I
+40 PRINT
+}}}
+
+If you see 13 digits all is well. If not find your serial number (its printed on the RBC unit) and update the ROM from interactive /input mode using for example:
+
+{{{
+ROM 1,48
+ROM 2,49
+etc ...
+}}}
+
+This will set the first digit to ASCII 48 or '0', second to '1' etc ... (Sorry you will have to covert your s/n to ASCII yourself - hint is 48 + digit [0-9]
+
+*Use this with CAUTION !!!!!*
+
+=dynamic distance sensor=
+
+{{{
+10 stand 16
+20 servo 13=200
+30 servo 10=50
+40 let a=$psd
+45 print "Psd=";$PSD
+50 servo 13=250-a
+60 servo 10=a
+70 wait 200
+80 goto 40
+}}}
+
+==How it works==
+The arms dynamically move as the distance sensor detects your presence !! The value of the PSD sensor (always between 10 and 50) is used to set the position of servo 10 and 13 (the shoulders). These will move in unison based on the value. If nothing in range PSD will return 50, so servo 13 is set at 200 and servo 10=50, whilst at closet approach PSD will be 10 and Servo 13=240 and servo 10=10.
+
+=Please Note=
+_Basic programs are stored in flash - it will overwrite any action or motion scripts you have created. If / when you revert to standard firmware you will need to reload them.
+
+It is possible (hopefully unlikely) that if the firmware goes wildly wrong it could overwrite your serial number and/or zero positions - these are recoverable but with some effort (see above)_
