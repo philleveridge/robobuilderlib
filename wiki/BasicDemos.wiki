@@ -100,6 +100,8 @@ The program first lines 10-30 puts servos 13,14,15 into passive mode, this makes
 
 =dynamic distance sensor=
 
+The arms dynamically move as the distance sensor detects your presence !! 
+
 {{{
 10 stand 16
 20 servo 13=200
@@ -113,7 +115,7 @@ The program first lines 10-30 puts servos 13,14,15 into passive mode, this makes
 }}}
 
 ==How it works==
-The arms dynamically move as the distance sensor detects your presence !! The value of the PSD sensor (always between 10 and 50) is used to set the position of servo 10 and 13 (the shoulders). These will move in unison based on the value. If nothing in range PSD will return 50, so servo 13 is set at 200 and servo 10=50, whilst at closet approach PSD will be 10 and Servo 13=240 and servo 10=10.
+The value of the PSD sensor (always between 10 and 50) is used to set the position of servo 10 and 13 (the shoulders). These will move in unison based on the value. If nothing in range PSD will return 50, so servo 13 is set at 200 and servo 10=50, whilst at closet approach PSD will be 10 and Servo 13=240 and servo 10=10.
 
 =modify RBC Serial Number=
 
