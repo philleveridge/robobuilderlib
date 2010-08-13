@@ -69,7 +69,7 @@ Notice how each time you enter input mode its adds to the current program. If yo
 
 _See examples below of programs that have been tested. _
 
-= Details =
+== Details ==
 
 {{{
 Language Spec:
@@ -102,45 +102,52 @@ SYNTAX:
 [Line No] RUN number
 [Line No] PLAY number
 [Line No] OFFSET [# | List | "blank"]
+}}}
+*_Coming Soon_*
+{{{
 [Line No] IC2O number,List
 [Line No] IC2I number,number,List
+[Line No] SPEED number
+[Line No] MTYPE number,number,List
+[Line No] STEP ID=number,number,number
+}}}
 
-Special register access ($)
-$X, $Y, $Z   accelerometer values
-$IR          wait for OR input
-$KBD         wait for keyboard press
-$PSD         PSD sensor value
-$VOLT        Battery voltage
-$TICK        Number of tenths of a second
-$RND         Random numbers - different number each time called 
-$MIC         Microphone level
-$TYPE        Number of servos i.e. 16
-$SERVO(id)   position of servo id 
-$ABS(x)      Absolute value of x returned
-$ROM(x)      Contents of ROM location x
-$MAPIR(x)    Maps value from IR to built in action code
-$FIND(x, @A) Look for item less than or equal to X and return index
-$CVB2I(x)    Converts byte to int, i.e. 4 -> 4 and 254 -> -2
+||Special register access ($)||Description||
+||$X, $Y, $Z   ||accelerometer values||
+||$IR          ||wait for IR remote and get button pressed LET A=$IR||
+||$KBD         ||wait for keyboard press||
+||$PSD         ||PSD sensor value||
+||$VOLT        ||Battery voltage||
+||$TICK        ||Number of tenths of a second||
+||$PORT        ||Read Bit 6 of Port A .. LET A=$PORT:A:6 ||
+||$RND         ||Random numbers - different number each time called ||
+||$MIC         ||Microphone level||
+||$TYPE        ||Number of servos i.e. 16||
+||$SERVO(id)   ||position of servo id, i.e.  LET A=$SERVO(5) get Servo ID 5 position ||
+||$ABS(x)      ||Absolute value of x returned||
+||$ROM(x)      ||Contents of ROM location x, i.e. LET A=$ROM(10)||
+||$MAPIR(x)    ||Maps value from IR to built in action code||
+||$FIND(x, @A) ||Look for item less than or equal to X and return index||
+||$CVB2I(x)    ||Converts byte to int, i.e. 4 -> 4 and 254 -> -2||
 
-$pecial register examples :
-LET A=$IR        //get char from IR and transfer to A (also $ADC. $PSD, $X, $Y...)
-LET A=$ROM(10)   // read byte 10 of ROM
-LET A=$SERVO(id) //let A get position of servo id 
-LET A=$PORT:A:6  //Read Bit 6 of Port A
 
-Special Commands
-SERVO ID=POS  set servo id to position POS / @ / ~
+||Command||Description||
+||SERVO ID=POS  ||set servo id to position POS / @ / ~||
+||LIST/MOVE     ||sends a Scene - 'n' Servo Positions, Plus time, no frames||
+||POKE 10,A     ||Put A into Byte 10||
+||PUT PORT:A:8 = 3 ||set DDR of Port A = 3 (PIN0,PIN1 readable)||
+||PUT PORT:A:2 = 1 ||set Port A bit 2 =1 (assuming writeable)||
+||WAIT 200       ||Wait for a an amount of time in ms i.e. 200ms||
+||STAND 16      ||set servos to basic posture (for 16 or 18 servo bots)||
+||OFFSET        ||Defines a numeric offset array to be applied to MOVE and PLAY commands||
+||RUN 0         ||Call Built in action using code i.e. RUN 0, would punch left See built in motion list below||
+||I2CO 51,@{3,1,2,3}||will send 3 bytes to I2C address 51 ||
+||I2CI 52,5,@{2,1,1}||will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address.||
+||SPEED 2||Speed torque setting on Move 0-4 (0 maximum, 4 minimum) ||
+||MTYE 2||Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear ||
 
-LIST/MOVE     sends a Scene - 'n' Servo Positions, Plus time, no frames
-POKE 10,A     Put A into Byte 10
-PUT 	      enable access to PORTS/SPECIAL REGISTER
-PUT PORT:A:8 = 3 //set DDR of Port A = 3 (PIN0,PIN1 readable)
-PUT PORT:A:2 = 1 //set Port A bit 1 =1 (assuming writeable)
-WAIT          Wait for a an amount of time in ms
-STAND 16      set servos to basic posture (for 16 or 18 servo bots)
-OFFSET        Defines a numeric offset array to be applied to MOVE and PLAY commands
-RUN           Call Built in action using code i.e. RUN 0, would punch left
-Built in motions:
+*Built in motions:*
+{{{
 0) PunchLeft
 1) PunchRight
 2) SidewalkLeft
@@ -287,14 +294,8 @@ output:
 0
 etc ..
 
-17) I2C comms example(s)
-I2CO 51,@{3,1,2,3}
-will send 3 bytes to I2C address 51
-
-I2CI 52,5,@{2,1,1}
-will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address. The bytes are available from current array @![n].
-
-This examples reads values from the optional accelerometer (address 112). Note use of $CVB2I() - converts the read bytes values to integers i.e. 255 -> -1
+17) I2C comm example(s)
+This examples reads values from the optional accelerometer (address 112). The bytes are available from current array @![n]. Note use of $CVB2I() - converts the read bytes values to integers i.e. 255 -> -1. 
 
 10 FOR I=1 to 10
 20 I2CO 112,@{1,2}
@@ -302,5 +303,8 @@ This examples reads values from the optional accelerometer (address 112). Note u
 40 PRINT "X=";$CVB2I(@![1]);" Y=";$CVB2I(@![3]);" Z=";$CVB2I(@![5])
 50 WAIT 250
 60 NEXT I
-
+output:
+X=5 Y=-2 Z=6
+X=5 Y=-2 Z=7
+...
 }}}
