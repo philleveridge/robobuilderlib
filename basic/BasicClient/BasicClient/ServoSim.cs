@@ -25,33 +25,46 @@ namespace RobobuilderLib
 
     public partial class ServoSim : Form
     {
-            const int MAX = 8;
-            RemoCon ir_val = RemoCon.FAILED;
-
+        const int MAX = 8;
+        RemoCon ir_val = RemoCon.FAILED;
         servoUC[] servoUCA = new servoUC[32]; 
         TcpListener serverSocket;
         bool stopNow = false;
+        int startservo = 0;
 
         public ServoSim()
         {
             InitializeComponent();
             intsuc();
+            showuc();
         }
 
         void intsuc()
         {
-            for (int i = 0; i < MAX; i++)
+            for (int i = 0; i < 32; i++)
             {
                 servoUCA[i] = new servoUC();
 
                 servoUCA[i].id  = i;
                 servoUCA[i].val = 127;
 
-                servoUCA[i].Location = new System.Drawing.Point(10 + i*65, 10);
+                servoUCA[i].Location = new System.Drawing.Point(10 + (i%MAX)*65, 10);
                 servoUCA[i].Name = "servoUC" + i;
                 servoUCA[i].Size = new System.Drawing.Size(60, 206);
+                servoUCA[i].Visible = false;
 
                 this.Controls.Add(servoUCA[i]);
+            }
+        }
+
+        void showuc()
+        {
+            for (int i = 0; i < 32; i++)
+            {
+                if (i>=startservo && i<startservo+MAX)
+                    servoUCA[i].Visible = true;
+                else
+                    servoUCA[i].Visible = false;
             }
         }
 
@@ -71,7 +84,7 @@ namespace RobobuilderLib
             if (v.StartsWith("S:"))
             {
                 int n = Convert.ToInt32(p[1]);
-                if (n < 0) n = 0; if (n >= MAX) n = MAX - 1;
+                if (n < 0) n = 0; if (n >= 32) n = 31;
 
                 servoUCA[n].val = Convert.ToInt32(p[2]);
                 return n;
@@ -83,12 +96,12 @@ namespace RobobuilderLib
             }
             if (v.StartsWith("R:"))
             {
-                int n = Convert.ToInt32(p[1]); if (n < 0) n = 0; if (n >= MAX) n = MAX - 1;
+                int n = Convert.ToInt32(p[1]); if (n < 0) n = 0; if (n >= 32) n = 31;
                 return servoUCA[n].val;
             }
             if (v.StartsWith("O:"))
             {
-                int n = Convert.ToInt32(p[1]); if (n < 0) n = 0; if (n >= MAX) n = MAX - 1;
+                int n = Convert.ToInt32(p[1]); if (n < 0) n = 0; if (n >= 32) n = 31;
                 return servoUCA[n].io = Convert.ToInt32(p[2]);
             }
             if (v.StartsWith("IR"))
@@ -242,7 +255,6 @@ namespace RobobuilderLib
             }
             Console.WriteLine("Mouse - " + e.X + "," + e.Y + " : " + h);
 
-
             if (ir < spots.Length)
                 ir_val = (RemoCon)(ir + 1);
             else
@@ -255,9 +267,22 @@ namespace RobobuilderLib
         void ValueChanged(object sender, System.EventArgs e)
         {
             textBox1.Text = "val changed to = " + ((VScrollBar)sender).Value;
+            if (((VScrollBar)sender).Name == "psdv")
+            {
+                label4.Text = "PSD=" + ((VScrollBar)sender).Value;
+            }
+
         }
 
-
+        private void servoIter_Click(object sender, EventArgs e)
+        {
+            int n = Convert.ToInt32(servoIter.Text);
+            n = n + 1;
+            if (n > 2) n = 0;
+            startservo = n * MAX;
+            servoIter.Text = n.ToString();
+            showuc();
+        }
 
 
     }

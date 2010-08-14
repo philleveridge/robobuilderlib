@@ -40,6 +40,7 @@
             this.psdv = new System.Windows.Forms.VScrollBar();
             this.label4 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.servoIter = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -69,7 +70,7 @@
             this.xv.Name = "xv";
             this.xv.Size = new System.Drawing.Size(28, 79);
             this.xv.TabIndex = 5;
-            this.xv.ValueChanged += new System.EventHandler(ValueChanged);
+            this.xv.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // yv
             // 
@@ -79,7 +80,7 @@
             this.yv.Name = "yv";
             this.yv.Size = new System.Drawing.Size(28, 79);
             this.yv.TabIndex = 6;
-            this.yv.ValueChanged += new System.EventHandler(ValueChanged);
+            this.yv.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // zv
             // 
@@ -88,8 +89,8 @@
             this.zv.Minimum = -20;
             this.zv.Name = "zv";
             this.zv.Size = new System.Drawing.Size(28, 79);
-            this.zv.ValueChanged += new System.EventHandler(ValueChanged);
             this.zv.TabIndex = 7;
+            this.zv.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // label1
             // 
@@ -122,10 +123,12 @@
             // 
             this.psdv.Location = new System.Drawing.Point(543, 140);
             this.psdv.Maximum = 50;
+            this.psdv.Minimum = 10;
             this.psdv.Name = "psdv";
             this.psdv.Size = new System.Drawing.Size(30, 74);
             this.psdv.TabIndex = 11;
-            this.psdv.ValueChanged += new System.EventHandler(ValueChanged);
+            this.psdv.Value = 10;
+            this.psdv.ValueChanged += new System.EventHandler(this.ValueChanged);
             // 
             // label4
             // 
@@ -147,11 +150,22 @@
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_Click);
             // 
-            // Form1
+            // servoIter
+            // 
+            this.servoIter.Location = new System.Drawing.Point(508, 7);
+            this.servoIter.Name = "servoIter";
+            this.servoIter.Size = new System.Drawing.Size(22, 21);
+            this.servoIter.TabIndex = 38;
+            this.servoIter.Text = "0";
+            this.servoIter.UseVisualStyleBackColor = true;
+            this.servoIter.Click += new System.EventHandler(this.servoIter_Click);
+            // 
+            // ServoSim
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(809, 264);
+            this.Controls.Add(this.servoIter);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.psdv);
@@ -163,7 +177,7 @@
             this.Controls.Add(this.xv);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox1);
-            this.Name = "Form1";
+            this.Name = "ServoSim";
             this.Text = "RBC Simulator";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
@@ -185,6 +199,7 @@
         private System.Windows.Forms.VScrollBar psdv;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button servoIter;
     }
 }
 
