@@ -307,4 +307,20 @@ output:
 X=5 Y=-2 Z=6
 X=5 Y=-2 Z=7
 ...
+
+18) Lights proximity detector
+10 LET P=$PSD
+20 LIGHTS P-10
+30 GOTO 10
+output:
+The lights on the back of the Robot (Run,Pwr, Err) will act as a bargraph showing how close an object is to PSD sensor 
+
+19) Close gripper
+10 STEP 18=70,120,5
+output:
+Assuming a gripper is connected to Servo 18 this function will slowly close the gripper until it either is fully closed or its movement is stopped by an object in it grasp.
 }}}
+
+Grippers available from Ipswich Robotics : 
+[http://www.shapeways.com/model/55863/gripper_left.html Left gripper] or 
+[http://www.shapeways.com/model/55864/gripper___right.html Right gripper]
