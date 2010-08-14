@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <windows.h>
+#include <direct.h>
+#define GetCurrentDir _getcwd
 
 void basic();
 
@@ -7,10 +9,13 @@ void	initsocket();
 int		testsocket(char *echoString);
 int		simflg=1;
 
-#define	DBO(x) x
-
+#define	DBO(x) {if (simflg==0) {x}}
 
 int  PP_mtype=4;
+
+void  lights(int n) {
+	DBO(printf ("WIN: Lights %d\n",n);)
+}
 
 /* wck commands */
 void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)			
@@ -109,6 +114,8 @@ int gtick=0;
 int gVOLTAGE=10000;
 int gDistance=35;
 
+BYTE	MIC_SAMPLING=1;
+
 unsigned char sData[64];
 int offset[32];
 
@@ -147,7 +154,6 @@ void  Acc_GetData ()
 	return;
 }
 int adc_mic()			{return 0;}
-void lights() {}
 
 /* priotf  */
 int uartGetByte() 							{return kbhit()?getch():-1; }
@@ -206,10 +212,17 @@ int binmode2()
 
 void binmode()
 {
-       printf ("WIN:: Binary mode\n");
-	   if (binmode2()<0)
-			printf ("? can't find file - bindata.txt\n");
-       printf ("Loaded - bindata.txt\n");
+	char cCurrentPath[FILENAME_MAX];
+
+	if (!GetCurrentDir(cCurrentPath, sizeof(cCurrentPath)))
+    {
+     return;
+    }
+
+    printf ("WIN:: Binary mode (%s)\n", cCurrentPath);
+	if (binmode2()<0)
+		printf ("? can't find file - bindata.txt\n");
+    printf ("Loaded - bindata.txt\n");
 }
 
 

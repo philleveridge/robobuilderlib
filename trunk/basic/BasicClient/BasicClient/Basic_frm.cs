@@ -13,6 +13,7 @@ namespace RobobuilderLib
         Basic       compiler;
         SerialPort  s;
         binxfer btf;
+        ServoSim sim = null;
 
         bool readyDownload = false;
 
@@ -304,8 +305,9 @@ namespace RobobuilderLib
 
         private void simulatorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ServoSim s = new ServoSim();
-            s.Show();
+            if (sim == null) sim = new ServoSim();
+            //sim.ShowDialog();
+            sim.Show();
         }
 
         private void startBasiclocalToolStripMenuItem_Click(object sender, EventArgs e)

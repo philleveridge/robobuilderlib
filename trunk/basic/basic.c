@@ -38,8 +38,6 @@ $Revision$
 #include "accelerometer.h"
 #include "edit.h"
 
-#define DPAUSE {rprintf(">");while (uartGetByte()<0); rprintf("\r\n");}
-
 #define MAX_LINE  		150 
 #define MAX_TOKEN 		8
 #define MAX_FOR_NEST	3
@@ -47,31 +45,25 @@ $Revision$
 #define MAX_FOR_EXPR	20 
 #define MAX_DEPTH 		5
 
-
-
 /***********************************/
 
 uint8_t EEMEM FIRMWARE        [64];  			// leave blank - used by Robobuilder OS
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
 
-extern void Perform_Action(BYTE action);
-extern int	getHex		(int d);
-extern int	delay_ms	(int d);
-extern void SampleMotion(unsigned char); 
-
-extern void sound_init	();
-extern void SendToSoundIC(BYTE cmd) ;
-
+extern void Perform_Action	(BYTE action);
+extern int	getHex			(int d);
+extern int	delay_ms		(int d);
+extern void SampleMotion	(unsigned char); 
+extern void sound_init		();
+extern void SendToSoundIC	(BYTE cmd) ;
 
 /***********************************/
 
-
-
-extern BYTE sData[];
-extern int 	sDcnt;
-extern void sample_sound(int);
-extern volatile BYTE   MIC_SAMPLING;
-extern BYTE nos;
+extern BYTE				sData[];
+extern int 				sDcnt;
+extern void				sample_sound(int);
+extern BYTE				nos;
+extern volatile BYTE	MIC_SAMPLING;
 extern volatile WORD	gtick;
 
 //wait for byte or IR press
@@ -107,10 +99,10 @@ enum {
 	WAIT, NEXT, SERVO, MOVE,
 	GOSUB, RETURN, POKE, STAND,
 	PLAY, OUT, OFFSET, RUN, I2CO, I2CI,
-	STEP, SPEED, MTYPE
+	STEP, SPEED, MTYPE, LIGHTS
 	};
 
-#define NOTOKENS 29
+#define NOTOKENS 30
 
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
@@ -120,7 +112,7 @@ const prog_char *tokens[] ={
 	"GOSUB", "RETURN", "POKE", "STAND",
 	"PLAY", "OUT", "OFFSET", "RUN",
 	"I2CO", "I2CI", "STEP", "SPEED", 
-	"MTYPE"
+	"MTYPE", "LIGHTS"
 };
 
 #define NOSPECS 20
@@ -512,6 +504,7 @@ void basic_load()
 		case I2CO:
 		case SPEED:
 		case MTYPE:
+		case LIGHTS:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -733,6 +726,7 @@ int get_special(char **str, int *res)
 		v=0;
 		break;
 	case sMIC:
+		MIC_SAMPLING=1; // on by default, but make sure
 		{
 		int lc;
 		for (lc=0; lc<SDATASZ; lc++) 
@@ -1589,7 +1583,7 @@ int execute(line_t line, int dbf)
 	case STEP: 
 		//STEP servo=from,to[,inc][,dlay]
 		{
-			int sf, st, si=2, sp, sn, sw=50, cnt=0, sd;
+			int sf, st, si=5, sp, sn, sw=75, cnt=0, sd=8;
 			int v=line.var;
 			if (v>=0 && v<=31)
 				v=variable[v];
@@ -1616,26 +1610,37 @@ int execute(line_t line, int dbf)
 				{
 					errno=3; break;
 				}
+				sd=si+1;
 				if (*p==',')
 				{
 					p++;
-					if (eval_expr(&p, &sw)!=NUMBER)
+					if (eval_expr(&p, &sd)!=NUMBER)
 					{
 						errno=3; break;
 					}
+					if (*p==',')
+					{
+						p++;
+						if (eval_expr(&p, &sw)!=NUMBER)
+						{
+							errno=3; break;
+						}
+					}
 				}
 			}
-			//
-			if (si <= 0) 
-				break;
 
 			sp = wckPosRead(v); // get servo current position
-			sd = (si/2);
-			if (sd<=0) sd=1; 
+			
+			//rprintf("STEP %d %d %d %d %d\n", sf, st, sp, si, sd, sw);
 
 			if (sf < st) 
 			{
-				if (sp < sf) sp=sf;
+				if (sp < sf) 
+				{
+					wckPosSend(v, speed, sf);
+					sp=sf;
+					delay_ms(sw);
+				}
 				sn=sp;
 				while (cnt++<25 && (sp-sn)<sd && sn<st)
 				{
@@ -1647,11 +1652,17 @@ int execute(line_t line, int dbf)
 					//sleep
 					delay_ms(sw);
 					sn = wckPosRead(v);
+					//rprintf("-> %d %d %d %d\n", cnt, sp, sn, sd);
 				}
 			}
 			else
 			{
-				if (sp > sf) sp=sf;
+				if (sp > sf) 
+				{
+					wckPosSend(v, speed, sf);
+					sp=sf;
+					delay_ms(sw);
+				}
 				sn=sp;
 				while (cnt++<25 && (sn-sp)<sd && sn>st)
 				{
@@ -1663,12 +1674,22 @@ int execute(line_t line, int dbf)
 					//sleep
 					delay_ms(sw);
 					sn = wckPosRead(v);
+					//rprintf("<- %d %d %d %d\n", cnt, sp, sn, sd);
 				}
 			}
 		}
 		break;
 	case PLAY: 
 		SendToSoundIC(line.value);
+		break;
+	case LIGHTS:
+		p=line.text;
+		if (eval_expr(&p, &n)!=NUMBER)
+		{
+			errno=3; break;
+		}
+		MIC_SAMPLING=0;
+		lights(n);
 		break;
 	case MTYPE:
 		p=line.text;
@@ -1678,7 +1699,6 @@ int execute(line_t line, int dbf)
 		}
 		if (n<0) PP_mtype=0;
 		PP_mtype=n%4;
-
 	case SPEED: 
 		p=line.text;
 		if (eval_expr(&p, &n)!=NUMBER)
@@ -1694,6 +1714,7 @@ int execute(line_t line, int dbf)
 	case GOSUB: 
 		{
 			int t;
+
 			gosub[gp++]=nxtline;
 			t=gotoln(line.value);
 			if (t<0)
@@ -1704,8 +1725,8 @@ int execute(line_t line, int dbf)
 		break;
 	case RETURN: 
 		if (gp>0) {
-			tmp=gosub[--gp];
-			setline(tmp);
+			setline(gosub[--gp]);
+			tmp=1;
 		} else {
 			errno=7;
 		}
@@ -1736,7 +1757,6 @@ void basic_zero()
 	}
 	basic_clear();
 }
-
 
 void dump(int sz)
 {
@@ -1783,7 +1803,6 @@ void dump_firmware()
 	}
 }
 
-
 void basic_list()
 {
 	line_t line;
@@ -1791,7 +1810,6 @@ void basic_list()
 
 	uint8_t tmp=0;
 	nxtline = 0;	
-
 
 	rprintfStr("List Program \r\n");
 
@@ -1871,7 +1889,7 @@ void basic_list()
 			rprintf ("%c", line.var+'A');
 		}
 		else
-		if (line.token==GOTO || line.token==WAIT  || line.token==STAND  || line.token==PLAY  ) 
+		if (line.token==GOTO || line.token==GOSUB || line.token==WAIT  || line.token==STAND  || line.token==PLAY  ) 
 			rprintf ("%d", line.value);
 		else
 			rprintfStr (line.text);

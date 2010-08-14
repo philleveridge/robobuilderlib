@@ -39,18 +39,26 @@ namespace RobobuilderLib
 	        "Next without for",
 	        };
 	
-        public static string[] specials = new string[] { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		        "PORT", "ROM", "TYPE", "ABS", "KIR", "FIND"  };
+        public static string[] specials = new string[] { 
+            "PF",   "MIC", "X",    "Y",   "Z",     "PSD", 
+            "VOLT", "IR",  "KBD",  "RND", "SERVO", "TICK", 
+		    "PORT", "ROM", "TYPE", "ABS", "KIR",   "FIND"  };
+
+        enum SKEY
+        {
+            sPF1 = 0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD,
+            sRND, sSERVO, sTICK, sPORT, sROM, sABS, sIR2ACT, sKIR, sFIND
+        };
         
          public static  string[] tokens = new string[] {
-            "LET", "FOR", "IF", "THEN", 
-            "ELSE","GOTO","PRINT","GET",
-            "PUT", "END", "LIST", "XACT",
-            "WAIT", "NEXT", "SERVO", "MOVE",
-            "GOSUB", "RETURN", "POKE", "STAND",
-            "PLAY", "OUT", "OFFSET", "RUN", 
-            "I2CO", "I2CI", "STEP", "SPEED", 
-	        "MTYPE",
+            "LET",   "FOR",    "IF",     "THEN", 
+            "ELSE",  "GOTO",   "PRINT",  "GET",
+            "PUT",   "END",    "LIST",   "XACT",
+            "WAIT",  "NEXT",   "SERVO",  "MOVE",
+            "GOSUB", "RETURN", "POKE",   "STAND",
+            "PLAY",  "OUT",    "OFFSET", "RUN", 
+            "I2CO",  "I2CI",   "STEP",   "SPEED", 
+	        "MTYPE", "LIGHTS",
             "ENDIF" // leave at end
         };
         
@@ -61,15 +69,9 @@ namespace RobobuilderLib
 	        WAIT, NEXT, SERVO, MOVE,
 	        GOSUB, RETURN, POKE, STAND,
             PLAY, OUT, OFFSET, RUN,
-            I2CO, I2CI, STEP, SPEED, MTYPE,
+            I2CO, I2CI, STEP, SPEED, MTYPE, LIGHTS,
             ENDIF
 	        };
-	
-
-
-        enum SKEY {sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD,
-        sRND, sSERVO, sTICK, sPORT, sROM, sABS, sIR2ACT, sKIR, sFIND
-        };
 							
         struct basic_line {
             public int lineno;
@@ -209,6 +211,46 @@ namespace RobobuilderLib
             return r;
         }
 
+        public string[]  parse(string[] l)
+        {
+            string[] r = new string[l.Length];
+            int lnc = 5;
+            int i = 0;
+            foreach (string s in l)
+            {
+                string z = s;
+                if (z.IndexOf('\'') >= 0) z = z.Substring(0, z.IndexOf('\''));
+                z = z.Trim();
+                if (z.Length <= 0) continue;
+
+                string tok = GetWord(ref z);
+
+                if (z != "" && z[0] == ':')
+                {
+                    labels.Add(tok, lnc);  //label
+                    z = z.Substring(1);
+                    if (GetNext(ref z) != " ")
+                    {
+                        continue;
+                    }
+                    z = z.Trim();
+                    tok = GetWord(ref z);
+                }
+                else
+                {
+                }
+                Console.WriteLine(lnc + " " + tok + z);
+                r[i++] = "" + lnc + " " + tok + z;
+                lnc += 5;
+            }
+            //
+            foreach (string n in labels.Keys)
+            {
+                Console.WriteLine(n + " - " + labels[n]);
+            }
+            return r;
+        }
+
         public bool Compile(string prog)
         {
             errno = 0;
@@ -227,30 +269,22 @@ namespace RobobuilderLib
             labels.Clear();
 
             string[] lines = prog.Split('\n');
-            foreach (string s in lines)
+
+            string[] r = parse(lines);
+
+            foreach (string s in r)
             {
-                String z = s;
+                if (s==null) continue;
+
+                Console.WriteLine(s);
                 lineno++;
                 curline = s;
                 ln.lineno = lnc;
-                Console.Write(s);
-
-                if (z.IndexOf('\'') >= 0) z = z.Substring(0, z.IndexOf('\''));
-                z = z.Trim();
-                if (z.Length <= 0) continue;
+                String z = s;
 
                 string tok = GetWord(ref z);
 
-                if (z != "" && z[0]==':')
-                {
-                    //label
-                    labels.Add(tok, lnc);
-                    z = z.Substring(1);
-                    if (GetNext(ref z) != " ") { errno = 1; return false; }
-                    z = z.Trim();
-                    tok = GetWord(ref z);
-                }
-                else if (IsNumber(tok))
+                if (IsNumber(tok))
                 {
                     ln.lineno = Convert.ToInt32(tok);
                     if (GetNext(ref z) != " ") { errno = 1; return false; }
@@ -314,6 +348,7 @@ namespace RobobuilderLib
                     case KEY.I2CO:
                     case KEY.SPEED:
                     case KEY.MTYPE:
+                    case KEY.LIGHTS:
                         ln.text = upperIt(z);
                         break;
                     case KEY.LIST:
