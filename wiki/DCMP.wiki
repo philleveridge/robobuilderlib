@@ -21,8 +21,8 @@ DCMP provides direct access to Wck Bus to enable Servos to be controlled via ser
 
 = Details =
 ||cmd||values||Description||
-||1||Get Y & Z || Reads the accelerometer 1st Byte X value 2nd Byte the Z value ||
-||2||Get X & Z ||Reads the accelerometer 1st Byte Y value 2nd Byte the Z value ||
+||1||Get Y & Z || Reads the accelerometer 1st Byte Y value 2nd Byte the Z value ||
+||2||Get X & Z ||Reads the accelerometer 1st Byte X value 2nd Byte the Z value ||
 ||3||PSD on ||Set the Proximity Sensor Device on - for distance measuring ||
 ||4||PSD off ||Sets PSD off - i.e. powers down - takes at least 50ms to turn back on||
 ||5||Get PSD ||Reads the current value of the PSD returned 1st byte 10-50 cm||
