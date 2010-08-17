@@ -8,7 +8,7 @@ Download [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.he
 
 A windows OS build is available - [http://code.google.com/p/robobuilderlib/downloads/detail?name=Basic.exe basic.exe]. it input/outputs using windows console. Robot hardware functions are stubbed out. 
 
-Turn on the RBC and connect a vt100 terminal emulator. You should see the following:
+Turn on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html vt100 terminal emulator]. You should see the following:
 {{{
 Basic v=$Revision: 216 $
 Commands: i r l c z q
@@ -144,7 +144,7 @@ SYNTAX:
 ||I2CO 51,@{3,1,2,3}||will send 3 bytes to I2C address 51 ||
 ||I2CI 52,5,@{2,1,1}||will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address.||
 ||SPEED 2||Speed torque setting on Move 0-4 (0 maximum, 4 minimum) ||
-||MTYE 2||Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear ||
+||MTYPE 3||Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear ||
 
 *Built in motions:*
 {{{
