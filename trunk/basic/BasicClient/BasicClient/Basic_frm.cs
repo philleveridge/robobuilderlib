@@ -319,5 +319,20 @@ namespace RobobuilderLib
         }
 
 
+        void Basic_frm_SizeChanged(object sender, System.EventArgs e)
+        {
+            //throw new System.NotImplementedException();
+            input.Width = ((Form)sender).Width-40;
+            output.Width = ((Form)sender).Width-40;
+            
+            output.Top = ((Form)sender).Height - output.Height-107;
+            fname.Top = output.Top + 113;
+            comPort.Top = output.Top + 113; ;
+            progressBar1.Top = output.Top + 113;
+            button1.Top = output.Top + 113; ;
+
+            input.Height = ((Form)sender).Height - 220;
+        }
+
     }
 }
