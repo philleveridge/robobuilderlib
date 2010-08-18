@@ -40,14 +40,14 @@
             this.compilerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.compileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.downloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.simulatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startBasiclocalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fname = new System.Windows.Forms.TextBox();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.input = new System.Windows.Forms.RichTextBox();
-            this.simulatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.startBasiclocalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -149,6 +149,20 @@
             this.downloadToolStripMenuItem.Text = "Download";
             this.downloadToolStripMenuItem.Click += new System.EventHandler(this.downloadToolStripMenuItem_Click);
             // 
+            // simulatorToolStripMenuItem
+            // 
+            this.simulatorToolStripMenuItem.Name = "simulatorToolStripMenuItem";
+            this.simulatorToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.simulatorToolStripMenuItem.Text = "Simulator";
+            this.simulatorToolStripMenuItem.Click += new System.EventHandler(this.simulatorToolStripMenuItem_Click);
+            // 
+            // startBasiclocalToolStripMenuItem
+            // 
+            this.startBasiclocalToolStripMenuItem.Name = "startBasiclocalToolStripMenuItem";
+            this.startBasiclocalToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.startBasiclocalToolStripMenuItem.Text = "Start basic (local)";
+            this.startBasiclocalToolStripMenuItem.Click += new System.EventHandler(this.startBasiclocalToolStripMenuItem_Click);
+            // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -195,25 +209,10 @@
                 "ssive\n       Print \"Servo 12 = \"; $SERVO(12)\n       wait 500   \'0.5secs\n       g" +
                 "oto Loop";
             // 
-            // simulatorToolStripMenuItem
-            // 
-            this.simulatorToolStripMenuItem.Name = "simulatorToolStripMenuItem";
-            this.simulatorToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
-            this.simulatorToolStripMenuItem.Text = "Simulator";
-            this.simulatorToolStripMenuItem.Click += new System.EventHandler(this.simulatorToolStripMenuItem_Click);
-            // 
-            // startBasiclocalToolStripMenuItem
-            // 
-            this.startBasiclocalToolStripMenuItem.Name = "startBasiclocalToolStripMenuItem";
-            this.startBasiclocalToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
-            this.startBasiclocalToolStripMenuItem.Text = "Start basic (local)";
-            this.startBasiclocalToolStripMenuItem.Click += new System.EventHandler(this.startBasiclocalToolStripMenuItem_Click);
-            // 
             // Basic_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(788, 371);
             this.Controls.Add(this.input);
             this.Controls.Add(this.progressBar1);
@@ -225,6 +224,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Basic_frm";
             this.Text = "Basic Compiler - ";
+            this.SizeChanged += new System.EventHandler(Basic_frm_SizeChanged);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
