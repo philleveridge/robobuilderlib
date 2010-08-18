@@ -75,8 +75,10 @@ _See examples below of programs that have been tested. _
 {{{
 Language Spec:
 VAR    A-Z  (integer only)
-OPER   + - * \ ( ) = < > % <= >= <>
-CMD    LET:FOR:NEXT:GOTO:IF:THEN:ELSE:PRINT:END:SET:XACT:WAIT
+OPER   + - * \ ( ) = < > % <= >= <> & | 
+CMD    LET:FOR:NEXT:GOTO:IF:THEN:ELSE:PRINT:END:SET:RUN:POKE
+       WAIT:STEP:PUT:SERVO:MOVE:GOSUB:RETURN:LIST:STAND:OUT
+       I2CI:I2CO:OFFSET:SPEED:MTYPE
 STRING " ... "
 EXPR1  VAR | LITERAL
 EXPR2  EXPR1 | STRING
@@ -274,7 +276,7 @@ Hello Here back
 10 MOVE @{16,125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},10,1000
 Its simpler to use STAND 16 - but this show use of the MOVE command with a literal/inline LIST. 
 
-Note: There is one subtle difference with STAND in that its isn't affected by the OFFSET command where as MOVE is.
+Note: There is one subtle difference with STAND in that its not affected by the OFFSET command where as MOVE is.
 
 15) Index through a list
 10 list a=5,65,66,67,68,69
@@ -336,5 +338,4 @@ The buttons on the back of the RBC are normally logic high and go low when press
 30 print "Done"
 
 Note the use of the & for logic AND.
-
 }}}
