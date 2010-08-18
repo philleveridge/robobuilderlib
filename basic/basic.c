@@ -858,7 +858,7 @@ int get_special(char **str, int *res)
 		if (**str==':') {   // Optional Bit specficied
 			(*str)++;
 			if (**str>='0' && **str<='7' ) {
-				t=  (**str + '0');
+				t=  (**str - '0');
 				(*str)++;
 				}
 		}				
@@ -1106,9 +1106,6 @@ int put_special(int var, int n)
 {
 	if (var>= 30)
 	{
-		char a,b;
-		a='A' + (var-30)/10;
-		b='0' + (var % 10);
 		set_bit((var-30)/10, (var % 10), n);
 	}
 	else
@@ -1694,8 +1691,26 @@ int execute(line_t line, int dbf)
 		{
 			errno=3; break;
 		}
-		MIC_SAMPLING=0;
-		lights(n);
+		if (*p==',')
+		{
+			//LIGHTS A,@{5,5,10,15,20,25}
+			int tn;
+			p++;
+			if (eval_expr(&p, &tn)!=ARRAY)
+			{
+				errno=3; break;
+			}
+			MIC_SAMPLING=0;
+			if (nis==5)
+				blights(n, scene);
+			else
+				errno=3; // must be 5 elements
+		}
+		else
+		{
+			MIC_SAMPLING=0;
+			lights(n);
+		}
 		break;
 	case MTYPE:
 		p=line.text;

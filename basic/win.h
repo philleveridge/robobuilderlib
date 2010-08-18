@@ -4,23 +4,23 @@
 #define uint8_t  unsigned char
 #define EEMEM
 #define prog_char char
-#define PINA 1
-#define PINB 2
-#define PINC 3
-#define PIND 4
-#define PINE 5
-#define PINF 6
-#define PING 7
+#define PINA _port[0]
+#define PINB _port[1]
+#define PINC _port[2]
+#define PIND _port[3]
+#define PINE _port[4]
+#define PINF _port[5]
+#define PING _port[6]
 
 char _port[8];
 
-#define PORTA _port[1]
-#define PORTB _port[2]
-#define PORTC _port[3]
-#define PORTD _port[4]
-#define PORTE _port[5]
-#define PORTF _port[6]
-#define PORTG _port[7]
+#define PORTA _port[0]
+#define PORTB _port[1]
+#define PORTC _port[2]
+#define PORTD _port[3]
+#define PORTE _port[4]
+#define PORTF _port[5]
+#define PORTG _port[6]
 
 #define rprintf			printf 
 #define rprintfChar		putchar 
