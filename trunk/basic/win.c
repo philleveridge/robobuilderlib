@@ -17,6 +17,10 @@ void  lights(int n) {
 	DBO(printf ("WIN: Lights %d\n",n);)
 }
 
+void  blights(int n, int *a) {
+	DBO(printf ("WIN: Lights %d [%d,%d,%d,%d,%d]\n",n,a[0], a[1], a[2], a[3], a[4]);)
+}
+
 /* wck commands */
 void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)			
 {

@@ -37,7 +37,10 @@ void ADC_set(BYTE);
 
 volatile BYTE   MIC_SAMPLING=0;
 
-void  lights(int n) // power bar meter!
+
+
+//i.e. 10,33,50,66,90
+void  blights(int n, int *vals) 
 {
 		RUN_LED1_OFF;
 		RUN_LED2_OFF;
@@ -45,11 +48,18 @@ void  lights(int n) // power bar meter!
 		PWR_LED1_OFF;
 		PWR_LED2_OFF;	
 
-		if (n > 4)    ERR_LED_ON;
-		if (n > 8)    RUN_LED1_ON;		
-		if (n > 16)   RUN_LED2_ON;		
-		if (n > 32)   PWR_LED1_ON;		
-		if (n > 64)   PWR_LED2_ON;		
+		if (n > vals[0])   ERR_LED_ON;
+		if (n > vals[1])   RUN_LED1_ON;		
+		if (n > vals[2])   RUN_LED2_ON;		
+		if (n > vals[3])   PWR_LED1_ON;		
+		if (n > vals[4])   PWR_LED2_ON;		
+}
+
+//4, 8, 16,32,64
+void  lights(int n) // power bar meter!
+{
+	int range[5] = {4,8,16,32,64};
+	blights(n, range);
 }
 
 void sample_sound(int status)
