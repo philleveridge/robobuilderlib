@@ -326,3 +326,15 @@ Assuming a gripper is connected to Servo 18 this function will slowly close the 
 Grippers available from Ipswich Robotics : 
 [http://www.shapeways.com/model/55863/gripper_left.html Left gripper] or 
 [http://www.shapeways.com/model/55864/gripper___right.html Right gripper]
+
+{{{
+20) Reading PF1 and PF2
+The buttons on the back of the RBC are normally logic high and go low when pressed. The are access via bits 0 &1 on PORTA -
+
+10 print "Press PF1 or PF2 to start"
+20 if ($port:a:0=1)&($port:a:1=2) then 20
+30 print "Done"
+
+Note the use of the & for logic AND.
+
+}}}
