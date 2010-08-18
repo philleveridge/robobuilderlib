@@ -10,7 +10,7 @@ A windows OS build is available - [http://code.google.com/p/robobuilderlib/downl
 
 Turn on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html vt100 terminal emulator]. You should see the following:
 {{{
-Basic v=$Revision: 216 $
+Basic v=$Revision: 242 $
 Commands: i r l c z q
 16 servos connected
 0 lines in memory
@@ -20,6 +20,7 @@ Commands: i r l c z q
 At the prompt type 
   * i - input a new program [. at start of line will exit input mode]
   * r - run current program [or press Red button on IR remote]
+  * R - run in TRACE mode
   * l - list current program
   * c - clear memory
   * z - download (requires client - see below)
@@ -32,7 +33,7 @@ In input mode you get a '>' prompt, in command mode a ':'. In input mode a comma
 So for instance - an example session :
 
 {{{
-Basic v=$Revision: 216 $
+Basic v=$Revision: 242 $
 Commands: i r l c z q
 16 servos connected
 0 lines in memory
@@ -102,9 +103,6 @@ SYNTAX:
 [Line No] RUN number
 [Line No] PLAY number
 [Line No] OFFSET [# | List | "blank"]
-}}}
-*_Coming Soon_*
-{{{
 [Line No] IC2O number,List
 [Line No] IC2I number,number,List
 [Line No] SPEED number
@@ -146,6 +144,7 @@ SYNTAX:
 ||I2CI 52,5,@{2,1,1}||will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address.||
 ||SPEED 2||Speed torque setting on Move 0-4 (0 maximum, 4 minimum) ||
 ||MTYPE 3||Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear ||
+||STEP 5=30,50,5||STEP servo 5 from position 30 to position 50 in increments of 5 checking progress and stopping if obstruction||
 
 *Built in motions:*
 {{{
@@ -273,7 +272,9 @@ Hello Here back
 
 14) Take up basic pose 
 10 MOVE @{16,125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},10,1000
-Its simpler to use STAND 16 - but this show use of the MOVE command with a literal/inline LIST
+Its simpler to use STAND 16 - but this show use of the MOVE command with a literal/inline LIST. 
+
+Note: There is one subtle difference with STAND in that its isn't affected by the OFFSET command where as MOVE is.
 
 15) Index through a list
 10 list a=5,65,66,67,68,69
