@@ -1192,9 +1192,15 @@ void basic_run(int dbf)
 		tc = nextchar();	// terminator character ?
 		
 		if (dbf) {
+			int kp;
 			rprintf ("TRACE :: %d - ", line.lineno); 
 			rprintfStr (tokens[line.token]);;
-			while (uartGetByte()<0) ; // wait for input
+			while ((kp=uartGetByte())<0) ; // wait for input
+			if (kp == 27)  
+			{
+				rprintfStr (" ** User Break\r\n"); 
+				return;
+			}
 			rprintfCRLF();
 		}
 		
@@ -2045,7 +2051,7 @@ void basic()
 			rprintf ("%d lines loaded\r\n", findend());
 			break;
 		case 'q': // query 
-			readservos();
+			rprintf ("%d servos connected\r\n", readservos());
 			rprintf ("%d lines stored\r\n", findend());
 			break;
 		default:
