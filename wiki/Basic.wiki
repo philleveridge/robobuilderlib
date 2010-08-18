@@ -116,6 +116,7 @@ SYNTAX:
 ||$X, $Y, $Z   ||accelerometer values||
 ||$IR          ||wait for IR remote and get button pressed LET A=$IR||
 ||$KBD         ||wait for keyboard press||
+||$KIR         ||Scan keyboard and IR port return immediate -1 if nothing pressed||
 ||$PSD         ||PSD sensor value||
 ||$VOLT        ||Battery voltage||
 ||$TICK        ||Number of tenths of a second||
