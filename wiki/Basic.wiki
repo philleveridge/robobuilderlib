@@ -338,4 +338,14 @@ The buttons on the back of the RBC are normally logic high and go low when press
 30 print "Done"
 
 Note the use of the & for logic AND.
+
+21) Switch LEDS on and OFF
+The LEDs can be access via the PORT as well. Red Power LED is on Port C bit 7. This LED is on when bit is zero and off when bit is 1. So the following will flash the light
+10 LIGHTS 0
+20 put port:c:7=1
+30 wait 500
+40 put port:c:7=0
+50 wait 500
+60 GOTO 20
+
 }}}
