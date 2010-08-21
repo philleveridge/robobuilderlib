@@ -15,7 +15,7 @@
 #define BR115200			7 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
 
-// ($Rev$)
+char *ver = "($Rev$)";
 
 //defined adc.c
 extern void Acc_init(void);
@@ -416,17 +416,6 @@ void HW_init(void) {
 	UBRR0H=0x00;
 	UBRR0L=0x07;
 
-	// USART1 initialization
-	// Communication Parameters: 8 Data, 1 Stop, No Parity
-	// USART1 Receiver: On
-	// USART1 Transmitter: On
-	// USART1 Mode: Asynchronous
-	// USART1 Baud rate: 115200
-	UCSR1A=0x00;
-	UCSR1B= (1<<RXEN)|(1<<TXEN) |(1<<RXCIE); //enable PC read/write ! (old value=0x18;		
-	UCSR1C=0x06;
-	UBRR1H=0x00;
-	UBRR1L=BR115200;
 
 	// Analog Comparator initialization
 	// Analog Comparator: Off
@@ -503,11 +492,13 @@ void ReadButton(void)
 void ProcButton(void)
 {
 	int cnt;
+	
 	if(gBtn_val == PF1_BTN_PRESSED)
 	{
 		//look to see if PF2 held down
 		gBtn_val = 0;
 		
+		printline(ver);
 		printline("charge mode - testing");
 		
 		for (cnt=0; cnt<10; cnt++)
@@ -538,6 +529,7 @@ void ProcButton(void)
 	if(gBtn_val == PF2_BTN_PRESSED)
 	{
 		//look to see if PF1 held down
+		printline(ver);
 		gBtn_val = 0;
 	}
 }
@@ -705,15 +697,20 @@ int main(void)
 	//otherwise DC mode!
 	//default sampling ON
 	
+	// USART1 initialization
+	UCSR1A=0x00;
+	UCSR1B= (1<<RXEN)|(1<<TXEN) |(1<<RXCIE); //enable PC read/write ! (old value=0x18;		
+	UCSR1C=0x06;
+	UBRR1H=0x00;
+	UBRR1L=BR115200;
+
+	
 	TIMSK &= 0xFE;
 	EIMSK &= 0xBF;
 	UCSR0B |= 0x80;
 	UCSR0B &= 0xBF;
 	
 	sample_sound(1);
-	RUN_LED2_OFF;
-	PF1_LED1_OFF;    //DCmode
-	PF1_LED2_OFF;
 	
 	gCMD=0;
 	PLAY_SOUND=0;
