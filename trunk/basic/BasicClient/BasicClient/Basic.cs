@@ -19,14 +19,15 @@ namespace RobobuilderLib
 {
     class Basic
     {
-        Hashtable labels = new Hashtable();
+        public Hashtable labels = new Hashtable();
+        public Hashtable constants = new Hashtable();
+        public int errno;
+        public int lineno;
+        public string curline;
+        public string precomp;
 
         byte[] code;
         int codeptr;
-
-        public int errno;
-        public int lineno; 
-        public string curline;
 
         /**********************************************************/
 
@@ -104,6 +105,10 @@ namespace RobobuilderLib
             }
             w = w.Substring(i);
             n = n.ToUpper();
+
+            if (constants.ContainsKey(n))
+                return (string)(constants[n]);
+
             return n;
         }
 
@@ -186,6 +191,7 @@ namespace RobobuilderLib
         string process_arg(string a)
         {
             string r = "";
+
             bool sflag = false;
             for (int i = 0; i < a.Length; i++)
             {
@@ -214,8 +220,12 @@ namespace RobobuilderLib
         public string[]  parse(string[] l)
         {
             string[] r = new string[l.Length];
+            constants.Clear();
+            labels.Clear();
+
             int lnc = 5;
             int i = 0;
+            precomp = "";
             foreach (string s in l)
             {
                 string z = s;
@@ -238,16 +248,61 @@ namespace RobobuilderLib
                 }
                 else
                 {
+                    if (tok.ToLower() == "const")
+                    {
+                        //
+                        if (GetNext(ref z) != " ")
+                        {
+                            continue;
+                        }
+                        string n = GetWord(ref z);
+
+                        if (GetNext(ref z) != " ")
+                        {
+                            continue;
+                        }
+                        string v = GetWord(ref z);
+                        try
+                        {
+                            constants.Add(n, v);
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Constant {0} {1} failed",n,v);
+                        }
+                        continue;
+                    }
                 }
+
                 Console.WriteLine(lnc + " " + tok + z);
-                r[i++] = "" + lnc + " " + tok + z;
+                r[i]= "" + lnc + " " + tok + z;
+                precomp += r[i] + "\r\n";
+                i++;
                 lnc += 5;
             }
             //
-            foreach (string n in labels.Keys)
+
+            if (constants.Count > 0)
             {
-                Console.WriteLine(n + " - " + labels[n]);
+                precomp += "-----------\r\nConstant defined\r\n";
+                foreach (string n in constants.Keys)
+                {
+                    precomp = Regex.Replace(precomp, n, constants[n].ToString());
+                    precomp += n + " " + constants[n] + "\r\n";
+                }
             }
+
+            if (labels.Count > 0)
+            {
+                precomp += "-----------\r\nLabels defined\r\n";
+                foreach (string n in labels.Keys)
+                {
+                    precomp = Regex.Replace(precomp, n, labels[n].ToString(), RegexOptions.IgnoreCase);
+                    precomp += n + " " + labels[n] + "\r\n";
+                }
+            }
+
+            Console.WriteLine(precomp);
             return r;
         }
 
@@ -400,7 +455,6 @@ namespace RobobuilderLib
                     case KEY.GOSUB:
                     case KEY.PLAY: 
                         tok = GetWord(ref z);
-
                         if (labels.Contains(tok))
                         {
                             ln.value = (int)labels[tok];
@@ -410,8 +464,6 @@ namespace RobobuilderLib
                             ln.value = GetNumber(tok);
                         }
                         break;
-
-
                     case KEY.END:
                     case KEY.RETURN:
                         ln.text = "";
