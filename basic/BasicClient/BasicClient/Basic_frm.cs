@@ -227,6 +227,7 @@ namespace RobobuilderLib
             if (compiler.Compile(input.Text))
             {
                 MessageBox.Show(String.Format("Complete - ready to download [{0} Bytes]",compiler.Download().Length/2), "Compiler");
+                output.Text = compiler.precomp + "\r\n";
                 output.Text += compiler.Dump();
                 readyDownload = true;
             }
@@ -325,13 +326,13 @@ namespace RobobuilderLib
             input.Width = ((Form)sender).Width-40;
             output.Width = ((Form)sender).Width-40;
             
-            output.Top = ((Form)sender).Height - output.Height-107;
-            fname.Top = output.Top + 113;
-            comPort.Top = output.Top + 113; ;
-            progressBar1.Top = output.Top + 113;
-            button1.Top = output.Top + 113; ;
+            output.Top = ((Form)sender).Height - output.Height-85;
+            fname.Top = output.Top + 115;
+            comPort.Top = output.Top + 115; ;
+            progressBar1.Top = output.Top + 115;
+            button1.Top = output.Top + 115; ;
 
-            input.Height = ((Form)sender).Height - 220;
+            input.Height = ((Form)sender).Height - 230;
         }
 
     }
