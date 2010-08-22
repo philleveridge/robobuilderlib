@@ -18,7 +18,115 @@ The windows is then an interactive console on to the robot. Press z (to put robo
   * allows labels
   * provides context sensitive colour coding
   * allows multi-line if/then/else/endif statements
+  * allows const definition
+  * has a RBC simulator mode for programs in conjunction with basic.exe
+
+== examples programs ==
+
+{{{
+'Example maze program
+'Based on Robobuilder C tutorial
+'
+     stand 16
+     print "Maze Program"
+     let c=0
+loop:
+     let d=$psd
+     lights d-10
+
+     if d < 12 then
+        gosub back
+        goto loop
+     endif
+     
+     if (c = 0) & (d < 30) then
+        gosub leftturn90
+        let c=1
+        goto loop
+     endif
+
+     if (c = 1) & (d < 30) then
+        gosub leftturn180
+        let c=2
+        goto loop
+     endif
+     
+     if (c = 1) & (d < 30) then
+         gosub rightturn90
+         let c=0
+         goto loop
+     endif
+          
+     let c=0
+     gosub forward
+     goto loop
+ 
+back:
+     print ":"
+     run 9     
+     wait 1000
+     return
+
+leftturn90:
+     print "<-"
+     run 4
+     run 4
+     run 4
+     wait 1000
+     return
+  
+leftturn180:
+     print "V"
+     run 4
+     run 4
+     run 4
+     run 4
+     run 4
+     wait 1000
+     return
+     
+rightturn90:
+     print "->"
+     run 5
+     run 5
+     run 5
+     run 5
+     wait 1000
+     return
+
+forward:
+     print "^"
+     run 8
+     run 8
+     run 8
+     wait 1000
+     return
+     
+    
+}}}
+
+== working with basic.exe ==
+
+When a program is compiled a file bindata.txt is created - and this file can then be loaded into basic.exe using 'z' option. It will also be automatically loaded into basic when it starts.
+
+== using simulator ==
+
+The simulator enable basic programs to to be tested before being downloaded to RBC. The simulator can
+  * Show output of any servo id 0-24
+  * Show the IO State of any servo
+  * Allow any servo value to be changed in realtime
+  * Read/Modify the X, Y and Z values of accelerometer
+  * Read/Modify the PSD
+  * Allow IR remote values to be set 
+
+To use the simulator with basic.exe do the follwoing:
+  # Start simulator from menu
+  # Press listen button to start server
+  # Start basic.exe - it will show "Sim Mode" if able to connect
 
 == Details ==
 
-|| http://robobuilderlib.googlecode.com/files/bc.jpg ||
+|| <img src="http://robobuilderlib.googlecode.com/files/bc.jpg" width="500">|| Screen layout ||
+|| <img src="http://robobuilderlib.googlecode.com/files/bc2.jpg" width="50%"> || New menu options||
+|| <img src="http://robobuilderlib.googlecode.com/files/bc3.jpg" width="50%"> || Simulator panel ||
+|| <img src="http://robobuilderlib.googlecode.com/files/bc5.jpg" width="40%"><img src="http://robobuilderlib.googlecode.com/files/bc4.jpg" width="40%"> || Basic.exe running with sim||
