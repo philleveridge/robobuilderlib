@@ -1,4 +1,4 @@
-#summary Windows Basic Client (219) -  A front end editor and download for Basic firmware
+#summary Windows Basic Client (242) -  A front end editor and download for Basic firmware
 
 = Introduction =
 
@@ -26,7 +26,6 @@ The windows is then an interactive console on to the robot. Press z (to put robo
 {{{
 'Example maze program
 'Based on Robobuilder C tutorial
-'
      stand 16
      print "Maze Program"
      let c=0
