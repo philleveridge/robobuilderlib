@@ -205,9 +205,8 @@
             this.input.Name = "input";
             this.input.Size = new System.Drawing.Size(763, 187);
             this.input.TabIndex = 14;
-            this.input.Text = "\'      test program\n\'\n       PRINT \"Test Passive\"\nLoop:  SERVO 12=@ \'set servo pa" +
-                "ssive\n       Print \"Servo 12 = \"; $SERVO(12)\n       wait 500   \'0.5secs\n       g" +
-                "oto Loop";
+            this.input.Text = "\'      test program\nconst DLY 400\n       PRINT \"Test Passive\"\nLoop:  SERVO 12=@ \'set servo pa" +
+                "ssive\n       Print \"Servo 12 = \"; $SERVO(12)\n       wait DLY   \'0.5secs\n       goto Loop";
             // 
             // Basic_frm
             // 
