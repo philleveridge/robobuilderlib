@@ -19,6 +19,8 @@ namespace RobobuilderLib
 {
     class Basic
     {
+        public const int MAX_PROG_SPACE = 3072;
+
         public Hashtable labels = new Hashtable();
         public Hashtable constants = new Hashtable();
         public int errno;
@@ -41,13 +43,13 @@ namespace RobobuilderLib
 	        };
 	
         public static string[] specials = new string[] { 
-            "PF",   "MIC", "X",    "Y",   "Z",     "PSD", 
+            "MIC", "X",    "Y",   "Z",     "PSD", 
             "VOLT", "IR",  "KBD",  "RND", "SERVO", "TICK", 
 		    "PORT", "ROM", "TYPE", "ABS", "KIR",   "FIND"  };
 
         enum SKEY
         {
-            sPF1 = 0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD,
+            sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD,
             sRND, sSERVO, sTICK, sPORT, sROM, sABS, sIR2ACT, sKIR, sFIND
         };
         
@@ -84,7 +86,7 @@ namespace RobobuilderLib
 
         public Basic()
         {
-            code = new byte[4096];
+            code = new byte[MAX_PROG_SPACE];
             codeptr = 0;
         }
 
@@ -97,7 +99,7 @@ namespace RobobuilderLib
             if (w.Length == 0) return "";
             for (i = 0; i < w.Length; i++)
             {
-                if (!((w[i] >= 'A' && w[i] <= 'Z') || (w[i] >= 'a' && w[i] <= 'z') || (w[i] >= '0' && w[i] <= '9')))
+                if (!((w[i] >= 'A' && w[i] <= 'Z') || w[i]==':' || (w[i] >= 'a' && w[i] <= 'z') || (w[i] >= '0' && w[i] <= '9')))
                 {
                     break;
                 }
@@ -152,7 +154,7 @@ namespace RobobuilderLib
 
             string t = GetWord(ref w);
 
-            for (int i = 0; i < tokens.Length; i++)
+            for (int i = 0; i < specials.Length; i++)
             {
                 if (t.Equals(specials[i], StringComparison.CurrentCultureIgnoreCase))
                 {
@@ -185,6 +187,8 @@ namespace RobobuilderLib
                 else
                     r += txt[i];
             }
+            if (constants.ContainsKey(r))
+                return (string)(constants[r]);
             return r;
         }
 
@@ -235,10 +239,10 @@ namespace RobobuilderLib
 
                 string tok = GetWord(ref z);
 
-                if (z != "" && z[0] == ':')
+                if (tok.EndsWith(":"))
                 {
+                    tok = tok.Substring(0, tok.Length - 1);
                     labels.Add(tok, lnc);  //label
-                    z = z.Substring(1);
                     if (GetNext(ref z) != " ")
                     {
                         continue;
@@ -434,17 +438,15 @@ namespace RobobuilderLib
                         ln.text = upperIt(z);
                         break;
                     case KEY.PUT:
-                        t = GetSpecial(ref z);
-                        if (t < 0) errno = 3; else ln.var = (byte)t;
-                        if ((SKEY)t == SKEY.sPORT)
+                        string w1 = GetWord(ref z);
+                        if (!w1.StartsWith("PORT:") || w1.Length!=8) 
+                            errno = 3; 
+                        else 
                         {
-                            if (GetNext(ref z) != ":") { errno = 3; }
-                            string pn = GetNext(ref z);
-                            if (pn[0] < 'A' || pn[0] > 'G') { errno = 3; }
-                            if (GetNext(ref z) != ":") { errno = 3; }
-                            string pb = GetNext(ref z);
-                            if (pb[0] < '0' || pb[0] > '8') { errno = 3; }
-                            ln.var = (byte)(30 + (int)(pn[0] - 'A') * 10 + (int)(pb[0] - '0'));
+                            if (w1[5] < 'A' || w1[5] > 'G') { errno = 3; }
+                            if (w1[6] != ':') { errno = 3; }
+                            if (w1[7] < '0' || w1[7] > '8') { errno = 3; }
+                            ln.var = (byte)(30 + (int)(w1[5] - 'A') * 10 + (int)(w1[7] - '0'));
                         }
                         if (GetNext(ref z) != "=") { errno = 1; }
                         ln.text = upperIt(z);

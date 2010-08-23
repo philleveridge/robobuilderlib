@@ -1,0 +1,7 @@
+'      test program
+'
+stand 18
+print "test"
+list a=5,4,3,2,1,5
+print @a[1]
+

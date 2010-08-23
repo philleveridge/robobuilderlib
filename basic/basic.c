@@ -115,14 +115,15 @@ const prog_char *tokens[] ={
 	"MTYPE", "LIGHTS"
 };
 
-#define NOSPECS 20
+#define NOSPECS 19
 
-char *specials[] = { "PF", "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
+char *specials[] = { "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
 		"PORT", "ROM", "TYPE", "ABS", "MAPIR", "KIR", "FIND", "CVB2I" };
 
-enum { 	sPF1=0, sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
-		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, sTYPE, sABS,
-		sIR2ACT, sKIR, sFIND, sCVB2I};
+enum { 	sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
+		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
+		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I
+	};
 							
 
 int errno;
@@ -462,6 +463,10 @@ void basic_load()
 				
 				newline.var = 30 + (pn-'A')*10 + (pb-'0') ;
 			}
+			else
+			{
+				errno=1;
+			}
 			// '='
 			if (getNext(&cp) != '=')
 			{
@@ -722,9 +727,6 @@ int get_special(char **str, int *res)
 	int v=0;
 	
 	switch(t) {
-	case sPF1:
-		v=0;
-		break;
 	case sMIC:
 		MIC_SAMPLING=1; // on by default, but make sure
 		{
@@ -1108,18 +1110,6 @@ int put_special(int var, int n)
 	{
 		set_bit((var-30)/10, (var % 10), n);
 	}
-	else
-		switch(var) {
-		case sPF1:
-			if (n) PF1_LED1_ON; else PF1_LED1_OFF;
-			break;
-		case sPSD:
-			if (n) PSD_ON; else PSD_OFF;
-			break;
-		default:
-			rprintf ("? special %d is read only\r\n", var);
-			break;
-		}
 	return 0;
 }
 

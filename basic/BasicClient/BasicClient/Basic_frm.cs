@@ -226,7 +226,7 @@ namespace RobobuilderLib
             syntaxcheck();
             if (compiler.Compile(input.Text))
             {
-                MessageBox.Show(String.Format("Complete - ready to download [{0} Bytes]",compiler.Download().Length/2), "Compiler");
+                MessageBox.Show(String.Format("Complete - ready to download [{0} Bytes = {1}% Used]", compiler.Download().Length / 2, (50*compiler.Download().Length / Basic.MAX_PROG_SPACE)), "Compiler");
                 output.Text = compiler.precomp + "\r\n";
                 output.Text += compiler.Dump();
                 readyDownload = true;
