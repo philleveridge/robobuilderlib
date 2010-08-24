@@ -1,8 +1,8 @@
-#summary Windows Basic Client (242) -  A front end editor and download for Basic firmware
+#summary Windows Basic Client -  A front-end editor, comipler and download for Basic firmware
 
 = Introduction =
 
-A windows based edit and compiler to simplify working with basic programs. It is not necessary to use it as all that is required is a terminal program, however it does make transferring programs from PC to robot much simpler.
+A windows based editor and compiler to simplify working with Robobuilder Basic programs. The Basic firmware can work directly with all that is needed being a terminal program, however the client does make transferring programs from PC to Basic much simpler, and enables storage of programs and increase readability of programs.
 
 The upper window is a standard text editor. Note it auto-generates line number and allows the use of labels (unlike the firmware version). 
 
