@@ -1,0 +1,9 @@
+'Acceleromter test
+10 stand 16
+12 print "Press any key"
+15 let a=$kbd
+20 let c=$z
+30 print "offset=";($z-c)
+35 servo 13=250-($z-c)
+40 wait 40
+50 goto 30
