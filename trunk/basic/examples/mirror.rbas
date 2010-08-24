@@ -1,8 +1,9 @@
+5 Stand 16
 10 servo 13=@
 20 servo 14=@
 30 servo 15=@
 40 print "ready"
-50 let k=$kir
+50 if $kir<0 then 50
 60 let a=$servo(13)
 70 let b=$servo(14)
 80 let c=$servo(15)
@@ -11,4 +12,4 @@
 100 servo 11=254-b
 110 servo 12=254-c
 120 wait 50
-130 goto 50
+130 if $kir<0 then 60
