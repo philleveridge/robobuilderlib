@@ -59,6 +59,10 @@ extern void SendToSoundIC	(BYTE cmd) ;
 
 /***********************************/
 
+int   fix_fftr(int f[], int m, int inverse);
+void  lights(int n); 
+extern BYTE cpos[];
+
 extern BYTE				sData[];
 extern int 				sDcnt;
 extern void				sample_sound(int);
@@ -99,10 +103,10 @@ enum {
 	WAIT, NEXT, SERVO, MOVE,
 	GOSUB, RETURN, POKE, STAND,
 	PLAY, OUT, OFFSET, RUN, I2CO, I2CI,
-	STEP, SPEED, MTYPE, LIGHTS
+	STEP, SPEED, MTYPE, LIGHTS,	SORT, FFT
 	};
 
-#define NOTOKENS 30
+#define NOTOKENS 32
 
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
@@ -112,20 +116,19 @@ const prog_char *tokens[] ={
 	"GOSUB", "RETURN", "POKE", "STAND",
 	"PLAY", "OUT", "OFFSET", "RUN",
 	"I2CO", "I2CI", "STEP", "SPEED", 
-	"MTYPE", "LIGHTS"
+	"MTYPE", "LIGHTS", "SORT", "FFT" 
 };
 
-#define NOSPECS 19
+#define NOSPECS 21
 
 char *specials[] = { "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		"PORT", "ROM", "TYPE", "ABS", "MAPIR", "KIR", "FIND", "CVB2I" };
+		"PORT", "ROM", "TYPE", "ABS", "MAPIR", "KIR", "FIND", "CVB2I", "NE", "NS"};
 
 enum { 	sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
 		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
-		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I
-	};
+		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
+		sNE, sNS};
 							
-
 int errno;
 int fmflg;
 
@@ -282,7 +285,7 @@ int readLine(char *line)
 			break;
 		}
 
-		if (qf & ch==' ' && pch==' ')
+		if (qf && ch==' ' && pch==' ')
 			continue;
 		
 		if (start==line && ch=='?' )
@@ -510,6 +513,8 @@ void basic_load()
 		case SPEED:
 		case MTYPE:
 		case LIGHTS:
+		case SORT:
+		case FFT:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -606,6 +611,46 @@ unsigned char eval_expr(char **str, int *res);
 enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 int speed=2;
 int mtype=2;
+
+void swap(int *x,int *y)
+{
+   int temp;
+   temp = *x;
+   *x = *y;
+   *y = temp;
+}
+ 
+int choose_pivot(int i,int j )
+{
+   return((i+j) /2);
+}
+ 
+void quicksort(int list[],int m,int n)
+{
+   int key,i,j,k;
+   if( m < n)
+   {
+      k = choose_pivot(m,n);
+      swap(&list[m],&list[k]);
+      key = list[m];
+      i = m+1;
+      j = n;
+      while(i <= j)
+      {
+         while((i <= n) && (list[i] <= key))
+                i++;
+         while((j >= m) && (list[j] > key))
+                j--;
+         if( i < j)
+                swap(&list[i],&list[j]);
+      }
+      // swap two elements
+      swap(&list[m],&list[j]);
+      // recursively sort the lesser list
+      quicksort(list,m,j-1);
+      quicksort(list,j+1,n);
+   }
+}
 
 int get_bit(int pn, int bn)
 {
@@ -752,7 +797,13 @@ int get_special(char **str, int *res)
 	case sGZ:
 		Acc_GetData();
 		v=z_value;
-		break;			
+		break;	
+	case sNE:
+		v=nis;
+		break;	
+	case sNS:
+		v=nos;
+		break;	
 	case sPSD:
 		Get_AD_PSD();
 		v = gDistance;
@@ -1002,10 +1053,32 @@ unsigned char eval_expr(char **str, int *res)
                 }
 				(*str)++;
             }
-						else
+			else
             if (**str=='!')
             {
 				//use current array
+				(*str)++;
+			}
+			else
+            if (**str=='<')
+            {
+				//use sound array
+				for (n1=0; n1<SDATASZ; n1++) 
+				{
+					scene[n1] = sData[n1];     // and clear
+				}
+				nis=SDATASZ;
+				(*str)++;
+			}
+			else
+            if (**str=='?')
+            {
+				//use servo pos array
+				for (n1=0; n1<nos; n1++) 
+				{
+					scene[n1] = cpos[n1];     // and clear
+				}
+				nis=nos;
 				(*str)++;
 			}
             else
@@ -1740,6 +1813,26 @@ int execute(line_t line, int dbf)
 			tmp=1;
 		} else {
 			errno=7;
+		}
+		break;
+	case SORT: 
+		if (eval_expr(&line.text, &n) != ARRAY)
+		{
+			errno=1;
+			break;
+		}
+		quicksort(scene,0,nis-1);
+		break;
+	case FFT: 
+		{
+			int m;
+			if (eval_expr(&line.text, &n) != ARRAY)
+			{
+				errno=1;
+				break;
+			}
+			m=4; // 16 elements??
+			fix_fftr(scene, m, 0);
 		}
 		break;
 	default:

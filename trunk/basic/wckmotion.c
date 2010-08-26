@@ -691,7 +691,7 @@ struct FlashMotionData mlist[] =
 
 // if flag set read initial positions
 
-static BYTE cpos[32];
+BYTE cpos[32];
 int offset[32];
 BYTE nos=0;
 
