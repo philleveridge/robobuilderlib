@@ -515,6 +515,7 @@ void basic_load()
 		case LIGHTS:
 		case SORT:
 		case FFT:
+		case STAND: 
 			newline.text=cp;
 			break;
 		case LIST:
@@ -553,7 +554,6 @@ void basic_load()
 			}
 			break;
 		case PLAY: 
-		case STAND: 
 		case WAIT: 
 		case GOTO: 
 		case GOSUB:
@@ -1393,7 +1393,9 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case STAND: 
-		standup(line.value);
+		n=16;
+		eval_expr(&line.text, &n);
+		standup(n);
 		break;
 	case GOTO: 
 		{
