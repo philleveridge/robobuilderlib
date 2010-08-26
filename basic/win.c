@@ -76,6 +76,7 @@ void wckWriteIO(unsigned char ServoID, unsigned char IO)
 	DBO(printf ("WIN: Servo write IO %d=%d\n", ServoID, IO); )
 }
 
+BYTE cpos[32];
 int nos;
 
 void PlayPose(int d, int s, int f, unsigned char data[], int n)
