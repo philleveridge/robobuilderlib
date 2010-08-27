@@ -284,8 +284,8 @@ int readLine(char *line)
 		pch=ch;
 
 		while ((ch = uartGetByte())<0) ;
-			
-		rprintfChar(ch);	
+
+		if (ch==9) ch=' ';
 				
 		if (ch==13 || (start==line && ch=='.') )
 		{
@@ -311,10 +311,17 @@ int readLine(char *line)
 		
 		if (ch==8 || ch==127) //Bsapce ?
 		{
-			if (line>start) line--;
+			if (line>start) 
+			{
+				line--;
+				rprintfChar(ch);
+			}
 		}
 		else
+		{
+			rprintfChar(ch);	
 			*line++ = ch;
+		}
 	}
 	return (line-start);
 }
@@ -1954,7 +1961,17 @@ int execute(line_t line, int dbf)
 				errno=1;
 				break;
 			}
-			m=4; // 16 elements??
+			if (nis==8)
+				m=3; // 16 elements
+			else if (nis==16)
+				m=4;
+			else if (nis==32)
+				m=5;
+			else
+			{
+				errno=1;
+				break;
+			}
 			fix_fftr(scene, m, 0);
 		}
 		break;
