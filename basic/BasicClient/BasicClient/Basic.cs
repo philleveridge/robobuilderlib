@@ -21,10 +21,10 @@ namespace RobobuilderLib
     {
         public const int MAX_PROG_SPACE = 3072;
 
-        public Hashtable labels = new Hashtable();
+        public Hashtable labels    = new Hashtable();
         public Hashtable constants = new Hashtable();
-        public int errno;
-        public int lineno;
+        public int    errno;
+        public int    lineno;
         public string curline;
         public string precomp;
 
@@ -43,14 +43,11 @@ namespace RobobuilderLib
 	        };
 	
         public static string[] specials = new string[] { 
-            "MIC", "X",    "Y",   "Z",     "PSD", 
-            "VOLT", "IR",  "KBD",  "RND", "SERVO", "TICK", 
-		    "PORT", "ROM", "TYPE", "ABS", "KIR",   "FIND"  };
-
-        enum SKEY
-        {
-            sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, sKBD,
-            sRND, sSERVO, sTICK, sPORT, sROM, sABS, sIR2ACT, sKIR, sFIND
+            "MIC",  "X",   "Y",   "Z",   "PSD", 
+            "VOLT", "IR",  "KBD", "RND", "SERVO", "TICK", 
+		    "PORT", "ROM", "TYPE","ABS", "KIR",   "FIND",
+            "CVB2I","NE",  "NS",  "MAX", "SUM",   "MIN",  
+            "NORM", "SQRT","SIN", "COS"
         };
         
          public static  string[] tokens = new string[] {
@@ -61,26 +58,29 @@ namespace RobobuilderLib
             "GOSUB", "RETURN", "POKE",   "STAND",
             "PLAY",  "OUT",    "OFFSET", "RUN", 
             "I2CO",  "I2CI",   "STEP",   "SPEED", 
-	        "MTYPE", "LIGHTS",
+	        "MTYPE", "LIGHTS", "SORT",   "FFT", 
+            "SAMPLE",
             "ENDIF" // leave at end
         };
         
         enum KEY {
-	        LET=0, FOR, IF, THEN, 
-	        ELSE, GOTO, PRINT, GET, 
-	        PUT, END, LIST, XACT, 
-	        WAIT, NEXT, SERVO, MOVE,
-	        GOSUB, RETURN, POKE, STAND,
-            PLAY, OUT, OFFSET, RUN,
-            I2CO, I2CI, STEP, SPEED, MTYPE, LIGHTS,
+	        LET=0, FOR,    IF,     THEN, 
+	        ELSE,  GOTO,   PRINT,  GET, 
+	        PUT,   END,    LIST,   XACT, 
+	        WAIT,  NEXT,   SERVO,  MOVE,
+	        GOSUB, RETURN, POKE,   STAND,
+            PLAY,  OUT,    OFFSET, RUN,
+            I2CO,  I2CI,   STEP,   SPEED, 
+            MTYPE, LIGHTS, SORT,   FFT, 
+            SAMPLE,
             ENDIF
 	        };
 							
         struct basic_line {
-            public int lineno;
-            public byte token;
-            public byte var;
-            public int value;
+            public int    lineno;
+            public byte   token;
+            public byte   var;
+            public int    value;
             public string text; // rest of line - unproceesed
         };
 
@@ -277,9 +277,14 @@ namespace RobobuilderLib
                         continue;
                     }
                 }
-
-                Console.WriteLine(lnc + " " + tok + z);
-                r[i]= "" + lnc + " " + tok + z;
+                int ln;
+                if (!int.TryParse(tok, out ln))
+                {
+                    Console.WriteLine(lnc + " " + tok + z);
+                    r[i] = "" + lnc + " " + tok + z;
+                }
+                else
+                    r[i] = ln + " " + z;
                 precomp += r[i] + "\r\n";
                 i++;
                 lnc += 5;
@@ -408,6 +413,10 @@ namespace RobobuilderLib
                     case KEY.SPEED:
                     case KEY.MTYPE:
                     case KEY.LIGHTS:
+                    case KEY.SORT:
+                    case KEY.FFT:
+                    case KEY.STAND:
+                    case KEY.SAMPLE: 
                         ln.text = upperIt(z);
                         break;
                     case KEY.LIST:
@@ -452,7 +461,6 @@ namespace RobobuilderLib
                         ln.text = upperIt(z);
                         break;
                     case KEY.WAIT:
-                    case KEY.STAND:
                     case KEY.GOTO:
                     case KEY.GOSUB:
                     case KEY.PLAY: 

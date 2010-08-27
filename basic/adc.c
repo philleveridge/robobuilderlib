@@ -36,8 +36,9 @@ int 	sDcnt;
 void ADC_set(BYTE);
 
 volatile BYTE   MIC_SAMPLING=0;
-
-
+volatile BYTE   MIC_LEVEL=0;
+volatile WORD   MIC_DLY  =0;
+volatile BYTE   MIC_STOP =0;
 
 //i.e. 10,33,50,66,90
 void  blights(int n, int *vals) 
@@ -86,6 +87,7 @@ void sample_sound(int status)
 
 
 /********************************************************************************/
+extern volatile WORD	gtick;
 
 ISR(ADC_vect)
 {
@@ -106,8 +108,29 @@ ISR(ADC_vect)
 				gMIC_val = 0;
 				
 			lights(gMIC_val);
-			sData[sDcnt] = (sData[sDcnt] + gMIC_val)/2;
-			sDcnt = (sDcnt + 1) % SDATASZ;  // store sample
+			
+			if (sDcnt==0 && MIC_LEVEL>0 && gMIC_val<=MIC_LEVEL)
+			{
+				MIC_DLY--;
+				if (MIC_DLY==0)
+				{
+					MIC_STOP=0;
+					sample_sound(0);
+				}
+				break; // not triggered
+			}
+			
+			if (MIC_LEVEL>0)
+				sData[sDcnt] = gMIC_val; // triggered mode
+			else
+				sData[sDcnt] = (sData[sDcnt] + gMIC_val)/2; //free run mode
+				
+			if ((sDcnt==(SDATASZ-1)) && MIC_STOP==1) //reached end
+			{
+				MIC_STOP=0;
+				sample_sound(0);
+			}
+			sDcnt = (sDcnt + 1) % SDATASZ;  // inc sample
 			break; 
 	}  
 	F_AD_CONVERTING = 0;    
