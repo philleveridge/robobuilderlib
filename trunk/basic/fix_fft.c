@@ -30,8 +30,8 @@
 
 
 
-#define N_WAVE      1024    /* full length of Sinewave[] */
-#define LOG2_N_WAVE 10      /* log2(N_WAVE) */
+//#define N_WAVE      1024    /* full length of Sinewave[] */
+//#define LOG2_N_WAVE 10      /* log2(N_WAVE) */
 
 /*
   Henceforth "short" implies 16-bit word. If this is not
@@ -45,6 +45,41 @@
 #define short int
 #define N_WAVE      64     /* full length of Sinewave[] */
 #define LOG2_N_WAVE 6     /* log2(N_WAVE) */
+
+#define BYTE unsigned char
+
+int SinTab[] = {
+	0, 804, 1608, 2410, 3212, 4011, 4808, 5602, 6393,
+	7179, 7962, 8739, 9512, 10278, 11039, 11793, 12539,
+	13279, 14010, 14732, 15446, 16151, 16846, 17530, 18204,
+	18868, 19519, 20159, 20787, 21403, 22005, 22594, 23170,
+	23732, 24279, 24812, 25329, 25832, 26319, 26790, 27245,
+	27684, 28106, 28511, 28898, 29269, 29621, 29956, 30273,
+	30572, 30852, 31114, 31357, 31581, 31786, 31972, 32138,
+	32285, 32413, 32521, 32610, 32679, 32728, 32758};
+
+int Sin(BYTE d)
+{
+	if (d<64)  
+		return SinTab[d];
+	if (d<128) 
+		return SinTab[127-d];
+	if (d<192) 
+		return -SinTab[d-128];
+	return -SinTab[255-d];
+}
+
+int Cos(BYTE d)
+{
+	if (d<64)  
+		return SinTab[63-d];
+	if (d<128) 
+		return -SinTab[d-64];
+	if (d<192) 
+		return -SinTab[191-d];
+	return SinTab[d-192];
+}
+
 short Sinewave[N_WAVE-N_WAVE/4] = {
 		0,	3212,	6393, 9512,	12539,	15446,	18204,	20787,	
 	23170, 25329, 27245, 28898, 30273,	31357,	32138,	32610, 
@@ -256,8 +291,12 @@ int fix_fft(short fr[], short fi[], short m, short inverse)
 		for (m=0; m<l; ++m) {
 			j = m << k;
 			/* 0 <= j < N_WAVE/2 */
-			wr =  Sinewave[j+N_WAVE/4];
-			wi = -Sinewave[j];
+			//wr =  Sinewave[j+N_WAVE/4];
+			//wi = -Sinewave[j];
+
+			wr =  Cos((BYTE)j);  // j->0-255??
+			wi = -Sin((BYTE)j);
+
 			if (inverse)
 				wi = -wi;
 			if (shift) {

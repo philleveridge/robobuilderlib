@@ -68,6 +68,9 @@ extern int 				sDcnt;
 extern void				sample_sound(int);
 extern BYTE				nos;
 extern volatile BYTE	MIC_SAMPLING;
+extern volatile BYTE    MIC_LEVEL;
+extern volatile WORD    MIC_DLY;
+extern volatile BYTE    MIC_STOP;
 extern volatile WORD	gtick;
 
 //wait for byte or IR press
@@ -103,10 +106,11 @@ enum {
 	WAIT, NEXT, SERVO, MOVE,
 	GOSUB, RETURN, POKE, STAND,
 	PLAY, OUT, OFFSET, RUN, I2CO, I2CI,
-	STEP, SPEED, MTYPE, LIGHTS,	SORT, FFT
+	STEP, SPEED, MTYPE, LIGHTS,	SORT, FFT,
+	SAMPLE
 	};
 
-#define NOTOKENS 32
+#define NOTOKENS 33
 
 const prog_char *tokens[] ={
 	"LET", "FOR", "IF","THEN", 
@@ -116,18 +120,25 @@ const prog_char *tokens[] ={
 	"GOSUB", "RETURN", "POKE", "STAND",
 	"PLAY", "OUT", "OFFSET", "RUN",
 	"I2CO", "I2CI", "STEP", "SPEED", 
-	"MTYPE", "LIGHTS", "SORT", "FFT" 
+	"MTYPE", "LIGHTS", "SORT", "FFT",
+	"SAMPLE"
 };
 
-#define NOSPECS 21
+#define NOSPECS 28
 
-char *specials[] = { "MIC", "X", "Y", "Z", "PSD", "VOLT", "IR", "KBD", "RND", "SERVO", "TICK", 
-		"PORT", "ROM", "TYPE", "ABS", "MAPIR", "KIR", "FIND", "CVB2I", "NE", "NS"};
+char *specials[] = { 
+	    "MIC",  "X",    "Y",    "Z",    "PSD", 
+		"VOLT", "IR",   "KBD",  "RND",  "SERVO", 
+		"TICK", "PORT", "ROM",  "TYPE", "ABS", 
+		"MAPIR", "KIR", "FIND", "CVB2I","NE", 
+		"NS",    "MAX", "SUM",  "MIN",  "NORM", 
+		"SQRT", "SIN", "COS"};
 
 enum { 	sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
 		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
 		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
-		sNE, sNS};
+		sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
+		sSIN, sCOS };
 							
 int errno;
 int fmflg;
@@ -516,6 +527,7 @@ void basic_load()
 		case SORT:
 		case FFT:
 		case STAND: 
+		case SAMPLE: 
 			newline.text=cp;
 			break;
 		case LIST:
@@ -765,6 +777,13 @@ int getArg(char **str, int *res)
 
 unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
 
+//unsigned int sqrt(unsigned int n){
+//    unsigned int a;
+//    for (a=0;n>=(2*a)+1;n-=(2*a++)+1);
+//    return a;
+//}
+
+
 int get_special(char **str, int *res)
 {
 	char *p=*str;
@@ -773,19 +792,64 @@ int get_special(char **str, int *res)
 	
 	switch(t) {
 	case sMIC:
-		MIC_SAMPLING=1; // on by default, but make sure
 		{
-		int lc;
-		for (lc=0; lc<SDATASZ; lc++) 
-		{
-			v += sData[lc];  // sum the buffer
-			sData[lc]=0;     // and clear
-		}
+			int lc;
+
+			for (lc=0; lc<SDATASZ; lc++) 
+			{
+				v += sData[lc];  // sum the buffer
+				sData[lc]=0;     // and clear
+			}
+			MIC_SAMPLING=1; // on by default, but make sure
 		}
 		break;
 	case sTICK:
 		v=gtick;
 		break;	
+	case sMAX:
+		if (getArg(str,&v))
+		{
+			int m=scene[0];
+			for (v=0; v<nis; v++)
+			{
+				if (scene[v]>m) m=scene[v];
+			}
+			v=m;
+		}
+		break;	
+	case sMIN:
+		if (getArg(str,&v))
+		{
+			int m=scene[0];
+			for (v=0; v<nis; v++)
+			{
+				if (scene[v]<m) m=scene[v];
+			}
+			v=m;
+		}
+		break;
+	case sSUM:
+		if (getArg(str,&v))
+		{
+			int m=0;
+			for (v=0; v<nis; v++)
+			{
+				m += scene[v];
+			}
+			v=m;
+		}
+		break;
+	case sNORM:
+		if (getArg(str,&v))
+		{
+			int m=0;
+			for (v=0; v<nis; v++)
+			{
+				m += (scene[v]*scene[v]);
+			}
+			v=sqrt(m);
+		}
+		break;
 	case sGX:
 		Acc_GetData();
 		v=x_value;
@@ -840,6 +904,27 @@ int get_special(char **str, int *res)
 		if (getArg(str,&v))
 		{
 			v = v<0?-v:v;
+		}
+		break;
+	case sSQRT: // $SQRT(x)
+		v=0; 
+		if (getArg(str,&v))
+		{
+			v = sqrt(v);
+		}
+		break;
+	case sSIN: // $SQRT(x)
+		v=0; 
+		if (getArg(str,&v))
+		{
+			v = Sin(v%256);
+		}
+		break;
+	case sCOS: // $SQRT(x)
+		v=0; 
+		if (getArg(str,&v))
+		{
+			v = Cos(v%256);
 		}
 		break;
 	case sCVB2I: // $CVB2I(x)  255 -> -1
@@ -1824,6 +1909,42 @@ int execute(line_t line, int dbf)
 			break;
 		}
 		quicksort(scene,0,nis-1);
+		break;
+	case SAMPLE: 
+		//SAMPLE n,d
+		// trigger level =n, max delay= d, (4ms per sample)
+		{
+			int n=4, d=2000; // defaults
+			p=line.text;
+			if (eval_expr(&p, &n)==NUMBER)
+			{
+				if (*p==',')
+				{
+					int i;
+					p++;
+					eval_expr(&p, &d);
+					MIC_LEVEL=n;
+					sDcnt=0;
+
+					for (i=0; i<SDATASZ; i++) 
+					{
+						sData[i]=0;     // and clear
+					}
+					sample_sound(1);
+					
+					MIC_DLY=d/4; // assumes 4ms samples
+					MIC_STOP=1;  
+#ifdef AVR
+					while (MIC_STOP==1)
+					{
+						// wait until sampling complete
+					}
+#endif
+				}
+				else
+					errno=1;
+			}
+		}
 		break;
 	case FFT: 
 		{
