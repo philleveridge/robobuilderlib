@@ -89,6 +89,8 @@ void delay_ms(int m)
 	while (mstimer>0) {}; //wait for mstimer to clear;
 }
 
+extern volatile BYTE MIC_RATE;
+
 //------------------------------------------------------------------------------
 // Timer0 one millisec clock interrupt routine (0.998ms)
 //------------------------------------------------------------------------------
@@ -103,7 +105,7 @@ ISR(TIMER0_OVF_vect)
 	
 	heart(); // beating
 	
-	if (MIC_SAMPLING && gMSEC%4==0)
+	if (MIC_SAMPLING && gMSEC%MIC_RATE==0)
 	{
 		//every 4ms
 		gAD_Ch_Index = MIC_CH;		

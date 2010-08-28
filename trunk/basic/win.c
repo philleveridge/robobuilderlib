@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <windows.h>
 #include <direct.h>
+
+#include "Main.h"
+
 #define GetCurrentDir _getcwd
 
 void basic();
@@ -124,6 +127,8 @@ BYTE	MIC_SAMPLING=1;
 BYTE    MIC_LEVEL=0;
 WORD    MIC_DLY=0;
 BYTE    MIC_STOP=0;
+BYTE    MIC_RATE=4;
+BYTE    MIC_NOS=SDATASZ;
 
 int sDcnt=0;
 
