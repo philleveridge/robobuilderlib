@@ -71,6 +71,8 @@ extern volatile BYTE	MIC_SAMPLING;
 extern volatile BYTE    MIC_LEVEL;
 extern volatile WORD    MIC_DLY;
 extern volatile BYTE    MIC_STOP;
+extern volatile BYTE    MIC_RATE;
+extern volatile BYTE    MIC_NOS;
 extern volatile WORD	gtick;
 
 //wait for byte or IR press
@@ -621,9 +623,10 @@ void basic_load()
 RUNTIME routines
 
 *************************************************************************************************************/
+#define SCENESZ 128
 
 int variable[26]; // only A-Z at moment
-int scene[32];	  // generic array
+int scene[SCENESZ];	  // generic array
 int nis=0;        // number of item isn array
 int  eval_list(char *p);
 unsigned char eval_expr(char **str, int *res);
@@ -1155,11 +1158,11 @@ unsigned char eval_expr(char **str, int *res)
             if (**str=='<')
             {
 				//use sound array
-				for (n1=0; n1<SDATASZ; n1++) 
+				for (n1=0; (n1<MIC_NOS && n1<SDATASZ && n1<SCENESZ); n1++) 
 				{
 					scene[n1] = sData[n1];     // and clear
 				}
-				nis=SDATASZ;
+				nis=MIC_NOS;
 				(*str)++;
 			}
 			else
@@ -1191,31 +1194,76 @@ unsigned char eval_expr(char **str, int *res)
 			{
 				(*str)++;
 				eval_expr(str, &tmp);
-				n1 = scene[tmp];
-				(*str)++;
-				break;
+
+				if (**str == ',')
+				{
+					//sub list
+					int ct;
+					(*str)++;
+					eval_expr(str, &ct);
+					if (ct>=nis || ct==0) ct=nis-1;
+					if (ct>0 && tmp>=0 && ct>tmp)
+					{
+						int i=0;
+						for (i=tmp; i<=ct; i++)
+						{
+							scene[i-tmp]=scene[i];
+						}
+						nis=ct-tmp+1;
+					}
+					(*str)++;
+				}
+				else
+				{
+					n1 = scene[tmp];
+					(*str)++;
+					break;
+				}
 			}
-			if (**str == '+' || **str == '-')
+			if (**str == '+' || **str == '-' || **str == '.')
 			{
 				//add array
 				int i,tnis;
-				int tempB[32];
+				int tempB[SCENESZ];
 				char o = **str;
 				(*str)++;
-				for (i=0;i<32; i++)
+				for (i=0;i<SCENESZ; i++)
 				{
 					tempB[i]=scene[i];
 				}
 				tnis=nis;
 				if (eval_expr(str,res)==ARRAY)
 				{
-					if (tnis>nis) nis=tnis;
-					for (i=0;i<32; i++)
+					if (o=='.')
 					{
-						if (o == '+') scene[i] = tempB[i] + scene[i]; else scene[i] = tempB[i] - scene[i];
+						if (tnis+nis<SCENESZ) 
+						{
+							int m=(nis>tnis)?nis:tnis;
+							for (i=m-1;i>=0; i--)
+							{
+								if (i<nis)
+									scene[i+tnis] = scene[i];
+								if (i<tnis)
+									scene[i]     = tempB[i];
+							}
+							nis=nis+tnis;
+						}
+					}
+					else
+					{
+						int m=(nis>tnis)?nis:tnis;
+						for (i=0;i<m; i++)
+						{
+							if (o == '+') 
+								scene[i] = ((i<tnis)?tempB[i]:0) + ((i<nis)?scene[i]:0); 
+							else 
+								scene[i] = ((i<tnis)?tempB[i]:0) - ((i<nis)?scene[i]:0); 
+						}
+						nis=m;
 					}
 				}
 			}
+
 			return ARRAY;
 			break;
 		case '$':
@@ -1930,23 +1978,50 @@ int execute(line_t line, int dbf)
 					int i;
 					p++;
 					eval_expr(&p, &d);
+					
 					MIC_LEVEL=n;
 					sDcnt=0;
+					
+					if (*p==',')
+					{
+						p++;
+						eval_expr(&p, &n);
+						MIC_RATE = n;
+						
+						if (*p==',')
+						{
+							p++;
+							eval_expr(&p, &n);
+							MIC_NOS = n;
+						}
+					}
 
-					for (i=0; i<SDATASZ; i++) 
+					for (i=0; i<MIC_NOS; i++) 
 					{
 						sData[i]=0;     // and clear
 					}
-					sample_sound(1);
-					
-					MIC_DLY=d/4; // assumes 4ms samples
+					sample_sound(1);				
+
 					MIC_STOP=1;  
+					MIC_DLY=d/MIC_RATE; 
 #ifdef AVR
 					while (MIC_STOP==1)
 					{
 						// wait until sampling complete
 					}
+#else
+					printf ("WIN: SAMPLE Level=%d,Dly=%d,Rate=%d,Nos=%d\n", MIC_LEVEL, MIC_DLY, MIC_RATE, MIC_NOS);
 #endif
+					if (MIC_DLY==0)
+						nis=0;
+					else
+					{
+						for (i=0; i<MIC_NOS; i++) 
+						{
+							scene[i]=sData[i];     // and clear
+						}
+						nis=MIC_NOS;
+					}
 				}
 				else
 					errno=1;
@@ -1967,12 +2042,14 @@ int execute(line_t line, int dbf)
 				m=4;
 			else if (nis==32)
 				m=5;
+			else if (nis==64) // max must be <1/2 SDATASZ (for imag)
+				m=6;
 			else
 			{
 				errno=1;
 				break;
 			}
-			fix_fftr(scene, m, 0);
+			rprintf ("FFT (%d) = %d\r\n", m, fix_fftr(scene, m, 0));
 		}
 		break;
 	default:

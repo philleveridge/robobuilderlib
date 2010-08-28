@@ -1,0 +1,21 @@
+10 LIST A=8, 2, 2, 2, 2, -2, -2, -2, -2
+20 LIST B=8, 8, 8, 8, 8, -8, -8, -8, -8
+30 LIST C=8, 8, 0, 8, 0, 8, 0, 8, 0
+40 print @A
+50 print @B
+60 print @C
+70 FFT @A
+80 print @!
+90 FFT @B
+100 print @!
+110 FFT @C
+120 print @!
+
+
+
+210 PRINT "SAY SOMETHING"
+220 SAMPLE 5,5000,4,64
+230 PRINT @<
+240 FFT @!
+250 PRINT @!
+260 GOTO 210

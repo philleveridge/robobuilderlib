@@ -172,7 +172,7 @@ int fix_fft(short fr[], short fi[], short m, short inverse)
 			//wr =  Sinewave[j+N_WAVE/4];
 			//wi = -Sinewave[j];
 
-			wr =  Cos((BYTE)j);  // j->0-255??
+			wr =  Cos((BYTE)j);  
 			wi = -Sin((BYTE)j);
 
 			if (inverse)

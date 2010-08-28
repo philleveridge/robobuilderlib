@@ -39,6 +39,8 @@ volatile BYTE   MIC_SAMPLING=0;
 volatile BYTE   MIC_LEVEL=0;
 volatile WORD   MIC_DLY  =0;
 volatile BYTE   MIC_STOP =0;
+volatile BYTE   MIC_RATE =4;
+volatile BYTE   MIC_NOS  =SDATASZ;
 
 //i.e. 10,33,50,66,90
 void  blights(int n, int *vals) 
@@ -125,12 +127,12 @@ ISR(ADC_vect)
 			else
 				sData[sDcnt] = (sData[sDcnt] + gMIC_val)/2; //free run mode
 				
-			if ((sDcnt==(SDATASZ-1)) && MIC_STOP==1) //reached end
+			if ((sDcnt==(MIC_NOS-1)) && MIC_STOP==1) //reached end
 			{
 				MIC_STOP=0;
 				sample_sound(0);
 			}
-			sDcnt = (sDcnt + 1) % SDATASZ;  // inc sample
+			sDcnt = (sDcnt + 1) % MIC_NOS;  // inc sample
 			break; 
 	}  
 	F_AD_CONVERTING = 0;    
