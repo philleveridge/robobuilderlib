@@ -84,7 +84,7 @@ int Cos(BYTE d)
 inline short FIX_MPY(short a, short b)
 {
 	/* shift right one less bit (i.e. 15-1) */
-	int c = ((int)a * (int)b) >> 14;
+	long c = ((long)a * (long)b) >> 14;
 	/* last bit shifted out = rounding-bit */
 	b = c & 0x01;
 	/* last shift + rounding bit */
@@ -100,7 +100,7 @@ inline short FIX_MPY(short a, short b)
 */
 int fix_fft(short fr[], short fi[], short m, short inverse)
 {
-	int mr, nn, i, j, l, k, istep, n, scale, shift;
+	long mr, nn, i, j, l, k, istep, n, scale, shift;
 	short qr, qi, tr, ti, wr, wi;
 
 	n = 1 << m;
@@ -233,4 +233,3 @@ int fix_fftr(short f[], int m, int inverse)
 		scale = fix_fft(fi, fr, m-1, inverse);
 	return scale;
 }
-

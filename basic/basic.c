@@ -126,7 +126,7 @@ const prog_char *tokens[] ={
 	"SAMPLE"
 };
 
-#define NOSPECS 28
+#define NOSPECS 29
 
 char *specials[] = { 
 	    "MIC",  "X",    "Y",    "Z",    "PSD", 
@@ -134,13 +134,13 @@ char *specials[] = {
 		"TICK", "PORT", "ROM",  "TYPE", "ABS", 
 		"MAPIR", "KIR", "FIND", "CVB2I","NE", 
 		"NS",    "MAX", "SUM",  "MIN",  "NORM", 
-		"SQRT", "SIN", "COS"};
+		"SQRT", "SIN", "COS",   "IMAX",  "HAM"};
 
 enum { 	sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
 		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
 		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
 		sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
-		sSIN, sCOS };
+		sSIN, sCOS, sIMAX, sHAM };
 							
 int errno;
 int fmflg;
@@ -817,14 +817,15 @@ int get_special(char **str, int *res)
 		v=gtick;
 		break;	
 	case sMAX:
+	case sIMAX:
 		if (getArg(str,&v))
 		{
-			int m=scene[0];
+			int k=0,m=scene[0];
 			for (v=0; v<nis; v++)
 			{
-				if (scene[v]>m) m=scene[v];
+				if (scene[v]>m) { m=scene[v]; k=v;}
 			}
-			v=m;
+			v=(t==sMAX)?m:k;
 		}
 		break;	
 	case sMIN:
@@ -848,6 +849,11 @@ int get_special(char **str, int *res)
 			}
 			v=m;
 		}
+		break;
+	case sHAM:
+		// TBD - calculate HAMMING distance between 2 arrays
+		// current array (and arg)
+		v=0;
 		break;
 	case sNORM:
 		if (getArg(str,&v))
@@ -2029,12 +2035,55 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case FFT: 
+		/*
 		{
-			int m;
-			if (eval_expr(&line.text, &n) != ARRAY)
+			//test 1
+			int fr1[8] = {1000,0,0,0,0,0,0,0};
+			int fr2[8] = {0,1000,0,0,0,0,0,0};
+			int fr5[8] = {1000,1000,0,0,0,0,0,0};
+			int fi[8] = {0,0,0,0,0,0,0,0};
+
+			int fr3[16] = {1000,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
+			int fr4[16] = {0,0,0,0,0,0,0,0, 1000,0,0,0,0,0,0,0};
+
+
+			int i;
+			fix_fft(fr1,fi,3,0);
+			for(i=0;i<8;i++) printf ("%d %d %d (%d)\n", i,fr1[i], fi[i], (fr1[i]*fr1[i]+fi[i]*fi[i]));
+
+			//test 3
+			fix_fftr(fr3,4,0);
+			for(i=0;i<8;i++) printf ("%d %d %d\n", i,fr3[i], fr3[i+8]);
+
+			//test 2
+			fix_fft(fr2,fi,3,0);
+			for(i=0;i<8;i++) printf ("%d %d %d (%d)\n", i,fr2[i], fi[i], (fr2[i]*fr2[i]+fi[i]*fi[i]));
+
+			//test 4
+			fix_fftr(fr4,4,0);
+			for(i=0;i<8;i++) printf ("%d %d %d\n", i,fr4[i], fr4[i+8]);
+
+			//test 5
+			fix_fft(fr5,fi, 3,0);
+			for(i=0;i<8;i++) printf ("%d %d %d (%d)\n", i,fr5[i], fi[i], (fr5[i]*fr5[i]+fi[i]*fi[i]));
+
+			break;
+		}
+		*/
+
+		{
+			int m,i,s;
+			p=line.text;
+			if (eval_expr(&p, &n) != ARRAY)
 			{
 				errno=1;
 				break;
+			}
+			n=0;
+			if (*p==',')
+			{
+				p++;
+				eval_expr(&p, &n);
 			}
 			if (nis==8)
 				m=3; // 16 elements
@@ -2049,7 +2098,47 @@ int execute(line_t line, int dbf)
 				errno=1;
 				break;
 			}
-			rprintf ("FFT (%d) = %d\r\n", m, fix_fftr(scene, m, 0));
+			s=scene[0];
+			for (i=0; i<nis; i++)
+			{
+				if (scene[i]>s) s=scene[i];
+				scene[i+nis]=0; // zero imag
+			}
+			s=1000/s;
+			for (i=0; i<nis; i++)
+			{
+				scene[i]=scene[i]*s; // scale
+			}
+
+			if (n !=0) 
+			{
+				rprintf ("%d", nis);
+				for (i=0; i<nis; i++)
+				{
+					rprintf (",%d", scene[i]);
+				}
+				rprintfStr("\r\n");
+				
+				rprintf ("FFT (%d) = %d\r\n", m, fix_fft(scene, &scene[nis], m, 0));
+				
+				for (i=0; i<nis; i++)
+				{
+					rprintf ("%d) = (%d %d) %d\r\n", i, 
+						(int)scene[i],  
+						(int)scene[nis+i], 
+						(int)sqrt((scene[i]*scene[i]) + (scene[nis+i]*scene[nis+i])));
+				}
+			}
+			else
+			{
+				fix_fft(scene, &scene[nis], m, 0);
+			}
+
+			for (i=0; i<nis; i++)
+			{
+				scene[i]=(int)sqrt((scene[i]*scene[i]) + (scene[nis+i]*scene[nis+i])); //power
+			}
+
 		}
 		break;
 	default:
