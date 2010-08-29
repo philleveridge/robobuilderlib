@@ -818,10 +818,29 @@ int get_special(char **str, int *res)
 		break;	
 	case sMAX:
 	case sIMAX:
-		if (getArg(str,&v))
 		{
-			int k=0,m=scene[0];
-			for (v=0; v<nis; v++)
+			int st=0;
+			int k=0,m;
+
+			if (**str!='(')
+				break;
+
+			(*str)++;
+
+			if (eval_expr(str, res)==ARRAY)
+			{
+				if (**str==',')
+				{
+					(*str)++;
+					if (eval_expr(str, &st)!=NUMBER)
+						break;
+				}
+				if (**str!=')')
+					break;
+				(*str)++;
+			}
+			m=scene[st];
+			for (v=st; v<nis; v++)
 			{
 				if (scene[v]>m) { m=scene[v]; k=v;}
 			}
@@ -2098,16 +2117,19 @@ int execute(line_t line, int dbf)
 				errno=1;
 				break;
 			}
-			s=scene[0];
-			for (i=0; i<nis; i++)
+			if (n>1)
 			{
-				if (scene[i]>s) s=scene[i];
-				scene[i+nis]=0; // zero imag
-			}
-			s=1000/s;
-			for (i=0; i<nis; i++)
-			{
-				scene[i]=scene[i]*s; // scale
+				s=scene[0];
+				for (i=0; i<nis; i++)
+				{
+					if (scene[i]>s) s=scene[i];
+					scene[i+nis]=0; // zero imag
+				}
+				s=n/s;
+				for (i=0; i<nis; i++)
+				{
+					scene[i]=scene[i]*s; // scale
+				}
 			}
 
 			if (n !=0) 
