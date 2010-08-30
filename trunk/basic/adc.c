@@ -130,7 +130,7 @@ ISR(ADC_vect)
 			if ((sDcnt==(MIC_NOS-1)) && MIC_STOP==1) //reached end
 			{
 				MIC_STOP=0;
-				sample_sound(0);
+				MIC_SAMPLING=0;
 			}
 			sDcnt = (sDcnt + 1) % MIC_NOS;  // inc sample
 			break; 
