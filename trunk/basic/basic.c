@@ -339,7 +339,7 @@ int execute(line_t line, int f);
 int fnptr[26];
 extern uint16_t psize;
 
-void basic_load()
+void basic_load(int tf)
 {	
 	char line[MAX_LINE];
 	int n=0;
@@ -607,7 +607,11 @@ void basic_load()
 			if (newline.lineno==0)
 			{
 				fmflg=0;
+				if (tf==1)
+					gtick=0;
 				execute(newline,0); // immediate execute
+				if (tf==1)
+					rprintf("Elapsed Time %dms\r\n", gtick);
 			}
 			else
 			{
@@ -2442,7 +2446,10 @@ void basic()
 		switch (ch)
 		{
 		case 'i': // input
-			basic_load();
+			basic_load(0);
+			break;
+		case 'I': // input
+			basic_load(1);
 			break;
 		case   7:  // IR red "stop" button
 		case 'r': // run
