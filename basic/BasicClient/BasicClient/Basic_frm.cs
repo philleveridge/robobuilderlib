@@ -172,22 +172,6 @@ namespace RobobuilderLib
             input.SelectAll();
             input.SelectionColor = Color.Black;
 
-            foreach (string s in Basic.tokens)
-            {
-                n = -1;
-                while ((n = input.Find(s, n + 1, RichTextBoxFinds.WholeWord)) > 0)
-                    input.SelectionColor = Color.Red;
-            }
-            n = -1;
-            while ((n = input.Find("TO", n + 1, RichTextBoxFinds.WholeWord)) > 0)
-                input.SelectionColor = Color.Red;
-
-            foreach (string s in Basic.specials)
-            {
-                n = -1;
-                while ((n = input.Find("$" + s, n + 1, RichTextBoxFinds.WholeWord)) > 0)
-                    input.SelectionColor = Color.Blue;
-            }
             int sc = -1; int cc = -1;
             for (int c = 0; c < input.Text.Length; c++)
             {
@@ -219,6 +203,42 @@ namespace RobobuilderLib
                     cc = -1;
                 }
             }
+
+            foreach (string s in Basic.specials)
+            {
+                n = -1;
+                while ((n = input.Find("$" + s, n + 1, RichTextBoxFinds.WholeWord)) > 0)
+                {
+                    if (input.SelectionColor == Color.Black)
+                    {
+                        input.SelectionColor = Color.Blue;
+                        input.SelectedText = input.SelectedText.ToUpper();
+                    }
+                }
+            }
+
+            foreach (string s in Basic.tokens)
+            {
+                n = -1;
+                while ((n = input.Find(s, n + 1, RichTextBoxFinds.WholeWord)) > 0)
+                {
+                    if (input.SelectionColor == Color.Black)
+                    {
+                        input.SelectionColor = Color.Red;
+                        input.SelectedText = input.SelectedText.ToUpper();
+                    }
+                }
+            }
+            n = -1;
+            while ((n = input.Find("TO", n + 1, RichTextBoxFinds.WholeWord)) > 0)
+            {
+                if (input.SelectionColor == Color.Black)
+                {
+                    input.SelectionColor = Color.Red;
+                    input.SelectedText = input.SelectedText.ToUpper();
+                }
+            }
+
         }
 
         private void compileToolStripMenuItem_Click(object sender, EventArgs e)
