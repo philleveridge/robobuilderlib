@@ -2320,7 +2320,7 @@ void basic_list()
 			rprintf ("%c", line.var+'A');
 		}
 		else
-		if (line.token==GOTO || line.token==GOSUB || line.token==WAIT  || line.token==STAND  || line.token==PLAY  ) 
+		if (line.token==GOTO || line.token==GOSUB || line.token==WAIT  || line.token==PLAY  ) 
 			rprintf ("%d", line.value);
 		else
 			rprintfStr (line.text);
