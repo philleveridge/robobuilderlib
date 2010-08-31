@@ -117,7 +117,7 @@ ISR(ADC_vect)
 				if (MIC_DLY==0)
 				{
 					MIC_STOP=0;
-					sample_sound(0);
+					MIC_SAMPLING=0;
 				}
 				break; // not triggered
 			}
