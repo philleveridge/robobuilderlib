@@ -36,7 +36,10 @@
 
 /* MODS by l3v3rz for ATMEL 128*/
 
-#define inline
+#ifndef AVR
+	#define inline __forceinline
+#endif
+
 #define short int
 #define N_WAVE      256     /* full length of Sinewave[] */
 #define LOG2_N_WAVE 8       /* log2(N_WAVE) */
