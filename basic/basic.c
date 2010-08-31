@@ -109,42 +109,41 @@ enum {
 	GOSUB, RETURN, POKE, STAND,
 	PLAY, OUT, OFFSET, RUN, I2CO, I2CI,
 	STEP, SPEED, MTYPE, LIGHTS,	SORT, FFT,
-	SAMPLE
+	SAMPLE, SCALE
 	};
 
-#define NOTOKENS 33
-
 const prog_char *tokens[] ={
-	"LET", "FOR", "IF","THEN", 
-	"ELSE","GOTO","PRINT","GET",
-	"PUT", "END", "LIST", "XACT",
-	"WAIT", "NEXT", "SERVO", "MOVE",
-	"GOSUB", "RETURN", "POKE", "STAND",
-	"PLAY", "OUT", "OFFSET", "RUN",
-	"I2CO", "I2CI", "STEP", "SPEED", 
-	"MTYPE", "LIGHTS", "SORT", "FFT",
-	"SAMPLE"
+	"LET",   "FOR",    "IF",     "THEN", 
+	"ELSE",  "GOTO",   "PRINT",  "GET",
+	"PUT",   "END",    "LIST",   "XACT",
+	"WAIT",  "NEXT",   "SERVO",  "MOVE",
+	"GOSUB", "RETURN", "POKE",   "STAND",
+	"PLAY",  "OUT",    "OFFSET", "RUN",
+	"I2CO",  "I2CI",   "STEP",   "SPEED", 
+	"MTYPE", "LIGHTS", "SORT",   "FFT",
+	"SAMPLE","SCALE"
 };
 
-#define NOSPECS 30
+#define NOTOKENS SCALE+1
 
 char *specials[] = { 
-	    "MIC",  "X",    "Y",    "Z",    "PSD", 
-		"VOLT", "IR",   "KBD",  "RND",  "SERVO", 
-		"TICK", "PORT", "ROM",  "TYPE", "ABS", 
-		"MAPIR", "KIR", "FIND", "CVB2I","NE", 
-		"NS",    "MAX", "SUM",  "MIN",  "NORM", 
-		"SQRT", "SIN", "COS",   "IMAX",  "HAM"};
+	    "MIC",   "X",    "Y",    "Z",    "PSD", 
+		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
+		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
+		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
+		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
+		"SQRT",  "SIN",  "COS",  "IMAX", "HAM"};
 
-enum { 	sMIC, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
+enum { 	sMIC=0, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
 		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
 		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
 		sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
 		sSIN, sCOS, sIMAX, sHAM };
+
+#define NOSPECS sHAM+1
 							
 int errno;
 int fmflg;
-
 
 void PerformAction (int Action)
 {	
@@ -536,6 +535,7 @@ void basic_load(int tf)
 		case SORT:
 		case FFT:
 		case STAND: 
+		case SCALE:
 		case SAMPLE: 
 			newline.text=cp;
 			break;
@@ -2082,6 +2082,37 @@ int execute(line_t line, int dbf)
 				}
 				else
 					errno=1;
+			}
+		}
+		break;
+	case SCALE: 
+		{
+			int m,i,s;
+			p=line.text;
+			if (eval_expr(&p, &n) != ARRAY)
+			{
+				errno=1;
+				break;
+			}
+			n=0;
+			if (*p==',')
+			{
+				p++;
+				eval_expr(&p, &n);
+			}
+			if (n>1)  //scale the array
+			{
+				s=scene[0];
+				for (i=0; i<nis; i++)
+				{
+					if (scene[i]>s) s=scene[i];
+					scene[i+nis]=0; // zero imag
+				}
+				s=n/s;
+				for (i=0; i<nis; i++)
+				{
+					scene[i]=scene[i]*s; // scale
+				}
 			}
 		}
 		break;
