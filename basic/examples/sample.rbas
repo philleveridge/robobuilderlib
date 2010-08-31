@@ -1,0 +1,8 @@
+10 PRINT "LISTEN"
+20 SAMPLE 5,5000,4,64
+24 IF $NE=0 then 60
+30 FFT @!,1000
+35 print @![1,31]
+40 print "Pk=";$MAX(@!);"  Hz=";$IMAX(@!)*8+8
+50 goto 10
+60 end

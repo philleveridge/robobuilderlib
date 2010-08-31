@@ -126,7 +126,7 @@ const prog_char *tokens[] ={
 	"SAMPLE"
 };
 
-#define NOSPECS 29
+#define NOSPECS 30
 
 char *specials[] = { 
 	    "MIC",  "X",    "Y",    "Z",    "PSD", 
@@ -791,13 +791,6 @@ int getArg(char **str, int *res)
 
 unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
 
-//unsigned int sqrt(unsigned int n){
-//    unsigned int a;
-//    for (a=0;n>=(2*a)+1;n-=(2*a++)+1);
-//    return a;
-//}
-
-
 int get_special(char **str, int *res)
 {
 	char *p=*str;
@@ -875,8 +868,40 @@ int get_special(char **str, int *res)
 		break;
 	case sHAM:
 		// TBD - calculate HAMMING distance between 2 arrays
-		// current array (and arg)
-		v=0;
+		// $HAM(n,@A,@B)
+		//eg PRINT $HAM(0,@{3,1,2,3},@{3,3,2,1}
+		if (**str=='(') 
+		{
+			(*str)++;
+			eval_expr(str, res); 
+			if (**str==',')
+			{
+				int n=*res;
+				(*str)++;
+				if (eval_expr(str, res)==ARRAY)
+				{
+					if (**str==',')
+					{
+						int i,tnis=nis;
+						int tempB[SCENESZ];
+						(*str)++;
+						for (i=0;i<SCENESZ; i++)
+						{
+							tempB[i]=scene[i];
+						}
+						if (eval_expr(str, res)==ARRAY)
+						{
+							int m=(nis>tnis)?nis:tnis;
+							for (i=0;i<m; i++)
+							{
+								v += ((abs(((i<tnis)?tempB[i]:0) - ((i<nis)?scene[i]:0))<=n)?1:0); 
+							}
+						}	
+						(*str)++;  // ')'
+					}
+				}
+			}
+		}
 		break;
 	case sNORM:
 		if (getArg(str,&v))
@@ -2009,6 +2034,8 @@ int execute(line_t line, int dbf)
 					eval_expr(&p, &d);
 					
 					MIC_LEVEL=n;
+					MIC_RATE=4; //4ms
+					MIC_NOS=64; //max size for FFT
 					sDcnt=0;
 					
 					if (*p==',')
@@ -2021,7 +2048,8 @@ int execute(line_t line, int dbf)
 						{
 							p++;
 							eval_expr(&p, &n);
-							MIC_NOS = n;
+							if (n>0 && n<=128)
+								MIC_NOS = n;
 						}
 					}
 
@@ -2058,42 +2086,6 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case FFT: 
-		/*
-		{
-			//test 1
-			int fr1[8] = {1000,0,0,0,0,0,0,0};
-			int fr2[8] = {0,1000,0,0,0,0,0,0};
-			int fr5[8] = {1000,1000,0,0,0,0,0,0};
-			int fi[8] = {0,0,0,0,0,0,0,0};
-
-			int fr3[16] = {1000,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0};
-			int fr4[16] = {0,0,0,0,0,0,0,0, 1000,0,0,0,0,0,0,0};
-
-
-			int i;
-			fix_fft(fr1,fi,3,0);
-			for(i=0;i<8;i++) printf ("%d %d %d (%d)\n", i,fr1[i], fi[i], (fr1[i]*fr1[i]+fi[i]*fi[i]));
-
-			//test 3
-			fix_fftr(fr3,4,0);
-			for(i=0;i<8;i++) printf ("%d %d %d\n", i,fr3[i], fr3[i+8]);
-
-			//test 2
-			fix_fft(fr2,fi,3,0);
-			for(i=0;i<8;i++) printf ("%d %d %d (%d)\n", i,fr2[i], fi[i], (fr2[i]*fr2[i]+fi[i]*fi[i]));
-
-			//test 4
-			fix_fftr(fr4,4,0);
-			for(i=0;i<8;i++) printf ("%d %d %d\n", i,fr4[i], fr4[i+8]);
-
-			//test 5
-			fix_fft(fr5,fi, 3,0);
-			for(i=0;i<8;i++) printf ("%d %d %d (%d)\n", i,fr5[i], fi[i], (fr5[i]*fr5[i]+fi[i]*fi[i]));
-
-			break;
-		}
-		*/
-
 		{
 			int m,i,s;
 			p=line.text;
@@ -2118,10 +2110,11 @@ int execute(line_t line, int dbf)
 				m=6;
 			else
 			{
+				rprintf ("Invalid sample size must be one of 8,16,32 or 64\n");
 				errno=1;
 				break;
 			}
-			if (n>1)
+			if (n>1)  //scale the array
 			{
 				s=scene[0];
 				for (i=0; i<nis; i++)
@@ -2136,8 +2129,9 @@ int execute(line_t line, int dbf)
 				}
 			}
 
-			if (n !=0) 
+			if (dbf) 
 			{
+
 				rprintf ("%d", nis);
 				for (i=0; i<nis; i++)
 				{
@@ -2154,6 +2148,7 @@ int execute(line_t line, int dbf)
 						(int)scene[nis+i], 
 						(int)sqrt((scene[i]*scene[i]) + (scene[nis+i]*scene[nis+i])));
 				}
+
 			}
 			else
 			{
