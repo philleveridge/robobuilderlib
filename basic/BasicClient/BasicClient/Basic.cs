@@ -76,7 +76,7 @@ namespace RobobuilderLib
             PLAY,  OUT,    OFFSET, RUN,
             I2CO,  I2CI,   STEP,   SPEED, 
             MTYPE, LIGHTS, SORT,   FFT, 
-            SAMPLE,
+            SAMPLE,SCALE,
             ENDIF
 	        };
 							

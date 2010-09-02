@@ -1,16 +1,37 @@
 'demo (dptest)
 '
-10 STAND $NS
-12 PRINT "Press any key"
-15 LET a=$KBD
-20 SERVO 13=200
-30 SERVO 10=50
-40 LET a=($PSD + $PSD + $PSD)/3
-45 PRINT "Psd=";a
-50 SERVO 13=250-a
-60 SERVO 10=a
-70 WAIT 200
-80 GOTO 40
+   STAND $NS
+Loop:
+   PRINT "LISTEN"
+   SAMPLE 5,5000,1,64
+   IF $NE=0 THEN Done
+   FFT @!,1000
+   PRINT @![1,31]
+   n=$IMAX(@!)
+   PRINT "Pk=";$MAX(@!);"  Hz=";n
+
+   D=-1
+   IF N=29 THEN
+      LET d=1
+   ENDIF
+
+   E=-1
+   IF N=26 THEN
+      LET e=1
+   ENDIF
+
+   LET p=$SERVO(11)-d
+   LET p=$RANGE(p,5,50)
+
+   LET q=$SERVO(14)+e
+   LET q=$RANGE(q,205,250)
+
+   SERVO 11=p
+   SERVO 14=q
+
+   GOTO Loop
+Done:
+   END
 
 
 
