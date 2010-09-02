@@ -23,6 +23,9 @@ namespace RobobuilderLib
 
         public Hashtable labels    = new Hashtable();
         public Hashtable constants = new Hashtable();
+
+        public Hashtable help  = new Hashtable();
+
         public int    errno;
         public int    lineno;
         public string curline;
@@ -47,7 +50,8 @@ namespace RobobuilderLib
             "VOLT", "IR",  "KBD", "RND", "SERVO", "TICK", 
 		    "PORT", "ROM", "TYPE","ABS", "KIR",   "FIND",
             "CVB2I","NE",  "NS",  "MAX", "SUM",   "MIN",  
-            "NORM", "SQRT","SIN", "COS"
+            "NORM", "SQRT","SIN", "COS", "IMAX",  "HAM", 
+		    "RANGE"
         };
         
          public static  string[] tokens = new string[] {
@@ -59,7 +63,7 @@ namespace RobobuilderLib
             "PLAY",  "OUT",    "OFFSET", "RUN", 
             "I2CO",  "I2CI",   "STEP",   "SPEED", 
 	        "MTYPE", "LIGHTS", "SORT",   "FFT", 
-            "SAMPLE",
+            "SAMPLE","SCALE",
             "ENDIF" // leave at end
         };
         
@@ -88,6 +92,68 @@ namespace RobobuilderLib
         {
             code = new byte[MAX_PROG_SPACE];
             codeptr = 0;
+            //core comands
+            help.Add("PLAY",    "PLAY n - Play sound n");
+            help.Add("FOR",     "FOR a=b TO c");
+            help.Add("NEXT",    "NEXT a");
+            help.Add("LET",     "LET a=expression");
+            help.Add("IF",      "IF expression THEN lineno ELSE lineno");
+            help.Add("ELSE",    "IF expression THEN lineno ELSE lineno");
+            help.Add("ENDIF",   "Multiline IF statement");
+            help.Add("GOSUB",   "GOSUB lineno");
+            help.Add("RETURN",  "RETURN  - return from GOSUB");
+            help.Add("END",     "END - ends program - returns to command mode");
+            help.Add("GOTO",    "GOTO n - jump to Line number n (must be a number - not expression");
+            help.Add("OUT",     "OUT x[,n] Prints character ascii value x (repeated n times)");
+            help.Add("SERVO",   "SERVO n=[v | ~ | @] sets SERVO id n to value v or $SERVO(x) return position of SERVO id x");
+            help.Add("PRINT",   "PRINT expresion[;expression][;]");
+            help.Add("LIST",    "LIST A=s,1,2,3..Es creates a list assigned to A of s elements"); 
+            help.Add("MOVE",    "MOVE list,a,b - sends a Scene - plus time (a), number of frames (b)");
+            help.Add("POKE",    "POKE 10,A 	Put A into Byte 10");
+            help.Add("PUT",     "PUT PORT:A:2 = 1 	set Port A bit 2 =1 (assuming writeable)");
+            help.Add("WAIT",    "WAIT n- Wait for a an amount of time in ms i.e. 200ms");
+            help.Add("STAND",   "STAND n -set servos to basic posture (for 16 or 18 servo bots)");
+            help.Add("OFFSET",  "OFFSET n -	Defines a numeric offset array to be applied to MOVE and PLAY commands");
+            help.Add("RUN",     "RUN n - Call Built in action using code i.e. RUN 0, would punch left See built in motion list below");
+            help.Add("I2CO",    "I2CO 51,@{3,1,2,3}	will send 3 bytes to I2C address 51");
+            help.Add("I2CI",    "I2CI 52,5,@{2,1,1}	will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address.");
+            help.Add("SPEED",   "SPEED n	Speed torque setting on Move 0-4 (0 maximum, 4 minimum)");
+            help.Add("MTYPE",   "MTYPE n	Set Motion type 0: Acc, 1=Deacc, 2=AccDeac?, 3=Linear");
+            help.Add("STEP",    "STEP 5=30,50,5	STEP servo 5 from position 30 to position 50 in increments of 5 checking progress and stopping if obstruction");
+            help.Add("LIGHTS",  "LIGHTS n");
+            help.Add("SORT",    "SORT list");
+            help.Add("FFT",     "FFT list[,scale]");
+            help.Add("SAMPLE",  "SAMPLE a,b,c,d");
+            help.Add("SCALE",   "SCALE list,n");
+            // special regs
+            help.Add("MIC",     "$MIC");
+            help.Add("X",       "$X - acceleromter");
+            help.Add("Y",       "$Y - acceleromter");
+            help.Add("Z",       "$Z - acceleromter");
+            help.Add("PSD",     "$PSD - distance sensor");
+            help.Add("VOLT",    "$VOLT - battery voltage in mV");
+            help.Add("IR",      "$IR - wait for remotecon");
+            help.Add("KBD",     "$KB - wait for keyboard press");
+            help.Add("RND",     "$RND random number integer 0-32768");
+            help.Add("TICK",    "$TICK - time since unit ON in ms");
+		    help.Add("PORT",    "$PORT:x:y");
+            help.Add("ROM",     "$ROM(a) conetent of addressa");
+            help.Add("ABS",     "$ABS(x) ");
+            help.Add("KIR",     "$KIR - scan keyboard and IR ports -1 if no input");
+            help.Add("FIND",    "$FIND(x,list)");
+            help.Add("CVB2I",   "$CVB2I(x)  convert BYTE to integer 0-255 ->-128 -> 127");
+            help.Add("NE",      "$NE - number of elements in current list");
+            help.Add("NS",      "$NS - number of servos");
+            help.Add("MAX",     "$MAX(list,n) - maximum element in list (option start position n)");
+            help.Add("SUM",     "$SUM(list)");
+            help.Add("MIN",     "$MIN(list)");
+            help.Add("NORM",    "$NORM(list)");
+            help.Add("SQRT",    "$SQRT(n)");
+            help.Add("SIN",     "$SIN(n) n is byte (0-255), result integer value, +/- 32,768");
+            help.Add("COS",     "$COS(n)");
+            help.Add("IMAX",    "$IMAX(list,n) - as $MAX but return index rather than vlue of item");
+            help.Add("HAM",     "$HAM(list a, list b) - Hamming distance between  a and b");
+		    help.Add("RANGE",   "$RANGE(a,min,max) return a");
         }
 
         /*------------------------------------- -------------------------------------*/
@@ -259,12 +325,14 @@ namespace RobobuilderLib
                         {
                             continue;
                         }
+                        z = z.Trim();
                         string n = GetWord(ref z);
 
                         if (GetNext(ref z) != " ")
                         {
                             continue;
                         }
+                        z = z.Trim();
                         string v = GetWord(ref z);
                         try
                         {
@@ -280,6 +348,9 @@ namespace RobobuilderLib
                 int ln;
                 if (!int.TryParse(tok, out ln))
                 {
+                    if (tok.Length == 1 && tok[0] >= 'A' && tok[0] <= 'Z')
+                        tok = "LET " + tok;
+
                     Console.WriteLine(lnc + " " + tok + z);
                     r[i] = "" + lnc + " " + tok + z;
                 }

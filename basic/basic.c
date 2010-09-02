@@ -416,7 +416,6 @@ void basic_load(int tf)
 		switch (newline.token)
 		{
 		case LET: 
-		case GET: 
 		case FOR:
 			// read Variable		
 			if ((newline.var = getVar(&cp))<0)
@@ -933,6 +932,7 @@ int get_special(char **str, int *res)
 	case sNE:
 		v=nis;
 		break;	
+	case sTYPE:
 	case sNS:
 		v=nos;
 		break;	
@@ -943,9 +943,6 @@ int get_special(char **str, int *res)
 	case sVOLT:
 		Get_VOLTAGE();
 		v = gVOLTAGE;
-		break;
-	case sTYPE:
-		v=nos;
 		break;
 	case sIR:
 		while ((v= irGetByte())<0) ; //wait for IR
@@ -1550,12 +1547,6 @@ int execute(line_t line, int dbf)
 				fp--;
 			}
 		}
-		break;
-	case GET: 
-		n=0;
-		if (get_special(&(line.text), &n)<0)
-			errno=2;
-		variable[line.var]=n;	
 		break;
 	case POKE:
  		n=0;
