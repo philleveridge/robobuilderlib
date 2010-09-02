@@ -1,0 +1,12 @@
+10 STAND 16
+20 Print "Press any key"
+30 if $kir<0 then 30
+40 list m=7,-4,-2,-1,0,1,2,4
+50 Let d=$find($z, @{7,-15,-10,-5,0,5,10,15}
+60 let o=@m[d]
+70 wait 10
+80 print $z;"-";d;"-";o
+90 servo 10=$servo(10)+o
+100 servo 13=$servo(13)-o
+110 wait 10
+120 if $kir<0 then 40 

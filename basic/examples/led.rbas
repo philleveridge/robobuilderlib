@@ -2,12 +2,11 @@ const LED port:c:7
 const ON 0
 const OFF 1
 const DLY 200
-
-  lights 0
+   LIGHTS 0
 loop:
-  put LED=ON
-  wait DLY
-  put LED=OFF
-  wait DLY
-  goto loop
+   PUT LED=ON
+   WAIT DLY
+   PUT LED=OFF
+   WAIT DLY
+   GOTO loop
 

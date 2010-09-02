@@ -38,12 +38,12 @@ $Revision$
 #include "accelerometer.h"
 #include "edit.h"
 
-#define MAX_LINE  		150 
+#define MAX_LINE  		130 
 #define MAX_TOKEN 		8
-#define MAX_FOR_NEST	3
-#define MAX_GOSUB_NEST	3
+#define MAX_FOR_NEST	2
+#define MAX_GOSUB_NEST	2
 #define MAX_FOR_EXPR	20 
-#define MAX_DEPTH 		5
+#define MAX_DEPTH 		2
 
 /***********************************/
 
@@ -132,15 +132,16 @@ char *specials[] = {
 		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
 		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
 		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
-		"SQRT",  "SIN",  "COS",  "IMAX", "HAM"};
+		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
+		"RANGE"};
 
 enum { 	sMIC=0, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
 		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
 		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
 		sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
-		sSIN, sCOS, sIMAX, sHAM };
+		sSIN, sCOS, sIMAX, sHAM, sRANGE };
 
-#define NOSPECS sHAM+1
+#define NOSPECS sRANGE+1
 							
 int errno;
 int fmflg;
@@ -320,8 +321,11 @@ int readLine(char *line)
 		}
 		else
 		{
-			rprintfChar(ch);	
-			*line++ = ch;
+			if (line-start<MAX_LINE-2)
+			{
+				rprintfChar(ch);	
+				*line++ = ch;
+			}
 		}
 	}
 	return (line-start);
@@ -1011,6 +1015,35 @@ int get_special(char **str, int *res)
 			v = wckPosRead(v);
 		}
 		break;
+	case sRANGE:
+		if (**str=='(') 
+		{
+			int a,b,c;
+			(*str)++;
+			eval_expr(str, &a); 
+			if (**str==',')
+			{
+				(*str)++;
+				eval_expr(str, &b); 
+				if (**str==',')
+				{
+					(*str)++;
+					eval_expr(str, &c); 
+				}
+				if (**str!=')')
+				{
+					errno=1;
+					break;
+				}
+				(*str)++;
+				if (a<b) v=b;
+				else
+					if (a>c) v=c;
+					else 
+						v=a;
+			}
+		}
+		break;
 	case sFIND:
 		//$FIND(x,@A)
 		if (**str=='(') 
@@ -1248,6 +1281,8 @@ unsigned char eval_expr(char **str, int *res)
 			{
 				(*str)++;
 				eval_expr(str, &tmp);
+				if (tmp>=nis) tmp=nis-1;
+				if (tmp<0)    tmp=0;
 
 				if (**str == ',')
 				{
@@ -2004,6 +2039,7 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case RETURN: 
+
 		if (gp>0) {
 			setline(gosub[--gp]);
 			tmp=1;

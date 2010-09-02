@@ -1,8 +1,23 @@
-10 PRINT "LISTEN"
-20 SAMPLE 5,5000,4,64
-24 IF $NE=0 then 60
-30 FFT @!,1000
-35 print @![1,31]
-40 print "Pk=";$MAX(@!);"  Hz=";$IMAX(@!)*8+8
-50 goto 10
-60 end
+'demo (dptest)
+'
+10 STAND $NS
+12 PRINT "Press any key"
+15 LET a=$KBD
+20 SERVO 13=200
+30 SERVO 10=50
+40 LET a=($PSD + $PSD + $PSD)/3
+45 PRINT "Psd=";a
+50 SERVO 13=250-a
+60 SERVO 10=a
+70 WAIT 200
+80 GOTO 40
+
+
+
+
+
+
+
+
+
+

@@ -1,79 +1,147 @@
 'maze demo
 
-const dly 1000    
+
+const dly 1000
+    
 
    stand 18
+
    print "Maze Program"
+
    let c=0
+
 
 loop:
    let d=$psd
+
    lights d-10
 
+
    if d < 12 then
+
       gosub back
+
       goto loop
+
    endif
+
 
    if (c = 0) & (d < 30) then
+
       gosub leftturn90
+
       let c=1
+
       goto loop
+
    endif
 
-   if (c = 1) & (d < 30) then     
-      gosub leftturn180       
-      let c=2
-      goto loop
-   endif
 
    if (c = 1) & (d < 30) then
-      gosub rightturn90
-      let c=0
+     
+ gosub leftturn180
+      let c=2
+
       goto loop
+
    endif
 
+
+   if (c = 1) & (d < 30) then
+
+      gosub rightturn90
+
+      let c=0
+
+      goto loop
+
+   endif
+
+
    let c=0
+
    gosub forward
+
    goto loop
 
+
+
 back:
+
    print ":"
+
    run 9
+
    wait 1000
+
    return
+
+
 
 leftturn90:
+
    print "<-"
+
    run 4
+
    run 4
+
    run 4
-   wait dly 
+
+   wait dly
+
    return
+
+
 
 leftturn180:
+
    print "V"
+
    run 4
+
    run 4
+
    run 4
+
    run 4
+
    run 4
-   wait dly 
-   return
+
+   wait dly
+ 
+  return
+
+
 
 rightturn90:
+
    print "->"
+
    run 5
+
    run 5
+
    run 5
+
    run 5
-   wait dly 
-   return
+
+   wait dly
+ 
+  return
+
+
 
 forward:
+
    print "^"
+
    run 8
+
    run 8
+
    run 8
-   wait dly 
+
+   wait dly
+
    return
