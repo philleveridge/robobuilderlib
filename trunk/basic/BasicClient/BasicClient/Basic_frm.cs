@@ -44,6 +44,7 @@ namespace RobobuilderLib
                 version = version.Substring(11, 4);
 
             this.Text += version;
+            input.Select();
 
             syntaxcheck(); //!
         }
@@ -78,6 +79,7 @@ namespace RobobuilderLib
                     s.PortName = comPort.Text;
                     s.Open();
                     button1.BackColor = System.Drawing.Color.Green;
+                    output.Select();
                 }
             }
             catch
@@ -354,6 +356,32 @@ namespace RobobuilderLib
 
             input.Height = ((Form)sender).Height - 230;
         }
+
+        
+        void input_MouseHover(object sender, System.EventArgs e)
+        {
+
+            if (input.SelectedText != "")
+            {
+                string h = "";
+                if (compiler.help.Contains(input.SelectedText.Trim()))
+                {
+                    h=(string)compiler.help[input.SelectedText.Trim()];
+                    helptext.Text = h;
+                    helptext.Visible = true;
+                }
+            }
+            else
+            {
+                helptext.Visible = false;
+            }
+        }
+
+        void input_MouseLeave(object sender, System.EventArgs e)
+        {
+            helptext.Visible = false;
+        }
+
 
     }
 }

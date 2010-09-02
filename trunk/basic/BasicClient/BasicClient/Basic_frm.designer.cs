@@ -48,6 +48,7 @@
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.input = new System.Windows.Forms.RichTextBox();
+            this.helptext = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -205,14 +206,30 @@
             this.input.Name = "input";
             this.input.Size = new System.Drawing.Size(763, 187);
             this.input.TabIndex = 14;
-            this.input.Text = "\'      test program\nconst DLY 400\n       PRINT \"Test Passive\"\nLoop:  SERVO 12=@ \'set servo pa" +
-                "ssive\n       Print \"Servo 12 = \"; $SERVO(12)\n       wait DLY   \'0.5secs\n       goto Loop";
+            this.input.Text = "\'      test program\nconst DLY 400\n       PRINT \"Test Passive\"\nLoop:  SERVO 12=@ \'" +
+                "set servo passive\n       Print \"Servo 12 = \"; $SERVO(12)\n       wait DLY   \'0.5s" +
+                "ecs\n       goto Loop";
+            this.input.MouseHover += new System.EventHandler(this.input_MouseHover);
+            this.input.MouseLeave += new System.EventHandler(input_MouseLeave);
+            // 
+            // helptext
+            // 
+            this.helptext.AutoSize = true;
+            this.helptext.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.helptext.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.helptext.Location = new System.Drawing.Point(242, 46);
+            this.helptext.Name = "helptext";
+            this.helptext.Size = new System.Drawing.Size(37, 15);
+            this.helptext.TabIndex = 15;
+            this.helptext.Text = "label1";
+            this.helptext.Visible = false;
             // 
             // Basic_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(788, 371);
+            this.Controls.Add(this.helptext);
             this.Controls.Add(this.input);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.fname);
@@ -223,13 +240,15 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Basic_frm";
             this.Text = "Basic Compiler - ";
-            this.SizeChanged += new System.EventHandler(Basic_frm_SizeChanged);
+            this.SizeChanged += new System.EventHandler(this.Basic_frm_SizeChanged);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
+
+
 
         #endregion
 
@@ -252,5 +271,6 @@
         private System.Windows.Forms.RichTextBox input;
         private System.Windows.Forms.ToolStripMenuItem simulatorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem startBasiclocalToolStripMenuItem;
+        private System.Windows.Forms.Label helptext;
     }
 }
