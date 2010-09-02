@@ -1,0 +1,26 @@
+' Simple balance using ankle servos (2 & 7)
+'
+   STAND $NS
+   LET K=2
+   LET G=$Z 'calibrate 
+   print "Press a key when ready"; $kbd
+
+loop:
+   LET D=G-$Z  'diff
+   PRINT D
+
+   if D>10 then
+      LET T=K
+   endif
+
+   if D<(-10) then
+      LET T=(-K)
+   endif
+
+   SERVO 2=$SERVO(2)+T
+   SERVO 7=$SERVO(7)-T
+
+   WAit 50
+   goto loop
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
