@@ -211,6 +211,8 @@
                 "ecs\n       goto Loop";
             this.input.MouseHover += new System.EventHandler(this.input_MouseHover);
             this.input.MouseLeave += new System.EventHandler(input_MouseLeave);
+            this.input.MouseMove += new System.Windows.Forms.MouseEventHandler(input_MouseMove);
+            this.input.SelectionChanged += new System.EventHandler(input_SelectionChanged);
             // 
             // helptext
             // 
@@ -247,8 +249,6 @@
             this.PerformLayout();
 
         }
-
-
 
         #endregion
 

@@ -360,7 +360,6 @@ namespace RobobuilderLib
         
         void input_MouseHover(object sender, System.EventArgs e)
         {
-
             if (input.SelectedText != "")
             {
                 string h = "";
@@ -382,6 +381,16 @@ namespace RobobuilderLib
             helptext.Visible = false;
         }
 
+        void input_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            if (!helptext.Visible) 
+                helptext.Location = new Point(e.X ,e.X);
+        }
+
+        void input_SelectionChanged(object sender, System.EventArgs e)
+        {
+            helptext.Visible = false;
+        }
 
     }
 }

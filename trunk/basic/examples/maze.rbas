@@ -1,147 +1,78 @@
 'maze demo
-
-
-const dly 1000
-    
-
-   stand 18
-
-   print "Maze Program"
-
-   let c=0
-
-
+'
+const dly 1000  
+   STAND $NS
+   PRINT "Maze Program"
+   LET c=0
 loop:
-   let d=$psd
+   LET d=$PSD
+   LIGHTS d-10
 
-   lights d-10
+   IF d < 12 THEN
+      GOSUB back
+      GOTO loop
+   ENDIF
 
+   IF (c = 0) & (d < 30) THEN
+      GOSUB leftturn90
+      c=1
+      GOTO loop
+   ENDIF
 
-   if d < 12 then
-
-      gosub back
-
-      goto loop
-
-   endif
-
-
-   if (c = 0) & (d < 30) then
-
-      gosub leftturn90
-
-      let c=1
-
-      goto loop
-
-   endif
+   IF (c = 1) & (d < 30) THEN  
+      GOSUB leftturn180
+      c=2
+      GOTO loop
+   ENDIF
 
 
-   if (c = 1) & (d < 30) then
-     
- gosub leftturn180
-      let c=2
+   IF (c = 1) & (d < 30) THEN
+      GOSUB rightturn90
+      LET c=0
+      GOTO loop
+   ENDIF
 
-      goto loop
-
-   endif
-
-
-   if (c = 1) & (d < 30) then
-
-      gosub rightturn90
-
-      let c=0
-
-      goto loop
-
-   endif
-
-
-   let c=0
-
-   gosub forward
-
-   goto loop
-
-
+   c=0
+   GOSUB forward
+   GOTO loop
 
 back:
-
-   print ":"
-
-   run 9
-
-   wait 1000
-
-   return
-
-
+   PRINT ":"
+   RUN 9
+   WAIT dly
+   RETURN
 
 leftturn90:
-
-   print "<-"
-
-   run 4
-
-   run 4
-
-   run 4
-
-   wait dly
-
-   return
-
-
+   PRINT "<-"
+   RUN 4
+   RUN 4
+   RUN 4
+   WAIT dly
+   RETURN
 
 leftturn180:
-
-   print "V"
-
-   run 4
-
-   run 4
-
-   run 4
-
-   run 4
-
-   run 4
-
-   wait dly
- 
-  return
-
-
+   PRINT "V"
+   RUN 4
+   RUN 4
+   RUN 4
+   RUN 4
+   RUN 4
+   WAIT dly
+   RETURN
 
 rightturn90:
-
-   print "->"
-
-   run 5
-
-   run 5
-
-   run 5
-
-   run 5
-
-   wait dly
- 
-  return
-
-
+   PRINT "->"
+   RUN 5
+   RUN 5
+   RUN 5
+   RUN 5
+   WAIT dly 
+   RETURN
 
 forward:
-
-   print "^"
-
-   run 8
-
-   run 8
-
-   run 8
-
-   wait dly
-
-   return
+   PRINT "^"
+   RUN 8
+   RUN 8
+   RUN 8
+   WAIT dly
+   RETURN

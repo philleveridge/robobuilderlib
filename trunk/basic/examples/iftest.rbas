@@ -1,53 +1,27 @@
 'multiline if test
-
-
 'requires basic client to compile
-'
 
-if 1=1 then
+IF 1=1 THEN
+  PRINT "t"
+  PRINT "next"
+ELSE
+  PRINT "failed"
+ENDIF
 
-  print "t"
+IF 1=2 THEN
+  PRINT "failed"
+  END
+ELSE
+  PRINT "t"
+ENDIF
 
-  print "next"
+IF 2=2 THEN
+  PRINT "good"
+ENDIF
 
-else
+IF 2=1 THEN
+  PRINT "failed"
+  END
+ENDIF
 
-  print "failed"
-
-endif
-
-
-
-if 1=2 then
-
-  print "failed"
-
-  end
-
-else
-
-  print "t"
-
-endif
-
-
-
-if 2=2 then
-
-  print "good"
-
-endif
-
-
-
-if 2=1 then
-
-  print "failed"
-
-  end
-
-endif
-
-
-
-print "done"
+PRINT "done"
