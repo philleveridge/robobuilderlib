@@ -108,8 +108,11 @@ SYNTAX:
 [Line No] IC2O number,List
 [Line No] IC2I number,number,List
 [Line No] SPEED number
-[Line No] MTYPE number,number,List
+[Line No] MTYPE number
 [Line No] STEP ID=number,number,number
+[Line No] SAMPLE a,b[,c[,d]]
+[Line No] FFT list,scale
+[Line No] SCALE list,scale
 }}}
 
 ||Special register access ($)||Description||
@@ -123,13 +126,19 @@ SYNTAX:
 ||$PORT        ||Read Bit 6 of Port A .. LET A=$PORT:A:6 ||
 ||$RND         ||Random numbers - different number each time called ||
 ||$MIC         ||Microphone level||
-||$TYPE        ||Number of servos i.e. 16||
 ||$SERVO(id)   ||position of servo id, i.e.  LET A=$SERVO(5) get Servo ID 5 position ||
 ||$ABS(x)      ||Absolute value of x returned||
 ||$ROM(x)      ||Contents of ROM location x, i.e. LET A=$ROM(10)||
 ||$MAPIR(x)    ||Maps value from IR to built in action code||
 ||$FIND(x, @A) ||Look for item less than or equal to X and return index||
 ||$CVB2I(x)    ||Converts byte to int, i.e. 4 -> 4 and 254 -> -2||
+||$MAX||    ||
+||$MIN||    ||
+||$NORM||   ||
+||$SUM||    ||
+||$HAM||    ||
+||$RANGE||  ||
+
 
 
 ||Command||Description||
