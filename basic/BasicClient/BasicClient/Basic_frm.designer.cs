@@ -206,13 +206,13 @@
             this.input.Name = "input";
             this.input.Size = new System.Drawing.Size(763, 187);
             this.input.TabIndex = 14;
-            this.input.Text = "\'      test program\nconst DLY 400\n       PRINT \"Test Passive\"\nLoop:  SERVO 12=@ \'" +
-                "set servo passive\n       Print \"Servo 12 = \"; $SERVO(12)\n       wait DLY   \'0.5s" +
-                "ecs\n       goto Loop";
+            this.input.Text = "\'      test program\nconst  DLY 400\n       C=12\n       PRINT \"Test Passive\"\nLoop: " +
+                " SERVO C=@ \'set servo passive\n       Print \"Servo 12 = \"; $SERVO(C)\n       wait " +
+                "DLY   \'0.5secs\n       goto Loop";
+            this.input.SelectionChanged += new System.EventHandler(this.input_SelectionChanged);
+            this.input.MouseMove += new System.Windows.Forms.MouseEventHandler(this.input_MouseMove);
             this.input.MouseHover += new System.EventHandler(this.input_MouseHover);
-            this.input.MouseLeave += new System.EventHandler(input_MouseLeave);
-            this.input.MouseMove += new System.Windows.Forms.MouseEventHandler(input_MouseMove);
-            this.input.SelectionChanged += new System.EventHandler(input_SelectionChanged);
+            this.input.MouseLeave += new System.EventHandler(this.input_MouseLeave);
             // 
             // helptext
             // 
