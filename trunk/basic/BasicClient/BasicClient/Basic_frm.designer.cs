@@ -49,23 +49,32 @@
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.input = new System.Windows.Forms.RichTextBox();
             this.helptext = new System.Windows.Forms.Label();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.term = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // output
             // 
             this.output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
-            this.output.Location = new System.Drawing.Point(12, 224);
+            this.output.Location = new System.Drawing.Point(3, 3);
             this.output.Multiline = true;
             this.output.Name = "output";
             this.output.ReadOnly = true;
             this.output.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.output.Size = new System.Drawing.Size(764, 107);
+            this.output.Size = new System.Drawing.Size(769, 384);
             this.output.TabIndex = 4;
             // 
             // comPort
             // 
-            this.comPort.Location = new System.Drawing.Point(461, 335);
+            this.comPort.Location = new System.Drawing.Point(645, 365);
             this.comPort.Name = "comPort";
             this.comPort.Size = new System.Drawing.Size(87, 20);
             this.comPort.TabIndex = 9;
@@ -74,7 +83,7 @@
             // button1
             // 
             this.button1.BackColor = System.Drawing.Color.Red;
-            this.button1.Location = new System.Drawing.Point(554, 335);
+            this.button1.Location = new System.Drawing.Point(738, 365);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(36, 21);
             this.button1.TabIndex = 10;
@@ -181,15 +190,15 @@
             // 
             // fname
             // 
-            this.fname.Location = new System.Drawing.Point(12, 337);
+            this.fname.Location = new System.Drawing.Point(0, 367);
             this.fname.Name = "fname";
-            this.fname.Size = new System.Drawing.Size(354, 20);
+            this.fname.Size = new System.Drawing.Size(772, 20);
             this.fname.TabIndex = 12;
             // 
             // progressBar1
             // 
             this.progressBar1.ForeColor = System.Drawing.Color.HotPink;
-            this.progressBar1.Location = new System.Drawing.Point(616, 337);
+            this.progressBar1.Location = new System.Drawing.Point(8, 365);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(159, 19);
             this.progressBar1.TabIndex = 13;
@@ -202,9 +211,9 @@
             // input
             // 
             this.input.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.input.Location = new System.Drawing.Point(12, 31);
+            this.input.Location = new System.Drawing.Point(0, 0);
             this.input.Name = "input";
-            this.input.Size = new System.Drawing.Size(763, 187);
+            this.input.Size = new System.Drawing.Size(777, 367);
             this.input.TabIndex = 14;
             this.input.Text = "\'      test program\nconst  DLY 400\n       C=12\n       PRINT \"Test Passive\"\nLoop: " +
                 " SERVO C=@ \'set servo passive\n       Print \"Servo 12 = \"; $SERVO(C)\n       wait " +
@@ -219,25 +228,80 @@
             this.helptext.AutoSize = true;
             this.helptext.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.helptext.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.helptext.Location = new System.Drawing.Point(242, 46);
+            this.helptext.Location = new System.Drawing.Point(339, 34);
             this.helptext.Name = "helptext";
             this.helptext.Size = new System.Drawing.Size(37, 15);
             this.helptext.TabIndex = 15;
             this.helptext.Text = "label1";
             this.helptext.Visible = false;
             // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Location = new System.Drawing.Point(0, 27);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(788, 419);
+            this.tabControl1.TabIndex = 16;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.input);
+            this.tabPage1.Controls.Add(this.fname);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(780, 393);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "editor";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.output);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(780, 393);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Output";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.term);
+            this.tabPage3.Controls.Add(this.button1);
+            this.tabPage3.Controls.Add(this.progressBar1);
+            this.tabPage3.Controls.Add(this.comPort);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(780, 393);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "VT100";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // term
+            // 
+            this.term.BackColor = System.Drawing.Color.Black;
+            this.term.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.term.ForeColor = System.Drawing.Color.Green;
+            this.term.Location = new System.Drawing.Point(4, 2);
+            this.term.Multiline = true;
+            this.term.Name = "term";
+            this.term.ReadOnly = true;
+            this.term.Size = new System.Drawing.Size(768, 357);
+            this.term.TabIndex = 0;
+            this.term.Text = "Connect to robot";
+            // 
             // Basic_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(788, 371);
+            this.ClientSize = new System.Drawing.Size(788, 446);
             this.Controls.Add(this.helptext);
-            this.Controls.Add(this.input);
-            this.Controls.Add(this.progressBar1);
-            this.Controls.Add(this.fname);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.comPort);
-            this.Controls.Add(this.output);
+            this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Basic_frm";
@@ -245,6 +309,13 @@
             this.SizeChanged += new System.EventHandler(this.Basic_frm_SizeChanged);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -272,5 +343,10 @@
         private System.Windows.Forms.ToolStripMenuItem simulatorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem startBasiclocalToolStripMenuItem;
         private System.Windows.Forms.Label helptext;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.TextBox term;
     }
 }
