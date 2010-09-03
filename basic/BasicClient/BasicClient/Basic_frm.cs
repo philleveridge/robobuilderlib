@@ -38,7 +38,7 @@ namespace RobobuilderLib
             s = new SerialPort(comPort.Text, 115200);
             s.DataReceived += new SerialDataReceivedEventHandler(s_DataReceived);
 
-            output.KeyPress += new KeyPressEventHandler(output_KeyPress);
+            term.KeyPress += new KeyPressEventHandler(output_KeyPress);
 
             if (version.StartsWith("$Revision: "))
                 version = version.Substring(11, 4);
@@ -79,7 +79,7 @@ namespace RobobuilderLib
                     s.PortName = comPort.Text;
                     s.Open();
                     button1.BackColor = System.Drawing.Color.Green;
-                    output.Select();
+                    term.Select();
                 }
             }
             catch
@@ -96,7 +96,7 @@ namespace RobobuilderLib
 
         private void DisplayText(object sender, EventArgs e)
         {
-            if (rx != null) output.AppendText(rx);
+            if (rx != null) term.AppendText(rx);
         }
 
         void s_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -345,6 +345,7 @@ namespace RobobuilderLib
         void Basic_frm_SizeChanged(object sender, System.EventArgs e)
         {
             //throw new System.NotImplementedException();
+            /*
             input.Width = ((Form)sender).Width-40;
             output.Width = ((Form)sender).Width-40;
             
@@ -355,6 +356,7 @@ namespace RobobuilderLib
             button1.Top = output.Top + 115; ;
 
             input.Height = ((Form)sender).Height - 230;
+            */
         }
 
         
