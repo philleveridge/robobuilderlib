@@ -277,10 +277,11 @@ namespace RobobuilderLib
             string c = compiler.Download();
             bm = true;
 
+            File.WriteAllText("bindata.txt", c);
+
             if (!s.IsOpen)
             {
-                Console.WriteLine("com port not open ..."); 
-                File.WriteAllText("bindata.txt", c);
+                output.Text += "com port not open ..."; 
                 return;
             }
 
@@ -290,6 +291,8 @@ namespace RobobuilderLib
 
             try
             {
+                s.Write(".z"); // Auto set up download mode
+
                 btf = new binxfer(s);
                 btf.dbg = true;
                 btf.send_msg_raw('l', c);
@@ -301,7 +304,7 @@ namespace RobobuilderLib
                 }
                 else
                 {
-                    Console.WriteLine("download failed");
+                    output.Text += "download failed";
                     bm = false;
                 }
 
@@ -309,6 +312,7 @@ namespace RobobuilderLib
             catch (Exception err)
             {
                 MessageBox.Show("Download failed - connection problem" + err.Message);
+                output.Text += "Download failed - connection problem" + err.Message;
             }
 
             timer1.Enabled = false;
@@ -319,8 +323,7 @@ namespace RobobuilderLib
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (btf != null && progressBar1.Visible)
-            {
-            
+            {          
                 progressBar1.Increment((int)(100.0*btf.progress));
             }
             this.Update();
