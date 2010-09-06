@@ -10,21 +10,25 @@ Loop:
    n=$IMAX(@!)
    PRINT "Pk=";$MAX(@!);"  Hz=";n
 
+   'servo 11   53-135 +80
+   'servo 14  196-127 -60
    D=-1
-   IF N=29 THEN
-      LET d=1
+   IF N=21 THEN
+      LET d=2
    ENDIF
 
    E=-1
-   IF N=26 THEN
-      LET e=1
+   IF N=13 THEN
+      LET e=2
    ENDIF
 
-   LET p=$SERVO(11)-d
-   LET p=$RANGE(p,5,50)
+   LET p=$SERVO(11)+d
+   LET p=$RANGE(p,50,140)
 
-   LET q=$SERVO(14)+e
-   LET q=$RANGE(q,205,250)
+   LET q=$SERVO(14)-e
+   LET q=$RANGE(q,120,200)
+
+   PRINT "P=";p;", Q=";q; ", D=";d; ",E=";e
 
    SERVO 11=p
    SERVO 14=q

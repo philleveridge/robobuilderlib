@@ -15,6 +15,7 @@ namespace RobobuilderLib
         binxfer btf;
         ServoSim sim = null;
 
+
         bool readyDownload = false;
 
         string version = "$Revision$";  //$Revision$
@@ -30,7 +31,7 @@ namespace RobobuilderLib
 
             if (!File.Exists("Basic.exe"))
             {
-                startBasiclocalToolStripMenuItem.Visible = false;
+                //startBasiclocalToolStripMenuItem.Visible = false;
                 simulatorToolStripMenuItem.Visible = false;
             }
 
@@ -96,12 +97,21 @@ namespace RobobuilderLib
 
         private void DisplayText(object sender, EventArgs e)
         {
-            if (rx != null) term.AppendText(rx);
+            if (rx != null)
+            {
+                //need to handle VT100 secquences
+                if (rx == "\b")
+                {
+                    term.Text = term.Text.Substring(0, term.Text.Length - 1);
+                    term.SelectionStart = term.Text.Length;
+                }
+                else
+                    term.AppendText(rx);
+            }
         }
 
         void s_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            //throw new NotImplementedException();
             if (bm) return;
 
             switch (e.EventType)
@@ -332,16 +342,7 @@ namespace RobobuilderLib
         private void simulatorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (sim == null) sim = new ServoSim();
-            //sim.ShowDialog();
             sim.Show();
-        }
-
-        private void startBasiclocalToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (File.Exists("Basic.exe"))
-            {
-                Process.Start("Basic.exe");
-            }
         }
 
 
@@ -396,6 +397,14 @@ namespace RobobuilderLib
         {
             helptext.Visible = false;
         }
+
+
+        void process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            //term.AppendText(e.Data);
+            Console.WriteLine(e.Data);
+        }
+
 
     }
 }

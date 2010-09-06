@@ -41,7 +41,6 @@
             this.compileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.downloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.simulatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.startBasiclocalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fname = new System.Windows.Forms.TextBox();
@@ -139,8 +138,7 @@
             this.compilerToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.compileToolStripMenuItem,
             this.downloadToolStripMenuItem,
-            this.simulatorToolStripMenuItem,
-            this.startBasiclocalToolStripMenuItem});
+            this.simulatorToolStripMenuItem});
             this.compilerToolStripMenuItem.Name = "compilerToolStripMenuItem";
             this.compilerToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
             this.compilerToolStripMenuItem.Text = "Compiler";
@@ -148,30 +146,23 @@
             // compileToolStripMenuItem
             // 
             this.compileToolStripMenuItem.Name = "compileToolStripMenuItem";
-            this.compileToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.compileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.compileToolStripMenuItem.Text = "Compile";
             this.compileToolStripMenuItem.Click += new System.EventHandler(this.compileToolStripMenuItem_Click);
             // 
             // downloadToolStripMenuItem
             // 
             this.downloadToolStripMenuItem.Name = "downloadToolStripMenuItem";
-            this.downloadToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.downloadToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.downloadToolStripMenuItem.Text = "Download";
             this.downloadToolStripMenuItem.Click += new System.EventHandler(this.downloadToolStripMenuItem_Click);
             // 
             // simulatorToolStripMenuItem
             // 
             this.simulatorToolStripMenuItem.Name = "simulatorToolStripMenuItem";
-            this.simulatorToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.simulatorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.simulatorToolStripMenuItem.Text = "Simulator";
             this.simulatorToolStripMenuItem.Click += new System.EventHandler(this.simulatorToolStripMenuItem_Click);
-            // 
-            // startBasiclocalToolStripMenuItem
-            // 
-            this.startBasiclocalToolStripMenuItem.Name = "startBasiclocalToolStripMenuItem";
-            this.startBasiclocalToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
-            this.startBasiclocalToolStripMenuItem.Text = "Start basic (local)";
-            this.startBasiclocalToolStripMenuItem.Click += new System.EventHandler(this.startBasiclocalToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -216,8 +207,8 @@
             this.input.Size = new System.Drawing.Size(777, 367);
             this.input.TabIndex = 14;
             this.input.Text = "\'      test program\nconst  DLY 400\n       C=12\n       PRINT \"Test Passive\"\nLoop: " +
-                " SERVO C=@ \'set servo passive\n       Print \"Servo 12 = \"; $SERVO(C)\n       wait " +
-                "DLY   \'0.5secs\n       goto Loop";
+                " SERVO C=@ \'set servo passive\n       PRINT \"Servo \";C;\" = \"; $SERVO(C)\n       WA" +
+                "IT DLY   \'0.5secs\n       GOTO Loop\n";
             this.input.SelectionChanged += new System.EventHandler(this.input_SelectionChanged);
             this.input.MouseMove += new System.Windows.Forms.MouseEventHandler(this.input_MouseMove);
             this.input.MouseHover += new System.EventHandler(this.input_MouseHover);
@@ -285,12 +276,13 @@
             // term
             // 
             this.term.BackColor = System.Drawing.Color.Black;
-            this.term.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.term.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.term.ForeColor = System.Drawing.Color.Green;
             this.term.Location = new System.Drawing.Point(4, 2);
             this.term.Multiline = true;
             this.term.Name = "term";
             this.term.ReadOnly = true;
+            this.term.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.term.Size = new System.Drawing.Size(768, 357);
             this.term.TabIndex = 0;
             this.term.Text = "Connect to robot";
@@ -341,7 +333,6 @@
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.RichTextBox input;
         private System.Windows.Forms.ToolStripMenuItem simulatorToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem startBasiclocalToolStripMenuItem;
         private System.Windows.Forms.Label helptext;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;

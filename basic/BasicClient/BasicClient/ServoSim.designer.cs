@@ -58,7 +58,7 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(53, 29);
             this.button1.TabIndex = 4;
-            this.button1.Text = "Listen";
+            this.button1.Text = "Go!";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
