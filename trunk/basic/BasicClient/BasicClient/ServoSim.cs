@@ -7,6 +7,7 @@ using System.Text;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Diagnostics;
 
 namespace RobobuilderLib
 {
@@ -31,6 +32,8 @@ namespace RobobuilderLib
         TcpListener serverSocket;
         bool stopNow = false;
         int startservo = 0;
+
+        Process process = null;
 
         public ServoSim()
         {
@@ -133,6 +136,23 @@ namespace RobobuilderLib
             return 0;
         }
 
+        private void runbasic()
+        {
+            // start basic
+
+            if (process != null)
+                return;
+
+            if (File.Exists("Basic.exe"))
+            {
+                process = new Process();
+                process.StartInfo.FileName = "Basic.exe";
+                process.EnableRaisingEvents = true;
+                process.Exited += new EventHandler(process_Exited);
+                process.Start();
+            }
+        }
+
         private void sock()
         {
             Int32 port = 8888;
@@ -143,6 +163,8 @@ namespace RobobuilderLib
             serverSocket.Start();
             displ(" >> Server Started");
             int requestCount = 0;
+
+            runbasic();
 
             while (!stopNow)
             {
@@ -189,9 +211,17 @@ namespace RobobuilderLib
 
         }
 
+        void process_Exited(object sender, EventArgs e)
+        {
+            process = null;
+            MessageBox.Show("EXITED");
+            stopNow = true;
+            //button1.Text = "Go!";
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
-            if (button1.Text == "Listen")
+            if (button1.Text == "Go!")
             {
                 button1.Text = "Stop";
                 stopNow = false;
@@ -199,9 +229,14 @@ namespace RobobuilderLib
             }
             else
             {
-                button1.Text = "Listen";
+                button1.Text = "Go!";
                 stopNow = true;
                 // ???
+                if (process != null)
+                {
+                    process.Kill();
+                    process = null;
+                }
             }
         }
 
@@ -284,6 +319,25 @@ namespace RobobuilderLib
             showuc();
         }
 
+
+
+        /***********************************************/
+
+        private void StartProg()
+        {
+            process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = false,
+                    FileName = "basic.exe",
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                }
+            };
+
+        }
 
     }
 }
