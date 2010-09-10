@@ -209,6 +209,9 @@ namespace RobobuilderLib
                 }
             }
 
+            serverSocket.Stop();
+            displ(" >> Done");
+
         }
 
         void process_Exited(object sender, EventArgs e)
@@ -226,6 +229,7 @@ namespace RobobuilderLib
                 button1.Text = "Stop";
                 stopNow = false;
                 sock();
+                button1.Text = "Go!";
             }
             else
             {
