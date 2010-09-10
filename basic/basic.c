@@ -1006,6 +1006,12 @@ int get_special(char **str, int *res)
 		}
 		break;
 	case sSERVO: // SERVO(nn)
+		//$servo
+		if (**str!='(') 
+		{
+			v=readservos();
+		}
+		else
 		// get position of servo id=nn
 		if (getArg(str,&v))
 		{
