@@ -341,8 +341,17 @@ namespace RobobuilderLib
 
         private void simulatorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (sim == null) sim = new ServoSim();
+            if (sim == null)
+            {
+                sim = new ServoSim();
+                sim.Disposed += new EventHandler(sim_Disposed);
+            }
             sim.Show();
+        }
+
+        void sim_Disposed(object sender, EventArgs e)
+        {
+            sim = null;
         }
 
 
@@ -404,6 +413,7 @@ namespace RobobuilderLib
             //term.AppendText(e.Data);
             Console.WriteLine(e.Data);
         }
+
 
 
     }

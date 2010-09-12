@@ -3,6 +3,7 @@
 #include <direct.h>
 
 #include "Main.h"
+#include "win.h"
 
 #define GetCurrentDir _getcwd
 
@@ -51,17 +52,17 @@ void wckSetPassive(char ServoID)
 
 	DBO(printf ("WIN: Servo Passive %d\n", ServoID); )
 }
+
 void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)		
 {
 	int i=0;
-	printf ("WIN: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);
+	DBO(printf ("WIN: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);)
+
+	// convert this to "Y:%d...:%d"
+	//tbd
 	for (i=Index; i<=LastID; i++)
 	{
-			char buff[64];
-			sprintf(buff, "S:%d:%d$", i, TargetArray[i]);
-			testsocket(buff);
-
-			printf ("WIN: Servo [%d] = %d\n", i, TargetArray[i]);
+			wckPosSend(i,SpeedLevel,TargetArray[i]);
 	}
 }
 
@@ -82,19 +83,46 @@ void wckWriteIO(unsigned char ServoID, unsigned char IO)
 BYTE cpos[32];
 int nos;
 
+const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
+const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
+
 void PlayPose(int d, int s, int f, unsigned char data[], int n)
 {
 	int i=0;
 	if (n!=0) nos=n; else n=nos;
-	printf ("WIN: Playpose  [d=%d , f=%d] :: Data=", d,s);
+	DBO(printf ("WIN: Playpose  [d=%d , f=%d] :: Data=", d,s);)
 	for (i=0; i<n; i++)
-			printf ("%d,", data[i]);
-	printf ("\n");
+	{
+			DBO(printf ("%d,", data[i]);)
+
+	}
+	DBO(printf ("\n");)
+	if (simflg!=0)
+	{
+		wckSyncPosSend(n-1,0,data, 0);
+	}
 	Sleep(d);
 }
 
-void standup      	(int n)	{printf ("WIN: standup %d\n", n);}
-int readservos ()  {nos=20;return nos;}
+void standup      	(int n)	
+{
+	printf ("WIN: standup %d\n", n);
+	if (n==16)
+	{
+		PlayPose(1000,10,1,basic16,16);
+	}
+	else
+	{
+		PlayPose(1000,10,1,basic18,18);
+	}
+}
+int readservos ()  {
+	int i=0;
+	nos=20;
+	for (i=0; i<nos; i++)
+		cpos[i] = wckPosRead(i);	
+	return nos;
+}
 
 void SendToSoundIC(int n)	{printf ("WIN: Play Sound %d\n", n);}
 
@@ -110,9 +138,6 @@ unsigned char	eeprom_read_byte  (char *p) 					{return *p;}
 void			eeprom_write_block(char *d, char *b, int l) 	{int i=0; for(i=0; i<l;i++) *b++=*d++;}
 void			eeprom_write_word (char *b, unsigned int  w) 	{*b=w%256; *(b+1)=w/256;}
 void			eeprom_write_byte (char *b, unsigned char c) 	{*b=c;}
-
-const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
-const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
 
 /* sensors */
 int z_value=0;
@@ -170,6 +195,31 @@ void  Acc_GetData ()
 	return;
 }
 int adc_mic()			{return 0;}
+
+void leds_buttons()
+{
+	char buff[64];
+	int  v;
+
+	if (simflg==0) return;
+
+	v=  ((PORTA&(1<<6) != 0)?  1:0) + //  PA6 RUN G
+		((PORTA&(1<<5) != 0)?  2:0) + //  PA5 RUN b
+		((PORTC&(1<<7) != 0)?  4:0) + //  PC7 PWR R
+		((PORTG&(1<<2) != 0)?  8:0) + //  PG2 PWR G 
+		((PORTA&(1<<7) != 0)? 16:0) + //  PA7 ERROR R
+		((PORTA&(1<<3) != 0)? 32:0) + //  PA3 PF1 R			
+		((PORTA&(1<<2) != 0)? 64:0) + //  PA2 PF1 B
+		((PORTA&(1<<4) != 0)?128:0);  //  PA4 Pf2 O
+
+
+	sprintf(buff, "H:%d",v);
+	v = testsocket(buff);
+
+	//	input; PA0=PF1, PA1=PF2
+	if (v&1==1) PORTA |= 1;
+	if (v&2==2) PORTA |= 2;
+}
 
 /* priotf  */
 int uartGetByte() 							{return kbhit()?getch():-1; }
