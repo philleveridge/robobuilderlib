@@ -43,7 +43,7 @@ $Revision$
 #define MAX_FOR_NEST	2
 #define MAX_GOSUB_NEST	2
 #define MAX_FOR_EXPR	20 
-#define MAX_DEPTH 		2
+#define MAX_DEPTH 		5
 
 /***********************************/
 

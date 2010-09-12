@@ -26,12 +26,17 @@ namespace RobobuilderLib
 
     public partial class ServoSim : Form
     {
+        string bfn="basic.exe";
+
         const int MAX = 8;
         RemoCon ir_val = RemoCon.FAILED;
         servoUC[] servoUCA = new servoUC[32]; 
         TcpListener serverSocket;
         bool stopNow = false;
         int startservo = 0;
+
+        bool[] leds = new bool[8]; // RUN G/B, PWR R/G, ERROR R, PF1 R/B, PF2 O
+        bool[] but  = new bool[2]; // PF1 / PF2
 
         Process process = null;
 
@@ -40,6 +45,19 @@ namespace RobobuilderLib
             InitializeComponent();
             intsuc();
             showuc();
+
+            int i;
+            for (i = 0; i < 8; i++) leds[i] = false;
+            for (i = 0; i < 2; i++) but[i]  = false;
+
+            if (File.Exists("BC.ini"))
+            {
+                string[] r = File.ReadAllLines("BC.ini");
+                foreach (string l in r)
+                {
+                    if (l.StartsWith("BASIC=")) bfn = l.Substring(6);
+                }
+            }
         }
 
         void intsuc()
@@ -97,6 +115,27 @@ namespace RobobuilderLib
                 int n = Convert.ToInt32(p[1]);
                 return n;
             }
+            if (v.StartsWith("Y:")) // synch move
+            {
+                for (int i = 0; i < p.Length; i++)
+                {
+                    servoUCA[i].val = Convert.ToInt32(p[i+1]);
+                }
+                return 0;
+            }
+            if (v.StartsWith("H:")) // leds and button
+            {
+                if (p.Length > 1 && p[1] != "")
+                {
+                    int n = Convert.ToInt32(p[1]);
+                    for (int i = 0; i < 8; i++)
+                    {
+                        leds[i] = (n | (1 << i)) == 1;
+                    }
+                    set_leds();
+                }
+                return (but[0]?1:0) + (but[1]?2:0);
+            }
             if (v.StartsWith("R:"))
             {
                 int n = Convert.ToInt32(p[1]); if (n < 0) n = 0; if (n >= 32) n = 31;
@@ -127,7 +166,7 @@ namespace RobobuilderLib
             }
             if (v.StartsWith("V"))
             {
-                return 100; // vrsion 0.100
+                return 101; // version 0.101 
             }
             if (v.StartsWith("PSD"))
             {
@@ -143,10 +182,10 @@ namespace RobobuilderLib
             if (process != null)
                 return;
 
-            if (File.Exists("Basic.exe"))
+            if (File.Exists(bfn))
             {
                 process = new Process();
-                process.StartInfo.FileName = "Basic.exe";
+                process.StartInfo.FileName = bfn;
                 process.EnableRaisingEvents = true;
                 process.Exited += new EventHandler(process_Exited);
                 process.Start();
@@ -323,25 +362,27 @@ namespace RobobuilderLib
             showuc();
         }
 
-
-
-        /***********************************************/
-
-        private void StartProg()
+        //
+        private void pf1_btn_Click(object sender, EventArgs e)
         {
-            process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    CreateNoWindow = false,
-                    FileName = "basic.exe",
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                }
-            };
-
+            but[0] = true;
         }
 
+        private void pf2_btn_Click(object sender, EventArgs e)
+        {
+            but[1] = true;
+        }
+
+        void set_leds()
+        {
+            checkBox1.Checked = leds[0];
+            checkBox2.Checked = leds[1];
+            checkBox3.Checked = leds[2];
+            checkBox4.Checked = leds[3];
+            checkBox5.Checked = leds[4];
+            checkBox6.Checked = leds[5];
+            checkBox7.Checked = leds[6];
+            checkBox8.Checked = leds[7];
+        }
     }
 }
