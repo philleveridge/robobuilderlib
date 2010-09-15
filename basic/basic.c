@@ -1619,7 +1619,7 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case STAND: 
-		n=16;
+		n=nos;
 		eval_expr(&line.text, &n);
 		standup(n);
 		break;
