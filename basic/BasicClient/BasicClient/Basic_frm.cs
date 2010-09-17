@@ -266,7 +266,7 @@ namespace RobobuilderLib
             else
             {
                 output.Text = "Error on line " + compiler.lineno + " : " + compiler.error_msgs[compiler.errno] + "\r\n";
-                output.Text = "Error ::      " + compiler.curline;              
+                output.Text += "Line ::      " + compiler.curline;              
 
                 readyDownload = false;
             }

@@ -54,7 +54,16 @@ void insertln(line_t newline)
 	eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+psize), newline.value);	
 	psize+=2;			
 
-	if (newline.text != 0) l = strlen(newline.text);
+	if (newline.token == DATA)
+	{
+	    if (newline.text != 0 && ((unsigned char)(*newline.text) == 0xFF) ) 
+		    l = (unsigned char)(*(newline.text+1)) + 2;
+	}
+	else
+	{
+		if (newline.text != 0) 
+			l = strlen(newline.text);
+	}
 
 	eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+psize), psize+ l + 3);	
 	
@@ -249,7 +258,8 @@ void readtext(int ln, char *b)
 	for (i=0; i<100;i++) // MAX_LINE
 	{
 		b[i] =eeprom_read_byte((uint8_t *)(BASIC_PROG_SPACE+ln+i));	
-	    if (b[i]==0) break;
+	    if ((b[0]==0xFF && i>= b[1]) || (b[0]!=0xFF && b[i]==0) )
+			break;
 	}
 }
 
