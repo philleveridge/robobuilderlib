@@ -75,6 +75,27 @@ extern volatile BYTE    MIC_RATE;
 extern volatile BYTE    MIC_NOS;
 extern volatile WORD	gtick;
 
+const prog_char *tokens[] ={
+	"LET",   "FOR",    "IF",     "THEN", 
+	"ELSE",  "GOTO",   "PRINT",  "GET",
+	"PUT",   "END",    "LIST",   "XACT",
+	"WAIT",  "NEXT",   "SERVO",  "MOVE",
+	"GOSUB", "RETURN", "POKE",   "STAND",
+	"PLAY",  "OUT",    "OFFSET", "RUN",
+	"I2CO",  "I2CI",   "STEP",   "SPEED", 
+	"MTYPE", "LIGHTS", "SORT",   "FFT",
+	"SAMPLE","SCALE",  "DATA"
+};
+
+char *specials[] = { 
+	    "MIC",   "X",    "Y",    "Z",    "PSD", 
+		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
+		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
+		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
+		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
+		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
+		"RANGE"};
+
 //wait for byte or IR press
 int  GetByte()
 {
@@ -101,47 +122,7 @@ const  prog_char *error_msgs[] = {
 	"Bad List"
 	};
 	
-enum {
-	LET=0, FOR, IF, THEN, 
-	ELSE, GOTO, PRINT, GET, 
-	PUT, END, LIST, XACT, 
-	WAIT, NEXT, SERVO, MOVE,
-	GOSUB, RETURN, POKE, STAND,
-	PLAY, OUT, OFFSET, RUN, I2CO, I2CI,
-	STEP, SPEED, MTYPE, LIGHTS,	SORT, FFT,
-	SAMPLE, SCALE
-	};
 
-const prog_char *tokens[] ={
-	"LET",   "FOR",    "IF",     "THEN", 
-	"ELSE",  "GOTO",   "PRINT",  "GET",
-	"PUT",   "END",    "LIST",   "XACT",
-	"WAIT",  "NEXT",   "SERVO",  "MOVE",
-	"GOSUB", "RETURN", "POKE",   "STAND",
-	"PLAY",  "OUT",    "OFFSET", "RUN",
-	"I2CO",  "I2CI",   "STEP",   "SPEED", 
-	"MTYPE", "LIGHTS", "SORT",   "FFT",
-	"SAMPLE","SCALE"
-};
-
-#define NOTOKENS SCALE+1
-
-char *specials[] = { 
-	    "MIC",   "X",    "Y",    "Z",    "PSD", 
-		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
-		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
-		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
-		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
-		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
-		"RANGE"};
-
-enum { 	sMIC=0, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
-		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
-		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
-		sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
-		sSIN, sCOS, sIMAX, sHAM, sRANGE };
-
-#define NOSPECS sRANGE+1
 							
 int errno;
 int fmflg;
@@ -543,6 +524,7 @@ void basic_load(int tf)
 			newline.text=cp;
 			break;
 		case LIST:
+		case DATA:
 			// read Variable		
 			if ((newline.var = getVar(&cp))<0)
 			{
@@ -553,7 +535,34 @@ void basic_load(int tf)
 			{
 				errno=1;
 			}
-			newline.text=cp;
+			if (newline.token==LIST)
+			{
+				newline.text=cp;
+			}
+			else
+			{
+				//read each number and store in text
+				int nob=0; // FF nb b1 b2 ... bn 
+				int i;
+				BYTE tbuff[64];
+				char *p=&line[0];
+
+				while (1)
+				{
+					int b = getNum(&cp);
+					tbuff[nob++] = b;
+					if (getNext(&cp) != ',')
+						break;
+				}
+				*p++= 0xff;
+				*p++=nob;
+				for (i=0; i<nob; i++)
+				{
+					*p++ = tbuff[i];
+				}
+				*p++=0;
+				newline.text=&line[0];
+			}
 			break;
 		case IF:
 			// We should check for THEN and ELSE
@@ -640,6 +649,38 @@ unsigned char eval_expr(char **str, int *res);
 enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 int speed=2;
 int mtype=2;
+
+int cs=0;
+int lnc[20];
+
+int findcache(int l)
+{
+	int r=0;
+	int i=0;
+	while (i<cs)
+	{
+		if (lnc[i]==l)
+		{
+			return lnc[i+1];
+		}
+		i+=2;
+	}
+	return 0;
+}
+
+void linenocache(int l, int m)
+{
+	if (findcache(l)==0) // hit?
+	{
+		//add to cache
+		if (cs<18)
+		{
+			lnc[cs]=l;
+			lnc[cs+1]=m;
+			cs +=2;
+		}
+	}
+}
 
 void swap(int *x,int *y)
 {
@@ -1276,7 +1317,15 @@ unsigned char eval_expr(char **str, int *res)
 				}
 				n1 = variable[n1];
 				readtext(n1, tmpA);				
-				eval_list(tmpA);
+				if ((unsigned char)(tmpA[0])==0xFF)
+				{
+					int i=0;
+					nis=tmpA[1];
+					for (i=0; i<nis; i++)
+						scene[i]=tmpA[i+2];
+				}
+				else
+					eval_list(tmpA);
 				//
 				(*str)++;
 			}
@@ -1403,8 +1452,15 @@ unsigned char eval_expr(char **str, int *res)
 
 int gotoln(int gl)
 {
-	int p = findln(gl);
+	int p;
+
+	if ((p=findcache(gl))>0)
+	{
+		return p;
+	}
+	p = findln(gl);
 	if (p<3 || getlineno(p) != gl ) return -1; // no such line
+	linenocache(gl,p);
 	return p;
 }
 
@@ -1455,6 +1511,8 @@ void basic_run(int dbf)
 	
 	fp=0; // Upto 3 nested for/next
 	gp=0;  // 3 nested gosubs
+
+	cs=0; // reset line number cache
 	
 	fmflg=0;
 	
@@ -1803,6 +1861,7 @@ int execute(line_t line, int dbf)
 		}
 		break;			
 	case LIST: 
+	case DATA: 
 		variable[line.var] = lastline+8;
 		break;		
 	case XACT:	case RUN:			
@@ -2329,7 +2388,7 @@ void basic_list()
 		rprintfStr (tokens[line.token]);
 		rprintf (" "); 
 		
-		if (line.token==LET || line.token==GET || line.token==FOR || line.token==LIST)
+		if (line.token==LET || line.token==GET || line.token==FOR || line.token==LIST || line.token==DATA)
 			rprintf ("%c = ", line.var+'A');
 			
 		if (line.token==PUT)
@@ -2384,22 +2443,34 @@ void basic_list()
 			rprintf ("%c", line.var+'A');
 		}
 		else
-		if (line.token==GOTO || line.token==GOSUB || line.token==WAIT  || line.token==PLAY  ) 
-			rprintf ("%d", line.value);
+		if (line.token==DATA)
+		{
+			int i, n=*(line.text+1);
+			rprintf ("%d", line.text[2]);
+			for (i=1; i<n; i++)
+				rprintf (",%d", line.text[2+i]);
+		}
 		else
-			rprintfStr (line.text);
-
 		if (line.token==FOR)
 		{
 			char temp[100];
 
 			//last bit is stored with next !
 			//printf (" (%d) ", fnptr[line.var]);
-			int p = findnext(nxtline, line.var);
+			int p;
+			rprintfStr (line.text);
+			p = findnext(nxtline, line.var);
 			readtext(p+8, temp);
 			rprintfStr (" TO ");
 			rprintfStr(temp);
 		}
+		else
+		if (line.token==GOTO || line.token==GOSUB || line.token==WAIT  || line.token==PLAY  ) 
+			rprintf ("%d", line.value);
+		else
+			rprintfStr (line.text);
+
+
 		rprintf ("\r\n");
 	}
 }

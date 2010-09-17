@@ -63,7 +63,7 @@ namespace RobobuilderLib
             "PLAY",  "OUT",    "OFFSET", "RUN", 
             "I2CO",  "I2CI",   "STEP",   "SPEED", 
 	        "MTYPE", "LIGHTS", "SORT",   "FFT", 
-            "SAMPLE","SCALE",
+            "SAMPLE","SCALE",  "DATA",
             "ENDIF" // leave at end
         };
         
@@ -76,7 +76,7 @@ namespace RobobuilderLib
             PLAY,  OUT,    OFFSET, RUN,
             I2CO,  I2CI,   STEP,   SPEED, 
             MTYPE, LIGHTS, SORT,   FFT, 
-            SAMPLE,SCALE,
+            SAMPLE,SCALE,  DATA,
             ENDIF
 	        };
 							
@@ -107,8 +107,9 @@ namespace RobobuilderLib
             help.Add("OUT",     "OUT x[,n] Prints character ascii value x (repeated n times)");
             help.Add("SERVO",   "SERVO n=[v | ~ | @] sets SERVO id n to value v or passive or sets I/O");
             help.Add("PRINT",   "PRINT expresion[;expression][;]");
-            help.Add("LIST",    "LIST A=s,1,2,3..Es creates a list assigned to A of s elements"); 
+            help.Add("LIST",    "LIST A=s,1,2,3..Es creates a list assigned to A of s elements");
             help.Add("MOVE",    "MOVE list,a,b - sends a Scene - plus time (a), number of frames (b)");
+            help.Add("DATA",    "DATA D=3,4,5,6 : a Packed DATA array access via D - 4 bytes long");
             help.Add("POKE",    "POKE 10,A 	Put A into Byte 10");
             help.Add("PUT",     "PUT PORT:A:2 = 1 	set Port A bit 2 =1 (assuming writeable)");
             help.Add("WAIT",    "WAIT n- Wait for a an amount of time in ms i.e. 200ms");
@@ -191,6 +192,8 @@ namespace RobobuilderLib
 
         bool IsNumber(string s)
         {
+            if (s.Length == 0) return false;
+
             for (int i = 0; i < s.Length; i++)
             {
                 if (s[i] < '0' || s[i] > '9') return false;
@@ -200,10 +203,16 @@ namespace RobobuilderLib
 
         int GetNumber(string s)
         {
-            if (IsNumber(s))
-                return Convert.ToInt32(s);
-            else
-                return 0;
+            try
+            {
+                if (IsNumber(s))
+                    return Convert.ToInt32(s);
+            }
+            catch
+            {
+
+            }
+            return 0;
         }
 
         int GetVar(string s)
@@ -392,6 +401,7 @@ namespace RobobuilderLib
             errno = 0;
             lineno = 0;
             codeptr = 0;
+            Byte[] tbuff = new byte[100];
 
             int[] nestedif   = new int[10];
             int nif = 0;
@@ -496,6 +506,32 @@ namespace RobobuilderLib
                         if (t1 < 0) errno = 3; else ln.var = (byte)t1;
                         if (GetNext(ref z) != "=") { errno = 1; }
                         ln.text = upperIt(z);
+                        break;
+                    case KEY.DATA:
+                        t1 = GetVar(GetWord(ref z));
+                        if (t1 < 0) errno = 3; else ln.var = (byte)t1;
+                        if (GetNext(ref z) != "=") { errno = 1; }
+                        z = upperIt(z).Trim();
+                        int nob=0; // FF nb b1 b2 ... bn 
+
+                        tbuff[0] = 0xff;
+
+				        while (true)
+				        {
+                            string nm = GetWord(ref z);
+                            if (!IsNumber(nm))
+                            {
+                                errno = 1;
+                                break;
+                            }
+                            int b = Convert.ToInt32(nm);
+					        tbuff[nob+2] = (byte)(b%256);
+                            nob++;
+					        if (GetNext(ref z) != ",")
+						        break;
+				        }
+                        tbuff[1] = (byte)nob;
+
                         break;
                     case KEY.SERVO:
                     case KEY.STEP: 
@@ -665,13 +701,31 @@ namespace RobobuilderLib
                 code[codeptr++] = ln.var;
                 code[codeptr++] = (byte)(ln.value % 256);
                 code[codeptr++] = (byte)(ln.value / 256);
-                int l = codeptr + ln.text.Length + 3;
+                int ll = 0;
+                if ((KEY)(ln.token) == KEY.DATA)
+                {
+                    ll = tbuff[1]+2;
+                }
+                else
+                {
+                    ll = ln.text.Length;
+                }
+                int l = codeptr + ll + 3;
                 code[codeptr++] = (byte)(l % 256);
                 code[codeptr++] = (byte)(l / 256);
-                for (int k = 0; k < ln.text.Length; k++)
+
+                for (int k = 0; k < ll; k++)
                 {
-                    code[codeptr++] = (byte)ln.text[k];
+                    if ((KEY)(ln.token) == KEY.DATA)
+                    {
+                        code[codeptr++] = (byte)tbuff[k];                   
+                    }
+                    else
+                    {
+                        code[codeptr++] = (byte)ln.text[k];
+                    }
                 }
+   
                 code[codeptr++] = 0;
                 code[codeptr] = (byte)0xCC; // start of code
 

@@ -13,6 +13,27 @@ typedef struct basic_line {
 	char          *text; // rest of line - unproceesed
 } line_t;
 
+enum {
+	LET=0, FOR, IF, THEN, 
+	ELSE, GOTO, PRINT, GET, 
+	PUT, END, LIST, XACT, 
+	WAIT, NEXT, SERVO, MOVE,
+	GOSUB, RETURN, POKE, STAND,
+	PLAY, OUT, OFFSET, RUN, I2CO, I2CI,
+	STEP, SPEED, MTYPE, LIGHTS,	SORT, FFT,
+	SAMPLE, SCALE, DATA
+	};
+
+#define NOTOKENS DATA+1
+
+enum { 	sMIC=0, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
+		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
+		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
+		sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
+		sSIN, sCOS, sIMAX, sHAM, sRANGE };
+
+#define NOSPECS sRANGE+1
+
 
 /*    edit functions   */
 extern int     	findln(int lineno);
@@ -28,3 +49,5 @@ extern int		getlineno(int p);
 extern uint16_t lastline;  // last line added
 extern void		readtext(int ln, char *b);
 extern int		findend();
+
+
