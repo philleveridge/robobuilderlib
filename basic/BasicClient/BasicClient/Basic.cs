@@ -306,9 +306,15 @@ namespace RobobuilderLib
             int lnc = 5;
             int i = 0;
             precomp = "";
+            string z="";
             foreach (string s in l)
             {
-                string z = s;
+                if (s.EndsWith("\\"))
+                {
+                    z = s.Substring(0,s.Length-1);
+                    continue;
+                }
+                z += s;
                 if (z.IndexOf('\'') >= 0) z = z.Substring(0, z.IndexOf('\''));
                 z = z.Trim();
                 if (z.Length <= 0) continue;
@@ -321,6 +327,7 @@ namespace RobobuilderLib
                     labels.Add(tok, lnc);  //label
                     if (GetNext(ref z) != " ")
                     {
+                        z = "";
                         continue;
                     }
                     z = z.Trim();
@@ -333,6 +340,7 @@ namespace RobobuilderLib
                         //
                         if (GetNext(ref z) != " ")
                         {
+                            z = "";
                             continue;
                         }
                         z = z.Trim();
@@ -340,16 +348,19 @@ namespace RobobuilderLib
 
                         if (GetNext(ref z) != " ")
                         {
+                            z = "";
                             continue;
                         }
                         z = z.Trim();
                         string v = GetWord(ref z);
                         try
                         {
+                            z = "";
                             constants.Add(n, v);
                         }
                         catch
                         {
+                            z = "";
                             Console.WriteLine("Constant {0} {1} failed",n,v);
                         }
                         continue;
@@ -369,6 +380,7 @@ namespace RobobuilderLib
                 precomp += r[i] + "\r\n";
                 i++;
                 lnc += 5;
+                z = "";
             }
             //
 
