@@ -182,12 +182,19 @@ namespace RobobuilderLib
             return n;
         }
 
-        string GetNext(ref string w)
+        string GetNext(ref string w, bool ws)
         {
             if (w.Length == 0) return "";
-            string n = w.Substring(0,1);
-            if (w.Length > 0) w = w.Substring(1);
-            return n;
+            while (true)
+            {
+                string n = w.Substring(0, 1);
+                if (w.Length > 0) w = w.Substring(1);
+                if (ws)
+                    return n;
+                if (n != " " && n != "\t") 
+                    return n;
+            }
+            return "";
         }
 
         bool IsNumber(string s)
@@ -311,10 +318,11 @@ namespace RobobuilderLib
             {
                 if (s.EndsWith("\\"))
                 {
-                    z = s.Substring(0,s.Length-1);
+                    z = z + s.Substring(0,s.Length-1).Trim();
                     continue;
                 }
-                z += s;
+
+                z += s.Trim(); 
                 if (z.IndexOf('\'') >= 0) z = z.Substring(0, z.IndexOf('\''));
                 z = z.Trim();
                 if (z.Length <= 0) continue;
@@ -325,7 +333,7 @@ namespace RobobuilderLib
                 {
                     tok = tok.Substring(0, tok.Length - 1);
                     labels.Add(tok, lnc);  //label
-                    if (GetNext(ref z) != " ")
+                    if (GetNext(ref z, true) != " ")
                     {
                         z = "";
                         continue;
@@ -338,7 +346,7 @@ namespace RobobuilderLib
                     if (tok.ToLower() == "const")
                     {
                         //
-                        if (GetNext(ref z) != " ")
+                        if (GetNext(ref z, true) != " ")
                         {
                             z = "";
                             continue;
@@ -346,7 +354,7 @@ namespace RobobuilderLib
                         z = z.Trim();
                         string n = GetWord(ref z);
 
-                        if (GetNext(ref z) != " ")
+                        if (GetNext(ref z, true) != " ")
                         {
                             z = "";
                             continue;
@@ -413,7 +421,7 @@ namespace RobobuilderLib
             errno = 0;
             lineno = 0;
             codeptr = 0;
-            Byte[] tbuff = new byte[100];
+            Byte[] tbuff = new byte[200];
 
             int[] nestedif   = new int[10];
             int nif = 0;
@@ -445,7 +453,7 @@ namespace RobobuilderLib
                 if (IsNumber(tok))
                 {
                     ln.lineno = Convert.ToInt32(tok);
-                    if (GetNext(ref z) != " ") { errno = 1; return false; }
+                    if (GetNext(ref z, true) != " ") { errno = 1; return false; }
                     z = z.Trim();
                     tok = GetWord(ref z);
                 }
@@ -462,7 +470,7 @@ namespace RobobuilderLib
                 ln.value = 0;
                 lnc += 5;
 
-                if ((z != "") && (GetNext(ref z) != " ")) { errno = 1; return false; }
+                if ((z != "") && (GetNext(ref z, true) != " ")) { errno = 1; return false; }
 
                 z = z.Trim();
 
@@ -475,7 +483,7 @@ namespace RobobuilderLib
                     case KEY.FOR:
                         int t1= GetVar(GetWord(ref z));
                         if (t1 < 0) errno = 3; else ln.var = (byte)t1;
-                        if (GetNext(ref z) != "=") { errno = 1; }
+                        if (GetNext(ref z, false) != "=") { errno = 1; }
                         if ((KEY)t == KEY.FOR)
                         {
                             int p = z.ToUpper().IndexOf(" TO ");
@@ -516,13 +524,13 @@ namespace RobobuilderLib
                     case KEY.LIST:
                         t1 = GetVar(GetWord(ref z));
                         if (t1 < 0) errno = 3; else ln.var = (byte)t1;
-                        if (GetNext(ref z) != "=") { errno = 1; }
+                        if (GetNext(ref z, false) != "=") { errno = 1; }
                         ln.text = upperIt(z);
                         break;
                     case KEY.DATA:
                         t1 = GetVar(GetWord(ref z));
                         if (t1 < 0) errno = 3; else ln.var = (byte)t1;
-                        if (GetNext(ref z) != "=") { errno = 1; }
+                        if (GetNext(ref z,false) != "=") { errno = 1; }
                         z = upperIt(z).Trim();
                         int nob=0; // FF nb b1 b2 ... bn 
 
@@ -539,7 +547,7 @@ namespace RobobuilderLib
                             int b = Convert.ToInt32(nm);
 					        tbuff[nob+2] = (byte)(b%256);
                             nob++;
-					        if (GetNext(ref z) != ",")
+					        if (GetNext(ref z,false) != ",")
 						        break;
 				        }
                         tbuff[1] = (byte)nob;
@@ -557,13 +565,13 @@ namespace RobobuilderLib
                         {
                             ln.var = (byte)t;
                         }
-                        if (GetNext(ref z) != "=") { errno = 1; }
+                        if (GetNext(ref z,false) != "=") { errno = 1; }
                         ln.text = upperIt(z);
                         break;
                     case KEY.POKE:
                         t = GetNumber(GetWord(ref z));
                         if (t < 0) errno = 3; else ln.var = (byte)t;
-                        if (GetNext(ref z) != ",") { errno = 1; }
+                        if (GetNext(ref z,false) != ",") { errno = 1; }
                         ln.text = upperIt(z);
                         break;
                     case KEY.PUT:
@@ -577,7 +585,7 @@ namespace RobobuilderLib
                             if (w1[7] < '0' || w1[7] > '8') { errno = 3; }
                             ln.var = (byte)(30 + (int)(w1[5] - 'A') * 10 + (int)(w1[7] - '0'));
                         }
-                        if (GetNext(ref z) != "=") { errno = 1; }
+                        if (GetNext(ref z,false) != "=") { errno = 1; }
                         ln.text = upperIt(z);
                         break;
                     case KEY.WAIT:
