@@ -17,6 +17,8 @@ namespace RobobuilderLib
 
 
         bool readyDownload = false;
+        string bfn = "basic.exe";
+        string bdn = "bindata.txt";
 
         string version = "$Revision$";  //$Revision$
 
@@ -29,7 +31,17 @@ namespace RobobuilderLib
             InitializeComponent();
             readyDownload = false;
 
-            if (!File.Exists("Basic.exe"))
+            if (File.Exists("BC.ini"))
+            {
+                string[] r = File.ReadAllLines("BC.ini");
+                foreach (string l in r)
+                {
+                    if (l.StartsWith("BASIC=")) bfn = l.Substring(6);
+                    if (l.StartsWith("BIN="))   bdn = l.Substring(4);
+                }
+            }
+
+            if (!File.Exists(bfn))
             {
                 //startBasiclocalToolStripMenuItem.Visible = false;
                 simulatorToolStripMenuItem.Visible = false;
@@ -262,6 +274,7 @@ namespace RobobuilderLib
                 output.Text = compiler.precomp + "\r\n";
                 output.Text += compiler.Dump();
                 readyDownload = true;
+                File.WriteAllText(bdn, compiler.Download());
             }
             else
             {
@@ -286,8 +299,6 @@ namespace RobobuilderLib
 
             string c = compiler.Download();
             bm = true;
-
-            File.WriteAllText("bindata.txt", c);
 
             if (!s.IsOpen)
             {
@@ -344,6 +355,7 @@ namespace RobobuilderLib
             if (sim == null)
             {
                 sim = new ServoSim();
+                sim.bfn = bfn;
                 sim.Disposed += new EventHandler(sim_Disposed);
             }
             sim.Show();

@@ -26,7 +26,7 @@ namespace RobobuilderLib
 
     public partial class ServoSim : Form
     {
-        string bfn="basic.exe";
+        public string bfn="basic.exe";
 
         const int MAX = 8;
         RemoCon ir_val = RemoCon.FAILED;
@@ -49,15 +49,6 @@ namespace RobobuilderLib
             int i;
             for (i = 0; i < 8; i++) leds[i] = false;
             for (i = 0; i < 2; i++) but[i]  = false;
-
-            if (File.Exists("BC.ini"))
-            {
-                string[] r = File.ReadAllLines("BC.ini");
-                foreach (string l in r)
-                {
-                    if (l.StartsWith("BASIC=")) bfn = l.Substring(6);
-                }
-            }
         }
 
         void intsuc()
