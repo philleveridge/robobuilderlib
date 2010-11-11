@@ -131,8 +131,8 @@ Some times the firmware can get corrupted and the serial number is lost. When th
 If you see 13 digits all is well. If not find your serial number (its printed on the RBC unit) and update the ROM from interactive /input mode using for example:
 
 {{{
-ROM 1,48
-ROM 2,49
+POKE 1,48
+POKE 2,49
 etc ...
 }}}
 
