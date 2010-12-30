@@ -1922,14 +1922,20 @@ int execute(line_t line, int dbf)
 		int l=1;
 		n=0;
 		p=line.text;
-		if (eval_expr(&p, &n)==NUMBER)
+		switch (eval_expr(&p, &n))
 		{
+		case NUMBER:
 			if (*p==',')
 			{
 				p++;
 				eval_expr(&p, &l);
 			}
 			while (l-->0) rprintfChar(n);
+			break;
+		case ARRAY:
+			for (l=0; l<nis; l++)
+				rprintfChar(scene[l]);
+			break;
 		}
 		}
 		break;
