@@ -14,6 +14,10 @@ namespace Demo
         Program p;
         int n_of_s;
 
+        byte[][] rstep_r;
+        byte[][] lstep_r;
+
+
         public Walk(Program p1)
         {
             p = p1;
@@ -42,19 +46,6 @@ namespace Demo
             new byte[] {120, 153, 217, 84,  105, 123, 70, 46, 152, 138, 69,  44, 40, 140, 208, 197},
             new byte[] {123, 156, 212, 80,  108, 126, 73, 40, 150, 141, 68,  44, 40, 138, 208, 195}
             };
-
-        void trgAct(bool st, RobobuilderLib.wckMotion w)
-        {
-            trg = new RobobuilderLib.trigger();
-
-            trg.set_PSD(0, 51);     //trigger if less than 0 or more than 51 i.e. never - but exercise routine
-            trg.timer = 250;       //every 250 ms
-            trg.dbg   = true;     // debug on
-            trg.DCMP  = true; 
-            w.set_trigger(trg);
-            trg.activate(st);   //activate trigger (if true)
-            trg.print();
-        }
 
         byte[][] reverse(byte[][] z)
         {
@@ -103,43 +94,49 @@ namespace Demo
         public void panda ()
         {
             bool lpst = false;
-            int cnt= 0;
-            bool dir = true;
+            bool wlk = true;
+
+            lstep_r = reverse(lstep);
+            rstep_r = reverse(rstep);
+
+            int dely = 50;
 
             n_of_s = p.nos;
 
-            p.readdistance();  
+            Console.WriteLine("Continuous walk (+ / - / q) - reverses if PSD < 15");
             Program.pause();
-
-            setallLeds (15, dir, !dir);
    
-            p.w.reset_timer();
-   
-            while (! (Console.KeyAvailable))
+            while (wlk)
             {
-                if (dir)
+                int d = p.readdistance();
+                Console.WriteLine("PSD={0}", d);
+
+                if (Console.KeyAvailable)
                 {
-                    lpst = lpose(25, 1, rstep, false);
+                    char ch = Console.ReadKey().KeyChar;
+
+                    if (ch == 'q' || ch == 27)  wlk = false;
+                    if (ch == '+')              dely += 5; 
+                    if (ch == '-')              dely -= 5;
+                    continue;
+                }
+
+                if (d > 15)
+                {
+                    lpst = lpose(dely, 1, rstep, false);
                     Console.Write("R");
-                    lpst = lpose(25, 1, lstep, false);
+                    lpst = lpose(dely, 1, lstep, false);
                     Console.Write("L");
                 }
                 else
                 {
-                    lpst = lpose(25, 1, reverse(lstep), false);
+                    lpst = lpose(dely, 1, lstep_r, false);
                     Console.Write("l");
-                    lpst = lpose(25, 1, reverse(rstep), false);
+                    lpst = lpose(dely, 1, rstep_r, false);
                     Console.Write("r");
-                }
-				if (cnt++ >4) 
-                {
-					cnt= 0; 
-					dir = !dir;
-					setallLeds (15, dir, !dir);
                 }
             }
 	        p.standup();
-            setallLeds (15, false, false);
         }
 
     }
