@@ -11,6 +11,7 @@
 #include "adc.h"
 #include "global.h"
 #include "accelerometer.h"
+#include "ir.h"
 
 #define BR115200			7 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
@@ -247,7 +248,28 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					PF2_LED_ON; //yellow
 					b1=I2C_write (gAddr, gCNT, outb) ;
 					b2=0;
-					break;				
+					break;	
+				case 0x0F: // multi-data return (x,y,z,PSD,IR,sound) - 6 bytes
+					Acc_GetData();
+					putByte(x_value);
+					putByte(y_value);
+					putByte(z_value);
+					Get_AD_PSD();
+					putByte(gDistance);
+					putByte(irGetByte());
+					{
+						WORD t=0;
+						int lc;
+						for (lc=0; lc<SDATASZ; lc++) 
+						{
+							t += sData[lc];  // sum the buffer
+							sData[lc]=0;     // and clear
+						}
+						putByte(t % 256);
+					}
+					gRx1_DStep = 0;
+					gCMD=0;
+					return;
 				}				
 				putByte(b1);
 				putByte(b2);
@@ -693,10 +715,7 @@ int main(void)
 	SelfTest1();	
 	ReadButton();	
 	ProcButton();
-	
-	//otherwise DC mode!
-	//default sampling ON
-	
+		
 	// USART1 initialization
 	UCSR1A=0x00;
 	UCSR1B= (1<<RXEN)|(1<<TXEN) |(1<<RXCIE); //enable PC read/write ! (old value=0x18;		
@@ -704,13 +723,21 @@ int main(void)
 	UBRR1H=0x00;
 	UBRR1L=BR115200;
 
+	//otherwise DC mode!
 	
 	TIMSK &= 0xFE;
 	EIMSK &= 0xBF;
+
 	UCSR0B |= 0x80;
 	UCSR0B &= 0xBF;
 	
+	//default sampling ON
 	sample_sound(1);
+	
+	//ir
+	gIRReady = FALSE;		// clear IR vales
+	IRState = IR_IDLE;
+	EIMSK |= 0x40; 			// turn on IR interupt 6
 	
 	gCMD=0;
 	PLAY_SOUND=0;
