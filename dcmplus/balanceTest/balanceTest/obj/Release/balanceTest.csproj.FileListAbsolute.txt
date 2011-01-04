@@ -1,7 +1,0 @@
-C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\dcmplus\balanceTest\balanceTest\bin\Release\balanceTest.exe
-C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\dcmplus\balanceTest\balanceTest\bin\Release\balanceTest.pdb
-C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\dcmplus\balanceTest\balanceTest\bin\Release\RobobuilderLib.exe
-C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\dcmplus\balanceTest\balanceTest\bin\Release\RobobuilderLib.pdb
-C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\dcmplus\balanceTest\balanceTest\obj\Release\ResolveAssemblyReference.cache
-C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\dcmplus\balanceTest\balanceTest\obj\Release\balanceTest.exe
-C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\dcmplus\balanceTest\balanceTest\obj\Release\balanceTest.pdb
