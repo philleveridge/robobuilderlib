@@ -111,9 +111,12 @@ ISR(TIMER0_OVF_vect)
 		ADC_set(ADC_MODE_SINGLE);
 	}
 
-	//if (!MIC_SAMPLING)
-	heart();
+	if (MIC_SAMPLING && g10MSEC%250==0)
+	{
+		//Get_AD_PSD();
+	}
 
+	heart();
 	
 	if(++g10MSEC > 999){
         g10MSEC = 0;

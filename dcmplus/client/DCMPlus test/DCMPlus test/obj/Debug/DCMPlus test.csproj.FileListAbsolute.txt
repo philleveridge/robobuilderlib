@@ -6,3 +6,5 @@ C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\D
 C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\obj\Debug\DCMPlus test.csproj.GenerateResource.Cache
 C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\obj\Debug\DCMPlus test.exe
 C:\Users\Phil\Desktop\Robobuilder\Code development\dcmplus\client\DCMPlus test\DCMPlus test\obj\Debug\DCMPlus test.pdb
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\dcmplus\client\DCMPlus test\DCMPlus test\obj\Debug\DCMPlus test.exe
+C:\Users\Phil\Desktop\Robobuilder\Code development\robobuilderlib\dcmplus\client\DCMPlus test\DCMPlus test\obj\Debug\DCMPlus test.pdb

@@ -5,6 +5,8 @@
 #include <avr/interrupt.h>
 #include "avrlibtypes.h"
 #include "ir.h"
+#include "macro.h"
+#include "main.h"
 
 
 // IR Control variables---------------------------------------------------------
@@ -34,6 +36,8 @@ ISR(TIMER2_OVF_vect)
 //------------------------------------------------------------------------------
 ISR(INT6_vect) 
 {
+	PWR_LED1_ON;	// Green on
+	
 	switch(IRState) {
 
 	case IR_IDLE: 
@@ -81,6 +85,7 @@ ISR(INT6_vect)
 						gIRData = IRTemp[3];
 						gIRReady = TRUE;
 					//}
+					PWR_LED1_OFF;	// green off
 					IRState = IR_IDLE;
 					return;
 				}
@@ -92,6 +97,8 @@ ISR(INT6_vect)
 		}
 		break;
 	} // end switch
+	
+	PWR_LED1_OFF;	// green off
 	
 } // end int
 

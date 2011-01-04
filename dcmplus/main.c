@@ -254,7 +254,6 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					putByte(x_value);
 					putByte(y_value);
 					putByte(z_value);
-					Get_AD_PSD();
 					putByte(gDistance);
 					putByte(irGetByte());
 					{
@@ -622,7 +621,7 @@ void SendToSoundIC(BYTE cmd)
 		
 	//wait for response?
 	
-	PWR_LED1_ON;	// RED on
+	PWR_LED1_ON;	// green on
 	
 	WORD timeo = Sound_Length[cmd-1] + 200;
 	

@@ -56,8 +56,7 @@ void sample_sound(int status)
 		sDcnt=0;
 
 		TIMSK |= 0x01;
-		EIMSK |= 0x40;
-		RUN_LED1_ON;		
+		EIMSK |= 0x40;		
 		MIC_SAMPLING=1;
 	}
 	else
@@ -65,6 +64,7 @@ void sample_sound(int status)
 		// 	set timer interupt off	
 		TIMSK &= 0xFE;
 		EIMSK &= 0xBF;
+		EIMSK |= 0x40; 			// turn on IR interupt 6
 		lights(0);
 		MIC_SAMPLING=0;
 	}
@@ -133,9 +133,9 @@ void Get_AD_PSD(void)
    	//while(F_AD_CONVERTING);    
     while (bit_is_set(ADCSRA, ADSC));
         
-   	tmp = tmp + gPSD_val;
+   	tmp = tmp + gPSD_val; //
 	
-	//EIMSK |= 0x40;   // re-enable interupts
+	EIMSK |= 0x40;   // re-enable interupts
 
 	dist = 1117.2 / (tmp - 6.89);
 	if(dist < 0) dist = 50;
