@@ -452,6 +452,13 @@ void HW_init(void) {
     //the AD conversion result are used
     ADMUX=ADC_VREF_TYPE;
     ADCSRA=0x00;	
+	
+	// USART1 initialization
+	UCSR1A=0x00;
+	UCSR1B= (1<<RXEN)|(1<<TXEN) |(1<<RXCIE); //enable PC read/write ! (old value=0x18;		
+	UCSR1C=0x06;
+	UBRR1H=0x00;
+	UBRR1L=BR115200;
 
 	TWCR = 0;
 }
@@ -480,8 +487,6 @@ void SW_init(void) {
 BYTE	gBtn_val;
 WORD	gBtnCnt;
 
-
-//(CHK_BIT5(PORTA))
 //------------------------------------------------------------------------------
 //  Check Routine
 //------------------------------------------------------------------------------
@@ -495,7 +500,7 @@ void ReadButton(void)
 			gBtn_val = PF1_BTN_PRESSED;
 		}
 	}
-	if((PINA&3) == 2)  // PF1 on, PF2 off
+	if((PINA&3) == 2)  // PF2 on, PF1 off
 	{
 		delay_ms(10);
 		if((PINA&3) == 2)
@@ -550,8 +555,11 @@ void ProcButton(void)
 	if(gBtn_val == PF2_BTN_PRESSED)
 	{
 		//look to see if PF1 held down
+		UBRR1L=3; //set 230400 Hz
+					
 		printline(ver);
 		gBtn_val = 0;
+
 	}
 }
 
@@ -703,8 +711,6 @@ int main(void)
 	
 	PWR_LED1_ON; 				// Power green light on
 	
-	//testI2C();
-		
 	sound_init();
 		
 	Acc_init();				// initialise acceleromter
@@ -714,13 +720,6 @@ int main(void)
 	SelfTest1();	
 	ReadButton();	
 	ProcButton();
-		
-	// USART1 initialization
-	UCSR1A=0x00;
-	UCSR1B= (1<<RXEN)|(1<<TXEN) |(1<<RXCIE); //enable PC read/write ! (old value=0x18;		
-	UCSR1C=0x06;
-	UBRR1H=0x00;
-	UBRR1L=BR115200;
 
 	//otherwise DC mode!
 	
