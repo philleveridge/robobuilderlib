@@ -16,6 +16,9 @@
 #define BR115200			7 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
 
+#define 	MAJOR_VER	3
+#define 	MINOR_VER	10
+
 char *ver = "($Rev$)";
 
 //defined adc.c
@@ -173,6 +176,10 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 				}
 				switch (gCMD)
 				{
+				case 0x00:
+					b1=MAJOR_VER;
+					b2=MINOR_VER;
+					break;
 				case 0x01:  
 					Acc_GetData();
 					b1 = y_value;
@@ -200,6 +207,7 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					break;
 				case 0x07:
 					b1 = irGetByte();
+					b2 = PINA & 0x03;
 					break;					
 				case 0x08:
 					sample_sound(1); // on 
@@ -269,6 +277,16 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					gRx1_DStep = 0;
 					gCMD=0;
 					return;
+				case 0x10: // Complete sound buffer multi-data return 
+					putByte(SDATASZ);
+					{
+						int lc;
+						for (lc=0; lc<SDATASZ; lc++) 
+						{
+							putByte(sData[lc]);     // and clear
+						}
+					}
+					break;
 				}				
 				putByte(b1);
 				putByte(b2);
