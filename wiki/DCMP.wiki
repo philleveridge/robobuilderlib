@@ -21,6 +21,7 @@ DCMP provides direct access to Wck Bus to enable Servos to be controlled via ser
 
 = Details =
 ||cmd||values||Description||
+||0||Get Version ||  *New* Reads the version 1st Byte Major value 2nd Byte the Minor value ||
 ||1||Get Y & Z || Reads the accelerometer 1st Byte Y value 2nd Byte the Z value ||
 ||2||Get X & Z ||Reads the accelerometer 1st Byte X value 2nd Byte the Z value ||
 ||3||PSD on ||Set the Proximity Sensor Device on - for distance measuring ||
@@ -35,8 +36,12 @@ DCMP provides direct access to Wck Bus to enable Servos to be controlled via ser
 ||12||Get MIC level ||Sample mic level 50 times and returns average||
 ||13||I2C_read || *New* Send a byte sequence and return a byte sequence from I2C bus (START-SEND-ACK-{READ-ACK}n-STOP ||
 ||14||I2C_write || *New* Send a byte sequence to I2C bus (START-SEND-ACK-STOP)||
+||15||Read sensors|| *New* Send a byte sequence X, Y, Z, PSD, IR, Snd level ||
+||16||Sound buffer|| *New* Send sound buffer first byte length followed by bytes ||
 ||65 - 90||Play Sound: ||Plays built in sound i.e. 65 = sound1, 66 sound 2 etc ||
 
-Note: cmds 13,14 will be in *new* release (i.e. from r229)
+Note: 
+  cmds 13,14   are *new* from release r229
+  cmds 0,15,16 are *new* from release r309 (version 3.10)
 
 LISP example programs using the RobobuilderLib.dll that run on a PC will be available to demo the capabilities
