@@ -257,13 +257,14 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					b1=I2C_write (gAddr, gCNT, outb) ;
 					b2=0;
 					break;	
-				case 0x0F: // multi-data return (x,y,z,PSD,IR,sound) - 6 bytes
+				case 0x0F: // multi-data return (x,y,z,PSD,IR,buttons,sound) - 7 bytes
 					Acc_GetData();
 					putByte(x_value);
 					putByte(y_value);
 					putByte(z_value);
 					putByte(gDistance);
 					putByte(irGetByte());
+					putByte(PINA & 0x03);
 					{
 						WORD t=0;
 						int lc;
