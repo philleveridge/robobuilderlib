@@ -1,40 +1,69 @@
-'demo (dptest)
-'
+'demo Sample sound test
+
    STAND $NS
+
+
 Loop:
+
    PRINT "LISTEN"
+
    SAMPLE 5,5000,1,64
+
    IF $NE=0 THEN Done
+
    FFT @!,1000
+
    PRINT @![1,31]
+
    n=$IMAX(@!)
+
    PRINT "Pk=";$MAX(@!);"  Hz=";n
 
+
    'servo 11   53-135 +80
+
    'servo 14  196-127 -60
+
    D=-1
+
    IF N=21 THEN
+
       LET d=2
+
    ENDIF
+
 
    E=-1
+
    IF N=13 THEN
+
       LET e=2
+
    ENDIF
 
+
    LET p=$SERVO(11)+d
+
    LET p=$RANGE(p,50,140)
 
+
    LET q=$SERVO(14)-e
+
    LET q=$RANGE(q,120,200)
+
 
    PRINT "P=";p;", Q=";q; ", D=";d; ",E=";e
 
+
    SERVO 11=p
+
    SERVO 14=q
 
+
    GOTO Loop
+
 Done:
+
    END
 
 
