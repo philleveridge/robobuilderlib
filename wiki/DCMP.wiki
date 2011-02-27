@@ -28,7 +28,7 @@ DCMP provides direct access to Wck Bus to enable Servos to be controlled via ser
 ||4||PSD off ||Sets PSD off - i.e. powers down - takes at least 50ms to turn back on||
 ||5||Get PSD ||Reads the current value of the PSD returned 1st byte 10-50 cm||
 ||6||Get Voltage ||Gets the voltage - in mV - High byte / low byte||
-||7||Read IR ||Gets the current value of IR remote in 1st byte - 255 if nothing pressed||
+||7||Read IR ||Gets the current value of IR remote in 1st byte - 255 if nothing pressed. 2nd Byte contain PF1 & PF2 state (low when pressed)||
 ||8||sampling on ||turns sound sampling on - activates 3 bar meter on RBC unit||
 ||9||sampling off ||sampling off||
 ||10||Read sound ||Returns the current sound buffer - 2 bytes, average of last 8 samples (4ms each)||
@@ -41,7 +41,7 @@ DCMP provides direct access to Wck Bus to enable Servos to be controlled via ser
 ||65 - 90||Play Sound: ||Plays built in sound i.e. 65 = sound1, 66 sound 2 etc ||
 
 Note: 
-  cmds 13,14   are *new* from release r229
-  cmds 0,15,16 are *new* from release r309 (version 3.10)
+  * cmds 13,14   are *new* from release r229
+  * cmds 0,15,16 are *new* from release r311 (version 3.10)
 
-LISP example programs using the RobobuilderLib.dll that run on a PC will be available to demo the capabilities
+LISP example programs using the RobobuilderLib.dll that run on a PC will be available to demo the capabilities. cmd 15 is supported by a new wckReadAll function.
