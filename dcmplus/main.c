@@ -17,7 +17,7 @@
 #define DATA_REGISTER_EMPTY (1<<UDRE)
 
 #define 	MAJOR_VER	3
-#define 	MINOR_VER	10
+#define 	MINOR_VER	12
 
 char *ver = "($Rev$)";
 
@@ -258,11 +258,12 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					b2=0;
 					break;	
 				case 0x0F: // multi-data return (x,y,z,PSD,IR,buttons,sound) - 7 bytes
+					Get_AD_PSD();
+					putByte(gDistance);
 					Acc_GetData();
 					putByte(x_value);
 					putByte(y_value);
 					putByte(z_value);
-					putByte(gDistance);
 					putByte(irGetByte());
 					putByte(PINA & 0x03);
 					{
