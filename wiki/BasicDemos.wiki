@@ -117,6 +117,63 @@ The arms dynamically move as the distance sensor detects your presence !!
 ==How it works==
 The value of the PSD sensor (always between 10 and 50) is used to set the position of servo 10 and 13 (the shoulders). These will move in unison based on the value. If nothing in range PSD will return 50, so servo 13 is set at 200 and servo 10=50, whilst at closet approach PSD will be 10 and Servo 13=240 and servo 10=10.
 
+=generating a walking gait=
+
+In one of the examples above I show continuous walking by sending out a sequence of predefined servo moves. But its possible to generate a walking gate mathematically using sine waves. The position of each servo can be defined as
+
+{{{
+Position = Offset + Amplitude * SIN (angle + phase)
+}}}
+
+As the angle goes through 360 degrees the servo position will vary about the offset by +/- the amplitude during each walking cycle.
+
+To program this in BASIC needs the function $SIN(angle) will returns a sine value between -32768 and +32768 for angle values between 0 and 255. So to use the I create the following code:
+
+{{{
+FOR X=0 to 15
+   LET P = B + (A*$SIN((X + C)*16)/32)/1024
+NEXT X
+
+    P = Position
+    X = Angle (0->15)
+    B = offset
+    A = amplitude
+    C = phase
+}}}
+
+To enable each servo to have a different value of A, B and C I put those values into three indexed lists as follows
+
+{{{
+LIST A=16, 10, 13, 15,11, 10, 10,13,15, 11, 10,22, 1, 9, 22,  1,  9
+LIST B=16,122,166,210,92,107,129,83,42,159,144,91,43,50,161,209,205
+LIST C=16,  0,  2,  8, 5,  0, 15, 2, 8,  6, 15, 5,11, 5,  5,  5,  5
+}}}
+
+A contains a 16 element list containing the amplitudes of the sine waves. To access a list element use @A[Y] where Y is a value between 0 and 15. @A[0] will point to the value 10 (not 16 which is just the length and not stored).
+
+So putting this all together the following code will generate a continuous walking motion,:
+
+{{{
+5 LIST A=16, 10, 13, 15,11, 10, 10,13,15, 11, 10,22, 1, 9, 22,  1,  9
+10 LIST B=16,122,166,210,92,107,129,83,42,159,144,91,43,50,161,209,205
+15 LIST C=16,  0,  2,  8, 5,  0, 15, 2, 8,  6, 15, 5,11, 5,  5,  5,  5
+20 FOR X=0 TO 15
+25 FOR Y=0 TO 15
+30 LET P=(X+@C[y])*16
+35 LET P=$SIN(P)/32
+40 LET P=(@A[Y]*P)/1024
+45 LET P=@B[Y]+P
+50 PRINT P;":";
+55 SERVO y=p
+60 NEXT Y
+65 PRINT ""
+70 NEXT X
+75 IF $KIR<0 THEN 20
+}}}
+
+==How it works==
+The lines 30-45 breaks the calculation into simpler steps as BASIC unfortunately crashes with long expression due to shortage of memory. The calculation is sent to the servo in line 55. The program is fast enough to run a smooth walking gate. It will continue to run until it detects IR or keyboard press (or you turn it off!)
+
 =modify RBC Serial Number=
 
 Some times the firmware can get corrupted and the serial number is lost. When this happens the standard firmware won't download programs from the internet as they won't match the serial number. So to inspect the firmware you need to read the Flash memory using the $ROM() function. Type 'i' and enter the following program:
