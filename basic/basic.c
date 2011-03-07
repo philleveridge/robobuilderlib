@@ -59,6 +59,12 @@ extern void SendToSoundIC	(BYTE cmd) ;
 
 /***********************************/
 
+extern int Cos(BYTE d);
+extern int Sin(BYTE d);
+extern int fix_fft(short fr[], short fi[], short m, short inverse);
+
+/***********************************/
+
 int   fix_fftr(int f[], int m, int inverse);
 void  lights(int n); 
 extern BYTE cpos[];
@@ -329,9 +335,6 @@ void basic_load(int tf)
 	int n=0;
 	int lc=0;
 	char *cp;
-
-	char forbuf[MAX_FOR_NEST][MAX_FOR_EXPR];
-	int fb=0;
 					
 	struct basic_line newline;	
 	
@@ -413,14 +416,8 @@ void basic_load(int tf)
 			{
 				char *to = strstr(cp," TO ");
 				if (to==0) errno=1;
-				else
-				{
-					*to='\0'; // null terminate expr1
-					newline.text=cp;
-					strcpy(forbuf[fb++],to+4); // store expr2
-				}
 			}
-			else
+			//else
 				newline.text=cp;
 			break;
 		case POKE: 
@@ -601,13 +598,6 @@ void basic_load(int tf)
 			{
 				errno=3;
 			}
-			if (fb>0) {
-				newline.text=forbuf[--fb];  //
-				fnptr[newline.var]=psize;   //line pointer
-			} else {
-				// next without FOR
-				errno=5;
-			}
 			break;
 		default:
 			errno=2;
@@ -655,7 +645,6 @@ int lnc[20];
 
 int findcache(int l)
 {
-	int r=0;
 	int i=0;
 	while (i<cs)
 	{
@@ -1494,7 +1483,11 @@ int eval_list(char *p)
 }
 
 int forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
+char nxtptr[MAX_FOR_NEST][30];   // Upto 3 nested for/next
+
 int fp; 
+
+
 int gosub[MAX_GOSUB_NEST];  // 3 nested gosubs
 int gp;  
 		
@@ -1510,6 +1503,7 @@ void basic_run(int dbf)
 	char buf[MAX_LINE];
 	
 	fp=0; // Upto 3 nested for/next
+
 	gp=0;  // 3 nested gosubs
 
 	cs=0; // reset line number cache
@@ -1563,6 +1557,11 @@ void basic_run(int dbf)
 
 		/* execute code */
 		tmp = execute(line, dbf);
+		
+		if (dbf && (line.token==LET || line.token==GET || line.token==FOR || line.token==SERVO  ))
+		{
+				rprintf ("%c = %d\r\n", line.var+'A', variable[line.var]);
+		}
 		if (tmp == 0) tmp=tc;
 	}
 }
@@ -1579,24 +1578,38 @@ int execute(line_t line, int dbf)
 	switch (line.token)
 	{
 	case FOR: 
-		// remember where next in struction is
- 		forptr[fp++] = nxtline;
-		// eval expr1 of line.text = "expr1 TO expr2"
-		// i.e var=expr1
-		n=0;
-		p=line.text;
-		if (eval_expr(&p, &n)==NUMBER)
-			variable[line.var] = n;					
+		{
+			char *to;
+			// remember where next in struction is
+ 			forptr[fp] = nxtline;
+			// eval expr1 of line.text = "expr1 TO expr2"
+			// i.e var=expr1
+			n=0;
+			p=line.text;
+
+			to = strstr(p," TO ");
+			if (to==0) 
+				errno=1;
+			else
+			{
+				strncpy(nxtptr[fp],to+4,30);
+				*to='\0'; // null terminate expr1
+				if (eval_expr(&p, &n)==NUMBER)
+					variable[line.var] = n;		
+			}
+			fp++;
+		}
 		break;
 	case NEXT: 
 		// increment var and check condiiton
 		if (fp>0) {
 			int t_ptr=forptr[fp-1];
+
 			// increment var
 			variable[line.var]++;
 			// test against expr2 i.e var<=expr2
 			n=0;
-			p=line.text;
+			p=nxtptr[fp-1];
 			if (eval_expr(&p, &n)!=NUMBER)
 			{
 				errno=1;
@@ -2185,7 +2198,7 @@ int execute(line_t line, int dbf)
 		break;
 	case SCALE: 
 		{
-			int m,i,s;
+			int i,s;
 			p=line.text;
 			if (eval_expr(&p, &n) != ARRAY)
 			{
@@ -2459,16 +2472,7 @@ void basic_list()
 		else
 		if (line.token==FOR)
 		{
-			char temp[100];
-
-			//last bit is stored with next !
-			//printf (" (%d) ", fnptr[line.var]);
-			int p;
 			rprintfStr (line.text);
-			p = findnext(nxtline, line.var);
-			readtext(p+8, temp);
-			rprintfStr (" TO ");
-			rprintfStr(temp);
 		}
 		else
 		if (line.token==GOTO || line.token==GOSUB || line.token==WAIT  || line.token==PLAY  ) 

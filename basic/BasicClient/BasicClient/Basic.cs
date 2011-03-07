@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO.Ports;
 using System.Text.RegularExpressions;
 
@@ -194,7 +195,7 @@ namespace RobobuilderLib
                 if (n != " " && n != "\t") 
                     return n;
             }
-            return "";
+            //return "";
         }
 
         bool IsNumber(string s)
@@ -430,8 +431,6 @@ namespace RobobuilderLib
             basic_line ln;
             ln.token = 0;
             ln.lineno = lineno;
-            string[] forbuf = new string[5];
-            int fb = 0;
             labels.Clear();
 
             string[] lines = prog.Split('\n');
@@ -486,19 +485,16 @@ namespace RobobuilderLib
                         if (GetNext(ref z, false) != "=") { errno = 1; }
                         if ((KEY)t == KEY.FOR)
                         {
-                            int p = z.ToUpper().IndexOf(" TO ");
-                            if (p > 0)
-                            {
-                                ln.text = z.Substring(0, p);
-                                forbuf[fb++] = z.Substring(p + 4);
-                            }
-                            else
+                            if (z.ToUpper().IndexOf(" TO ") <= 0)
                             {
                                 errno = 1;
                             }
                         }
-                        else
-                            ln.text = upperIt(z);
+
+                        ln.text = upperIt(z);
+
+                        Console.WriteLine("Expr={0}",express(ln.text)); // check expression
+
                         break;
                     case KEY.PRINT:
                         z = upperIt(z);
@@ -609,14 +605,6 @@ namespace RobobuilderLib
                     case KEY.NEXT:
                         t = GetVar(GetWord(ref z));
                         if (t < 0) errno = 3; else ln.var = (byte)t;
-                        if (fb > 0)
-                        {
-                            ln.text = forbuf[--fb];
-                        }
-                        else
-                        {
-                            errno = 5;
-                        }
                         break;
                     case KEY.IF:
                         // IF A THEN B ELSE C =>  GOTO (A)?B:C
@@ -772,6 +760,32 @@ namespace RobobuilderLib
             Console.WriteLine(s);
 
             return s;
+        }
+
+        public string express(string s)
+        {
+            // This will 'eventually' compile the expression to Intermediate code for speed
+            // Test Infix -> prefix
+            /*
+            LET A=5+5           ' -> 5 5 +
+            LET B=6-7+8         ' -> 6 7 - 8 +
+            LET C=(3+5)*7       ' -> 3 5 + 7 *
+            LET C=4*(3+5)       ' -> 4 3 5 + *
+            LET C=8*(3+5+2)     ' -> 8 3 5 + 2 + *
+            LET D=8*(2+5+1)+4   ' -> 8 2 5 + 1 + * 4 +
+            LET E=$SIN(5+2)     ' -> 5 2 + $SIN 
+             */
+
+            ReversePolishNotation x = new ReversePolishNotation();
+
+            String[] output = x.infixToRPN(s);
+
+            string r = "";
+
+            foreach (String token in output)
+                r += token + " ";
+
+            return r;
         }
 
         public string Dump()

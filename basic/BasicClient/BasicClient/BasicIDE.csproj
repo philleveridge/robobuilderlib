@@ -53,6 +53,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AboutBox1.cs">
@@ -69,6 +70,7 @@
       <DependentUpon>Basic_frm.cs</DependentUpon>
     </Compile>
     <Compile Include="binxfer.cs" />
+    <Compile Include="RPN.cs" />
     <Compile Include="ServoSim.cs">
       <SubType>Form</SubType>
     </Compile>
