@@ -49,7 +49,6 @@ namespace RobobuilderLib
 
             compiler = new Basic();
             s = new SerialPort(comPort.Text, 115200);
-            s.DataReceived += new SerialDataReceivedEventHandler(s_DataReceived);
 
             term.KeyPress += new KeyPressEventHandler(output_KeyPress);
 
@@ -86,11 +85,27 @@ namespace RobobuilderLib
                 {
                     s.Close();
                     button1.BackColor = System.Drawing.Color.Red;
+                    s.DataReceived -= new SerialDataReceivedEventHandler(s_DataReceived);
                 }
                 else
                 {
                     s.PortName = comPort.Text;
                     s.Open();
+                    s.Write("V");
+                    s.ReadTo("v=");
+                    string v = s.ReadLine();
+
+                    if (!v.StartsWith("$Rev")) 
+                        throw new Exception("Not BASIC firmware?");
+
+                    label1.Text = "FIRMWARE " + v;
+                    label1.Visible = true;
+
+                    if (Convert.ToInt32(v.Substring(11, 3)) < 317) 
+                        throw new Exception("BASIC firmware v317 or better needed?");
+
+                    s.DataReceived += new SerialDataReceivedEventHandler(s_DataReceived);
+
                     button1.BackColor = System.Drawing.Color.Green;
                     term.Select();
                 }

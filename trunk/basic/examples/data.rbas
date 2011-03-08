@@ -1,7 +1,4 @@
 10 DATA Z=3,4,5,6,7
-
 20 FOR I=0 TO 4
-
 30 PRINT @Z[I]
-
 40 NEXT I

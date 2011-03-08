@@ -53,6 +53,7 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.term = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -146,21 +147,21 @@
             // compileToolStripMenuItem
             // 
             this.compileToolStripMenuItem.Name = "compileToolStripMenuItem";
-            this.compileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.compileToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
             this.compileToolStripMenuItem.Text = "Compile";
             this.compileToolStripMenuItem.Click += new System.EventHandler(this.compileToolStripMenuItem_Click);
             // 
             // downloadToolStripMenuItem
             // 
             this.downloadToolStripMenuItem.Name = "downloadToolStripMenuItem";
-            this.downloadToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.downloadToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
             this.downloadToolStripMenuItem.Text = "Download";
             this.downloadToolStripMenuItem.Click += new System.EventHandler(this.downloadToolStripMenuItem_Click);
             // 
             // simulatorToolStripMenuItem
             // 
             this.simulatorToolStripMenuItem.Name = "simulatorToolStripMenuItem";
-            this.simulatorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.simulatorToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
             this.simulatorToolStripMenuItem.Text = "Simulator";
             this.simulatorToolStripMenuItem.Click += new System.EventHandler(this.simulatorToolStripMenuItem_Click);
             // 
@@ -262,6 +263,7 @@
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.label1);
             this.tabPage3.Controls.Add(this.term);
             this.tabPage3.Controls.Add(this.button1);
             this.tabPage3.Controls.Add(this.progressBar1);
@@ -286,6 +288,16 @@
             this.term.Size = new System.Drawing.Size(768, 357);
             this.term.TabIndex = 0;
             this.term.Text = "Connect to robot";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(481, 366);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(69, 13);
+            this.label1.TabIndex = 14;
+            this.label1.Text = "FIRMWARE ";
+            this.label1.Visible = false;
             // 
             // Basic_frm
             // 
@@ -339,5 +351,6 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.TextBox term;
+        private System.Windows.Forms.Label label1;
     }
 }
