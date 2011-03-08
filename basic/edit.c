@@ -258,7 +258,7 @@ void readtext(int ln, char *b)
 	for (i=0; i<100;i++) // MAX_LINE
 	{
 		b[i] =eeprom_read_byte((uint8_t *)(BASIC_PROG_SPACE+ln+i));	
-	    if ((b[0]==0xFF && i>= b[1]) || (b[0]!=0xFF && b[i]==0) )
+	    if ((b[0]==0xFF && i> b[1]) || (b[0]!=0xFF && b[i]==0) )
 			break;
 	}
 }

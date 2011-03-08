@@ -43,7 +43,7 @@ $Revision$
 #define MAX_FOR_NEST	2
 #define MAX_GOSUB_NEST	2
 #define MAX_FOR_EXPR	20 
-#define MAX_DEPTH 		5
+#define MAX_DEPTH 		10
 
 /***********************************/
 
@@ -1306,12 +1306,12 @@ unsigned char eval_expr(char **str, int *res)
 				}
 				n1 = variable[n1];
 				readtext(n1, tmpA);				
-				if ((unsigned char)(tmpA[0])==0xFF)
+				if (tmpA[0]==0xFF) // DATA
 				{
 					int i=0;
 					nis=tmpA[1];
 					for (i=0; i<nis; i++)
-						scene[i]=tmpA[i+2];
+						scene[i]=(unsigned char)tmpA[i+2];
 				}
 				else
 					eval_list(tmpA);
@@ -1482,8 +1482,8 @@ int eval_list(char *p)
 	return p-t;
 }
 
-int forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
-char nxtptr[MAX_FOR_NEST][30];   // Upto 3 nested for/next
+int  forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
+char nxtptr[MAX_FOR_NEST][MAX_FOR_EXPR];   // Upto 3 nested for/next
 
 int fp; 
 
@@ -1558,7 +1558,7 @@ void basic_run(int dbf)
 		/* execute code */
 		tmp = execute(line, dbf);
 		
-		if (dbf && (line.token==LET || line.token==GET || line.token==FOR || line.token==SERVO  ))
+		if (dbf && (line.token==LET || line.token==GET || line.token==FOR || line.token==SERVO || line.token==NEXT ))
 		{
 				rprintf ("%c = %d\r\n", line.var+'A', variable[line.var]);
 		}
@@ -1592,7 +1592,7 @@ int execute(line_t line, int dbf)
 				errno=1;
 			else
 			{
-				strncpy(nxtptr[fp],to+4,30);
+				strncpy(nxtptr[fp],to+4, MAX_FOR_EXPR);
 				*to='\0'; // null terminate expr1
 				if (eval_expr(&p, &n)==NUMBER)
 					variable[line.var] = n;		
@@ -2464,10 +2464,11 @@ void basic_list()
 		else
 		if (line.token==DATA)
 		{
-			int i, n=*(line.text+1);
-			rprintf ("%d", line.text[2]);
+			unsigned char i;
+			unsigned char n=(unsigned char)(*(line.text+1));
+			rprintf ("%d", (unsigned char)line.text[2]);
 			for (i=1; i<n; i++)
-				rprintf (",%d", line.text[2+i]);
+				rprintf (",%d", (unsigned char)line.text[2+i]);
 		}
 		else
 		if (line.token==FOR)
@@ -2573,8 +2574,6 @@ void basic()
 	sound_init();	// sound output chip on (if available)
 	sample_sound(1); // sound meter on
 
-
-
 	while (1)
 	{
 		rprintfStr(": ");
@@ -2608,6 +2607,9 @@ void basic()
 			break;
 		case 'C': // zero &clear 
 			basic_zero();
+			break;
+		case 'V': // dump 
+			rprintfStr("v=$Revision$\r\n");
 			break;
 		case 'd': // dump 
 			dump(8);

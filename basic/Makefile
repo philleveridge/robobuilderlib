@@ -43,7 +43,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
 ## Objects that must be built in order to link
-OBJECTS = main.o uart.o buffer.o rprintf.o adc.o ir.o accelerometer.o basic.o edit.o wckmotion.o fix_fft.c
+OBJECTS = main.o uart.o buffer.o rprintf.o adc.o ir.o accelerometer.o basic.o edit.o wckmotion.o fix_fft.o
 
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 
