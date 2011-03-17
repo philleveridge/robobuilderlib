@@ -135,10 +135,10 @@ FOR X=0 to 15
 NEXT X
 
     P = Position
-    X = Angle (0->15)
-    B = offset
+    X = Angle   (0->15)
     A = amplitude
-    C = phase
+    B = offset
+    C = phase   (0->15)
 }}}
 
 To enable each servo to have a different value of A, B and C I put those values into three indexed lists as follows
@@ -149,7 +149,7 @@ LIST B=16,122,166,210,92,107,129,83,42,159,144,91,43,50,161,209,205
 LIST C=16,  0,  2,  8, 5,  0, 15, 2, 8,  6, 15, 5,11, 5,  5,  5,  5
 }}}
 
-A contains a 16 element list containing the amplitudes of the sine waves. To access a list element use @A[Y] where Y is a value between 0 and 15. @A[0] will point to the value 10 (not 16 which is just the length and not stored).
+A contains a 16 element list containing the amplitudes of the sine waves. To access a list element use `@A[Y]` where Y is a value between 0 and 15. `@A[0]` will point to the value 10 (not 16 which is just the length and not stored).
 
 So putting this all together the following code will generate a continuous walking motion,:
 
