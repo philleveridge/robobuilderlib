@@ -36,7 +36,7 @@ DCMP provides direct access to Wck Bus to enable Servos to be controlled via ser
 ||12||Get MIC level ||Sample mic level 50 times and returns average||
 ||13||I2C_read || *New* Send a byte sequence and return a byte sequence from I2C bus (START-SEND-ACK-{READ-ACK}n-STOP ||
 ||14||I2C_write || *New* Send a byte sequence to I2C bus (START-SEND-ACK-STOP)||
-||15||Read sensors|| *New* Send a byte sequence X, Y, Z, PSD, IR, Buttons, Snd level [7 Bytes returned]||
+||15||Read sensors|| *New* Send a byte sequence PSD, X, Y, Z, IR, Buttons, Snd level [7 Bytes returned] - Note change of order from r317||
 ||16||Sound buffer|| *New* Send sound buffer first byte length followed by bytes ||
 ||65 - 90||Play Sound: ||Plays built in sound i.e. 65 = sound1, 66 sound 2 etc ||
 
