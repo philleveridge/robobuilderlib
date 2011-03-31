@@ -1,4 +1,4 @@
-#summary Simple Mini Basic complier/interpreter
+#summary Simple Mini Basic interpreter
 #labels Phase-Requirements
 = Introduction =
 
@@ -10,7 +10,7 @@ A windows OS build is available - [http://code.google.com/p/robobuilderlib/downl
 
 Turn on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html vt100 terminal emulator]. You should see the following:
 {{{
-Basic v=$Revision: 242 $
+Basic v=$Revision: 317 $
 Commands: i r l c z q
 16 servos connected
 0 lines in memory
@@ -25,6 +25,7 @@ At the prompt type
   * c - clear memory
   * z - download (requires client - see below)
   * q - check servos connected
+  * V - print version / build
 
 There is also a [http://code.google.com/p/robobuilderlib/downloads/detail?name=BasicClient.exe windows client application] to simplify the download of programs - http://code.google.com/p/robobuilderlib/wiki/BasicClient - for more details
 
@@ -33,7 +34,7 @@ In input mode you get a '>' prompt, in command mode a ':'. In input mode a comma
 So for instance - an example session :
 
 {{{
-Basic v=$Revision: 242 $
+Basic v=$Revision: 317 $
 Commands: i r l c z q
 16 servos connected
 0 lines in memory
