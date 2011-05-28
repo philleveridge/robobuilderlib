@@ -37,7 +37,8 @@
 /* MODS by l3v3rz for ATMEL 128*/
 
 #ifndef AVR
-	#define inline __forceinline
+	//#define inline __forceinline
+	#define inline
 #endif
 
 #define short int
