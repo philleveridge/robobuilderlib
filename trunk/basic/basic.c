@@ -29,9 +29,9 @@ $Revision$
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Main.h"
+#include "main.h"
 #include "global.h"
-#include "Macro.h"
+#include "macro.h"
 
 #include "adc.h"
 #include "ir.h"
@@ -102,6 +102,7 @@ char *specials[] = {
 		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
 		"RANGE"};
 
+
 //wait for byte or IR press
 int  GetByte()
 {
@@ -117,6 +118,7 @@ int  GetByte()
 	
 	return b;
 }
+
 
 const  prog_char *error_msgs[] = {
 	"",
@@ -2578,7 +2580,7 @@ void basic()
 	{
 		rprintfStr(": ");
 
-		ch = GetByte();			
+		ch = GetByte();
 		if (ch > 26) {
 			rprintfChar(ch);rprintfCRLF();
 		}
