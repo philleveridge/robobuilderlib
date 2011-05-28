@@ -21,9 +21,16 @@ $Revision$
 #include "rprintf.h"
 #include "math.h"
 #include "wckmotion.h"
-#else
+#endif
+
+#ifdef WIN
 #include "win.h"
 #endif
+
+#ifdef LINUX
+#include "linux.h"
+#endif
+
 
 // Standard Input/Output functions
 #include <stdio.h>

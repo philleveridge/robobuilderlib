@@ -5,12 +5,8 @@
 #include <termio.h>
 #include <fcntl.h>
 
-/*
-#include <windows.h>
-#include <direct.h>
-*/
 #include "main.h"
-#include "win.h"
+#include "linux.h"
 
 #define GetCurrentDir _getcwd
 
@@ -67,8 +63,8 @@ void sigcatch() {
 }
 
 
-void	initsocket() {}
-int		testsocket(char *echoString) {return 0;}
+//void	initsocket() {}
+//int		testsocket(char *echoString) {return 0;}
 int		simflg=1;
 
 #define	DBO(x) {if (simflg==0) {x}}
