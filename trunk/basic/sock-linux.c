@@ -45,7 +45,7 @@ int socket_init(char *hostname, int portno)
         printf("ERROR connecting");
         return 1;
     }
-
+    return 0;
 }
 
 void initsocket()
@@ -65,18 +65,26 @@ void initsocket()
 
 int testsocket(char *echoString)
 {
-    char buffer[256];
+    char echoBuffer[256];
     
-   	if (simflg==0) return;
+   	if (simflg==0) return 0;
     
     int n = write(sockfd,echoString,strlen(echoString));
     if (n < 0) 
          error("ERROR writing to socket");
-    bzero(buffer,256);
-    n = read(sockfd,buffer,255);
+    bzero(echoBuffer,256);
+    n = read(sockfd,echoBuffer,255);
     if (n < 0) 
          error("ERROR reading from socket");
-    printf("%s\n",buffer);
-    close(sockfd);
+
+    printf("%s\n",echoBuffer);
+
+	if (echoBuffer[0]=='D' && echoBuffer[1]==':' )
+	{
+		int n=0;
+		sscanf(echoBuffer,"D:%d$", &n);
+		return n;
+	}
+    //close(sockfd);
     return 0;
 }
