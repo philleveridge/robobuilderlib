@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 
+#define	DBO(x) {if (simflg==0) {x}}
+
 extern int simflg;
 
 int sockfd;
@@ -87,4 +89,45 @@ int testsocket(char *echoString)
 	}
     //close(sockfd);
     return 0;
+}
+
+/* wck commands */
+void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)
+{
+	char buff[64];
+	sprintf(buff, "S:%d:%d$", ServoID, Position);
+	testsocket(buff);
+
+	DBO(printf ("SOCK: Servo Send %d [%d] -> %d\n", ServoID, Torque, Position);)
+}
+int  wckPosRead(char ServoID)
+{
+	int r;
+	char buff[64];
+	sprintf(buff, "R:%d$", ServoID);
+	r = testsocket(buff);
+
+	DBO(printf ("SOCK: Servo Read %d\n", ServoID); )
+	return r;
+}
+void wckSetPassive(char ServoID)
+{
+	char buff[64];
+	sprintf(buff, "P:%d$", ServoID);
+	testsocket(buff);
+
+	DBO(printf ("SOCK: Servo Passive %d\n", ServoID); )
+}
+
+void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
+{
+	int i=0;
+	DBO(printf ("SOCK: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);)
+
+	// convert this to "Y:%d...:%d"
+	//tbd
+	for (i=Index; i<=LastID; i++)
+	{
+			wckPosSend(i,SpeedLevel,TargetArray[i]);
+	}
 }

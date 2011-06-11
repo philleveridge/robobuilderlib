@@ -62,9 +62,6 @@ void sigcatch() {
   exit(1);
 }
 
-
-//void	initsocket() {}
-//int		testsocket(char *echoString) {return 0;}
 int		simflg=1;
 
 #define	DBO(x) {if (simflg==0) {x}}
@@ -79,60 +76,12 @@ void  blights(int n, int *a) {
 	DBO(printf ("WIN: Lights %d [%d,%d,%d,%d,%d]\n",n,a[0], a[1], a[2], a[3], a[4]);)
 }
 
-/* wck commands */
-void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)			
-{
-	char buff[64];
-	sprintf(buff, "S:%d:%d$", ServoID, Position);
-	testsocket(buff);
-
-	DBO(printf ("WIN: Servo Send %d [%d] -> %d\n", ServoID, Torque, Position);)
-}
-int  wckPosRead(char ServoID)										
-{
-	int r;
-	char buff[64];
-	sprintf(buff, "R:%d$", ServoID);
-	r = testsocket(buff);
-
-	DBO(printf ("WIN: Servo Read %d\n", ServoID); )
-	return r;
-}
-void wckSetPassive(char ServoID)									
-{
-	char buff[64];
-	sprintf(buff, "P:%d$", ServoID);
-	testsocket(buff);
-
-	DBO(printf ("WIN: Servo Passive %d\n", ServoID); )
-}
-
-void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)		
-{
-	int i=0;
-	DBO(printf ("WIN: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);)
-
-	// convert this to "Y:%d...:%d"
-	//tbd
-	for (i=Index; i<=LastID; i++)
-	{
-			wckPosSend(i,SpeedLevel,TargetArray[i]);
-	}
-}
 
 void wckGetByte()			{}
 void wckFlush()				{}
 void wckSendByte()			{}
 void wckReInit()			{}
 void send_bus_str()			{} // support for PIC based Cylon head
-
-void wckWriteIO(unsigned char ServoID, unsigned char IO)    
-{
-	char buff[64];
-	sprintf(buff, "O:%d:%d$", ServoID, IO);
-	testsocket(buff);
-	DBO(printf ("WIN: Servo write IO %d=%d\n", ServoID, IO); )
-}
 
 BYTE cpos[32];
 int nos;
