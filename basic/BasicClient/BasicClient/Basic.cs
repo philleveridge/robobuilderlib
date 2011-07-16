@@ -65,6 +65,7 @@ namespace RobobuilderLib
             "I2CO",  "I2CI",   "STEP",   "SPEED", 
 	        "MTYPE", "LIGHTS", "SORT",   "FFT", 
             "SAMPLE","SCALE",  "DATA",
+            "SET",   "INSERT", "DELETE",
             "ENDIF" // leave at end
         };
         
@@ -127,6 +128,9 @@ namespace RobobuilderLib
             help.Add("FFT",     "FFT list[,scale]");
             help.Add("SAMPLE",  "SAMPLE a,b,c,d");
             help.Add("SCALE",   "SCALE list,n");
+            help.Add("SET",      "SET index,value");
+            help.Add("INSERT",   "INSERT index,value");
+            help.Add("DELETE",   "DELETE n");
             // special regs
             help.Add("$MIC",    "$MIC");
             help.Add("$X",      "$X - acceleromter");
