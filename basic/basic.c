@@ -97,7 +97,8 @@ const prog_char *tokens[] ={
 	"PLAY",  "OUT",    "OFFSET", "RUN",
 	"I2CO",  "I2CI",   "STEP",   "SPEED", 
 	"MTYPE", "LIGHTS", "SORT",   "FFT",
-	"SAMPLE","SCALE",  "DATA"
+	"SAMPLE","SCALE",  "DATA",
+	"SET"
 };
 
 char *specials[] = { 
@@ -527,6 +528,7 @@ void basic_load(int tf)
 		case STAND: 
 		case SCALE:
 		case SAMPLE: 
+		case SET:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -2129,6 +2131,31 @@ int execute(line_t line, int dbf)
 			tmp=1;
 		} else {
 			errno=7;
+		}
+		break;
+
+	case SET:
+		// SET I,V
+		// current array ![I]=V
+		{
+			int ind=0;
+
+			p=line.text;
+			if (eval_expr(&p, &n)!=NUMBER)
+			{
+				errno=3; break;
+			}
+			ind=n;
+			if (*p++ != ',' || n<0 || n>=128)
+			{
+				errno=3; break;
+			}
+			if (eval_expr(&p, &n)!=NUMBER)
+			{
+				errno=3; break;
+			}
+			if (ind>=nis) nis=ind+1; // reset size
+			scene[ind]=n;
 		}
 		break;
 	case SORT: 

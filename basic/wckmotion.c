@@ -5,7 +5,7 @@
 
 #include "global.h"
 #include "main.h"
-#include "Macro.h"
+#include "macro.h"
 #include "rprintf.h"
 #include <util/delay.h>
 
