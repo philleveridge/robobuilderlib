@@ -90,7 +90,9 @@ void closeport()
 
 /**************************************************************************************/
 
-#define	DBO(x) {x}
+//#define	DBO(x) {x}
+#define	DBO(x) {if (simflg==0) {x}}
+extern int simflg;
 
 void initsocket()
 {
@@ -109,7 +111,8 @@ void initsocket()
 		printf ("LINUX: INVALID VERSION\n");
 
 		closeport();
-		exit(1);
+		simflg=0;
+		//exit(1);
 	}
 }
 

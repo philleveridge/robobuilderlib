@@ -7,12 +7,12 @@
 
 // Standard Input/Output functions
 #include <stdio.h>
-#include "Main.h"
+#include "main.h"
 
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
-#include "Macro.h"
+#include "macro.h"
 #include "math.h"
 #include "uart.h"
 #include "rprintf.h"
