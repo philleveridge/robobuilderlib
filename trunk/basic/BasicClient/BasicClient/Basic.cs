@@ -520,7 +520,7 @@ namespace RobobuilderLib
                     case KEY.FFT:
                     case KEY.STAND:
                     case KEY.SAMPLE: 
-                    case KEY.INSERT:
+                    case KEY.INSERT: // new commands
                     case KEY.SET:
                     case KEY.DELETE:
                         ln.text = upperIt(z);

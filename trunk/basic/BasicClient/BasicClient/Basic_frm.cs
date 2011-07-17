@@ -19,6 +19,7 @@ namespace RobobuilderLib
         bool readyDownload = false;
         string bfn = "basic.exe";
         string bdn = "bindata.txt";
+        string cprt = "COM5";
 
         string version = "$Revision$";  //$Revision$
 
@@ -38,6 +39,7 @@ namespace RobobuilderLib
                 {
                     if (l.StartsWith("BASIC=")) bfn = l.Substring(6);
                     if (l.StartsWith("BIN="))   bdn = l.Substring(4);
+                    if (l.StartsWith("COM="))   cprt = l.Substring(4);
                 }
             }
 
@@ -48,6 +50,8 @@ namespace RobobuilderLib
             }
 
             compiler = new Basic();
+            comPort.Text = cprt;
+
             s = new SerialPort(comPort.Text, 115200);
 
             term.KeyPress += new KeyPressEventHandler(output_KeyPress);
@@ -439,6 +443,11 @@ namespace RobobuilderLib
         {
             //term.AppendText(e.Data);
             Console.WriteLine(e.Data);
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            input.Clear();
         }
 
 
