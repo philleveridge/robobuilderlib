@@ -21,6 +21,7 @@ namespace RobobuilderLib
     class Basic
     {
         public const int MAX_PROG_SPACE = 3072;
+        public const int REQ_FIRMWARE = 330;
 
         public Hashtable labels    = new Hashtable();
         public Hashtable constants = new Hashtable();

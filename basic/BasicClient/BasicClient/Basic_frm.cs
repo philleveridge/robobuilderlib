@@ -105,8 +105,8 @@ namespace RobobuilderLib
                     label1.Text = "FIRMWARE " + v;
                     label1.Visible = true;
 
-                    if (Convert.ToInt32(v.Substring(11, 3)) < 317) 
-                        throw new Exception("BASIC firmware v317 or better needed?");
+                    if (Convert.ToInt32(v.Substring(11, 3)) < Basic.REQ_FIRMWARE) 
+                        throw new Exception("BASIC firmware v" + Basic.REQ_FIRMWARE + " or better needed?");
 
                     s.DataReceived += new SerialDataReceivedEventHandler(s_DataReceived);
 
