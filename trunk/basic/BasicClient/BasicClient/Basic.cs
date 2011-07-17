@@ -79,6 +79,7 @@ namespace RobobuilderLib
             I2CO,  I2CI,   STEP,   SPEED, 
             MTYPE, LIGHTS, SORT,   FFT, 
             SAMPLE,SCALE,  DATA,
+            SET, INSERT, DELETE,
             ENDIF
 	        };
 							
@@ -519,6 +520,9 @@ namespace RobobuilderLib
                     case KEY.FFT:
                     case KEY.STAND:
                     case KEY.SAMPLE: 
+                    case KEY.INSERT:
+                    case KEY.SET:
+                    case KEY.DELETE:
                         ln.text = upperIt(z);
                         break;
                     case KEY.LIST:
