@@ -259,7 +259,7 @@ namespace RobobuilderLib
             foreach (string s in Basic.tokens)
             {
                 n = -1;
-                while ((n = input.Find(s, n + 1, RichTextBoxFinds.WholeWord)) > 0)
+                while ((n = input.Find(s, n + 1, RichTextBoxFinds.WholeWord)) >= 0)
                 {
                     if (input.SelectionColor == Color.Black)
                     {
