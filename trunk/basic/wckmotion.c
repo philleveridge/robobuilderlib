@@ -165,8 +165,8 @@ int wckPosRead(char ServoID)
 {
 	int Position;
 	wckSendOperCommand(0xa0|ServoID, 0x00);
-	wckGetByte(TIME_OUT1);
-	Position = wckGetByte(TIME_OUT1);
+	wckGetByte(TIME_OUT2);
+	Position = wckGetByte(TIME_OUT2);
 	return Position;
 }
 
@@ -701,8 +701,8 @@ const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 
 int getservo(int id)
 {
 	wckSendOperCommand(0xa0|id, 0);
-	int b1 = wckGetByte(TIME_OUT1);
-	int b2 = wckGetByte(TIME_OUT1);
+	int b1 = wckGetByte(TIME_OUT2);
+	int b2 = wckGetByte(TIME_OUT2);
 	
 	if (b1<0 || b2<0)
 		return -1;
@@ -715,7 +715,7 @@ BYTE readservos()
 	BYTE i;
 	for (i=0; i<31; i++)
 	{
-		int p = wckPosRead(i);		
+		int p = getservo(i);
 		if (p<0 || p>255) break;
 		cpos[i]=p;	
 	}	

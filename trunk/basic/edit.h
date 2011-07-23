@@ -22,18 +22,19 @@ enum {
 	PLAY, OUT, OFFSET, RUN, I2CO, I2CI,
 	STEP, SPEED, MTYPE, LIGHTS,	SORT, FFT,
 	SAMPLE, SCALE, DATA,
-	SET
+	SET, INSERT, DELETE,
+	NOTOKENS
 	};
 
-#define NOTOKENS SET+1
 
 enum { 	sMIC=0, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
 		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
 		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
 		sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
-		sSIN, sCOS, sIMAX, sHAM, sRANGE };
+		sSIN, sCOS, sIMAX, sHAM, sRANGE,
+		NOSPECS
+	};
 
-#define NOSPECS sRANGE+1
 
 
 /*    edit functions   */
