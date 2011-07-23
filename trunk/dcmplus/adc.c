@@ -11,7 +11,7 @@
 #include <avr/sleep.h>
 
 #include "global.h"
-#include "Macro.h"
+#include "macro.h"
 #include "main.h"
 #include "adc.h"
 

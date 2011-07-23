@@ -6,8 +6,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#include "Main.h"
-#include "Macro.h"
+#include "main.h"
+#include "macro.h"
 #include "adc.h"
 #include "global.h"
 #include "accelerometer.h"
@@ -333,13 +333,13 @@ void HW_init(void) {
 	// Port D initialization
 	// Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In 
 	// State7=T State6=T State5=T State4=T State3=T State2=T State1=P State0=P 
-	PORTD=0x03;
-	DDRD=0x00;
+	PORTD=0x83;
+	DDRD=0x80;
 
 	// Port E initialization
 	// Func7=In Func6=In Func5=In Func4=In Func3=Out Func2=In Func1=In Func0=In 
 	// State7=T State6=P State5=P State4=P State3=0 State2=T State1=T State0=T 
-	PORTE=0x70;
+	PORTE=0x30; //0x70;
 	DDRE=0x08;
 
 	// Port F initialization
