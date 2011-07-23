@@ -1,8 +1,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#include "Main.h"
-#include "Macro.h"
+#include "main.h"
+#include "macro.h"
 #include "adc.h"
 
 extern volatile BYTE   MIC_SAMPLING;
