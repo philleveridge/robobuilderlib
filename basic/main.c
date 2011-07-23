@@ -297,45 +297,46 @@ void ProcButton(void)
 //------------------------------------------------------------------------------
 // Initialise Ports
 //------------------------------------------------------------------------------
-void HW_init(void) {
-	// Input/Output Ports initialization
-	// Port A initialization
+void HW_init(void)
+{
+	// Input/Output Ports initialisation
+	// Port A initialisation
 	// Func7=Out Func6=Out Func5=Out Func4=Out Func3=Out Func2=Out Func1=In Func0=In 
 	// State7=0 State6=0 State5=0 State4=0 State3=0 State2=0 State1=P State0=P 
 	PORTA=0x03;
 	DDRA=0xFC;
 
-	// Port B initialization
+	// Port B initialisation
 	// Func7=In Func6=Out Func5=Out Func4=Out Func3=In Func2=Out Func1=In Func0=In 
 	// State7=T State6=0 State5=0 State4=0 State3=T State2=0 State1=T State0=T 
 	PORTB=0x00;
 	DDRB=0x74;
 
-	// Port C initialization
+	// Port C initialisation
 	// Func7=Out Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In 
 	// State7=0 State6=T State5=T State4=T State3=T State2=T State1=T State0=T 
 	PORTC=0x00;
 	DDRC=0x80;
 
-	// Port D initialization
+	// Port D initialisation
 	// Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In 
 	// State7=T State6=T State5=T State4=T State3=T State2=T State1=P State0=P 
-	PORTD=0x03;
-	DDRD=0x00;
+	PORTD=0x83;
+	DDRD=0x80;
 
-	// Port E initialization
+	// Port E initialisation
 	// Func7=In Func6=In Func5=In Func4=In Func3=Out Func2=In Func1=In Func0=In 
 	// State7=T State6=P State5=P State4=P State3=0 State2=T State1=T State0=T 
-	PORTE=0x70;
+	PORTE=0x30; // 0x70;
 	DDRE=0x08;
 
-	// Port F initialization
+	// Port F initialisation
 	// Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In 
 	// State7=T State6=T State5=T State4=T State3=T State2=T State1=T State0=T 
 	PORTF=0x00;
 	DDRF=0x00;
 
-	// Port G initialization
+	// Port G initialisation
 	// Func4=In Func3=In Func2=Out Func1=In Func0=In 
 	// State4=T State3=T State2=0 State1=T State0=T 
 	PORTG=0x00;
@@ -343,7 +344,7 @@ void HW_init(void) {
 
 	// Timer 0---------------------------------------------------------------
 	// Millisecond Clock
-	// Timer/Counter 0 initialization
+	// Timer/Counter 0 initialisation
 	// Clock source: System Clock
 	// Clock value: 230.400 kHz
 	// Clock period = 1/230400 = 4.34us
@@ -358,7 +359,7 @@ void HW_init(void) {
 
 	// Timer 1---------------------------------------------------------------
 	// wCK Frame timer
-	// Timer/Counter 1 initialization
+	// Timer/Counter 1 initialisation
 	// Clock source: System Clock
 	// Clock value: 14.400 kHz
 	// Clock Period = 1/14400 = 69.4us
@@ -366,7 +367,7 @@ void HW_init(void) {
 	// OC1A output: Discon.
 	// OC1B output: Discon.
 	// OC1C output: Discon.
-	// Noise Canceler: Off
+	// Noise Canceller: Off
 	// Input Capture on Falling Edge
 	// Timer 1 Overflow Interrupt: On
 	// Input Capture Interrupt: Off
@@ -388,7 +389,7 @@ void HW_init(void) {
 
 	// Timer 2---------------------------------------------------------------
 	// IR Remote timer
-	// Timer/Counter 2 initialization
+	// Timer/Counter 2 initialisation
 	// Clock source: System Clock
 	// Clock freq: 14.400 kHz
 	// Clock period = 1/14400 = 69.4us
@@ -413,7 +414,7 @@ void HW_init(void) {
 	OCR3CH=0x00;
 	OCR3CL=0x00;
 
-	// External Interrupt(s) initialization
+	// External Interrupt(s) initialisation
 	// INT0: Off
 	// INT1: Off
 	// INT2: Off
@@ -426,11 +427,11 @@ void HW_init(void) {
 	EICRB=0x20;
 	EIMSK=0x40;
 
-	// Timer(s)/Counter(s) Interrupt(s) initialization
+	// Timer(s)/Counter(s) Interrupt(s) initialisation
 	TIMSK=0x00;
 	ETIMSK=0x00;
 
-	// USART0 initialization
+	// USART0 initialisation
 	// Communication Parameters: 8 Data, 1 Stop, No Parity
 	// USART0 Receiver: Off
 	// USART0 Transmitter: On
@@ -444,7 +445,7 @@ void HW_init(void) {
 	UBRR0H=0x00;
 	UBRR0L=0x07;
 
-	// USART1 initialization
+	// USART1 initialisation
 	// Communication Parameters: 8 Data, 1 Stop, No Parity
 	// USART1 Receiver: On
 	// USART1 Transmitter: On
@@ -456,14 +457,14 @@ void HW_init(void) {
 	UBRR1H=0x00;
 	UBRR1L=BR115200;
 
-	// Analog Comparator initialization
+	// Analog Comparator initialisation
 	// Analog Comparator: Off
 	// Analog Comparator Input Capture by Timer/Counter 1: Off
 	// Analog Comparator Output: Off
 	ACSR=0x80;
 	SFIOR=0x00;
 
-    //ADC initialization
+    //ADC initialisation
     //ADC Clock frequency: 460.800 kHz
     //ADC Voltage Reference: AREF pin
     //Only the 8 most significant bits of
@@ -474,12 +475,11 @@ void HW_init(void) {
 	TWCR = 0;
 }
 
-
 //------------------------------------------------------------------------------
 // Initialise software states
 //------------------------------------------------------------------------------
-void SW_init(void) {
-
+void SW_init(void)
+{
 	PF1_LED1_OFF;			// LED states
 	PF1_LED2_OFF;
 	PF2_LED_OFF;

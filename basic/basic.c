@@ -98,7 +98,7 @@ const prog_char *tokens[] ={
 	"I2CO",  "I2CI",   "STEP",   "SPEED", 
 	"MTYPE", "LIGHTS", "SORT",   "FFT",
 	"SAMPLE","SCALE",  "DATA",
-	"SET"
+	"SET", 	"INSERT", "DELETE"
 };
 
 char *specials[] = { 
@@ -529,6 +529,8 @@ void basic_load(int tf)
 		case SCALE:
 		case SAMPLE: 
 		case SET:
+		case INSERT:
+		case DELETE:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -2133,9 +2135,27 @@ int execute(line_t line, int dbf)
 			errno=7;
 		}
 		break;
-
+	case DELETE:
+		// i.e. DELETE 5
+		{
+			int i;
+			p=line.text;
+			if (eval_expr(&p, &n)!=NUMBER)
+			{
+				errno=3; break;
+			}
+			if (n<0 || n>=128)
+			{
+				errno=3; break;
+			}
+			for (i=n; i<nis; i++)
+				scene[i]=scene[i+1];
+			nis--;
+		}
+		break;
 	case SET:
-		// SET I,V
+	case INSERT:
+		// i.e. SET I,V
 		// current array ![I]=V
 		{
 			int ind=0;
@@ -2154,7 +2174,14 @@ int execute(line_t line, int dbf)
 			{
 				errno=3; break;
 			}
-			if (ind>=nis) nis=ind+1; // reset size
+			if (line.token==INSERT)
+			{
+				for (int i=nis-1; i>=ind; i--)
+					scene[i+1]=scene[i];
+				nis++;
+			}
+			else
+				if (ind>=nis) nis=ind+1; // reset size
 			scene[ind]=n;
 		}
 		break;
