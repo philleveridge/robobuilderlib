@@ -2627,15 +2627,33 @@ void binmode()
 }
 #endif
 
+void testforreset()
+{
+	if((PINA&03) == 0)  // PF1 on, PF2 off
+	{
+		delay_ms(10);
+		if((PINA&3) == 0)
+		{
+			rprintf   ("reset\r\n");
+			basic_clear();
+		}
+	}
+}
+
 void basic()
 {
 	int ch;
 
 	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q\r\n");
+
+	testforreset();
+
 	rprintf   ("%d servos connected\r\n", readservos());
 	rprintf   ("%d lines in memory\r\n", findend());
 	sound_init();	// sound output chip on (if available)
 	sample_sound(1); // sound meter on
+
+
 
 	while (1)
 	{
