@@ -1,6 +1,8 @@
 ###############################################################################
-# Makefile for the project RobobuilderIR
+# Makefile for the BASIC project 
 ###############################################################################
+#
+#
 
 ## General Flags
 PROJECT = Basic
@@ -63,6 +65,7 @@ $(TARGET): $(OBJECTS)
 
 %.hex: $(TARGET)
 	avr-objcopy -O ihex $(HEX_FLASH_FLAGS)  $< $@
+#echo "cp Basic.hex Basic_"$(grep Revision basic.c| head -1 | sed -e 's/[$]Revision: //' | sed -e 's/ \$//')
 
 %.eep: $(TARGET)
 	-avr-objcopy $(HEX_EEPROM_FLAGS) -O ihex $< $@ || exit 0
@@ -72,7 +75,8 @@ $(TARGET): $(OBJECTS)
 
 size: ${TARGET}
 	@echo
-	@avr-size -C --mcu=${MCU} ${TARGET}
+	#@avr-size -C --mcu=${MCU} ${TARGET}
+	@avr-size ${TARGET}
 
 ## Clean target
 .PHONY: clean
