@@ -265,7 +265,7 @@ extern unsigned char BASIC_PROG_SPACE[];
 int binmode2()
 {
        FILE *fp;
-       char ch;
+       int ch;
        int i=0,n=0;
 
 	   if ((fp = fopen("bindata.txt", "r")) == 0)

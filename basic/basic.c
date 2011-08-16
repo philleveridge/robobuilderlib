@@ -54,8 +54,9 @@ $Revision$
 
 /***********************************/
 
-uint8_t EEMEM FIRMWARE        [64];  			// leave blank - used by Robobuilder OS
+uint8_t EEMEM FIRMWARE        [64];  		// leave blank - used by Robobuilder OS
 uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
+uint8_t EEMEM PERSIST[256];                     // persistent data store
 
 extern void Perform_Action	(BYTE action);
 extern int	getHex			(int d);
@@ -1042,10 +1043,33 @@ int get_special(char **str, int *res)
 			v = cbyte(v);
 		}
 		break;
-	case sROM: // ROM(x)
-		if (getArg(str,&v))
-		{
-			v = eeprom_read_byte((uint8_t*)(FIRMWARE+v));
+	case sROM: // $ROM(x) or $ROM$(X) or $ROM@(x)
+                if (**str=='$')
+                {
+			(*str)++;
+			if (getArg(str,&v))
+			{
+				v = eeprom_read_byte((uint8_t*)(PERSIST+v));
+			}
+		}
+		else
+                if (**str=='@')
+                {
+			(*str)++;
+			if (getArg(str,&v))
+			{
+				int i;
+				nis = v;
+				for (i=0;i<nis;i++)
+					scene[i] = eeprom_read_byte((uint8_t*)(PERSIST+i));
+			}
+		}
+		else
+                {
+			if (getArg(str,&v))
+			{
+				v = eeprom_read_byte((uint8_t*)(FIRMWARE+v));
+			}
 		}
 		break;
 	case sSERVO: // SERVO(nn)
@@ -1593,7 +1617,7 @@ int execute(line_t line, int dbf)
 	case FOR: 
 		{
 			char *to;
-			// remember where next in struction is
+			// remember where next instruction is
  			forptr[fp] = nxtline;
 			// eval expr1 of line.text = "expr1 TO expr2"
 			// i.e var=expr1
@@ -1638,17 +1662,35 @@ int execute(line_t line, int dbf)
 			}
 		}
 		break;
-	case POKE:
- 		n=0;
-		p=line.text;
-		if (eval_expr(&p, &n)==NUMBER)
-		{
-			// put result into address line.var
-			uint8_t addr=line.var;
-			eeprom_write_byte(FIRMWARE+addr, n);
-		}
-		else
-			errno=1;
+	case POKE: // POKE A,B  or POKE A,$B or POKE 0,@
+                {
+                        int f=1;
+ 			int i;
+	 		n=0;
+			p=line.text;
+		        if (*p=='$')
+			{
+		            p++;
+                            f=0;
+			}
+ 			if (*p=='@')
+			{
+		            p++;
+			    for (i=0; i<nis; i++)
+				   eeprom_write_byte(PERSIST+i, scene[i]);      
+			}
+			if (eval_expr(&p, &n)==NUMBER)
+			{
+				// put result into address line.var
+				uint8_t addr=line.var;
+                                if (f)
+				   eeprom_write_byte(FIRMWARE+addr, n);
+                                else
+				   eeprom_write_byte(PERSIST+addr, n);                             
+			}
+			else
+				errno=1;
+                }
 		break;
 	case PUT: 
 		n=0;
@@ -2140,6 +2182,12 @@ int execute(line_t line, int dbf)
 		{
 			int i;
 			p=line.text;
+                        if (*p=='*')
+                        {
+                            p++;
+                            nis=0;
+            		    break;
+                        }
 			if (eval_expr(&p, &n)!=NUMBER)
 			{
 				errno=3; break;
@@ -2686,6 +2734,12 @@ void basic()
 		case 'c': // clear 
 			basic_clear();
 			break;
+
+		case 's': // stand
+			rprintf("Stand %d\r\n", nos);
+			standup(nos);
+			break;
+
 		case 'C': // zero &clear 
 			basic_zero();
 			break;
