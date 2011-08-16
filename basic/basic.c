@@ -1076,7 +1076,7 @@ int get_special(char **str, int *res)
 		//$servo
 		if (**str!='(') 
 		{
-			v=readservos();
+			v=readservos(0);
 		}
 		else
 		// get position of servo id=nn
@@ -1326,6 +1326,8 @@ unsigned char eval_expr(char **str, int *res)
             if (**str=='?')
             {
 				//use servo pos array
+				readservos(nos);
+
 				for (n1=0; n1<nos; n1++) 
 				{
 					scene[n1] = cpos[n1];     // and clear
@@ -2696,7 +2698,7 @@ void basic()
 
 	testforreset();
 
-	rprintf   ("%d servos connected\r\n", readservos());
+	rprintf   ("%d servos connected\r\n", readservos(0));
 	rprintf   ("%d lines in memory\r\n", findend());
 	sound_init();	// sound output chip on (if available)
 	sample_sound(1); // sound meter on
@@ -2736,8 +2738,14 @@ void basic()
 			break;
 
 		case 's': // stand
+		case 22:  //*+A
 			rprintf("Stand %d\r\n", nos);
 			standup(nos);
+			break;
+
+		case 'S': // stand
+			rprintf("ok\r\n");
+			setdh(1);
 			break;
 
 		case 'C': // zero &clear 
@@ -2761,8 +2769,32 @@ void basic()
 			rprintf ("%d lines loaded\r\n", findend());
 			break;
 		case 'q': // query 
-			rprintf ("%d servos connected\r\n", readservos());
+			rprintf ("%d servos connected\r\n", readservos(0));
 			rprintf ("%d lines stored\r\n", findend());
+			break;
+
+		case '$':
+		case 23: //*+B Demo mode
+			rprintf ("DEMO MODE\r\n");
+
+			while (1)
+			{
+				rprintf (">: ");
+				ch = GetByte();
+				rprintf ("%d\r\n",ch);
+
+				if (ch == 7)
+				{
+					rprintf ("EXIT DEMO MODE\r\n");
+					break;
+				}
+
+				if (ch>=0 && ch<20)
+				{
+					PerformAction(map[ch]);
+				}
+			}
+
 			break;
 		default:
 			rprintfStr("\r\n");

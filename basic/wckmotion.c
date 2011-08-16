@@ -697,6 +697,7 @@ BYTE nos=0;
 
 const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
 const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
+const BYTE basicdh[] = { 143, 179, 198, 83, 105, 106, 68, 46, 167, 140, 77, 70, 152, 165, 181, 98, 120, 124, 99};
  
 int getservo(int id)
 {
@@ -710,10 +711,11 @@ int getservo(int id)
 		return b2;
 }
 
-BYTE readservos()
+BYTE readservos(int n)
 {
 	BYTE i;
-	for (i=0; i<31; i++)
+        if (n==0) n=31;
+	for (i=0; i<n; i++)
 	{
 		int p = getservo(i);
 		if (p<0 || p>255) break;
@@ -800,7 +802,7 @@ void PlayPose(int d, int f, int tq, BYTE spod[], int flag)
 
 	if (flag!=0) 
 	{
-		readservos();	// set nos and reads cpos
+		readservos(0);	// set nos and reads cpos
 		nos=flag;
 	}
 	
@@ -858,13 +860,19 @@ void PlayMotion(BYTE n)
 	}
 }
 
-
+int dm=0;
+void setdh(int n) {dm=n;}
 void standup (int n) 
 {
 	if (n<18)
 		PlayPose(1000, 10, 4, basic16, 16); //huno basic
 	else
-		PlayPose(1000, 10, 4, basic18, 18); //huno with hip
+	{
+		if (dm)
+		    PlayPose(1000, 10, 4, basicdh, 18); //huno with hip
+		else
+		    PlayPose(1000, 10, 4, basic18, 18); //huno with hip
+	}
 }
 
 

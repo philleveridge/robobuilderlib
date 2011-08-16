@@ -35,7 +35,7 @@ enum { AccelDecel=0, Accel, Decel, Linear };
 
 extern int PP_mtype;
 
-BYTE readservos   	();
+BYTE readservos   	(int n);
 void standup      	(int n);
 void PlayPose     	(int d, int s, int tq, unsigned char data[], int n);
 void PlayMotion		(BYTE Action);
