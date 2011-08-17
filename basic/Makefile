@@ -65,7 +65,6 @@ $(TARGET): $(OBJECTS)
 
 %.hex: $(TARGET)
 	avr-objcopy -O ihex $(HEX_FLASH_FLAGS)  $< $@
-#echo "cp Basic.hex Basic_"$(grep Revision basic.c| head -1 | sed -e 's/[$]Revision: //' | sed -e 's/ \$//')
 
 %.eep: $(TARGET)
 	-avr-objcopy $(HEX_EEPROM_FLAGS) -O ihex $< $@ || exit 0
@@ -77,6 +76,12 @@ size: ${TARGET}
 	@echo
 	#@avr-size -C --mcu=${MCU} ${TARGET}
 	@avr-size ${TARGET}
+
+install: ${TARGET}
+	@echo
+	@echo "cp Basic.hex Basic_$(grep Revision basic.c| head -1 | sed -e 's/[$]Revision: //' | sed -e 's/ \$//')"
+	@java -cp /home/phil/NetBeansProjects/RBCLoader/dist/RBCLoader.jar rbcloader.Rloader Basic.hex 
+
 
 ## Clean target
 .PHONY: clean
