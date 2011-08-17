@@ -181,9 +181,12 @@ void ChargeNiMH(void)
 	gMIN_DCOUNT = 5;
 	while(gMIN_DCOUNT)
 	{
-	    if (gSEC%5==0)
+		if (GetByte()>=0)
+  			break;
+
+	    	if (gSEC%5==0)
 		{
-			rprintf("%d:%d short 40ms charge pulses\r\n", gMIN, gSEC);
+			rprintf("%d:%d short 40ms charge pulses %dmV\r\n", gMIN, gSEC,gVOLTAGE);
 		}
 		PWR_LED2_OFF;
 		PWR_LED1_ON;
@@ -201,18 +204,22 @@ void ChargeNiMH(void)
 	gMIN_DCOUNT = 85;
 	while(gMIN_DCOUNT)
 	{
-		if (gSEC%5==0)
-		{
-			rprintf ("%d:%d full charge power\r\n", gMIN,gSEC);
-		}
+		if (GetByte()>=0)
+  			break;
+
 		PWR_LED2_OFF;
 		if(g10MSEC > 500)	
 			PWR_LED1_ON;
 		else			
 			PWR_LED1_OFF;
-		if(g10MSEC == 0 || g10MSEC == 500){
+		if(g10MSEC == 0 || g10MSEC == 500)
+		{
 			Get_VOLTAGE();
 			DetectPower();
+			if (gSEC%5==0)
+			{
+				rprintf ("%d:%d full charge power %dmV\r\n", gMIN,gSEC,gVOLTAGE);
+			}
 		}
 		if(F_PS_PLUGGED == 0) break;
 		CHARGE_ENABLE;
@@ -257,39 +264,43 @@ void ReadButton(void)
 // Process routine
 //-----------------------------------------------------------------------------
 
+
+void chargemode()
+{
+	int cnt;
+	rprintf("charge mode \r\n");
+
+	for (cnt=0; cnt<10; cnt++)
+	{
+		PWR_LED2_ON;	// RED on
+		delay_ms(50);
+		Get_VOLTAGE();
+		DetectPower();
+		rprintf("%d mV\r\n", gVOLTAGE);
+		PWR_LED2_OFF;   // RED off
+		delay_ms(50);
+	}
+
+	if(F_PS_PLUGGED)
+	{
+		rprintf("Plugged in - charging\r\n");
+		wckPowerDown();		// put servo in breakmode (power off)
+		ChargeNiMH();  			//initiate battery charging
+		rprintf("Complete\r\n");
+	}
+	else
+	{
+		rprintf("Not plugged in\r\n");
+		PWR_LED2_ON	;
+	}
+}
+
 void ProcButton(void)
 {
 	int cnt;
 	if(gBtn_val == PF1_BTN_PRESSED)
 	{
-		//look to see if PF2 held down
-		gBtn_val = 0;
-		
-		rprintf("charge mode - testing\r\n");
-		
-		for (cnt=0; cnt<10; cnt++)
-		{
-			PWR_LED2_ON;	// RED on
-			delay_ms(50);
-			Get_VOLTAGE();
-			DetectPower();
-			rprintf("%d mV", gVOLTAGE);
-			PWR_LED2_OFF;   // RED off
-			delay_ms(50);
-		}
-				
-		if(F_PS_PLUGGED)
-		{	
-			rprintf("Plugged in - charging\r\n");		
-			wckPowerDown();		// put servo in breakmode (power off)
-			ChargeNiMH();  			//initiate battery charging	
-			rprintf("Complete\r\n");	
-		}	
-		else
-		{
-			rprintf("Not plugged in\r\n");
-			PWR_LED2_ON	;	
-		}
+		chargemode();
 	}
 }
 
@@ -520,8 +531,7 @@ int main(void)
 	
 	PWR_LED1_ON; 				// Power green light on
 	
-//	adc_init();		
-	Acc_init();				// initialise acceleromter
+	Acc_init();				    // initialise acceleromter
 	
 	ReadButton();	
 	ProcButton();

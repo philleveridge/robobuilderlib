@@ -71,6 +71,8 @@ extern int Cos(BYTE d);
 extern int Sin(BYTE d);
 extern int fix_fft(short fr[], short fi[], short m, short inverse);
 
+extern int chargemode();
+
 /***********************************/
 
 int   fix_fftr(int f[], int m, int inverse);
@@ -2746,6 +2748,10 @@ void basic()
 		case 'S': // stand
 			rprintf("ok\r\n");
 			setdh(1);
+			break;
+
+		case 'X': // zero &clear
+			chargemode();
 			break;
 
 		case 'C': // zero &clear 
