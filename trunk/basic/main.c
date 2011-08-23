@@ -112,7 +112,7 @@ ISR(TIMER0_OVF_vect)
 		ADC_set(ADC_MODE_SINGLE);
 	}
 	
-    if(++gMSEC>999){
+    	if(++gMSEC>999){
 		// 1s 
         gMSEC=0;
 		
@@ -179,9 +179,10 @@ void ChargeNiMH(void)
 {
 	F_CHARGING = 1;
 	gMIN_DCOUNT = 5;
+	rprintf("Start .. %dmV\r\n",gVOLTAGE);
 	while(gMIN_DCOUNT)
 	{
-		if (GetByte()>=0)
+		if (uartGetByte()>=0 || irGetByte()>=0)
   			break;
 
 	    	if (gSEC%5==0)
@@ -204,7 +205,7 @@ void ChargeNiMH(void)
 	gMIN_DCOUNT = 85;
 	while(gMIN_DCOUNT)
 	{
-		if (GetByte()>=0)
+		if (uartGetByte()>=0 || irGetByte()>=0)
   			break;
 
 		PWR_LED2_OFF;
@@ -226,7 +227,7 @@ void ChargeNiMH(void)
 	}
 	CHARGE_DISABLE;
 	F_CHARGING = 0;
-	rprintf ("Done\r\n");
+	rprintf ("Done %dmV\r\n", gVOLTAGE);
 }
 
 #define PF1_BTN_PRESSED 1

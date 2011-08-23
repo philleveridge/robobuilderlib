@@ -69,11 +69,11 @@ int		simflg=1;
 int  PP_mtype=4;
 
 void  lights(int n) {
-	DBO(printf ("WIN: Lights %d\n",n);)
+	DBO(printf ("LIN: Lights %d\n",n);)
 }
 
 void  blights(int n, int *a) {
-	DBO(printf ("WIN: Lights %d [%d,%d,%d,%d,%d]\n",n,a[0], a[1], a[2], a[3], a[4]);)
+	DBO(printf ("LIN: Lights %d [%d,%d,%d,%d,%d]\n",n,a[0], a[1], a[2], a[3], a[4]);)
 }
 
 
@@ -97,7 +97,7 @@ void PlayPose(int d, int s, int f, unsigned char data[], int n)
 {
 	int i=0;
 	if (n!=0) nos=n; else n=nos;
-	DBO(printf ("WIN: Playpose  [d=%d , f=%d] :: Data=", d,s);)
+	DBO(printf ("LIN: Playpose  [d=%d , f=%d] :: Data=", d,s);)
 	for (i=0; i<n; i++)
 	{
 			DBO(printf ("%d,", data[i]);)
@@ -113,7 +113,7 @@ void PlayPose(int d, int s, int f, unsigned char data[], int n)
 
 void standup      	(int n)	
 {
-	printf ("WIN: standup %d\n", n);
+	printf ("LIN: standup %d\n", n);
 	if (n==16)
 	{
 		PlayPose(1000,10,1,basic16,16);
@@ -131,7 +131,7 @@ int readservos ()  {
 	return nos;
 }
 
-void SendToSoundIC(int n)	{printf ("WIN: Play Sound %d\n", n);}
+void SendToSoundIC(int n)	{printf ("LIN: Play Sound %d\n", n);}
 
 /* eeprom */
 void			eeprom_read_block (unsigned char *b, char *d, int l)		{int i=0; for(i=0; i<l;i++) *b++=*d++;}
@@ -167,8 +167,8 @@ int sDcnt=0;
 unsigned char sData[64];
 int offset[32];
 
-void sample_sound(int n){printf ("WIN: Sample sound %d\n", n);}
-void sound_init()		{printf ("WIN: Sound init\n");}
+void sample_sound(int n){printf ("LIN: Sample sound %d\n", n);}
+void sound_init()		{printf ("LIN: Sound init\n");}
 int Get_VOLTAGE()		{return 0;}
 int irGetByte()			
 {
@@ -239,20 +239,24 @@ void rprintfChar(char c)					{putchar (c); fflush(stdout);}
 
 /* misc */
 void delay_ms(int x)  					
-{//printf ("Win:  wait %d\n",x); 
+{//printf ("LIN:  wait %d\n",x);
 Sleep(x);
 }
 
-void SampleMotion(char action)			{printf ("Win:  sample motion %d\n", action);}
-void PlayMotion (char action, int f)	{printf ("Win:  Play %d\n", action);}
+void chargemode() {printf ("LIN: chargemode\n"); }
+void setdh(int n) {printf ("LIN: setdh %d\n",n); }
+
+
+void SampleMotion(char action)			{printf ("LIN:  sample motion %d\n", action);}
+void PlayMotion (char action, int f)	{printf ("LIN:  Play %d\n", action);}
 
 void  I2C_read    (int addr, int ocnt, BYTE * outbuff, int icnt, BYTE * inbuff) 
 {
-	printf ("WIN: I2C read %d\n", addr);
+	printf ("LIN: I2C read %d\n", addr);
 }
 int   I2C_write   (int addr, int ocnt, BYTE * outbuff)  
 {
-	printf ("WIN: I2C write %d\n", addr);
+	printf ("LIN: I2C write %d\n", addr);
 	return 0;
 }
 int   cbyte       (BYTE b) {return b>127?b-256:b;}
@@ -261,6 +265,11 @@ int   cbyte       (BYTE b) {return b>127?b-256:b;}
 extern char FIRMWARE[64];  
 
 extern unsigned char BASIC_PROG_SPACE[];
+
+volatile WORD    gMSEC;
+volatile BYTE    gSEC;
+volatile BYTE    gMIN;
+volatile BYTE    gHOUR;
 
 int binmode2()
 {
@@ -296,7 +305,7 @@ void binmode()
     // return;
    // }
 
-    printf ("WIN:: Binary mode (%s)\n", cCurrentPath);
+    printf ("LIN:: Binary mode (%s)\n", cCurrentPath);
 	if (binmode2()<0)
 		printf ("? can't find file - bindata.txt\n");
     printf ("Loaded - bindata.txt\n");
