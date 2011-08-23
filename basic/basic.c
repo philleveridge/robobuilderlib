@@ -47,10 +47,10 @@ $Revision$
 
 #define MAX_LINE  		130 
 #define MAX_TOKEN 		8
-#define MAX_FOR_NEST	2
+#define MAX_FOR_NEST	3
 #define MAX_GOSUB_NEST	2
 #define MAX_FOR_EXPR	20 
-#define MAX_DEPTH 		10
+#define MAX_DEPTH 		6
 
 /***********************************/
 
@@ -1339,7 +1339,7 @@ unsigned char eval_expr(char **str, int *res)
 			}
             else
             {
-				char tmpA[100];
+				char tmpA[128];
 				n1 = **str-'A';
 				if (n1<0 || n1 >25)
 				{
@@ -1361,10 +1361,11 @@ unsigned char eval_expr(char **str, int *res)
 			}
 			if (**str == '[')
 			{
+				int ind;
 				(*str)++;
-				eval_expr(str, &tmp);
-				if (tmp>=nis) tmp=nis-1;
-				if (tmp<0)    tmp=0;
+				eval_expr(str, &ind);
+				if (ind>=nis) ind=nis-1;
+				if (ind<0)    ind=0;
 
 				if (**str == ',')
 				{
@@ -1386,7 +1387,7 @@ unsigned char eval_expr(char **str, int *res)
 				}
 				else
 				{
-					n1 = scene[tmp];
+					n1 = scene[ind];
 					(*str)++;
 					break;
 				}
@@ -1642,7 +1643,7 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case NEXT: 
-		// increment var and check condiiton
+		// increment var and check condition
 		if (fp>0) {
 			int t_ptr=forptr[fp-1];
 
@@ -2679,6 +2680,31 @@ void binmode()
 }
 #endif
 
+int outdigit(int n,int c)
+{
+	char tb[6];
+	int i;
+	if (c>4) return -1;
+
+	for (i=0; i<c; i++)
+	{
+		tb[c-i-1]=(n%10)+'0';
+		n=n/10;
+	}
+	tb[c]='\0';
+	rprintfStr(tb);
+}
+int uptime()
+{
+        outdigit(gHOUR,2);
+        rprintfChar(':');
+        outdigit(gMIN,2);
+        rprintfChar(':');
+        outdigit(gSEC,2);
+        rprintfChar('-');
+        outdigit(gMSEC,3);
+}
+
 void testforreset()
 {
 	if((PINA&03) == 0)  // PF1 on, PF2 off
@@ -2696,16 +2722,15 @@ void basic()
 {
 	int ch;
 
-	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q\r\n");
+	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q s V R F $\r\n");
 
 	testforreset();
 
 	rprintf   ("%d servos connected\r\n", readservos(0));
 	rprintf   ("%d lines in memory\r\n", findend());
+
 	sound_init();	// sound output chip on (if available)
-	sample_sound(1); // sound meter on
-
-
+	//sample_sound(1); // sound meter on
 
 	while (1)
 	{
@@ -2725,9 +2750,22 @@ void basic()
 			break;
 		case   7:  // IR red "stop" button
 		case 'r': // run
-			gtick=0;
-			basic_run(0);
-			rprintf("Elapsed Time %dms\r\n", gtick);
+		    {
+		    	int m=gMIN,s=gSEC,ms=gMSEC;
+			    basic_run(0);
+			    ms=gMSEC-ms;
+			    if (ms<0) {ms=ms+1000; s=s-1;}
+			    s=gSEC-s;
+			    if (s<0)  {s=s+60; m=m-1;}
+			    m=gMIN-m;
+			    rprintf("Elapsed Time ");
+		        outdigit(m,2);
+		        rprintfChar(':');
+		        outdigit(s,2);
+		        rprintfChar('-');
+		        outdigit(ms,3);
+		        rprintf("\r\n");
+		    }
 			break;
 		case 'R': // run
 			basic_run(1);
@@ -2750,23 +2788,28 @@ void basic()
 			setdh(1);
 			break;
 
-		case 'X': // zero &clear
+		case 'o': // output lights
+			sample_sound(1); // sound meter on
+			break;
+
+		case 'X': // charge
+			rprintf("testing charge\r\n");
 			chargemode();
 			break;
 
 		case 'C': // zero &clear 
 			basic_zero();
 			break;
-		case 'V': // dump 
+		case 'V': // version
 			rprintfStr("v=$Revision$\r\n");
 			break;
-		case 'd': // dump 
+		case 'd': // dump narrow
 			dump(8);
 			break;
-		case 'D': // dump 
+		case 'D': // dump wide
 			dump(24);
 			break;
-		case 'F': // dump 
+		case 'F': // dump firmware
 			dump_firmware();
 			break;
 		case 'z': // download 
@@ -2777,10 +2820,12 @@ void basic()
 		case 'q': // query 
 			rprintf ("%d servos connected\r\n", readservos(0));
 			rprintf ("%d lines stored\r\n", findend());
+			rprintf ("Uptime: "); uptime(); rprintf ("\r\n");
+
 			break;
 
 		case '$':
-		case 23: //*+B Demo mode
+		case 23: //*+1 Demo mode
 			rprintf ("DEMO MODE\r\n");
 
 			while (1)

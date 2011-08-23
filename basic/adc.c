@@ -95,9 +95,10 @@ ISR(ADC_vect)
 {
 	WORD i;
 	gAD_val=(signed char)ADCH;
-	switch(gAD_Ch_Index){
+	switch(gAD_Ch_Index)
+	{
 		case PSD_CH:
-    	    gPSD_val = (BYTE)gAD_val;
+    	    		gPSD_val = (BYTE)gAD_val;
 			break; 
 		case VOLTAGE_CH:
 			i = (BYTE)gAD_val;
@@ -190,14 +191,14 @@ void Get_AD_MIC(void)
 	float	tmp = 0;
 	
 	gAD_Ch_Index = MIC_CH;
-	for(i = 0; i < 50; i++){
-	
-    	F_AD_CONVERTING = 1;
+	for(i = 0; i < 50; i++)
+	{	
+    		F_AD_CONVERTING = 1;
 	   	ADC_set(ADC_MODE_SINGLE);
-    	while(F_AD_CONVERTING);            
-    	tmp = tmp + gMIC_val;
-    }
-    tmp = tmp / 10;
+    		while(F_AD_CONVERTING);            
+    		tmp = tmp + gMIC_val;
+    	}
+    	tmp = tmp / 10;
 	gSoundLevel = (BYTE)tmp;
 }
 
@@ -207,7 +208,12 @@ void Get_AD_MIC(void)
 //------------------------------------------------------------------------------
 void Get_VOLTAGE(void)
 {
+        BYTE t=MIC_SAMPLING;			
+	MIC_SAMPLING=0; // turn off mic sampling
+
 	gAD_Ch_Index = VOLTAGE_CH;
 	ADC_set(ADC_MODE_SINGLE);
 	while (bit_is_set(ADCSRA, ADSC));	    // wait until value ready
+
+	MIC_SAMPLING=t;	
 }
