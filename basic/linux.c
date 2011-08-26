@@ -12,6 +12,10 @@
 
 void basic();
 
+int 	dbg=0;
+int		simflg=1;
+
+#define	DBO(x) {if (simflg==0 && dbg) {x}}
 
 struct termio savetty;
 struct termio newtty;  /* terminal with changed mode */
@@ -62,9 +66,6 @@ void sigcatch() {
   exit(1);
 }
 
-int		simflg=1;
-
-#define	DBO(x) {if (simflg==0) {x}}
 
 int  PP_mtype=4;
 
@@ -131,7 +132,7 @@ int readservos ()  {
 	return nos;
 }
 
-void SendToSoundIC(int n)	{printf ("LIN: Play Sound %d\n", n);}
+void SendToSoundIC(int n)	{DBO(printf ("LIN: Play Sound %d\n", n);)}
 
 /* eeprom */
 void			eeprom_read_block (unsigned char *b, char *d, int l)		{int i=0; for(i=0; i<l;i++) *b++=*d++;}
@@ -167,8 +168,10 @@ int sDcnt=0;
 unsigned char sData[64];
 int offset[32];
 
-void sample_sound(int n){printf ("LIN: Sample sound %d\n", n);}
-void sound_init()		{printf ("LIN: Sound init\n");}
+void PSD_off() {}
+
+void sample_sound(int n){DBO(printf ("LIN: Sample sound %d\n", n);)}
+void sound_init()		{DBO(printf ("LIN: Sound init\n");)}
 int Get_VOLTAGE()		{return 0;}
 int irGetByte()			
 {
@@ -243,12 +246,12 @@ void delay_ms(int x)
 Sleep(x);
 }
 
-void chargemode() {printf ("LIN: chargemode\n"); }
+void chargemode() {DBO(printf ("LIN: chargemode\n"); )}
 void setdh(int n) {printf ("LIN: setdh %d\n",n); }
 
 
-void SampleMotion(char action)			{printf ("LIN:  sample motion %d\n", action);}
-void PlayMotion (char action, int f)	{printf ("LIN:  Play %d\n", action);}
+void SampleMotion(char action)			{DBO(printf ("LIN:  sample motion %d\n", action);)}
+void PlayMotion (char action, int f)	{DBO(printf ("LIN:  Play %d\n", action);)}
 
 void  I2C_read    (int addr, int ocnt, BYTE * outbuff, int icnt, BYTE * inbuff) 
 {
@@ -330,6 +333,15 @@ void initfirmware() {
 
 int main(int argc, char *argv[])
 {
+	if (argc>1)
+	{
+		if (strcmp(argv[1],"DEBUG"))
+			dbg=1;
+	}
+	else
+	{
+		printf("Running Unix emulator ...\n");
+	}
 	initsocket();
 	initIO();
 	initfirmware();

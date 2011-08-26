@@ -90,9 +90,8 @@ void closeport()
 
 /**************************************************************************************/
 
-//#define	DBO(x) {x}
-#define	DBO(x) {if (simflg==0) {x}}
-extern int simflg;
+#define	DBO(x) {if (simflg==0 &dbg) {x}}
+extern int simflg, dbg;
 
 void initsocket()
 {
@@ -104,11 +103,11 @@ void initsocket()
     //check DCMP version
 
 	wckReadPos(30,0);
-	printf ("LINUX: DCMP v=%d.%d\n", response[0], response[1]);
+	DBO(printf ("LINUX: DCMP v=%d.%d\n", response[0], response[1]);)
 
 	if (!(response[0]==3 && response[1]>10 ))
 	{
-		printf ("LINUX: INVALID VERSION\n");
+		DBO(printf ("LINUX: INVALID VERSION\n");)
 
 		closeport();
 		simflg=0;

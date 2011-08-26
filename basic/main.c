@@ -298,7 +298,6 @@ void chargemode()
 
 void ProcButton(void)
 {
-	int cnt;
 	if(gBtn_val == PF1_BTN_PRESSED)
 	{
 		chargemode();

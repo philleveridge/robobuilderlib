@@ -7,9 +7,8 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 
-#define	DBO(x) {if (simflg==0) {x}}
-
-extern int simflg;
+#define	DBO(x) {if (simflg==0 &dbg) {x}}
+extern int simflg, dbg;
 
 int sockfd;
 

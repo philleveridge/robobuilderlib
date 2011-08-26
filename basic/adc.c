@@ -15,6 +15,7 @@
 #include "macro.h"
 #include "main.h"
 #include "adc.h"
+#include "ir.h"
 
 #include <util/delay.h>
 
@@ -147,32 +148,42 @@ void ADC_set(BYTE mode)
 
 void PSD_on(void)
 {
-	PSD_ON;
-   	_delay_ms(50);
+	if (CHK_BIT5(PORTB)==0)
+	{
+		PSD_ON;
+		_delay_ms(50);
+	}
 }
 
 void PSD_off(void)
 {
-	PSD_OFF;
+	if (CHK_BIT5(PORTB)==1)
+	{
+		PSD_OFF;
+	}
 }
 
 void Get_AD_PSD(void)
 {
 	float	tmp = 0;
 	float	dist;
-		
-	if (CHK_BIT5(PORTB)==0) PSD_on();
-	
-	EIMSK &= 0xBF;
 
-	gAD_Ch_Index = PSD_CH;
+    while (IRState != IR_IDLE) ; //wait
+
+
+	EIMSK &= 0xBF; //disable IR
+        PSD_on();
 	
+	gAD_Ch_Index = PSD_CH;
+   	F_AD_CONVERTING = 1;
    	ADC_set(ADC_MODE_SINGLE);
 	
-    while (bit_is_set(ADCSRA, ADSC));
+   	while(F_AD_CONVERTING);
 	            
    	tmp = tmp + gPSD_val;
-	//EIMSK |= 0x40;
+
+	PSD_OFF;
+   	EIMSK |= 0x40; //enable IR
 
 	dist = 1117.2 / (tmp - 6.89);
 	if(dist < 0) dist = 50;
@@ -194,7 +205,7 @@ void Get_AD_MIC(void)
 	for(i = 0; i < 50; i++)
 	{	
     		F_AD_CONVERTING = 1;
-	   	ADC_set(ADC_MODE_SINGLE);
+    		ADC_set(ADC_MODE_SINGLE);
     		while(F_AD_CONVERTING);            
     		tmp = tmp + gMIC_val;
     	}
