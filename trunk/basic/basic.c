@@ -534,6 +534,7 @@ void basic_load(int tf)
 		case SET:
 		case INSERT:
 		case DELETE:
+		case WAIT: 
 			newline.text=cp;
 			break;
 		case LIST:
@@ -600,7 +601,6 @@ void basic_load(int tf)
 			}
 			break;
 		case PLAY: 
-		case WAIT: 
 		case GOTO: 
 		case GOSUB:
 			newline.value = getNum(&cp);	// read line	
@@ -1937,7 +1937,7 @@ int execute(line_t line, int dbf)
 	case DATA: 
 		variable[line.var] = lastline+8;
 		break;		
-	case XACT:	case RUN:			
+	case XACT:	case RUN:		
 		n=0;
 		p=line.text;
 		if (eval_expr(&p, &n) != NUMBER)
@@ -1948,7 +1948,17 @@ int execute(line_t line, int dbf)
 		PerformAction(n);		
 		break;
 	case WAIT: 
-		delay_ms(line.value);
+		n=line.value;
+		p=line.text;
+		if (*p!=0 )
+		{
+			if (eval_expr(&p, &n) != NUMBER)
+			{
+				errno=1;
+				break;
+			}
+		}
+		delay_ms(n);
 		break;
 	case OFFSET: 
 		{
@@ -2592,7 +2602,7 @@ void basic_list()
 			rprintfStr (line.text);
 		}
 		else
-		if (line.token==GOTO || line.token==GOSUB || line.token==WAIT  || line.token==PLAY  ) 
+		if (line.token==GOTO || line.token==GOSUB || line.token==PLAY  ) 
 			rprintf ("%d", line.value);
 		else
 			rprintfStr (line.text);
@@ -2790,6 +2800,11 @@ void basic()
 
 		case 'o': // output lights
 			sample_sound(1); // sound meter on
+			break;
+
+		case 'O': // 
+			rprintf("PSD off\r\n");
+			PSD_off();
 			break;
 
 		case 'X': // charge
