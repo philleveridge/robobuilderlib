@@ -13,9 +13,9 @@
 void basic();
 
 int 	dbg=0;
-int		simflg=1;
+int		simflg=0;
 
-#define	DBO(x) {if (simflg==0 && dbg) {x}}
+#define	DBO(x) {if (dbg) {x}}
 
 struct termio savetty;
 struct termio newtty;  /* terminal with changed mode */
@@ -176,7 +176,10 @@ int Get_VOLTAGE()		{return 0;}
 int irGetByte()			
 {
 	char buff[64];
-	if (simflg==0) return 0;
+	if (simflg==0)
+	{
+		return 0;
+	}
 	sprintf(buff, "IR$");
 	return testsocket(buff);
 }
@@ -184,17 +187,27 @@ int irGetByte()
 int Get_AD_PSD()		
 {
 	char buff[64];
-	if (simflg==0) return 0;
+	if (simflg==0)
+	{
+		readPSD();
+		return;
+	}
 	sprintf(buff, "PSD$");
 	gDistance = testsocket(buff);
 	return 0;
 }
 
+extern int readXYZ();
+
 void  Acc_init    (void) {}
 void  Acc_GetData ()			
 {
 	char buff[64];
-	if (simflg==0) return;
+	if (simflg==0)
+	{
+		readXYZ();
+		return;
+	}
 
 	sprintf(buff, "X$");
 	x_value = testsocket(buff);
@@ -335,7 +348,7 @@ int main(int argc, char *argv[])
 {
 	if (argc>1)
 	{
-		if (strcmp(argv[1],"DEBUG"))
+		if (!strcmp(argv[1],"DEBUG"))
 			dbg=1;
 	}
 	else

@@ -90,7 +90,7 @@ void closeport()
 
 /**************************************************************************************/
 
-#define	DBO(x) {if (simflg==0 &dbg) {x}}
+#define	DBO(x) {if (dbg) {x}}
 extern int simflg, dbg;
 
 void initsocket()
@@ -134,7 +134,7 @@ int  wckPosRead(char ServoID)
 		return -1;
 
 	DBO(printf ("LINUX: Servo Read %d=%d\n", ServoID, response[1]); )
-		return response[0];
+		return response[1];
 }
 
 void wckSetPassive(char ServoID)
@@ -164,7 +164,24 @@ void wckWriteIO(unsigned char ServoID, unsigned char IO)
   DCMP commands
 
  **************************************************************************************/
+extern int z_value,y_value,x_value,gDistance;
 
+   int CB2I(int x) {if (x<128) return x; else return x-256;}
+
+   int readXYZ()
+   {
+	   wckReadPos(30,1);
+		y_value = CB2I(response[0]);
+		z_value = CB2I(response[1]);
+	   wckReadPos(30,2);
+		x_value = CB2I(response[0]);
+   }
+
+   int readPSD()
+   {
+	   wckReadPos(30,5);
+	   gDistance = CB2I(response[0]);
+   }
 
    int wckReadPos(int id, int d1)
    {
