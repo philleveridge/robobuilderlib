@@ -14,6 +14,7 @@ void basic();
 
 int 	dbg=0;
 int		simflg=0;
+int		remote=0;
 
 #define	DBO(x) {if (dbg) {x}}
 
@@ -312,6 +313,29 @@ int binmode2()
 	   return 0;
 }
 
+extern uint16_t psize; // points to next elemt
+
+void binstore()
+{
+    FILE *fp;
+    int ch;
+    int i=0,n=0;
+    char *dig="0123456789ABCDEF";
+
+	if ((fp = fopen("bindata.txt", "w")) == 0)
+			return;
+
+	while (i<psize)
+	{
+		unsigned char c= BASIC_PROG_SPACE[i++];
+		fputc(*(dig+(c/16)),fp);
+		fputc(*(dig+(c%16)),fp);
+	}
+
+
+    fclose(fp);
+}
+
 void binmode()
 {
 	char cCurrentPath[FILENAME_MAX];
@@ -321,10 +345,16 @@ void binmode()
     // return;
    // }
 
-    printf ("LIN:: Binary mode (%s)\n", cCurrentPath);
+    DBO(printf ("LIN:: Binary mode (%s)\n", cCurrentPath);)
 	if (binmode2()<0)
+	{
 		printf ("? can't find file - bindata.txt\n");
-    printf ("Loaded - bindata.txt\n");
+		basic_clear();
+	}
+	else
+	{
+		printf ("Loaded - bindata.txt\n");
+	}
 }
 
 
@@ -346,18 +376,33 @@ void initfirmware() {
 
 int main(int argc, char *argv[])
 {
-	if (argc>1)
+	int lf=0;
+	PORTA=3;
+
+	for (int i=1; i<argc; i++)
 	{
-		if (!strcmp(argv[1],"DEBUG"))
+		if (!strcmp(argv[i],"DEBUG"))
 			dbg=1;
+
+		if (!strcmp(argv[i],"SIM"))
+			simflg=1;
+
+		if (!strcmp(argv[i],"REMOTE"))
+			remote=1;
+
+		if (!strcmp(argv[i],"LOAD"))
+			lf=1;
 	}
-	else
-	{
-		printf("Running Unix emulator ...\n");
-	}
+
+	printf("Running Unix emulator ...\n");
 	initsocket();
 	initIO();
 	initfirmware();
+	if (lf)
+		binmode();
+	else
+		basic_clear();
+
 	basic();
 }
 

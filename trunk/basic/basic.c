@@ -578,6 +578,7 @@ void basic_load(int tf)
 				newline.text=&line[0];
 			}
 			break;
+/*
 		case IF:
 			// We should check for THEN and ELSE
 			// and handle error
@@ -598,6 +599,43 @@ void basic_load(int tf)
 				strncpy(p_else,":   ",4);
 			else
 				strcat(cp,":0");
+			}
+			break;
+*/
+		case IF:
+			// A THEN B ELSE C =>  A,B[,C]
+			{
+				char *p_then,*p_else,*cp2;
+				newline.text=cp-1;
+				p_then = strstr(cp, " THEN");
+
+				if (p_then != 0)
+				{
+					*p_then++=',';
+
+					while(1) {
+					   *p_then=*(p_then+5);
+					   p_then++;
+					   if (*p_then==0) break;
+					}
+				}
+				else
+					errno=3;
+
+				p_else = strstr(cp, " ELSE");
+
+				if (p_else != 0)
+				{
+					*p_else++=',';
+
+					while(1) {
+					   *p_else=*(p_else+5);
+					   p_else++;
+					   if (*p_else==0) break;
+					}
+				}
+				else
+					strcat(cp,",0");
 			}
 			break;
 		case PLAY: 
@@ -1819,21 +1857,34 @@ int execute(line_t line, int dbf)
 
 		if (eval_expr(&p, &n)==NUMBER)
 		{
-			if (n != 0)
+			if (*p++ != ',')
+			{
+				errno=5; break;
+			}
+
+			if (n == 0)
 			{	
+				//false
+				//skip to next comma
+				while (*p!=0 && *p!=',') p++;
+				p++;
+			}
+
+			if (eval_expr(&p, &n)==NUMBER && n!=0)
+			{
 				int t = gotoln(n);
 				if (t<0)
-					errno=5; 	
+					errno=5;
 				else
 					setline(t);
-				tmp=1;		
+				tmp=1;
 			}
 		}
 		break;		
 	case MOVE: 
 		// MOVE @A,500,10
 		// MOVE @A
-		// No args - send servo positions syncronously
+		// No args - send servo positions synchronously
 		// with args (No Frames / Time in Ms) - use MotionBuffer
 		p=line.text;
 			
@@ -2566,21 +2617,49 @@ void basic_list()
 		if (line.token==IF)
 		{
 			// replace ? THEN,  : ELSE (unless :0)
-			char *p_then, *p_else, *cp = line.text;
+			char *cp2, *p_then=0, *p_else=0, *cp = line.text;
 			int l = strlen(cp);
-			if (l>2 && cp[l-2]==':' && cp[l-1]=='0')
-			{
-				cp[l-2]=' ';  cp[l-1]=' ';
-			}
-			p_then = strstr(cp, ")?  ");
-			p_else = strstr(cp, ":   ");
-			if (p_then != 0) 
-				strncpy(p_then, "THEN",4);
-				
-			if (p_else != 0) 
-				strncpy(p_else,"ELSE",4);
+			//if (l>2 && cp[l-2]==',' && cp[l-1]=='0')
+			//{
+			//	cp[l-2]=' ';  cp[l-1]=' ';
+			//}
+			//p_then = strstr(cp, ")?  ");
+			//p_else = strstr(cp, ":   ");
+			//if (p_then != 0)
+			//	strncpy(p_then, "THEN",4);
+			//
+			//if (p_else != 0)
+			//	strncpy(p_else,"ELSE",4);
 
-			rprintfStr (cp+1);
+			cp2=cp+l;
+
+			while (cp2>cp)
+			{
+				if (*cp2==',')
+				{
+					if (p_else==0)
+					{
+						p_else=cp2;
+						*p_else='\0';
+					}
+					else if (p_then==0)
+					{
+						p_then=cp2;
+						*p_then='\0';
+						break;
+					}
+				}
+				cp2--;
+			}
+
+			rprintfStr (cp);
+			rprintfStr (" THEN ");
+			rprintfStr (p_then+1);
+			if (!(*(p_else+1)=='0' && *(p_else+2)==0))
+			{
+				rprintfStr (" ELSE ");
+				rprintfStr (p_else+1);
+			}
 		}
 		else
 		if (line.token==NEXT) 
@@ -2832,6 +2911,13 @@ void basic()
 			binmode(); // enter binary mode
 			rprintf ("%d lines loaded\r\n", findend());
 			break;
+
+#ifndef AVR
+		case 'Z': // upload  (Unix version only)
+			binstore();
+			rprintf ("stored\r\n");
+			break;
+#endif
 		case 'q': // query 
 			rprintf ("%d servos connected\r\n", readservos(0));
 			rprintf ("%d lines stored\r\n", findend());
