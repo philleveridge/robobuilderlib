@@ -68,7 +68,7 @@ void sigcatch() {
 }
 
 
-int  PP_mtype=4;
+//int  PP_mtype=4;
 
 void  lights(int n) {
 	DBO(printf ("LIN: Lights %d\n",n);)
@@ -88,49 +88,10 @@ void send_bus_str()			{} // support for PIC based Cylon head
 BYTE cpos[32];
 int nos;
 
-const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
-const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
 
-void Sleep()
+void Sleep(long ms)
 {
-}
-
-void PlayPose(int d, int s, int f, unsigned char data[], int n)
-{
-	int i=0;
-	if (n!=0) nos=n; else n=nos;
-	DBO(printf ("LIN: Playpose  [d=%d , f=%d] :: Data=", d,s);)
-	for (i=0; i<n; i++)
-	{
-			DBO(printf ("%d,", data[i]);)
-
-	}
-	DBO(printf ("\n");)
-	if (simflg!=0)
-	{
-		wckSyncPosSend(n-1,0,data, 0);
-	}
-	Sleep(d);
-}
-
-void standup      	(int n)	
-{
-	printf ("LIN: standup %d\n", n);
-	if (n==16)
-	{
-		PlayPose(1000,10,1,basic16,16);
-	}
-	else
-	{
-		PlayPose(1000,10,1,basic18,18);
-	}
-}
-int readservos ()  {
-	int i=0;
-	nos=20;
-	for (i=0; i<nos; i++)
-		cpos[i] = wckPosRead(i);	
-	return nos;
+	usleep(ms*1000);
 }
 
 void SendToSoundIC(int n)	{DBO(printf ("LIN: Play Sound %d\n", n);)}
@@ -152,7 +113,6 @@ void			eeprom_write_byte (unsigned char *b, unsigned char c) 	{*b=c;}
 int z_value=0;
 int y_value=0;
 int x_value=0;
-int gtick=0;
 int gVOLTAGE=10000;
 int gDistance=35;
 
@@ -256,13 +216,11 @@ void rprintfChar(char c)					{putchar (c); fflush(stdout);}
 
 /* misc */
 void delay_ms(int x)  					
-{//printf ("LIN:  wait %d\n",x);
-Sleep(x);
+{
+	Sleep(x);
 }
 
 void chargemode() {DBO(printf ("LIN: chargemode\n"); )}
-void setdh(int n) {printf ("LIN: setdh %d\n",n); }
-
 
 void SampleMotion(char action)			{DBO(printf ("LIN:  sample motion %d\n", action);)}
 void PlayMotion (char action, int f)	{DBO(printf ("LIN:  Play %d\n", action);)}
@@ -287,6 +245,8 @@ volatile WORD    gMSEC;
 volatile BYTE    gSEC;
 volatile BYTE    gMIN;
 volatile BYTE    gHOUR;
+volatile WORD    gSEC_DCOUNT;
+volatile WORD    gMIN_DCOUNT;
 
 int binmode2()
 {
@@ -373,6 +333,60 @@ void initfirmware() {
 	binmode2();
 }
 
+/***********************
+ *
+ *
+ * *********************/
+
+
+#include <pthread.h>
+#include <stdio.h>
+
+volatile WORD	gtick;
+volatile WORD	mstimer;
+
+/* Emulates the timer interupt */
+void *monitor_proc(void *arg)
+{
+	char *str;
+
+	str=(char*)arg;
+
+	while(1) // forever
+	{
+		usleep(1000); //every millisec
+
+		// 1ms
+		gtick++;
+
+		if (mstimer>0) mstimer--;
+
+	    if(++gMSEC>999)
+	    {
+			// 1s
+	        gMSEC=0;
+
+	        if(gSEC_DCOUNT > 0)	gSEC_DCOUNT--;
+
+	        if(++gSEC>59)
+	        {
+				// 1m
+	            gSEC=0;
+				if(gMIN_DCOUNT > 0)	gMIN_DCOUNT--;
+
+	           if(++gMIN>59)
+	           {
+					// 1h
+	                gMIN=0;
+	                if(++gHOUR>23)
+	                    gHOUR=0;
+	            }
+	        }
+	    }
+	}
+
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -403,7 +417,13 @@ int main(int argc, char *argv[])
 	else
 		basic_clear();
 
+	pthread_t pth;	// this is our thread identifier
+
+	pthread_create(&pth,NULL,monitor_proc,"TIMER0");
+
 	basic();
+
+	pthread_join(pth,NULL);
 }
 
 
