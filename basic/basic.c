@@ -2875,6 +2875,7 @@ void basic()
 		case 'S': // stand
 			rprintf("ok\r\n");
 			setdh(1);
+			standup(nos);
 			break;
 
 		case 'o': // output lights

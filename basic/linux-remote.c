@@ -103,11 +103,11 @@ void initsocket()
     //check DCMP version
 
 	wckReadPos(30,0);
-	DBO(printf ("LINUX: DCMP v=%d.%d\n", response[0], response[1]);)
+	printf ("DCMP v=%d.%d\n", response[0], response[1]);
 
 	if (!(response[0]==3 && response[1]>10 ))
 	{
-		DBO(printf ("LINUX: INVALID VERSION\n");)
+		printf ("Not connected\n");
 
 		closeport();
 		simflg=0;
@@ -249,4 +249,154 @@ extern int z_value,y_value,x_value,gDistance;
 		writebyte(CheckSum & 0x7f);
 		return;
 	}
+
+
+
+	#define BYTE unsigned char
+
+	BYTE cpos[32];
+	int offset[32];
+	BYTE nos=0;
+
+
+	int readservos(int n)
+	{
+		BYTE i;
+	        if (n==0) n=31;
+		for (i=0; i<n; i++)
+		{
+			int p = wckPosRead(i);
+			if (p<0 || p>255) break;
+			cpos[i]=p;
+		}
+		nos=i;
+		return i;
+	}
+
+	enum { AccelDecel=0, Accel, Decel, Linear };
+
+	int PP_mtype=Linear;
+
+	double CalculatePos_Accel(int Distance, double FractionOfMove)
+	{
+		return FractionOfMove * (Distance * FractionOfMove);
+	}
+
+	double CalculatePos_Decel(int Distance, double FractionOfMove)
+	{
+		FractionOfMove = 1 - FractionOfMove;
+		return Distance - (FractionOfMove * (Distance * FractionOfMove));
+	}
+
+	double CalculatePos_Linear(int Distance, double FractionOfMove)
+	{
+		return (Distance * FractionOfMove);
+	}
+
+	double CalculatePos_AccelDecel(int Distance, double FractionOfMove)
+	{
+		if ( FractionOfMove < 0.5 )     // Accel:
+			return CalculatePos_Accel(Distance /2, FractionOfMove * 2);
+		else if (FractionOfMove > 0.5 ) //'Decel:
+			return CalculatePos_Decel(Distance/2, (FractionOfMove - 0.5) * 2) + (Distance * 0.5);
+		else                            //'= .5! Exact Middle.
+			return Distance / 2;
+	}
+
+	double GetMoveValue(int mt, int StartPos, int EndPos, double FractionOfMove)
+	{
+		int Offset,Distance;
+		if (StartPos > EndPos)
+		{
+			Distance = StartPos - EndPos;
+			Offset = EndPos;
+			switch (mt)
+			{
+				case Accel:
+					return Distance - CalculatePos_Accel(Distance, FractionOfMove) + Offset;
+				case AccelDecel:
+					return Distance - CalculatePos_AccelDecel(Distance, FractionOfMove) + Offset;
+				case Decel:
+					return Distance - CalculatePos_Decel(Distance, FractionOfMove) + Offset;
+				case Linear:
+					return Distance - CalculatePos_Linear(Distance, FractionOfMove) + Offset;
+			}
+		}
+		else
+		{
+			Distance = EndPos - StartPos;
+			Offset = StartPos;
+			switch (mt)
+			{
+				case Accel:
+					return CalculatePos_Accel(Distance, FractionOfMove) + Offset;
+				case AccelDecel:
+					return CalculatePos_AccelDecel(Distance, FractionOfMove) + Offset;
+				case Decel:
+					return CalculatePos_Decel(Distance, FractionOfMove) + Offset;
+				case Linear:
+					return CalculatePos_Linear(Distance, FractionOfMove) + Offset;
+			}
+		}
+		return 0.0;
+	}
+
+	// Play d ms per step, f frames, from current -> spod
+	void PlayPose(int d, int f, int tq, BYTE spod[], int flag)
+	{
+		int i;
+
+		DBO(printf ("LIN: Playpose  [d=%d , f=%d]\n", d,f);)
+
+		if (flag!=0)
+		{
+			readservos(0);	// set nos and reads cpos
+			nos=flag;
+		}
+
+		int dur=d/f;
+		if (dur<25) dur=25; //25ms is quickest
+
+		for (i=0; i<f; i++)
+		{
+			BYTE temp[nos];
+			for (int j=0; j<nos; j++)
+			{
+				//temp[j] = cpos[j] + (float)((i)*intervals[j]+0.5);
+				temp[j] = (BYTE)GetMoveValue(PP_mtype, cpos[j], spod[j], (double)i / (double)f);
+			}
+			wckSyncPosSend(nos-1, tq, temp, 0);
+			delay_ms(dur);
+		}
+
+		for (i=0; i<nos; i++)
+		{
+			cpos[i]=spod[i];
+		}
+
+		wckSyncPosSend(nos-1, tq, cpos, 0);
+		delay_ms(dur);
+	}
+
+	const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
+	const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
+	const BYTE basicdh[] = { 143, 179, 198, 83, 105, 106, 68, 46, 167, 140, 77, 70, 152, 165, 181, 98, 120, 124, 99};
+
+	int dm=0;
+	void setdh(int n) {dm=n;}
+	void standup (int n)
+	{
+		if (n<18)
+			PlayPose(1000, 10, 4, basic16, 16); //huno basic
+		else
+		{
+			if (dm)
+			    PlayPose(1000, 10, 4, basicdh, 18); //huno with hip
+			else
+			    PlayPose(1000, 10, 4, basic18, 18); //huno with hip
+		}
+	}
+
+
+
 
