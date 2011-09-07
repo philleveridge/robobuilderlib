@@ -145,18 +145,34 @@ void wckSetPassive(char ServoID)
 
 void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
 {
+	char CheckSum;
 	int i=0;
 	DBO(printf ("LINUX: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);)
 
-	for (i=Index; i<=LastID; i++)
+	CheckSum = 0;
+	writebyte(0xFF);
+	writebyte((SpeedLevel<<5)|0x1f);
+	writebyte(LastID+1);
+	while(1)
 	{
-			wckPosSend(i,SpeedLevel,TargetArray[i]);
+		if(i>LastID)
+			break;
+		writebyte(TargetArray[Index*(LastID+1)+i]);
+		CheckSum = CheckSum ^ TargetArray[Index*(LastID+1)+i];
+		i++;
 	}
+	CheckSum = CheckSum & 0x7f;
+	writebyte(CheckSum);
 }
 
 void wckWriteIO(unsigned char ServoID, unsigned char IO)
 {
 	DBO(printf ("LINUX: Servo write IO %d=%d\n", ServoID, IO); )
+
+	wckSendSetCommand((7<<5)|ServoID, 0x64, IO, IO);
+	response[0] = readbyte();
+	response[1] = readbyte();
+	return 0;
 }
 
 /**************************************************************************************
@@ -181,6 +197,18 @@ extern int z_value,y_value,x_value,gDistance;
    {
 	   wckReadPos(30,5);
 	   gDistance = CB2I(response[0]);
+   }
+
+   void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
+   {
+   	char CheckSum;
+   	CheckSum = (Data1^Data2^Data3^Data4)&0x7f;
+	writebyte(0xFF);
+	writebyte(Data1);
+	writebyte(Data2);
+	writebyte(Data3);
+	writebyte(Data4);
+	writebyte(CheckSum);
    }
 
    int wckReadPos(int id, int d1)
@@ -394,6 +422,382 @@ extern int z_value,y_value,x_value,gDistance;
 			    PlayPose(1000, 10, 4, basicdh, 18); //huno with hip
 			else
 			    PlayPose(1000, 10, 4, basic18, 18); //huno with hip
+		}
+	}
+
+	/**********************************************************************************/
+
+	// Data structure for the Motion Data-------------------------------------------------------------
+	//      - hierarchy is : wCK < Frame < Scene < Motion < Action
+	//      - data is sent to the wCK for each frame on the timer
+	//      - frames are created from scenes by interpolation
+	//      - a motion comprises a sequence of scenes
+	//      - an action can invoke motions
+
+#include "macro.h"
+#define MAX_wCK 31
+#define PGM_P char*
+
+	struct TwCK_in_Motion{      // Structure for each wCK in a motion
+		BYTE	Exist;			// 1 if wCK exists
+		BYTE	RPgain;			// Runtime P setting
+		BYTE	RDgain;			// Runtime D setting
+		BYTE	RIgain;			// Runtime I setting
+		BYTE	PortEn;			// (0 = disable, 1 = enable)
+		BYTE	InitPos;		// Initial wCK position (apparently ignored)
+	};
+
+	struct TwCK_in_Scene{		// Structure for each wCK in a scene
+		BYTE	Exist;			// 1 if wCK exists
+		BYTE	SPos;			// wCK starting position
+		BYTE	DPos;			// wCK destination position
+		BYTE	Torq;			// Torque
+		BYTE	ExPortD;		// External Port Data(1~3)
+	};
+
+	struct TMotion{			    // Structure for a motion
+		BYTE	PF;				//  ? (not used)
+		BYTE	RIdx;			//  ? (not used)
+		DWORD	AIdx;			//  ? (not used)
+		WORD	NumOfScene;		// number of scenes in motion
+		WORD	NumOfwCK;		// number of wCK included
+		struct	TwCK_in_Motion  wCK[MAX_wCK];	// Motion data for each wCK
+		WORD	FileSize;		// overall file size
+	}Motion;
+
+	struct TScene{			    // Structure for a scene
+		WORD	Idx;			// index of scene (0~65535)
+		WORD	NumOfFrame;		// number of frames in scene
+		WORD	RTime;			// running time of scene[msec]
+		struct	TwCK_in_Scene   wCK[MAX_wCK];	// scene data for each wCK
+	}Scene;
+
+	struct FlashMotionData {
+		PGM_P TT;
+		PGM_P ET;
+		PGM_P PT;
+		PGM_P DT;
+		PGM_P IT;
+		PGM_P FT;
+		PGM_P RT;
+		PGM_P PoT;
+		int NoS;
+		int Now;
+	};
+
+#define flash
+#include "HunoBasic.h"
+#include "e-motion.h"
+
+	struct FlashMotionData mlist[] =
+	{
+		{ // 0. PunchLeft
+			(PGM_P) HunoBasic_PunchLeft_Torque,
+			(PGM_P) HunoBasic_PunchLeft_Port,
+			(PGM_P) HunoBasic_PunchLeft_PGain,
+			(PGM_P) HunoBasic_PunchLeft_DGain,
+			(PGM_P) HunoBasic_PunchLeft_IGain,
+			(PGM_P) HunoBasic_PunchLeft_Frames,
+			(PGM_P) HunoBasic_PunchLeft_TrTime,
+			(PGM_P) HunoBasic_PunchLeft_Position,
+			HUNOBASIC_PUNCHLEFT_NUM_SCENES,
+			HUNOBASIC_PUNCHLEFT_NUM_MOTORS
+		},
+		{ // 1. PunchRight
+			(PGM_P) HunoBasic_PunchRight_Torque,
+			(PGM_P) HunoBasic_PunchRight_Port,
+			(PGM_P) HunoBasic_PunchRight_PGain,
+			(PGM_P) HunoBasic_PunchRight_DGain,
+			(PGM_P) HunoBasic_PunchRight_IGain,
+			(PGM_P) HunoBasic_PunchRight_Frames,
+			(PGM_P) HunoBasic_PunchRight_TrTime,
+			(PGM_P) HunoBasic_PunchRight_Position,
+			HUNOBASIC_PUNCHRIGHT_NUM_SCENES,
+			HUNOBASIC_PUNCHRIGHT_NUM_MOTORS
+		},
+		// 2. SidewalkLeft
+		{
+			(PGM_P) HunoBasic_SidewalkLeft_Torque,
+			(PGM_P) HunoBasic_SidewalkLeft_Port,
+			(PGM_P) HunoBasic_SidewalkLeft_PGain,
+			(PGM_P) HunoBasic_SidewalkLeft_DGain,
+			(PGM_P) HunoBasic_SidewalkLeft_IGain,
+			(PGM_P) HunoBasic_SidewalkLeft_Frames,
+			(PGM_P) HunoBasic_SidewalkLeft_TrTime,
+			(PGM_P) HunoBasic_SidewalkLeft_Position,
+			HUNOBASIC_SIDEWALKLEFT_NUM_SCENES,
+			HUNOBASIC_SIDEWALKLEFT_NUM_MOTORS
+		},
+		// 3. SidewalkRight
+		{
+			(PGM_P) HunoBasic_SidewalkRight_Torque,
+			(PGM_P) HunoBasic_SidewalkRight_Port,
+			(PGM_P) HunoBasic_SidewalkRight_PGain,
+			(PGM_P) HunoBasic_SidewalkRight_DGain,
+			(PGM_P) HunoBasic_SidewalkRight_IGain,
+			(PGM_P) HunoBasic_SidewalkRight_Frames,
+			(PGM_P) HunoBasic_SidewalkRight_TrTime,
+			(PGM_P) HunoBasic_SidewalkRight_Position,
+			HUNOBASIC_SIDEWALKRIGHT_NUM_SCENES,
+			HUNOBASIC_SIDEWALKRIGHT_NUM_MOTORS
+		},
+		// 4. TurnLeft
+		{
+			(PGM_P) HunoBasic_TurnLeft_Torque,
+			(PGM_P) HunoBasic_TurnLeft_Port,
+			(PGM_P) HunoBasic_TurnLeft_PGain,
+			(PGM_P) HunoBasic_TurnLeft_DGain,
+			(PGM_P) HunoBasic_TurnLeft_IGain,
+			(PGM_P) HunoBasic_TurnLeft_Frames,
+			(PGM_P) HunoBasic_TurnLeft_TrTime,
+			(PGM_P) HunoBasic_TurnLeft_Position,
+			HUNOBASIC_TURNLEFT_NUM_SCENES,
+			HUNOBASIC_TURNLEFT_NUM_MOTORS
+		},
+		// 5. TurnRight
+		{
+			(PGM_P) HunoBasic_TurnRight_Torque,
+			(PGM_P) HunoBasic_TurnRight_Port,
+			(PGM_P) HunoBasic_TurnRight_PGain,
+			(PGM_P) HunoBasic_TurnRight_DGain,
+			(PGM_P) HunoBasic_TurnRight_IGain,
+			(PGM_P) HunoBasic_TurnRight_Frames,
+			(PGM_P) HunoBasic_TurnRight_TrTime,
+			(PGM_P) HunoBasic_TurnRight_Position,
+			HUNOBASIC_TURNRIGHT_NUM_SCENES,
+			HUNOBASIC_TURNRIGHT_NUM_MOTORS
+		},
+		// 6. GetupBack
+		{
+			(PGM_P) HunoBasic_GetupBack_Torque,
+			(PGM_P) HunoBasic_GetupBack_Port,
+			(PGM_P) HunoBasic_GetupBack_PGain,
+			(PGM_P) HunoBasic_GetupBack_DGain,
+			(PGM_P) HunoBasic_GetupBack_IGain,
+			(PGM_P) HunoBasic_GetupBack_Frames,
+			(PGM_P) HunoBasic_GetupBack_TrTime,
+			(PGM_P) HunoBasic_GetupBack_Position,
+			HUNOBASIC_GETUPBACK_NUM_SCENES,
+			HUNOBASIC_GETUPBACK_NUM_MOTORS
+		},
+		// 7. GetupFront
+		{
+			(PGM_P) HunoBasic_GetupFront_Torque,
+			(PGM_P) HunoBasic_GetupFront_Port,
+			(PGM_P) HunoBasic_GetupFront_PGain,
+			(PGM_P) HunoBasic_GetupFront_DGain,
+			(PGM_P) HunoBasic_GetupFront_IGain,
+			(PGM_P) HunoBasic_GetupFront_Frames,
+			(PGM_P) HunoBasic_GetupFront_TrTime,
+			(PGM_P) HunoBasic_GetupFront_Position,
+			HUNOBASIC_GETUPFRONT_NUM_SCENES,
+			HUNOBASIC_GETUPFRONT_NUM_MOTORS
+		},
+		// 8. WalkForward
+			{
+			(PGM_P) HunoBasic_WalkForward_Torque,
+			(PGM_P) HunoBasic_WalkForward_Port,
+			(PGM_P) HunoBasic_WalkForward_PGain,
+			(PGM_P) HunoBasic_WalkForward_DGain,
+			(PGM_P) HunoBasic_WalkForward_IGain,
+			(PGM_P) HunoBasic_WalkForward_Frames,
+			(PGM_P) HunoBasic_WalkForward_TrTime,
+			(PGM_P) HunoBasic_WalkForward_Position,
+			HUNOBASIC_WALKFORWARD_NUM_SCENES,
+			HUNOBASIC_WALKFORWARD_NUM_MOTORS
+		},
+		// 9. WalkBackward
+		{
+			(PGM_P) HunoBasic_WalkBackward_Torque,
+			(PGM_P) HunoBasic_WalkBackward_Port,
+			(PGM_P) HunoBasic_WalkBackward_PGain,
+			(PGM_P) HunoBasic_WalkBackward_DGain,
+			(PGM_P) HunoBasic_WalkBackward_IGain,
+			(PGM_P) HunoBasic_WalkBackward_Frames,
+			(PGM_P) HunoBasic_WalkBackward_TrTime,
+			(PGM_P) HunoBasic_WalkBackward_Position,
+			HUNOBASIC_WALKBACKWARD_NUM_SCENES,
+			HUNOBASIC_WALKBACKWARD_NUM_MOTORS
+		},
+
+
+		// 10. E-motion LSHOOT
+
+		{
+			(PGM_P) LSHOOT_Torque,
+			(PGM_P) LSHOOT_Port,
+			(PGM_P) LSHOOT_RuntimePGain,
+			(PGM_P) LSHOOT_RuntimeDGain,
+			(PGM_P) LSHOOT_RuntimeIGain,
+			(PGM_P) LSHOOT_Frames,
+			(PGM_P) LSHOOT_TrTime,
+			(PGM_P) LSHOOT_Position,
+			LSHOOT_NUM_OF_SCENES,
+			LSHOOT_NUM_OF_WCKS
+		},
+
+		// 11. E-motion RSHOOT
+		{
+			(PGM_P) RSHOOT_Torque,
+			(PGM_P) RSHOOT_Port,
+			(PGM_P) RSHOOT_RuntimePGain,
+			(PGM_P) RSHOOT_RuntimeDGain,
+			(PGM_P) RSHOOT_RuntimeIGain,
+			(PGM_P) RSHOOT_Frames,
+			(PGM_P) RSHOOT_TrTime,
+			(PGM_P) RSHOOT_Position,
+			RSHOOT_NUM_OF_SCENES,
+			RSHOOT_NUM_OF_WCKS
+		},
+
+		// 12. E-motion RSIDEWALK
+		{
+			(PGM_P) RSIDEWALK_Torque,
+			(PGM_P) RSIDEWALK_Port,
+			(PGM_P) RSIDEWALK_RuntimePGain,
+			(PGM_P) RSIDEWALK_RuntimeDGain,
+			(PGM_P) RSIDEWALK_RuntimeIGain,
+			(PGM_P) RSIDEWALK_Frames,
+			(PGM_P) RSIDEWALK_TrTime,
+			(PGM_P) RSIDEWALK_Position,
+			RSIDEWALK_NUM_OF_SCENES,
+			RSIDEWALK_NUM_OF_WCKS
+		},
+
+		// 13. E-motion LSIDEWALK
+		{
+			(PGM_P) LSIDEWALK_Torque,
+			(PGM_P) LSIDEWALK_Port,
+			(PGM_P) LSIDEWALK_RuntimePGain,
+			(PGM_P) LSIDEWALK_RuntimeDGain,
+			(PGM_P) LSIDEWALK_RuntimeIGain,
+			(PGM_P) LSIDEWALK_Frames,
+			(PGM_P) LSIDEWALK_TrTime,
+			(PGM_P) LSIDEWALK_Position,
+			LSIDEWALK_NUM_OF_SCENES,
+			LSIDEWALK_NUM_OF_WCKS
+		},
+
+		// 14. E-motion STANDUPR
+		{
+			(PGM_P) STANDUPR_Torque,
+			(PGM_P) STANDUPR_Port,
+			(PGM_P) STANDUPR_RuntimePGain,
+			(PGM_P) STANDUPR_RuntimeDGain,
+			(PGM_P) STANDUPR_RuntimeIGain,
+			(PGM_P) STANDUPR_Frames,
+			(PGM_P) STANDUPR_TrTime,
+			(PGM_P) STANDUPR_Position,
+			STANDUPR_NUM_OF_SCENES,
+			STANDUPR_NUM_OF_WCKS
+		},
+
+		// 15. E-motion STANDUPF
+		{
+			(PGM_P) STANDUPF_Torque,
+			(PGM_P) STANDUPF_Port,
+			(PGM_P) STANDUPF_RuntimePGain,
+			(PGM_P) STANDUPF_RuntimeDGain,
+			(PGM_P) STANDUPF_RuntimeIGain,
+			(PGM_P) STANDUPF_Frames,
+			(PGM_P) STANDUPF_TrTime,
+			(PGM_P) STANDUPF_Position,
+			STANDUPF_NUM_OF_SCENES,
+			STANDUPF_NUM_OF_WCKS
+		},
+
+		// 16. E-motion HUNODEMO_SITDOWN
+		{
+			(PGM_P) HUNODEMO_SITDOWN_Torque,
+			(PGM_P) HUNODEMO_SITDOWN_Port,
+			(PGM_P) HUNODEMO_SITDOWN_RuntimePGain,
+			(PGM_P) HUNODEMO_SITDOWN_RuntimeDGain,
+			(PGM_P) HUNODEMO_SITDOWN_RuntimeIGain,
+			(PGM_P) HUNODEMO_SITDOWN_Frames,
+			(PGM_P) HUNODEMO_SITDOWN_TrTime,
+			(PGM_P) HUNODEMO_SITDOWN_Position,
+			HUNODEMO_SITDOWN_NUM_OF_SCENES,
+			HUNODEMO_SITDOWN_NUM_OF_WCKS
+		},
+
+		// 17. E-motion HUNODEMO_HI
+		{
+			(PGM_P) HUNODEMO_HI_Torque,
+			(PGM_P) HUNODEMO_HI_Port,
+			(PGM_P) HUNODEMO_HI_RuntimePGain,
+			(PGM_P) HUNODEMO_HI_RuntimeDGain,
+			(PGM_P) HUNODEMO_HI_RuntimeIGain,
+			(PGM_P) HUNODEMO_HI_Frames,
+			(PGM_P) HUNODEMO_HI_TrTime,
+			(PGM_P) HUNODEMO_HI_Position,
+			HUNODEMO_HI_NUM_OF_SCENES,
+			HUNODEMO_HI_NUM_OF_WCKS
+		},
+
+		// 18. E-motion HUNODEMO_KICKLEFTFRONTTURN
+		{
+			(PGM_P) HUNODEMO_KICKLEFTFRONTTURN_Torque,
+			(PGM_P) HUNODEMO_KICKLEFTFRONTTURN_Port,
+			(PGM_P) HUNODEMO_KICKLEFTFRONTTURN_RuntimePGain,
+			(PGM_P) HUNODEMO_KICKLEFTFRONTTURN_RuntimeDGain,
+			(PGM_P) HUNODEMO_KICKLEFTFRONTTURN_RuntimeIGain,
+			(PGM_P) HUNODEMO_KICKLEFTFRONTTURN_Frames,
+			(PGM_P) HUNODEMO_KICKLEFTFRONTTURN_TrTime,
+			(PGM_P) HUNODEMO_KICKLEFTFRONTTURN_Position,
+			HUNODEMO_KICKLEFTFRONTTURN_NUM_OF_SCENES,
+			HUNODEMO_KICKLEFTFRONTTURN_NUM_OF_WCKS
+		},
+
+		// 19. E-motion HANDSTANDS1
+		{
+			(PGM_P) HANDSTANDS1_Torque,
+			(PGM_P) HANDSTANDS1_Port,
+			(PGM_P) HANDSTANDS1_RuntimePGain,
+			(PGM_P) HANDSTANDS1_RuntimeDGain,
+			(PGM_P) HANDSTANDS1_RuntimeIGain,
+			(PGM_P) HANDSTANDS1_Frames,
+			(PGM_P) HANDSTANDS1_TrTime,
+			(PGM_P) HANDSTANDS1_Position,
+			HANDSTANDS1_NUM_OF_SCENES,
+			HANDSTANDS1_NUM_OF_WCKS
+		}
+
+	};
+
+
+	void PlayMotion(BYTE n)
+	{
+		DBO(printf ("LIN:  Play %d\n", n);)
+		int dur,frt;
+
+		int ns = mlist[n].NoS;
+		int nw = mlist[n].Now;
+
+		PGM_P p = mlist[n].PoT;
+		PGM_P f = mlist[n].FT;
+		PGM_P t = mlist[n].RT;
+
+		for (int i=1; i<=ns; i++) //for each scene
+		{
+			BYTE temp[nw];
+			for (int j=0; j<nw; j++)
+			{
+
+				temp[j] = *(p+j+i*nw); //pgm_read_byte(p+j+i*nw);
+				if (j<16)
+				{
+					temp[j] += offset[j];
+				}
+			}
+
+			dur=*(t+(i-1)*4) + 256*(*(t+1+(i-1)*4));  	//pgm_read_word(t+(i-1)*2);
+			frt=*(f+(i-1)*4) + 256*(*(f+1+(i-1)*4));  	//pgm_read_word(f+(i-1)*2);
+
+			//printf("Dur=%d, frt=%d\n", dur,frt);
+			//for (int x=0; x<nw; x++)
+			//	printf ("%d - %d\n", x,temp[x]);
+
+			PlayPose(dur, frt, 4, temp, (i==1)?16:0);
 		}
 	}
 

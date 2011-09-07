@@ -23,7 +23,7 @@ struct termio newtty;  /* terminal with changed mode */
 
 int uartGetByte() {
 	char buf[1];
-    if (read(0, buf, 1)>=0)
+    if (read(0, buf, 1)>0)
     {/* read one char at a time */
 		if (buf[0]==10) buf[0]=13;
 		return buf[0];
@@ -139,7 +139,7 @@ int irGetByte()
 	char buff[64];
 	if (simflg==0)
 	{
-		return 0;
+		return -1;
 	}
 	sprintf(buff, "IR$");
 	return testsocket(buff);
@@ -223,7 +223,7 @@ void delay_ms(int x)
 void chargemode() {DBO(printf ("LIN: chargemode\n"); )}
 
 void SampleMotion(char action)			{DBO(printf ("LIN:  sample motion %d\n", action);)}
-void PlayMotion (char action, int f)	{DBO(printf ("LIN:  Play %d\n", action);)}
+
 
 void  I2C_read    (int addr, int ocnt, BYTE * outbuff, int icnt, BYTE * inbuff) 
 {
@@ -354,11 +354,10 @@ void *monitor_proc(void *arg)
 
 	while(1) // forever
 	{
-		usleep(1000); //every millisec
+		usleep(940); //every millisec
 
 		// 1ms
 		gtick++;
-
 		if (mstimer>0) mstimer--;
 
 	    if(++gMSEC>999)

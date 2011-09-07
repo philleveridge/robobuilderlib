@@ -1788,9 +1788,10 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case STAND: 
-		n=nos;
-		eval_expr(&line.text, &n);
-		standup(n);
+		if (eval_expr(&line.text, &n)==NUMBER)
+			standup(n);
+		else
+			standup(nos);
 		break;
 	case GOTO: 
 		{
