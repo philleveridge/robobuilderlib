@@ -8,9 +8,9 @@ int fd = -1;
 
 struct termios oldtio,newtio;
 
-#define BAUDRATE B115200
 const char *device = "/dev/ttyUSB0";
 
+long Baud = B115200;
 
 int response[32];
 
@@ -24,7 +24,7 @@ void openport()
     tcgetattr(fd,&oldtio); /* save current serial port settings */
     bzero(&newtio, sizeof(newtio)); /* clear struct for new port settings */
 
-    newtio.c_cflag = BAUDRATE | CS8  | CLOCAL ; //| CREAD;
+    newtio.c_cflag = Baud | CS8  | CLOCAL ; //| CREAD;
     newtio.c_oflag = 0;
     newtio.c_lflag = 0;
     newtio.c_iflag = IGNPAR;
@@ -93,10 +93,18 @@ void closeport()
 #define	DBO(x) {if (dbg) {x}}
 extern int simflg, dbg;
 
-void initsocket()
+#include <pthread.h>
+
+static pthread_mutex_t cs_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+void initsocket(int f)
 {
 	// set up I/O
-	DBO(printf ("LINUX: init i/o\n");)
+	DBO(printf ("LINUX: init i/o [%s]\n",((f==1)?"Fast":"Normal"));)
+
+	if (f==1)
+		Baud = B230400;
 
 	openport();
 
@@ -149,6 +157,8 @@ void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
 	int i=0;
 	DBO(printf ("LINUX: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);)
 
+    pthread_mutex_lock( &cs_mutex );
+
 	CheckSum = 0;
 	writebyte(0xFF);
 	writebyte((SpeedLevel<<5)|0x1f);
@@ -163,15 +173,34 @@ void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
 	}
 	CheckSum = CheckSum & 0x7f;
 	writebyte(CheckSum);
+
+	pthread_mutex_unlock( &cs_mutex );
+}
+
+void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
+{
+	char CheckSum;
+	CheckSum = (Data1^Data2^Data3^Data4)&0x7f;
+	writebyte(0xFF);
+	writebyte(Data1);
+	writebyte(Data2);
+	writebyte(Data3);
+	writebyte(Data4);
+	writebyte(CheckSum);
 }
 
 void wckWriteIO(unsigned char ServoID, unsigned char IO)
 {
 	DBO(printf ("LINUX: Servo write IO %d=%d\n", ServoID, IO); )
 
+    pthread_mutex_lock( &cs_mutex );
+
 	wckSendSetCommand((7<<5)|ServoID, 0x64, IO, IO);
 	response[0] = readbyte();
 	response[1] = readbyte();
+
+	pthread_mutex_unlock( &cs_mutex );
+
 	return 0;
 }
 
@@ -199,20 +228,48 @@ extern int z_value,y_value,x_value,gDistance;
 	   gDistance = CB2I(response[0]);
    }
 
-   void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
+   void  Acc_GetData ()
    {
-   	char CheckSum;
-   	CheckSum = (Data1^Data2^Data3^Data4)&0x7f;
-	writebyte(0xFF);
-	writebyte(Data1);
-	writebyte(Data2);
-	writebyte(Data3);
-	writebyte(Data4);
-	writebyte(CheckSum);
+   		readXYZ();
+   		return;
    }
+
+   int Get_AD_PSD()
+   {
+   		readPSD();
+   		return 0;
+   }
+
+   int irvalue=-1;
+
+   int irGetByte()
+   {
+	   int r=irvalue;
+	   irvalue=-1;
+	   return r;
+   }
+
+   void readIR()
+   {
+	   int t;
+	   wckReadPos(30,7);
+	   t = CB2I(response[0]);
+	   if (irvalue<0) irvalue=t;
+	   else if (t>=0) irvalue=t;
+	   t = CB2I(response[1]);
+	   return;
+   }
+
+   void leds_buttons()
+   {
+		return;
+   }
+
 
    int wckReadPos(int id, int d1)
    {
+	   pthread_mutex_lock( &cs_mutex );
+
 	   response[0]=0;
 	   response[1]=0;
 
@@ -223,11 +280,15 @@ extern int z_value,y_value,x_value,gDistance;
 	   writebyte((id ^ d1) &0x7f);
 	   response[0] = readbyte();
 	   response[1] = readbyte();
+
+	   pthread_mutex_unlock( &cs_mutex );
 	   return 0;
    }
 
    int wckPassive(int id)
    {
+	   pthread_mutex_lock( &cs_mutex );
+
 	   response[0]=0;
 	   response[1]=0;
 
@@ -238,11 +299,16 @@ extern int z_value,y_value,x_value,gDistance;
 	   writebyte((id ^ 0x10) &0x7f);
 	   response[0] = readbyte();
 	   response[1] = readbyte();
+
+	   pthread_mutex_unlock( &cs_mutex );
+
 	   return 0;
    }
 
    int wckMovePos(int id, int pos, int torq)
    {
+	   pthread_mutex_lock( &cs_mutex );
+
 	   response[0]=0;
 	   response[1]=0;
 
@@ -255,6 +321,9 @@ extern int z_value,y_value,x_value,gDistance;
 
 	   response[0] = readbyte();
 	   response[1] = readbyte();
+
+	   pthread_mutex_unlock( &cs_mutex );
+
        return 0;
    }
 
@@ -262,6 +331,8 @@ extern int z_value,y_value,x_value,gDistance;
 	{
 		int i = 0;
 		int CheckSum = 0;
+
+		pthread_mutex_lock( &cs_mutex );
 
 		writebyte(0xFF);
 	    writebyte((SpeedLevel << 5) | 0x1f);
@@ -275,6 +346,9 @@ extern int z_value,y_value,x_value,gDistance;
 			i++;
 		}
 		writebyte(CheckSum & 0x7f);
+
+		pthread_mutex_unlock( &cs_mutex );
+
 		return;
 	}
 
