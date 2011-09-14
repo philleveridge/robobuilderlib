@@ -134,78 +134,17 @@ void PSD_off() {}
 void sample_sound(int n){DBO(printf ("LIN: Sample sound %d\n", n);)}
 void sound_init()		{DBO(printf ("LIN: Sound init\n");)}
 int Get_VOLTAGE()		{return 0;}
-int irGetByte()			
-{
-	char buff[64];
-	if (simflg==0)
-	{
-		return -1;
-	}
-	sprintf(buff, "IR$");
-	return testsocket(buff);
-}
 
-int Get_AD_PSD()		
-{
-	char buff[64];
-	if (simflg==0)
-	{
-		readPSD();
-		return;
-	}
-	sprintf(buff, "PSD$");
-	gDistance = testsocket(buff);
-	return 0;
-}
 
 extern int readXYZ();
 
 void  Acc_init    (void) {}
-void  Acc_GetData ()			
-{
-	char buff[64];
-	if (simflg==0)
-	{
-		readXYZ();
-		return;
-	}
 
-	sprintf(buff, "X$");
-	x_value = testsocket(buff);
-	sprintf(buff, "Y$");
-	y_value = testsocket(buff);
-	sprintf(buff, "Z$");
-	z_value = testsocket(buff);
-	return;
-}
 int adc_mic()			{return 0;}
 
 int sqrt(int x) {return 0;}
 
-void leds_buttons()
-{
-	char buff[64];
-	int  v;
 
-	if (simflg==0) return;
-
-	v=  ((PORTA&(1<<6) != 0)?  1:0) + //  PA6 RUN G
-		((PORTA&(1<<5) != 0)?  2:0) + //  PA5 RUN b
-		((PORTC&(1<<7) != 0)?  4:0) + //  PC7 PWR R
-		((PORTG&(1<<2) != 0)?  8:0) + //  PG2 PWR G 
-		((PORTA&(1<<7) != 0)? 16:0) + //  PA7 ERROR R
-		((PORTA&(1<<3) != 0)? 32:0) + //  PA3 PF1 R			
-		((PORTA&(1<<2) != 0)? 64:0) + //  PA2 PF1 B
-		((PORTA&(1<<4) != 0)?128:0);  //  PA4 Pf2 O
-
-
-	sprintf(buff, "H:%d",v);
-	//v = testsocket(buff);
-
-	//	input; PA0=PF1, PA1=PF2
-	if (v&1==1) PORTA |= 1;
-	if (v&2==2) PORTA |= 2;
-}
 
 /* priotf  */
 
@@ -221,8 +160,6 @@ void delay_ms(int x)
 }
 
 void chargemode() {DBO(printf ("LIN: chargemode\n"); )}
-
-void SampleMotion(char action)			{DBO(printf ("LIN:  sample motion %d\n", action);)}
 
 
 void  I2C_read    (int addr, int ocnt, BYTE * outbuff, int icnt, BYTE * inbuff) 
@@ -285,7 +222,7 @@ void binstore()
 	if ((fp = fopen("bindata.txt", "w")) == 0)
 			return;
 
-	while (i<psize)
+	while (i<psize+4)
 	{
 		unsigned char c= BASIC_PROG_SPACE[i++];
 		fputc(*(dig+(c/16)),fp);
@@ -345,6 +282,8 @@ void initfirmware() {
 volatile WORD	gtick;
 volatile WORD	mstimer;
 
+int irf=0;
+
 /* Emulates the timer interupt */
 void *monitor_proc(void *arg)
 {
@@ -382,6 +321,14 @@ void *monitor_proc(void *arg)
 	            }
 	        }
 	    }
+
+	    if (gMSEC%100==0)
+	    {
+	    	// every 100ms
+
+	    	if (irf==1)
+	    		readIR();// check robot status (IR etc)
+	    }
 	}
 
 }
@@ -390,6 +337,8 @@ void *monitor_proc(void *arg)
 int main(int argc, char *argv[])
 {
 	int lf=0;
+	int sf=0;
+
 	PORTA=3;
 
 	for (int i=1; i<argc; i++)
@@ -405,16 +354,21 @@ int main(int argc, char *argv[])
 
 		if (!strcmp(argv[i],"LOAD"))
 			lf=1;
+
+		if (!strcmp(argv[i],"FAST"))
+			sf=1;
+
+		if (!strcmp(argv[i],"IR"))
+			irf=1;
 	}
 
 	printf("Running Unix emulator ...\n");
-	initsocket();
+	initsocket(sf);
 	initIO();
 	initfirmware();
+	basic_zero();
 	if (lf)
 		binmode();
-	else
-		basic_clear();
 
 	pthread_t pth;	// this is our thread identifier
 

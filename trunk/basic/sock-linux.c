@@ -130,3 +130,56 @@ void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
 			wckPosSend(i,SpeedLevel,TargetArray[i]);
 	}
 }
+
+void  Acc_GetData ()
+{
+	char buff[64];
+	sprintf(buff, "X$");
+	x_value = testsocket(buff);
+	sprintf(buff, "Y$");
+	y_value = testsocket(buff);
+	sprintf(buff, "Z$");
+	z_value = testsocket(buff);
+	return;
+}
+
+int Get_AD_PSD()
+{
+	char buff[64];
+	sprintf(buff, "PSD$");
+	gDistance = testsocket(buff);
+	return 0;
+}
+
+int irGetByte()
+{
+	char buff[64];
+	sprintf(buff, "IR$");
+	return testsocket(buff);
+}
+
+void leds_buttons()
+{
+	char buff[64];
+	int  v;
+
+	if (simflg==0) return;
+
+	v=  ((PORTA&(1<<6) != 0)?  1:0) + //  PA6 RUN G
+		((PORTA&(1<<5) != 0)?  2:0) + //  PA5 RUN b
+		((PORTC&(1<<7) != 0)?  4:0) + //  PC7 PWR R
+		((PORTG&(1<<2) != 0)?  8:0) + //  PG2 PWR G
+		((PORTA&(1<<7) != 0)? 16:0) + //  PA7 ERROR R
+		((PORTA&(1<<3) != 0)? 32:0) + //  PA3 PF1 R
+		((PORTA&(1<<2) != 0)? 64:0) + //  PA2 PF1 B
+		((PORTA&(1<<4) != 0)?128:0);  //  PA4 Pf2 O
+
+
+	sprintf(buff, "H:%d",v);
+	//v = testsocket(buff);
+
+	//	input; PA0=PF1, PA1=PF2
+	if (v&1==1) PORTA |= 1;
+	if (v&2==2) PORTA |= 2;
+}
+

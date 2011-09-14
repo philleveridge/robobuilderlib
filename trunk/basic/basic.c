@@ -1612,6 +1612,11 @@ void basic_run(int dbf)
 		}
 
 		line = readln(buf);
+		if (line.lineno==0)
+		{
+			rprintf("End\r\n");
+			return;
+		}
 		
 		tc = nextchar();	// terminator character ?
 		
@@ -2500,7 +2505,7 @@ void basic_zero()
 {
 	// Set Init pointer to Zero
 	int i;	
-	uint8_t data= 0xFF; 				// start of program byte	
+	uint8_t data= 0x00; 				// start of program byte
 			
 	for (i=0; i<EEPROM_MEM_SZ; i++) 	
 	{

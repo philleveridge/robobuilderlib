@@ -228,8 +228,13 @@ line_t readln2(char *bp)
 
 line_t readln(char *bp)
 {
+	line_t r;
+	r.lineno=0;
+
+	if (nextchar()==0xCC) return r;
+
 	while (1) {
-		line_t r = readln2(bp);
+		r = readln2(bp);
 		if (r.lineno!=0 || nextchar()==0xcc)
 			return r;
 	}
