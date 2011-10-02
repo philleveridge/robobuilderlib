@@ -2,8 +2,11 @@
 
 #define uint16_t unsigned int
 #define uint8_t  unsigned char
+#define WORD  unsigned int
+#define BYTE  unsigned char
 #define EEMEM
 #define prog_char char
+
 #define PINA _port[0]
 #define PINB _port[1]
 #define PINC _port[2]
@@ -21,6 +24,10 @@ char _port[8];
 #define PORTE _port[4]
 #define PORTF _port[5]
 #define PORTG _port[6]
+
+#define SDATASZ 32
+#define RUN_LED1_ON
+#define RUN_LED1_OFF
 
 #define rprintf			printf 
 
@@ -44,4 +51,21 @@ const unsigned char  basic18[];
 const unsigned char  basic16[];
 int  offset[];
 extern int PP_mtype;
+
+extern int z_value;
+extern int y_value;
+extern int x_value;
+extern int gVOLTAGE;
+extern int gDistance;
+
+extern volatile WORD    gMSEC;
+extern volatile BYTE    gSEC;
+extern volatile BYTE    gMIN;
+extern volatile BYTE    gHOUR;
+extern volatile WORD    gSEC_DCOUNT;
+extern volatile WORD    gMIN_DCOUNT;
+
+extern volatile BYTE	MIC_SAMPLING;
+
+
 void PlayPose(int d, int s, int f, unsigned char data[], int n);

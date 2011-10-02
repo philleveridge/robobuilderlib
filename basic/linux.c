@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <termio.h>
 #include <fcntl.h>
+#include <math.h>
 
 #include "main.h"
 #include "linux.h"
@@ -31,12 +32,16 @@ int uartGetByte() {
     return -1;
 }
 
-int initIO() {
 
-  void sigcatch();       /* what to do if a signal is caught */
-  int nrd;               /* number of bytes read */
-  int i;
+/* interrupt handler on ctrl-C */
+void sigcatch() {
+  ioctl(0,TCSETAF,&savetty); /* restore the original terminal */
+  printf("Exit - you typed control - C\n");
+  exit(1);
+}
 
+void initIO()
+{
   signal(SIGINT,sigcatch); /* if a ctrl-C is received, do this */
 
   if (ioctl(0,TCGETA,&savetty) == -1)    { /* save the original terminal */
@@ -60,23 +65,16 @@ int initIO() {
 
 }
 
-/* interrupt handler on ctrl-C */
-void sigcatch() {
-  ioctl(0,TCSETAF,&savetty); /* restore the original terminal */
-  printf("Exit - you typed control - C\n");
-  exit(1);
-}
-
-
 //int  PP_mtype=4;
 
-void  lights(int n) {
-	DBO(printf ("LIN: Lights %d\n",n);)
+
+//4, 8, 16,32,64
+void  lights(int n) // power bar meter!
+{
+	int range[5] = {4,8,16,32,64};
+	blights(n, range);
 }
 
-void  blights(int n, int *a) {
-	DBO(printf ("LIN: Lights %d [%d,%d,%d,%d,%d]\n",n,a[0], a[1], a[2], a[3], a[4]);)
-}
 
 
 void wckGetByte()			{}
@@ -97,17 +95,17 @@ void Sleep(long ms)
 void SendToSoundIC(int n)	{DBO(printf ("LIN: Play Sound %d\n", n);)}
 
 /* eeprom */
-void			eeprom_read_block (unsigned char *b, char *d, int l)		{int i=0; for(i=0; i<l;i++) *b++=*d++;}
-unsigned int	eeprom_read_word  (unsigned char *p)
+void			eeprom_read_block (BYTE *b, char *d, int l)		{int i=0; for(i=0; i<l;i++) *b++=*d++;}
+unsigned int	eeprom_read_word  (BYTE *p)
 {
-	unsigned int r= (unsigned char)(*p) ;
-	r += (((unsigned char)*(p+1))<<8);
+	unsigned int r= (BYTE)(*p) ;
+	r += (((BYTE)*(p+1))<<8);
 	return r;
 }
-unsigned char	eeprom_read_byte  (unsigned char *p) 					{return *p;}
-void			eeprom_write_block(char *d, unsigned char *b, int l) 	{int i=0; for(i=0; i<l;i++) *b++=*d++;}
-void			eeprom_write_word (unsigned char *b, unsigned int  w) 	{*b=w%256; *(b+1)=w/256;}
-void			eeprom_write_byte (unsigned char *b, unsigned char c) 	{*b=c;}
+BYTE	eeprom_read_byte  (BYTE *p) 					{return *p;}
+void	eeprom_write_block(char *d, BYTE *b, int l) 	{int i=0; for(i=0; i<l;i++) *b++=*d++;}
+void	eeprom_write_word (BYTE *b, unsigned int  w) 	{*b=w%256; *(b+1)=w/256;}
+void	eeprom_write_byte (BYTE *b, BYTE c) 			{*b=c;}
 
 /* sensors */
 int z_value=0;
@@ -116,7 +114,7 @@ int x_value=0;
 int gVOLTAGE=10000;
 int gDistance=35;
 
-BYTE	MIC_SAMPLING=1;
+BYTE	volatile MIC_SAMPLING=1;
 
 BYTE    MIC_LEVEL=0;
 WORD    MIC_DLY=0;
@@ -126,7 +124,7 @@ BYTE    MIC_NOS=SDATASZ;
 
 int sDcnt=0;
 
-unsigned char sData[64];
+BYTE sData[64];
 int offset[32];
 
 void PSD_off() {}
@@ -135,15 +133,15 @@ void sample_sound(int n){DBO(printf ("LIN: Sample sound %d\n", n);)}
 void sound_init()		{DBO(printf ("LIN: Sound init\n");)}
 int Get_VOLTAGE()		{return 0;}
 
+void  Acc_init(void) {}
 
-extern int readXYZ();
+int adc_mic()		{return 0;}
 
-void  Acc_init    (void) {}
-
-int adc_mic()			{return 0;}
-
-int sqrt(int x) {return 0;}
-
+int Sqrt(int x)
+{
+	double f= sqrt((double)x);
+	return (int)f;
+}
 
 
 /* priotf  */
@@ -162,21 +160,12 @@ void delay_ms(int x)
 void chargemode() {DBO(printf ("LIN: chargemode\n"); )}
 
 
-void  I2C_read    (int addr, int ocnt, BYTE * outbuff, int icnt, BYTE * inbuff) 
-{
-	printf ("LIN: I2C read %d\n", addr);
-}
-int   I2C_write   (int addr, int ocnt, BYTE * outbuff)  
-{
-	printf ("LIN: I2C write %d\n", addr);
-	return 0;
-}
 int   cbyte       (BYTE b) {return b>127?b-256:b;}
 
 
 extern char FIRMWARE[64];  
 
-extern unsigned char BASIC_PROG_SPACE[];
+extern BYTE BASIC_PROG_SPACE[];
 
 volatile WORD    gMSEC;
 volatile BYTE    gSEC;
@@ -203,7 +192,7 @@ int binmode2()
               n = n<<4;
               if (ch >= '0' && ch <= '9') n += (ch-'0');
               if (ch >= 'A' && ch <= 'F') n += (ch-'A'+10);
-              BASIC_PROG_SPACE[i++] = (unsigned char)n;
+              BASIC_PROG_SPACE[i++] = (BYTE)n;
 
        }
        fclose(fp);
@@ -215,16 +204,15 @@ extern uint16_t psize; // points to next elemt
 void binstore()
 {
     FILE *fp;
-    int ch;
-    int i=0,n=0;
     char *dig="0123456789ABCDEF";
+    int i;
 
 	if ((fp = fopen("bindata.txt", "w")) == 0)
 			return;
 
 	while (i<psize+4)
 	{
-		unsigned char c= BASIC_PROG_SPACE[i++];
+		BYTE c= BASIC_PROG_SPACE[i++];
 		fputc(*(dig+(c/16)),fp);
 		fputc(*(dig+(c%16)),fp);
 	}
@@ -334,7 +322,7 @@ void *monitor_proc(void *arg)
 }
 
 
-int main(int argc, char *argv[])
+void main(int argc, char *argv[])
 {
 	int lf=0;
 	int sf=0;

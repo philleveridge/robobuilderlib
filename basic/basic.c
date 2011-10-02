@@ -21,6 +21,18 @@ $Revision$
 #include "rprintf.h"
 #include "math.h"
 #include "wckmotion.h"
+
+// Standard Input/Output functions
+
+#include "main.h"
+#include "global.h"
+#include "macro.h"
+
+#include "adc.h"
+#include "ir.h"
+#include "accelerometer.h"
+
+#define Sqrt sqrt
 #endif
 
 #ifdef WIN
@@ -32,17 +44,7 @@ $Revision$
 #endif
 
 
-// Standard Input/Output functions
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "main.h"
-#include "global.h"
-#include "macro.h"
 
-#include "adc.h"
-#include "ir.h"
-#include "accelerometer.h"
 #include "edit.h"
 
 #define MAX_LINE  		130 
@@ -54,9 +56,9 @@ $Revision$
 
 /***********************************/
 
-uint8_t EEMEM FIRMWARE        [64];  		// leave blank - used by Robobuilder OS
-uint8_t EEMEM BASIC_PROG_SPACE[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
-uint8_t EEMEM PERSIST[256];                     // persistent data store
+BYTE EEMEM FIRMWARE        	[64];  		// leave blank - used by Robobuilder OS
+BYTE EEMEM BASIC_PROG_SPACE	[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
+BYTE EEMEM PERSIST			[256];                     // persistent data store
 
 extern void Perform_Action	(BYTE action);
 extern int	getHex			(int d);
@@ -78,6 +80,7 @@ extern int chargemode();
 int   fix_fftr(int f[], int m, int inverse);
 void  lights(int n); 
 extern BYTE cpos[];
+extern WORD send_hex_str(char *bus_str, int n);
 
 extern BYTE				sData[];
 extern int 				sDcnt;
@@ -340,7 +343,7 @@ int readLine(char *line)
 
 int execute(line_t line, int f);
 int fnptr[26];
-extern uint16_t psize;
+extern WORD psize;
 
 void basic_load(int tf)
 {	
@@ -514,6 +517,7 @@ void basic_load(int tf)
 			break;
 		case PRINT:
 		    if (*cp=='#') { newline.var=1; cp++;}
+		    if (*cp=='@') { newline.var=2; cp++;}
 			newline.text=cp;
 			break;
 		case MOVE:	
@@ -808,8 +812,8 @@ void set_bit(int p, int b, int n)
 {
 	//rprintf ("Debug - set to port:%d:%d = %d\r\n", p ,b, n);
 	
-	volatile uint8_t *port;
-	uint8_t mask;
+	volatile BYTE *port;
+	BYTE mask;
 	
 	if (b<0 || b>8) return;
 		
@@ -998,7 +1002,7 @@ int get_special(char **str, int *res)
 			{
 				m += (scene[v]*scene[v]);
 			}
-			v=sqrt(m);
+			v=Sqrt(m);
 		}
 		break;
 	case sGX:
@@ -1059,7 +1063,7 @@ int get_special(char **str, int *res)
 		v=0; 
 		if (getArg(str,&v))
 		{
-			v = sqrt(v);
+			v = Sqrt(v);
 		}
 		break;
 	case sSIN: // $SQRT(x)
@@ -1089,7 +1093,7 @@ int get_special(char **str, int *res)
 			(*str)++;
 			if (getArg(str,&v))
 			{
-				v = eeprom_read_byte((uint8_t*)(PERSIST+v));
+				v = eeprom_read_byte((BYTE*)(PERSIST+v));
 			}
 		}
 		else
@@ -1101,14 +1105,14 @@ int get_special(char **str, int *res)
 				int i;
 				nis = v;
 				for (i=0;i<nis;i++)
-					scene[i] = eeprom_read_byte((uint8_t*)(PERSIST+i));
+					scene[i] = eeprom_read_byte((BYTE*)(PERSIST+i));
 			}
 		}
 		else
                 {
 			if (getArg(str,&v))
 			{
-				v = eeprom_read_byte((uint8_t*)(FIRMWARE+v));
+				v = eeprom_read_byte((BYTE*)(FIRMWARE+v));
 			}
 		}
 		break;
@@ -1578,7 +1582,7 @@ void basic_run(int dbf)
 	//   Execute action
 	// Loop
 
-	uint8_t tmp=0;	
+	BYTE tmp=0;
 	line_t line;
 	char buf[MAX_LINE];
 	
@@ -1656,7 +1660,7 @@ int execute(line_t line, int dbf)
 	//   Get token
 	//   Execute action
 	//	 Move to next line
-	uint8_t tmp=0;
+	BYTE tmp=0;
 	char *p;			
 	int n;
 
@@ -1730,7 +1734,7 @@ int execute(line_t line, int dbf)
 			if (eval_expr(&p, &n)==NUMBER)
 			{
 				// put result into address line.var
-				uint8_t addr=line.var;
+				BYTE addr=line.var;
                                 if (f)
 				   eeprom_write_byte(FIRMWARE+addr, n);
                                 else
@@ -1824,6 +1828,13 @@ int execute(line_t line, int dbf)
 			case STRING:
 				n=str_expr(p);
 				if (line.var==1)
+				{
+					WORD w=send_hex_str(p, n);
+					scene[0]=w/256;
+					scene[1]=w%256;
+					nis=2;
+				}
+				else if (line.var==2)
 				{
 					send_bus_str(p, n);
 				}
@@ -2471,7 +2482,7 @@ int execute(line_t line, int dbf)
 					rprintf ("%d) = (%d %d) %d\r\n", i, 
 						(int)scene[i],  
 						(int)scene[nis+i], 
-						(int)sqrt((scene[i]*scene[i]) + (scene[nis+i]*scene[nis+i])));
+						(int)Sqrt((scene[i]*scene[i]) + (scene[nis+i]*scene[nis+i])));
 				}
 
 			}
@@ -2482,7 +2493,7 @@ int execute(line_t line, int dbf)
 
 			for (i=0; i<nis; i++)
 			{
-				scene[i]=(int)sqrt((scene[i]*scene[i]) + (scene[nis+i]*scene[nis+i])); //power
+				scene[i]=(int)Sqrt((scene[i]*scene[i]) + (scene[nis+i]*scene[nis+i])); //power
 			}
 
 		}
@@ -2505,7 +2516,7 @@ void basic_zero()
 {
 	// Set Init pointer to Zero
 	int i;	
-	uint8_t data= 0x00; 				// start of program byte
+	BYTE data= 0x00; 				// start of program byte
 			
 	for (i=0; i<EEPROM_MEM_SZ; i++) 	
 	{
@@ -2525,7 +2536,7 @@ void dump(int sz)
 		rprintf ("%x ", i);
 		for (j=0; j<sz;  j++)
 		{
-			uint8_t data = eeprom_read_byte((uint8_t*)(BASIC_PROG_SPACE+i+j));
+			BYTE data = eeprom_read_byte((BYTE*)(BASIC_PROG_SPACE+i+j));
 			rprintf ("%x ", data);
 			if (sz==8) {if (data>27 && data<127) asciis[j]=data; else asciis[j]='.';}
 		}
@@ -2549,7 +2560,7 @@ void dump_firmware()
 		rprintf ("%x ", i);
 		for (j=0; j<8;  j++)
 		{
-			uint8_t data = eeprom_read_byte((uint8_t*)(FIRMWARE+i+j));
+			BYTE data = eeprom_read_byte((BYTE*)(FIRMWARE+i+j));
 			rprintf ("%x ", data);
 			if (data>27 && data<127) asciis[j]=data; else asciis[j]='.';
 		}
@@ -2564,7 +2575,7 @@ void basic_list()
 	line_t line;
 	char buf[MAX_LINE];
 
-	uint8_t tmp=0;
+	BYTE tmp=0;
 	nxtline = 0;	
 
 	rprintfStr("List Program \r\n");
@@ -2619,6 +2630,9 @@ void basic_list()
 			
 		if (line.token==PRINT && line.var==1)
 			rprintf ("# ");
+
+		if (line.token==PRINT && line.var==2)
+			rprintf ("@ ");
 			
 		if (line.token==IF)
 		{
@@ -2704,7 +2718,7 @@ void basic_list()
 #define MAX_INP_BUF 	40
 #define PROTOCOL_ERROR	01
 
-void SendResponse(char mt, uint8_t d)
+void SendResponse(char mt, BYTE d)
 {
 	PWR_LED1_ON;
 	rprintfChar(MAGIC_RESPONSE);

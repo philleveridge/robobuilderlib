@@ -4,6 +4,8 @@
 #include <termios.h>
 #include <stdio.h>
 
+#include "linux.h"
+
 int fd = -1;
 
 struct termios oldtio,newtio;
@@ -201,8 +203,77 @@ void wckWriteIO(unsigned char ServoID, unsigned char IO)
 
 	pthread_mutex_unlock( &cs_mutex );
 
+	return;
+}
+
+
+void  I2C_read    (int addr, int ocnt, BYTE * outbuff, int icnt, BYTE * inbuff)
+{
+	printf ("LINR: I2C read %d\n", addr);
+	//tbc
+	//wckReadPos(30,13) + addr + nbytes +[bytes]
+	//response cnt [buf]
+	//
+}
+
+int   I2C_write   (int addr, int ocnt, BYTE * outbuff)
+{
+	printf ("LINR: I2C write %d\n", addr);
+	//tbc
+	//wckReadPos(30,14); + addr + nbytes +[bytes]
+	//response (b1 & b2)
 	return 0;
 }
+
+//i.e. 10,33,50,66,90
+void  blights(int n, int *vals)
+{
+	DBO(printf ("LINR: Lights %d [%d,%d,%d,%d,%d]\n",n,vals[0], vals[1], vals[2], vals[3], vals[4]);)
+	BYTE a=0x20,b=0x30;
+
+	if (n > vals[0])   b |= 1;
+	if (n > vals[1])   a |= 2;
+	if (n > vals[2])   a |= 1;
+	if (n > vals[3])   a |= 4;
+	if (n > vals[4])   a |= 8;
+
+	MIC_SAMPLING=0;
+	wckReadPos(30,9); //set mic sampling off
+
+	wckReadPos(30,a); //set lights 1-4
+	wckReadPos(30,b); //set lights 5-8
+
+	DBO(printf ("LINR: Lights a=%d, b=%d\n",a,b);)
+}
+
+WORD send_hex_str(char *bus_str, int n)
+{
+		BYTE b1,b2;
+		WORD r=0;
+		char *eos = bus_str+n;
+
+		while  ((bus_str<eos) && *bus_str != 0)
+		{
+			b1=0;
+			if ((*bus_str>='0') && (*bus_str<='9')) b1 = *bus_str-'0' ;
+			if ((*bus_str>='A') && (*bus_str<='Z')) b1 = *bus_str-'A' + 10 ;
+			bus_str++;
+			b1 <<=4;
+			if ((*bus_str>='0') && (*bus_str<='9')) b1 += *bus_str-'0' ;
+			if ((*bus_str>='A') && (*bus_str<='Z')) b1 += *bus_str-'A' + 10 ;
+			bus_str++;
+			DBO(printf ("LINR: SEND WCK HEX %x\n",b1);)
+			writebyte(b1);
+		}
+
+		b1=readbyte();
+		b2=readbyte();
+		r = ((0xFF&b1)<<8) | (0xFF&b2);
+
+		return r;
+}
+
+
 
 /**************************************************************************************
 
