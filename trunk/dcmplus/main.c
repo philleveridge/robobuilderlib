@@ -29,11 +29,9 @@ extern int 	sDcnt;
 extern void sample_sound(int);
 extern volatile BYTE   MIC_SAMPLING;
 
-//defined femto.c
 void printint(int);
 void printline(char *c);
 
-//defined battery.c
 extern BYTE F_PS_PLUGGED;
 extern void delay_ms(int);
 extern void BreakModeCmdSend(void);
@@ -54,6 +52,16 @@ BYTE	gFileCheckSum;
 BYTE	gCMD;
 volatile BYTE	PLAY_SOUND;
 
+BYTE    gMODE=0;   // ASCIImode = 1;
+BYTE    gASCIIs=0; //start char '#' recognised
+BYTE    gASCIIn=0; //input nibble flah (H/L) 
+BYTE	gASCIIb=0; //input byte 
+BYTE	gASCIIt=0; //output tuple flag (H/L)
+
+BYTE    gNHB=0;
+
+int dbg=0;
+
 //------------------------------------------------------------------------------
 // UART1 Transmit  Routine
 //------------------------------------------------------------------------------
@@ -69,18 +77,43 @@ void putch(char c)
 	putByte(c);
 }
 
+void putHex(BYTE b)
+{
+	BYTE t=b/16;
+	if (t<10) putch(t+'0'); else putch(t-10+'A');
+	t=b%16;
+	if (t<10) putch(t+'0'); else putch(t-10+'A');
+}
+
 //------------------------------------------------------------------------------
 // UART0 wCK Receive Interrupt Routine
 //------------------------------------------------------------------------------
 ISR(USART0_RX_vect) // interrupt [USART0_RXC] void usart0_rx_isr(void)
 {
-	RUN_LED1_ON;
-	
-    char	data;	
+
+        char	data;	
 	data = UDR0;		// get the data
-	
-	while ( (UCSR1A & DATA_REGISTER_EMPTY) == 0 );
-	UDR1 = data;
+
+	if (gMODE)
+	{
+		if (gASCIIt==0)
+		{
+			putByte('#');
+		}
+
+		putHex(data);
+
+		if (gASCIIt==1)
+		{
+			putByte(13);
+			putByte(10);
+		}
+		gASCIIt=1-gASCIIt;
+	}
+	else
+	{
+		putByte(data);
+	}
 	return;
 }
 
@@ -99,16 +132,75 @@ BYTE 	outbc;
 BYTE	gCNT;
 BYTE	gAddr;
 
+
 void SendToSoundIC(BYTE cmd) ;
 
 ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 {
-	if (CHK_BIT5(PORTA))  RUN_LED1_ON; else RUN_LED1_OFF; 
+        gRxData = UDR1;	
 
-    gRxData = UDR1;
-	
+        if (gMODE)
+	{
+		//ASCII MODE
+		//#FF001234 etc
+                if (gASCIIs==0 && (gRxData !='#'))
+		{
+			if (dbg) putByte('.');
+			return; //ignore 
+		}
+
+                if (gASCIIs==0 && (gRxData =='#'))
+		{
+			// start
+			gASCIIs=1;
+			if (dbg) putByte('#');
+			return;
+		}
+                if (gASCIIs==1 && ((gRxData ==10) || (gRxData ==13) ))
+		{
+			//end
+			gASCIIs=0;
+			if (dbg) { putByte('='); putByte(13); putByte(10);}
+			return;
+		}
+
+                if (gASCIIs==1 && gASCIIn==0)
+		{
+			if (dbg) putByte('o');
+
+			if (gRxData>='0' && gRxData<='9') 
+				gASCIIb=gRxData-48;
+			else if (gRxData>='A' && gRxData<='F') 
+				gASCIIb=gRxData-55;
+			else
+				gASCIIb=0;
+
+			gASCIIb=gASCIIb<<4;
+			gASCIIn=1;
+			return;		
+		}
+
+                if (gASCIIs==1 && gASCIIn==1)
+		{
+			if (dbg) putByte('O');
+
+			if (gRxData>='0' && gRxData<='9') 
+				gASCIIb += (gRxData-48);
+			if (gRxData>='A' && gRxData<='F') 
+				gASCIIb += (gRxData-55);
+			else
+				gASCIIb=0;
+
+			gASCIIn=0;
+			gRxData=gASCIIb; // have byte to send
+		}
+	}
+
+
 	while( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
-	UDR0 = gRxData;
+	UDR0 = gRxData; //proxy to wck BUS
+
+	if (dbg) {if (CHK_BIT5(PORTA))  RUN_LED1_ON; else RUN_LED1_OFF; } // 
 		
 	if(gRxData == 0xff){
 		gRx1_DStep = 1;
@@ -162,7 +254,7 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 			}			
 			break;
 		case 3:
-			PF1_LED1_ON;
+			if (dbg) PF1_LED1_ON;
 			if(gRxData == (gFileCheckSum & 0x7f))
 			{
 				// Depends on gGMD		
@@ -174,6 +266,36 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					gCMD=0;
 					return;
 				}
+
+				if ((gCMD>=0x20 && gCMD<=0x27) || (gCMD>=0x30 && gCMD<=0x37) )
+				{
+  					//Switch LED ON or OFF
+					if (gCMD>=0x20 && gCMD<=0x2F)
+					{
+						if ((gCMD&1)==1) RUN_LED2_ON; else RUN_LED2_OFF;
+						if ((gCMD&2)==2) RUN_LED1_ON; else RUN_LED1_OFF;
+						if ((gCMD&4)==4) PWR_LED1_ON; else PWR_LED1_OFF;
+						if ((gCMD&8)==8) PWR_LED2_ON; else PWR_LED2_OFF;
+					}
+
+					if (gCMD>=0x30 && gCMD<=0x3F)
+					{
+						if ((gCMD&1)==1) ERR_LED_ON;  else ERR_LED_OFF;
+						if ((gCMD&2)==2) PF1_LED1_ON; else PF1_LED1_OFF;
+						if ((gCMD&4)==4) PF1_LED2_ON; else PF1_LED2_OFF;
+						if ((gCMD&8)==8) PF2_LED_ON;  else PF2_LED_OFF;
+					}
+
+					b1 =    (((PORTA&(1<<6)) != 0)?  1:0) + //  PA6 RUN G
+						(((PORTA&(1<<5)) != 0)?  2:0) + //  PA5 RUN b
+						(((PORTC&(1<<7)) != 0)?  4:0) + //  PC7 PWR R
+						(((PORTG&(1<<2)) != 0)?  8:0) + //  PG2 PWR G
+						(((PORTA&(1<<7)) != 0)? 16:0) + //  PA7 ERROR R
+						(((PORTA&(1<<3)) != 0)? 32:0) + //  PA3 PF1 R
+						(((PORTA&(1<<2)) != 0)? 64:0) + //  PA2 PF1 B
+						(((PORTA&(1<<4)) != 0)?128:0);  //  PA4 Pf2 O
+				}
+
 				switch (gCMD)
 				{
 				case 0x00:
@@ -239,7 +361,6 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					lights(b1);
 					break;	
 				case 0x0D:
-					PF2_LED_ON; //yellow
 					{
 						BYTE inb[10];
 						int icnt=outb[0];
@@ -253,7 +374,6 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 					}
 					break;
 				case 0x0E:
-					PF2_LED_ON; //yellow
 					b1=I2C_write (gAddr, gCNT, outb) ;
 					b2=0;
 					break;	
@@ -289,6 +409,24 @@ ISR(USART1_RX_vect) // interrupt [USART1_RXC] void usart1_rx_isr(void)
 						}
 					}
 					break;
+				case 0x11: // Lights
+					b1 =    (((PORTA&(1<<6)) != 0)?  1:0) + //  PA6 RUN G
+						(((PORTA&(1<<5)) != 0)?  2:0) + //  PA5 RUN b
+						(((PORTC&(1<<7)) != 0)?  4:0) + //  PC7 PWR R
+						(((PORTG&(1<<2)) != 0)?  8:0) + //  PG2 PWR G
+						(((PORTA&(1<<7)) != 0)? 16:0) + //  PA7 ERROR R
+						(((PORTA&(1<<3)) != 0)? 32:0) + //  PA3 PF1 R
+						(((PORTA&(1<<2)) != 0)? 64:0) + //  PA2 PF1 B
+						(((PORTA&(1<<4)) != 0)?128:0);  //  PA4 Pf2 O
+					b2 = PINA & 0x03;
+					break;
+				case 0x12: // Lights off
+					gNHB=0;
+					break;
+				case 0x13: // Lights on
+					gNHB=1;
+					break;
+
 				}				
 				putByte(b1);
 				putByte(b2);
@@ -489,7 +627,7 @@ void HW_init(void) {
 //------------------------------------------------------------------------------
 void SW_init(void) {
 
-	PF1_LED1_OFF;			// LED states
+	PF1_LED1_OFF;		// LED states
 	PF1_LED2_OFF;
 	PF2_LED_OFF;
 	PWR_LED1_OFF;
@@ -499,10 +637,13 @@ void SW_init(void) {
 	ERR_LED_OFF;
 
 	PSD_OFF;                // PSD distance sensor off
+
+	gNHB=1; 		//heart beat on
 }
 
 #define PF1_BTN_PRESSED 1
 #define PF2_BTN_PRESSED 3
+#define ASCIIMODE       5
 
 BYTE	gBtn_val;
 WORD	gBtnCnt;
@@ -528,6 +669,14 @@ void ReadButton(void)
 			gBtn_val = PF2_BTN_PRESSED;
 		}
 	}
+	if((PINA&3) == 0)  // both button held down (low)
+	{
+		delay_ms(0);
+		if((PINA&3) == 0)
+		{
+			gBtn_val = ASCIIMODE;
+		}
+	}
 } 
 
 
@@ -538,12 +687,20 @@ void ReadButton(void)
 void ProcButton(void)
 {
 	int cnt;
+
+	if(gBtn_val == ASCIIMODE)
+	{
+		gBtn_val = 0;
+		printline("#ASCII MODE");
+		printline(ver);
+		gMODE=1; // set ascii mode -> all input/output as strings
+		gNHB=0;
+	}
 	
 	if(gBtn_val == PF1_BTN_PRESSED)
 	{
 		//look to see if PF2 held down
-		gBtn_val = 0;
-		
+		gBtn_val = 0;		
 		printline(ver);
 		printline("charge mode - testing");
 		
@@ -750,7 +907,7 @@ int main(void)
 	UCSR0B &= 0xBF;
 	
 	//default sampling ON
-	sample_sound(1);
+	sample_sound(gNHB);
 	
 	//ir
 	gIRReady = FALSE;		// clear IR vales
