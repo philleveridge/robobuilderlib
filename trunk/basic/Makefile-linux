@@ -28,7 +28,7 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 
 ## Linker flags
 #LDFLAGS = $(COMMON)
-LDFLAGS +=  -Wl,-Map=RBASIC.map -lpthread
+LDFLAGS +=  -Wl,-Map=RBASIC.map -lpthread -lm
 
 
 ## Intel Hex file production flags

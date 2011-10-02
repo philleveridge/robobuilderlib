@@ -917,6 +917,30 @@ void send_bus_str(char *bus_str, int n)
 		wckFlush(); // flush the buffer
 }
 
+WORD send_hex_str(char *bus_str, int n)
+{
+		BYTE b1,b2;
+		WORD r=0;
+		int ch;
+		char *eos = bus_str+n;
+
+		while  ((bus_str<eos) && *bus_str != 0)
+		{
+			b1=0;
+			if ((*bus_str>='0') && (*bus_str<='9')) b1 = *bus_str-'0' ;
+			if ((*bus_str>='A') && (*bus_str<='Z')) b1 = *bus_str-'A' + 10 ;
+			bus_str++;
+			b1 <<=4;
+			if ((*bus_str>='0') && (*bus_str<='9')) b1 += *bus_str-'0' ;
+			if ((*bus_str>='A') && (*bus_str<='Z')) b1 += *bus_str-'A' + 10 ;
+			wckSendByte(b1);
+		}
+
+		r = ((0xFF&wckGetByte(25))<<8) | (0xFF&wckGetByte(25));
+		return r;
+}
+
+
 /************************************************************************/
 //
 // Support for sound chip
