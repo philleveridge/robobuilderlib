@@ -25,15 +25,17 @@ volatile WORD	gPwrLowCount;
 
  //main.c
 extern void putByte();			
-
-//femto.c
 extern void printline(char *c);  
 extern void printint(int);  	
 extern void printstr(char*);	
 extern void printnumber(int n, int w, char pad)  ;
+extern BYTE gNHB;
 
 //adc.c
 extern BYTE	gAD_Ch_Index;
+
+
+
 void ADC_set(BYTE );
 
 //------------------------------------------------------------------------------
@@ -65,6 +67,9 @@ void heart()
 	// 1000 ms 
 	// 0-200 ms PF1 LED ON  200-400 ms PF2 LED on
 	// else off
+
+	if(!gNHB) return;
+
 	if (g10MSEC<200)
 	{
 		PF1_LED1_ON;    
@@ -109,11 +114,6 @@ ISR(TIMER0_OVF_vect)
 		//every 4ms
 		gAD_Ch_Index = MIC_CH;		
 		ADC_set(ADC_MODE_SINGLE);
-	}
-
-	if (MIC_SAMPLING && g10MSEC%250==0)
-	{
-		//Get_AD_PSD();
 	}
 
 	heart();
@@ -261,9 +261,9 @@ void SelfTest1(void)
 	PWR_LED2_ON;	delay_ms(60);	PWR_LED2_OFF;
 	RUN_LED1_ON;	delay_ms(60);	RUN_LED1_OFF;
 	RUN_LED2_ON;	delay_ms(60);	RUN_LED2_OFF;
-	ERR_LED_ON;		delay_ms(60);	ERR_LED_OFF;
+	ERR_LED_ON;	delay_ms(60);	ERR_LED_OFF;
 
-	PF2_LED_ON;		delay_ms(60);	PF2_LED_OFF;
+	PF2_LED_ON;	delay_ms(60);	PF2_LED_OFF;
 	PF1_LED2_ON;	delay_ms(60);	PF1_LED2_OFF;
 	PF1_LED1_ON;	delay_ms(60);	PF1_LED1_OFF;
 }
