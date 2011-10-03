@@ -328,6 +328,8 @@ extern int z_value,y_value,x_value,gDistance;
 	   if (irvalue<0) irvalue=t;
 	   else if (t>=0) irvalue=t;
 	   t = CB2I(response[1]);
+	   PINA = t;
+
 	   return;
    }
 

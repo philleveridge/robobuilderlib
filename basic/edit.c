@@ -16,20 +16,23 @@
 #include <stdio.h>
 #include "edit.h"
 
-extern uint8_t EEMEM BASIC_PROG_SPACE[];  // this is where the tokenised code will be stored
+#define WORD  unsigned int
+#define BYTE  unsigned char
+
+extern BYTE EEMEM BASIC_PROG_SPACE[];  // this is where the tokenised code will be stored
 extern int strlen(char *p);
 
-uint16_t psize   =0; // points to next elemt
-uint16_t lastline=0; // 
-uint16_t pll     =0; // 
-uint16_t nxtline =0;
+WORD psize   =0; // points to next elemt
+WORD lastline=0; //
+WORD pll     =0; // previous last line
+WORD nxtline =0;
 
 //insert newline into BASIC_PROG_SPACE
 
 void insertln(line_t newline)
 {
-	uint8_t l=0;
-	uint8_t nxt=0;
+	BYTE l=0;
+	BYTE nxt=0;
 	int srt;
 
 	if (psize==0)
@@ -37,21 +40,19 @@ void insertln(line_t newline)
 		clearln();
 	}
 
-	if ((nxt = findln(newline.lineno)))
-	{
-		//line already exists
-		printf("Edit line\r\n");
-	}
+	nxt = findln(newline.lineno);
+
+	//printf("DBG: nxt=%d psize=%d pll=%d\r\n", nxt,psize,pll);
 
 	srt=psize;
 
-	eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+psize), newline.lineno);	
+	eeprom_write_word((WORD *)(BASIC_PROG_SPACE+psize), newline.lineno);
 	psize+=2;
 	eeprom_write_byte(BASIC_PROG_SPACE+psize, newline.token);	
 	psize++;		
 	eeprom_write_byte(BASIC_PROG_SPACE+psize, newline.var);	
 	psize++;	
-	eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+psize), newline.value);	
+	eeprom_write_word((WORD *)(BASIC_PROG_SPACE+psize), newline.value);
 	psize+=2;			
 
 	if (newline.token == DATA)
@@ -65,7 +66,7 @@ void insertln(line_t newline)
 			l = strlen(newline.text);
 	}
 
-	eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+psize), psize+ l + 3);	
+	eeprom_write_word((WORD *)(BASIC_PROG_SPACE+psize), psize+ l + 3);
 	
 	psize+=2;
 
@@ -84,11 +85,11 @@ void insertln(line_t newline)
 	{
 		// pointing to before first line
 		// set to this line
-		int fl = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+1));
-		eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+1),  srt);       //top points new first line
-		eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+srt+6), fl);	//this now points to old firstline
+		int fl = (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+1));
+		eeprom_write_word((WORD *)(BASIC_PROG_SPACE+1),  srt);       //top points new first line
+		eeprom_write_word((WORD *)(BASIC_PROG_SPACE+srt+6), fl);	//this now points to old firstline
 		//need to terminate list if firstline=lastline
-		eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+pll), lastline);	
+		eeprom_write_word((WORD *)(BASIC_PROG_SPACE+pll), lastline);
 	}
 
 	if (nxt > 1)
@@ -98,14 +99,16 @@ void insertln(line_t newline)
 		if (newline.lineno == n)
 		{
 			int la;
+			printf("Edit line\r\n");
+
 			//delete currentline
 			eeprom_write_byte(BASIC_PROG_SPACE+nxt,   0);
 			eeprom_write_byte(BASIC_PROG_SPACE+nxt+1, 0);
 
 			// update
-			la  = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxt+6));	// start of line after
+			la  = (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nxt+6));	// start of line after
 			// this line to old line next
-			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+nxt+6), srt);
+			eeprom_write_word((WORD *)(BASIC_PROG_SPACE+nxt+6), srt);
 
 			if (la == srt)
 			{
@@ -113,21 +116,22 @@ void insertln(line_t newline)
 			}
 			else
 			{
-				eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+srt+6), la);	
+				eeprom_write_word((WORD *)(BASIC_PROG_SPACE+srt+6), la);
 				// last lines now to this terminator
-				eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+pll), lastline);	
+				eeprom_write_word((WORD *)(BASIC_PROG_SPACE+pll), lastline);
 			}
 		}
 		else
 		{
 			// insert
-			int la = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxt+6));	// start of line after
+			int la = (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nxt+6));	// start of line after
+			printf("Insert line\r\n");
 			//line before [nxt] need to point to [srt] line
-			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+nxt+6), srt);
+			eeprom_write_word((WORD *)(BASIC_PROG_SPACE+nxt+6), srt);
 			//this line to its next line [la]
-			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+srt+6), la);	
-			//next line [la] now to point to end 
-			eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+la+6), srt + 6 + l + 3);	
+			eeprom_write_word((WORD *)(BASIC_PROG_SPACE+srt+6), la);
+			//last line must now to point to new end
+			eeprom_write_word((WORD *)(BASIC_PROG_SPACE+pll), lastline);
 		}
 	}
 
@@ -138,7 +142,7 @@ void insertln(line_t newline)
 int getlineno(int p)
 {
 	if (p<3) return 0;
-	return (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+p));	
+	return (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+p));
 }
 
 void deleteln(int lineno)
@@ -155,12 +159,13 @@ void deleteln(int lineno)
 void clearln()
 {
 	//write header
-	uint8_t data = 0xAA; // start of program byte		
+	BYTE data = 0xAA; // start of program byte
 	eeprom_write_byte(BASIC_PROG_SPACE, data);
 	//
 	// neeed to add top pointer -> 
-	eeprom_write_word((uint16_t *)(BASIC_PROG_SPACE+1), 3 );	
+	eeprom_write_word((WORD *)(BASIC_PROG_SPACE+1), 3 );
 	psize=3;
+	pll=0;
 	//
 	eeprom_write_byte(BASIC_PROG_SPACE+psize, 0xCC);	// terminator character
 }
@@ -196,7 +201,7 @@ int findln(int lineno)
 		}
 
 		prv=nl;
-		nl=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nl+6));	
+		nl=(int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nl+6));
 	}
 	return 0;
 }
@@ -209,16 +214,16 @@ line_t readln2(char *bp)
 	line.text = bp;
 	lastline=nxtline;
 
-	line.lineno= (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxtline));	
+	line.lineno= (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nxtline));
 
 	nxtline+=2;
 	line.token = eeprom_read_byte(BASIC_PROG_SPACE+nxtline);	
 	nxtline++;		
 	line.var   = eeprom_read_byte(BASIC_PROG_SPACE+nxtline);	
 	nxtline++;	
-	line.value = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxtline));	
+	line.value = (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nxtline));
 	nxtline+=2;
-	line.next  = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nxtline));	
+	line.next  = (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nxtline));
 		
 	readtext(nxtline+2, line.text);
 
@@ -240,18 +245,18 @@ line_t readln(char *bp)
 	}
 }
 
-uint8_t nextchar()
+BYTE nextchar()
 {
 	return eeprom_read_byte(BASIC_PROG_SPACE+nxtline);	// terminator character ?
 }
 
 int firstline()
 {
-	nxtline = (int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+1));	 //top
+	nxtline = (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+1));	 //top
 	return nxtline;
 }
 
-void setline(uint16_t p)
+void setline(WORD p)
 {
 	nxtline =p;
 }
@@ -262,7 +267,7 @@ void readtext(int ln, char *b)
 	//eeprom_read_block(bp, BASIC_PROG_SPACE+nxtline+2, l);	
 	for (i=0; i<100;i++) // MAX_LINE
 	{
-		b[i] =eeprom_read_byte((uint8_t *)(BASIC_PROG_SPACE+ln+i));	
+		b[i] =eeprom_read_byte((BYTE *)(BASIC_PROG_SPACE+ln+i));
 	    if ((b[0]==0xFF && i> b[1]) || (b[0]!=0xFF && b[i]==0) )
 			break;
 	}
@@ -288,10 +293,11 @@ int findend()
 		ln=eeprom_read_byte(BASIC_PROG_SPACE+nl);					
 		if (ln == 0xCC)
 			break;	
-		nl=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nl+6));	
+		nl=(int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nl+6));
 		c++;
 	}
 	psize=nl;
+	//pll = psize-nl-3; // need to set at previous last line pointer
 	return c;
 }
 
@@ -305,7 +311,7 @@ int findnext(int nl, int v)
 		ln = eeprom_read_byte(BASIC_PROG_SPACE+nl);	
 		if (ln == 0xCC || (cmd == 13 && var==v) )
 			break;	
-		nl=(int)eeprom_read_word((uint16_t *)(BASIC_PROG_SPACE+nl+6));	
+		nl=(int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nl+6));
 	}
 	return (ln==0xCC)?0:nl;
 }
