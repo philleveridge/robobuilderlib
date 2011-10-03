@@ -517,7 +517,7 @@ void basic_load(int tf)
 			break;
 		case PRINT:
 		    if (*cp=='#') { newline.var=1; cp++;}
-		    if (*cp=='@') { newline.var=2; cp++;}
+		    if (*cp=='%') { newline.var=2; cp++;}
 			newline.text=cp;
 			break;
 		case MOVE:	
@@ -539,6 +539,7 @@ void basic_load(int tf)
 		case INSERT:
 		case DELETE:
 		case WAIT: 
+		case GET:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -1847,8 +1848,16 @@ int execute(line_t line, int dbf)
 			case ARRAY:
 				if (nis>0)
 				{
-					rprintf ("%d", scene[0]);
-					for (n=1; n<nis; n++) {rprintf (",%d",scene[n]);}
+					if (line.var==1)
+					{
+						// send to wxkbus
+						for (n=0; n<nis; n++) ; //tbd
+					}
+					else
+					{
+						rprintf ("%d", scene[0]);
+						for (n=1; n<nis; n++) {rprintf (",%d",scene[n]);}
+					}
 				}
 				else
 					rprintfStr("Null");
@@ -2496,6 +2505,19 @@ int execute(line_t line, int dbf)
 				scene[i]=(int)Sqrt((scene[i]*scene[i]) + (scene[nis+i]*scene[nis+i])); //power
 			}
 
+		}
+		break;
+	case GET:
+		//tbc
+		{
+			int ch,c=0;
+			while (ch!=10 && ch!=13)
+			{
+				while ((ch = uartGetByte())<0) ; // wait for input
+				scene[c++]=ch;
+				rprintfChar(ch);
+			}
+			nis=c-1;
 		}
 		break;
 	default:
