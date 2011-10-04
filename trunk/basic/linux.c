@@ -205,7 +205,7 @@ void binstore()
 {
     FILE *fp;
     char *dig="0123456789ABCDEF";
-    int i;
+    int i=0;
 
 	if ((fp = fopen("bindata.txt", "w")) == 0)
 			return;

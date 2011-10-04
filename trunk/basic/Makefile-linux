@@ -62,7 +62,6 @@ $(TARGET): $(OBJECTS)
 
 
 ## Clean target
-.PHONY: clean
 clean:
 	-rm -rf $(OBJECTS) Basic.elf dep/* Basic.hex Basic.eep Basic.lss Basic.map
 
