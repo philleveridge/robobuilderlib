@@ -279,6 +279,7 @@ int readLine(char *line)
 {
 	int ch=0,pch;
 	int qf=1;
+	int lf=0;
 	char *start=line;
 	
 	rprintfStr ("> ");
@@ -289,6 +290,19 @@ int readLine(char *line)
 		pch=ch;
 
 		while ((ch = uartGetByte())<0) ;
+
+		if (lf==1)
+		{
+			rprintfChar(ch);
+			if (ch>100) { *line++ = (ch/100) +'0'; }
+			ch=ch%100;
+			if (ch>10) {  *line++ = (ch/10) +'0'; }
+			*line++ = (ch%10) +'0';
+			lf=0;
+			continue;
+		}
+
+		if (ch=='`') {lf=1;rprintfChar(ch);continue;}
 
 		if (ch==9) ch=' ';
 				
@@ -311,6 +325,7 @@ int readLine(char *line)
 		}
 		
 		if (ch=='"') {qf=!qf;}
+
 			
 		if (ch >= 'a' && ch <= 'z' && qf) ch = ch-'a'+'A';  // Uppercase only
 		
@@ -566,12 +581,25 @@ void basic_load(int tf)
 				BYTE tbuff[64];
 				char *p=&line[0];
 
-				while (1)
+				if (*cp=='"')
 				{
-					int b = getNum(&cp);
-					tbuff[nob++] = b;
-					if (getNext(&cp) != ',')
-						break;
+					//i.e. DATA A="abcde"
+					nob=0;
+					cp++;
+					while (*cp != '"' && (nob<63))
+					{
+						tbuff[nob++] = *cp++;
+					}
+				}
+				else
+				{
+					while (1)
+					{
+						int b = getNum(&cp);
+						tbuff[nob++] = b;
+						if (getNext(&cp) != ',')
+							break;
+					}
 				}
 				*p++= 0xff;
 				*p++=nob;

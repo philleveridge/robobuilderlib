@@ -278,6 +278,7 @@ int findend()
 	int c=0;
 	int nl;
 	int ln;
+	int pl;
 	
 	nxtline = 0;	
 
@@ -287,17 +288,20 @@ int findend()
 	}	
 	
 	nl = firstline();
+	pl = 0;
 
 	while (nl<EEPROM_MEM_SZ)
 	{
 		ln=eeprom_read_byte(BASIC_PROG_SPACE+nl);					
 		if (ln == 0xCC)
 			break;	
+		pl=nl;
 		nl=(int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nl+6));
 		c++;
 	}
 	psize=nl;
-	//pll = psize-nl-3; // need to set at previous last line pointer
+	pll = pl+6; // need to set at previous last line pointer
+	//printf ("psize=%d pll=%d c=%d\n", psize,pll,c);
 	return c;
 }
 
