@@ -104,7 +104,8 @@ const prog_char *tokens[] ={
 	"I2CO",  "I2CI",   "STEP",   "SPEED", 
 	"MTYPE", "LIGHTS", "SORT",   "FFT",
 	"SAMPLE","SCALE",  "DATA",
-	"SET", 	"INSERT", "DELETE"
+	"SET", 	"INSERT", "DELETE",
+	"GEN",  "NETWORk"
 };
 
 char *specials[] = { 
@@ -114,7 +115,8 @@ char *specials[] = {
 		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
 		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
 		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
-		"RANGE"};
+		"RANGE", "SIG",  "DSIG"
+};
 
 
 //wait for byte or IR press
@@ -555,6 +557,8 @@ void basic_load(int tf)
 		case DELETE:
 		case WAIT: 
 		case GET:
+		case GEN:
+		case NETWORK:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -1079,6 +1083,26 @@ int get_special(char **str, int *res)
 		if (getArg(str,&v))
 		{
 			v=map[v];
+		}
+		break;
+	case sDSIG: // x*(1-x)
+		v=0;
+		if (getArg(str,&v))
+		{
+			v = v*(1-v);
+		}
+		break;
+	case sSIG:  // 1/(1-e^-x) actually 256/(1-e^(x/4))
+		v=0;
+		if (getArg(str,&v))
+		{
+			int map[40] = {
+				1,2,3,4,5,6,8,10,12,15,19,24,31,38,47,57,69,82,97,112,
+				128,144,159,174,187,199,209,218,225,232,237,241,244,246,248,250,251,252,253,254,254
+			};
+            if(v<-20) v=-20;
+            if(v>19)  v=19;
+            v=(map[v+20]-127)/4;
 		}
 		break;
 	case sABS: // $ABS(x)
@@ -2299,15 +2323,18 @@ int execute(line_t line, int dbf)
 		break;
 	case DELETE:
 		// i.e. DELETE 5
+		// or   DELETE *
+		//      DELETE 5,7
+		//      DELETE 5,*
 		{
-			int i;
+			int i,n2;
 			p=line.text;
-                        if (*p=='*')
-                        {
-                            p++;
-                            nis=0;
-            		    break;
-                        }
+			if (*p=='*')
+			{
+				p++;
+				nis=0;
+				break;
+			}
 			if (eval_expr(&p, &n)!=NUMBER)
 			{
 				errno=3; break;
@@ -2316,9 +2343,30 @@ int execute(line_t line, int dbf)
 			{
 				errno=3; break;
 			}
+			if (*p==',' && *(p+1)=='*')
+			{
+				p+=2;
+				nis=n;
+				break;
+			}
+			n2=1;
+			if (*p==',')
+			{
+				p++;
+				if (eval_expr(&p, &n2)!=NUMBER)
+				{
+					errno=3; break;
+				}
+				if (n2>n && n2<nis)
+					n2=n2-n;
+				else
+				{
+					errno=3;break;
+				}
+			}
 			for (i=n; i<nis; i++)
-				scene[i]=scene[i+1];
-			nis--;
+				scene[i]=scene[i+n2];
+			nis=nis-n2;
 		}
 		break;
 	case SET:
@@ -2546,6 +2594,64 @@ int execute(line_t line, int dbf)
 				rprintfChar(ch);
 			}
 			nis=c-1;
+		}
+		break;
+	case GEN:
+		// GEN [No Gn], length, Mute rate, Mute rnge, Val[min/max]
+		// GEN 4 16 5 2 0 254
+		{
+			int i, param[6];
+			p=line.text;
+			for (i=0; i<6; i++)
+			{
+				eval_expr(&p, &param[i]);
+				if (*p==',' && i<5)
+				{
+					p++;
+				}
+				else if (*p !=0)
+				{
+					errno=3; break;
+				}
+			}
+
+			for (i=1; i<=param[0]; i++)
+			{
+				int e;
+				for (e=0; e<param[1]; e++)
+				{
+					int v=scene[e];
+					if (rand()%10<param[2])
+					{
+						v += (rand()%(2*param[3]))-param[3];
+						if (v<param[4]) v=param[4];
+						if (v>param[5]) v=param[5];
+					}
+					scene[param[1]*i+e]=v; //straight xopy
+				}
+				nis = (1+param[0])*param[1];
+			}
+		}
+		break;
+	case NETWORK:
+		// NETWORK  [No neurons] [No W] [no layers] [no ineach layer]
+		// NETWORK 3 4 2 2 1
+		{
+			int i, param[5];
+			p=line.text;
+			for (i=0; i<5; i++)
+			{
+				eval_expr(&p, &param[i]);
+				if (*p==',' && i<4)
+				{
+					p++;
+				}
+				else if (*p !=0)
+				{
+					errno=3; break;
+				}
+			}
+			// code here
 		}
 		break;
 	default:
