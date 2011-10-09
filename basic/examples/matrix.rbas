@@ -1,0 +1,34 @@
+'Basic Demo 4x4 
+  d=4 ' dimesion 4x4 array
+
+  gosub zero
+  gosub show
+  set 2,1
+  gosub show
+  set 5,1
+  gosub show
+  end
+
+show:
+  FOR I = 0 TO d-1
+    FOR J =  0 TO d-1
+      t=@![(I*d)+J]
+      if t then 
+        out `*
+       else
+        out `.
+      endif
+    NEXT J
+    PRINT 
+  NEXT I
+  print
+  return
+
+zero:
+  delete *
+  for i=1 to d*d
+     insert 0,0
+  next i
+  return
+
+

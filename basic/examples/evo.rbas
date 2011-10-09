@@ -1,0 +1,129 @@
+   const delay 20
+
+DATA v=10,13,15,11,10,11,13,15,11,10,22,1,9,22,1,9,123,166,211,92,107,129,83,42,159,144,91,43,47,161,209,205,0,15,8,13,1,0,15,8,11,0,13,11,13,5,5,5
+   print @v 'load data into array
+
+   let l=16   ' chromo length
+   let o=l*2 ' offset (A & B values)
+   let g=4   ' off spring per gen
+   
+loop:
+
+   'generate children from parent
+
+   for i=1 to g
+      for e=0 to l-1
+         p=@![o+e]
+         t=($rnd%10)<5    ' 50% chance
+         if t then
+            r=($rnd%4)-2  '+/- 2
+            p=$range(p+r,0,15)
+         endif
+         t=(l*i)+e+o
+         insert t,p
+      next e
+   next i
+
+   'gosub show
+   'print "?"
+   'if $kbd=`q then done
+   
+   gosub cycle  'test each generation getting a fitness value
+
+   gosub show
+   print "select best ";u
+   print "fitness = ";m
+   k=$range(u,0,g)             'select best & make parent
+   for e=0 to l-1
+      t=(k*l)+e+o
+      set e+o,@![t]
+   next e
+
+   print "DATA=";@![0,o+l-1]   'truncate all but the parent data
+
+   goto loop
+
+done:
+   stand 16
+   end
+
+show:
+   'show parent and each child created
+   for i=0 to G
+      if i=0 then
+         print "Parent:  0) ";
+      else
+         print "         ";i;") ";
+      endif
+      for e=0 to l-1
+         t=(l*i)+e+o
+         print @![t];":";
+      next e
+      print 
+   next i
+   return
+
+
+cycle:
+  k=0
+  m=0
+  u=0
+
+loop2:
+  print "Test Generation "
+
+  if k=0 then
+     print "Parent:  0) ";
+  else
+     print "         ";k;") ";
+  endif
+  for e=0 to l-1
+     t=(l*k)+e+o
+     print @![t];":";
+  next e
+  print 
+
+  FOR X=0 TO 16
+    print x;" ";
+
+    FOR Y=0 TO l-1 ' Servo IDs
+      A=@![y]
+      t=l+y
+      B=@![t]
+      t=o+(k*l)+y
+      C=@![t]
+
+      P=(x+C)*16     'Phase angle
+      P=$SIN(P)/32
+      P=(A*P)/1024   'Amp
+      P=B+P          'offset
+
+      if w then
+         SERVO y=p
+      else
+         PRINT P;":";
+      endif
+
+    NEXT Y
+    PRINT
+    wait delay
+  NEXT X
+
+   print "fitness?"
+
+fitz:
+   f=$kir
+
+   if (f=`q)|(f=7) then done
+
+   print f
+   if f>m then
+     m=f
+     u=k
+   endif
+
+  k=k+1
+  if k<=G then loop2
+
+  return
+

@@ -1,0 +1,17 @@
+' Dyanmic distance sensor demo
+' the arms move depending on how close object is
+
+  stand 16
+  servo 13=200
+  servo 10=50
+
+loop:
+   a=$psd
+   servo 13=250-a
+   servo 10=a
+   wait 200
+   out 45,$psd
+   out 42
+   print "  ";$PSD
+   goto loop
+

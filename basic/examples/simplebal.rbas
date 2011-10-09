@@ -1,0 +1,67 @@
+    STAND $NS
+    list m=7,-4,-2,-1,0,1,2,4
+    d=10
+    f=1
+  
+    Print "Press any key"
+check:  if $kir<0 then check
+
+   p=$servo(10)
+   q=254-p
+
+   i=$z ' initial value of z 
+   print "Initial vale of z = ";i
+   wait 1000
+
+loop:
+
+   z=i-$z
+   d=$find(z, @{7,-15,-10,-5,0,5,10,15}
+   o=@m[d]
+
+   gosub showz
+
+   if f then
+      servo 10=p+o
+      servo 13=q-o
+      gosub showz
+      print z;"-";d;"-";o;" P=";p;" Q=";q
+   else
+      gosub showz
+      print z;"-";d;"-";o
+      wait 50
+   endif
+
+   p=$servo(10)
+   q=254-p
+
+   k=$kir
+   if k<0 then loop
+
+   if k=1 then
+     f=1-f
+     goto loop
+   endif
+
+final: 
+   print "Done"
+   stand $NS
+   end
+
+showz:
+   gosub clrscreen
+   LET T=60+$RANGE(Z,-60,60)
+   T=T/3
+   OUT 45,T
+   OUT 80
+   OUT 45,(40-T)
+   print " Z ";Z
+
+   return
+
+clrscreen:
+   OUT 27 'esc
+   OUT 91 '[
+   OUT 50 '2
+   OUT 74 'J
+   return

@@ -1,0 +1,22 @@
+'
+'test program
+'
+loop:
+   k=$kir
+   if k>0 then
+      print "K=";k
+      if k=7 then fin
+      if k=6 then
+	   p=$psd
+	   if p<50 then
+	      print "P=";p
+	   endif
+      endif
+   endif
+   out 42
+   wait 100
+
+   goto loop
+fin:
+   print "Done"
+   end
