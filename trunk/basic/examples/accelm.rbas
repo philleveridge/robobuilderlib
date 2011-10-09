@@ -1,0 +1,70 @@
+'Show Serial Number and Zero positions
+'
+
+FOR I = 0 TO 10
+ OUT $ROM(I+1)
+NEXT I
+PRINT
+
+FOR I = 0 TO 15
+ PRINT I;" - ";$ROM(I+29)
+NEXT I
+PRINT
+
+loopz: if $kir<0 then loopz
+
+'Show acceleromter values
+'
+
+loop:
+gosub clrscreen
+
+'face down (z<-50)
+if $z<-50 then
+   print "FACE DOWN"
+endif
+
+'face up (z>50)
+if $z>50 then
+   print "FACE UP"
+endif
+
+'upright  (y>50)
+if $y>50 then
+   print "UPRIGHT"
+endif
+
+
+LET T=20+$RANGE($X,-20,20)
+OUT 45,T
+OUT 80
+OUT 45,(40-T)
+print " X ";$X
+
+LET T=60+$RANGE($Y,-60,60)
+T=T/3
+OUT 45,T
+OUT 80
+OUT 45,(40-T)
+print " Y ";$Y
+
+LET T=60+$RANGE($Z,-60,60)
+T=T/3
+OUT 45,T
+OUT 80
+OUT 45,(40-T)
+print " Z ";$Z
+
+
+WAIT 250
+if $kir<0 then Loop
+
+end
+
+clrscreen:
+   OUT 27 'esc
+   OUT 91 '[
+   OUT 50 '2
+   OUT 74 'J
+   return
+

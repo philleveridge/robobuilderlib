@@ -1,0 +1,123 @@
+'
+' two neurons two inputs, three neurons
+' I1 I2 
+' W11 W12 W21 W22 T1 T2 W31 W32 T3
+' X   Y  
+' O1 = I1xW11 + I2xW12 -t1
+' O2 = I1xW21 + I2*W12 -t2
+' s1 = SIGMA(o1)
+' s2 = SIGMA(o2)
+' o3 = S1XW31 + S2xW32 -t3
+' s3 = SIGMA(3)
+' Servo 10 += s3
+' servo 13 += s3
+
+   'gosub testsig
+
+
+   gosub setup
+
+loop:
+   c=c+1
+   print "generation "; c
+
+   gosub xztest ' wait for it to stabalise
+
+   gosub show
+
+   gosub frecog
+
+   if $kir<0 then loop
+
+   end
+
+
+frecog:
+   print "Recognise"
+   return
+
+setup:
+   LIST W=9,1,2,3,-1,-2,-1,2,3,-2
+   let l=9   ' chromo length
+   let g=4   ' off spring per gen
+   let c=0   ' generation
+   return
+
+show:
+   print "Neuron Status"
+   print "N1 ";@w[0];" : ";@w[1];" Th= ";@w[4]
+   print "N2 ";@w[2];" : ";@w[3];" Th= ";@w[5]
+   print "N3 ";@w[6];" : ";@w[7];" Th= ";@w[8]
+   return
+
+frecog:
+   print "Recognise"
+
+   print "I1=";x
+   print "I2=";z
+
+   'neuron 1
+
+   n=x*@w[0]
+   n=n+z*@w[1]
+   n=n-@w[4]
+   n=$sig(n)
+
+   'neuron 2
+
+   m=x*@w[2]
+   m=m+z*@w[3]
+   m=m-@w[5]
+   m=$sig(m)
+
+   'neuron 3
+
+   o=n*@w[6]
+   o=o+m*@w[7]
+   o=o-@w[8]
+   o=$sig(o)
+
+   print "O1=";n
+   print "O2=";m
+   print "O3=";o
+   return
+
+testsig:
+   for i=-32 to 32
+      print i;",";$sig(i);",";$dsig(i)
+   next i
+   return
+
+xztest:
+   x=$x
+   z=$z
+   wait 100
+   t=(x=$x)&(z=$z)
+   print ".";
+   if 1-t then xztest
+   print "X=";X;" Z=";Z
+   t=(x*x)+(z*z)
+   t=-t
+   return
+
+generate:
+   'generate children from parent
+
+   for i=1 to g
+      for e=0 to l-1
+         p=@![e]
+         t=($rnd%10)<5    ' 50% chance
+         if t then
+            r=($rnd%4)-2  '+/- 2
+            p=$range(p+r,0,254)
+         endif
+         t=(l*i)+e
+         insert t,p
+      next e
+   next i
+   return
+
+
+
+
+

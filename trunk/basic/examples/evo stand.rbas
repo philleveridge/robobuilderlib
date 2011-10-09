@@ -1,0 +1,122 @@
+   const delay 20
+
+   DATA v=143,179,198,83,105,106,68,46,167,140,77,70,152,165,181,98,120,124,99
+   move @v,10,1000            'load data into array
+
+   let l=$NS   ' chromo length
+   let g=4   ' off spring per gen
+   let c=0
+   
+loop:
+   c=c+1
+
+   'generate children from parent
+
+   for i=1 to g
+      for e=0 to l-1
+         p=@![e]
+         t=($rnd%10)<5    ' 50% chance
+         if t then
+            r=($rnd%4)-2  '+/- 2
+            p=$range(p+r,0,254)
+         endif
+         t=(l*i)+e
+         insert t,p
+      next e
+   next i
+   
+   gosub cycle  'test each generation getting a fitness value
+   print "select best ";u;"(";m;")"
+
+   k=$range(u,0,g)             'select best & make parent
+   for e=0 to l-1
+      t=(k*l)+e
+      set e,@![t]
+   next e
+
+   print "DATA V=";@![0,o+l-1]   'truncate all but the parent data
+
+   goto loop
+
+done:
+   print
+   print "Final values after ";c;" generations"
+   print "MOVE @{";l;",";@![0,l-1];"}"
+   move @v,10,1000           
+   end
+
+show:
+   'show parent and each child created
+   for i=0 to G
+      if i=0 then
+         print "Parent:  0) ";
+      else
+         print "         ";i;") ";
+      endif
+      for e=0 to l-1
+         t=(l*i)+e
+         print @![t];":";
+      next e
+      print 
+   next i
+   return
+
+
+cycle:
+  k=0
+  m=-200
+  u=0
+  print "Test Generation ";c
+
+loop2:
+
+  if k=0 then
+     print "Parent:  0) ";
+  else
+     print "         ";k;") ";
+  endif
+  for e=0 to l-1
+     t=(l*k)+e
+     t=@![t]
+     print t;":";
+
+     servo e=t
+  next e
+
+  ' print
+
+  wait 500
+  gosub xztest ' wait for it to stabalise
+  print "X=";X;" Z=";Z;
+  t=(x*x)+(z*z)
+  t=-t
+
+fitz:
+   f=$kir
+   if f<0 then
+     f=t
+   endif
+
+   if (f=`q)|(f=7) then done
+
+  print " F=";f
+
+   if f>m then
+     m=f
+     u=k
+   endif
+
+  k=k+1
+  if k<=G then loop2
+
+  return
+
+
+xztest:
+   x=$x
+   z=$z
+   wait 100
+   t=(x=$x)&(z=$z)
+   print ".";
+   if 1-t then xztest
+   return

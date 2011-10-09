@@ -1,0 +1,52 @@
+'record and play back
+  const dely 500
+
+  stand 16
+
+  'set to passive (input mode)
+  servo 13=@
+  servo 14=@
+  servo 15=@
+
+  print "ready - press Key or IR to record"
+  check: if $kir<0 then check
+
+  i=0
+
+loop:
+  a=$servo(13)
+  b=$servo(14)
+  c=$servo(15)
+
+  print i,a,b,c
+  insert i,a
+  i=i+1
+  insert i,b
+  i=i+1
+  insert i,c
+  i=i+1
+
+  wait dely
+  if $kir<0 then loop
+
+print "ready - press Key or IR to playback"
+check2: if $kir<0 then check2
+  print "elements = ";$NE
+  i=0
+loop2:
+  a=@![i]
+  b=@![i+1]
+  c=@![i+2]
+  print i,":",a,":",b,":",c
+
+  servo 13=a
+  servo 14=b
+  servo 15=c
+  i=i+3
+ 
+  wait dely
+  if i<$NE then loop2
+
+  stand 16
+
+

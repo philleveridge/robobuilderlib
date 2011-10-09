@@ -1,78 +1,164 @@
-'maze demo
-'
-const dly 1000  
-   STAND $NS
-   PRINT "Maze Program"
-   LET c=0
+'Example maze program
+'Based on Robobuilder C tutorial
+
+     const dely 1000
+     stand 16
+     print "Maze Program"
+
+     let v=8    'matrix size v x v
+     let c=0    'initial state
+     let x=v/2  'current location x coord (mid of matrix)
+     let y=v/2  'current location y coord (mid of matrix)
+     t=1        'point forward
+
+     gosub matrix
+
 loop:
-   LET d=$PSD
-   LIGHTS d-10
+     t=(t-1)%4
+     t=t+1
+     set (v*x)+y,t   
 
-   IF d < 12 THEN
-      GOSUB back
-      GOTO loop
-   ENDIF
+     gosub show
 
-   IF (c = 0) & (d < 30) THEN
-      GOSUB leftturn90
-      c=1
-      GOTO loop
-   ENDIF
+     let d=$psd
+     lights d-10
+     print "PSD= ";D
 
-   IF (c = 1) & (d < 30) THEN  
-      GOSUB leftturn180
-      c=2
-      GOTO loop
-   ENDIF
+     k=$kbd   
 
+     if k=`q then
+       print "done"
+       end
+     endif
 
-   IF (c = 1) & (d < 30) THEN
-      GOSUB rightturn90
-      LET c=0
-      GOTO loop
-   ENDIF
+     if d < 20 then
+        gosub backz
+        goto loop
+     endif
+     
+     if (c=0)&(d<30) then
+        gosub leftturn90
+        let t=t+3
+        let c=1
+        goto loop
+     endif
 
-   c=0
-   GOSUB forward
-   GOTO loop
+     if (c=1)&(d<30) then
+        gosub leftturn180
+        let t=t+2
+        let c=2
+        goto loop
+     endif
+     
+     if (c=1)&(d<30) then
+         gosub rightturn90
+         let t=t+1
+         let c=0
+         goto loop
+     endif
+          
+     let c=0
 
-back:
-   PRINT ":"
-   RUN 9
-   WAIT dly
-   RETURN
+     gosub forwardz
+
+     t=(t-1)%4
+     set (v*x)+y,5   'empty space
+
+     if t=0 then
+       y=y-1
+     endif
+
+     if t=1 then
+       x=x+1
+     endif
+
+     if t=2 then
+       y=y+1
+     endif
+
+     if t=3 then
+       x=x-1
+     endif
+
+     t=t+1
+
+     x=$range(x,0,v-1)
+     y=$range(y,0,v-1)
+     goto loop
+ 
+backz:
+     print "BACKUP"
+     run 9     
+     wait 1000
+     return
 
 leftturn90:
-   PRINT "<-"
-   RUN 4
-   RUN 4
-   RUN 4
-   WAIT dly
-   RETURN
-
+     print "LT90"
+     run 4
+     run 4
+     run 4
+     wait dely
+     return
+  
 leftturn180:
-   PRINT "V"
-   RUN 4
-   RUN 4
-   RUN 4
-   RUN 4
-   RUN 4
-   WAIT dly
-   RETURN
-
+     print "180"
+     run 4
+     run 4
+     run 4
+     run 4
+     run 4
+     wait dely
+     return
+     
 rightturn90:
-   PRINT "->"
-   RUN 5
-   RUN 5
-   RUN 5
-   RUN 5
-   WAIT dly 
-   RETURN
+     print "RT90"
+     run 5
+     run 5
+     run 5
+     run 5
+     wait dely
+     return
 
-forward:
-   PRINT "^"
-   RUN 8
-   RUN 8
-   RUN 8
-   WAIT dly
-   RETURN
+forwardz:
+     print "Forward"
+     run 8
+     run 8
+     run 8
+     wait dely
+     return
+
+show:
+  FOR J=0 TO v-1
+    FOR I=0 TO v-1
+      m=@![(I*v)+J]
+      if m=0 then 
+        out `.
+      endif
+      if m=1 then 
+        out `^
+      endif
+      if m=2 then 
+        out `>
+      endif
+      if m=3 then 
+        out `v
+      endif
+      if m=4 then 
+        out `<
+      endif
+      if m=5 then 
+        out `*
+      endif
+    NEXT I
+    PRINT 
+  NEXT J
+  print
+  return
+
+matrix:
+    'create an empty matrix
+    delete *
+    for i=1 to v*v
+       insert 0,0
+    next i
+    return

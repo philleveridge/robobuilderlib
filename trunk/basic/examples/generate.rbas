@@ -1,0 +1,71 @@
+'Generated gate from sinusoidal input
+
+  stand 16
+
+  'Amplitude
+  DATA A=10,13,15,11,10,11,13,15,11,10,22,1,9,22,1,9
+  'Offset
+  DATA B=123,166,211,92,107,129,83,42,159,144,91,43,47,161,209,205
+
+  k=8 'forward
+
+Loop:
+  if k=6 then 
+    DATA C=0,2,8,5,0,15,2,8,6,15,5,11,5,5,5,5
+    print "Reverse"
+  endif 
+
+  if k=8 then 
+    DATA C=0,15,8,13,1,0,15,8,11,0,13,11,13,5,5,5
+    print "Forward"
+  endif 
+
+  FOR X=0 TO 15
+    FOR Y=0 TO 15
+
+      'LET P = B[y] + (A[y]*$SIN((X + C[y])*16)/32)/1024
+
+      P=(X+@C[Y])*16
+      P=$SIN(P)/32
+      P=(@A[Y]*P)/1024
+      P=@B[Y]+P
+
+      if f then
+         SERVO y=p
+      else
+         PRINT P;":";
+      endif
+
+    NEXT Y
+    PRINT
+    wait 10
+  NEXT X
+
+  r=$KIR
+
+  if r=7 then final
+
+  if (r=6)|(r=8) then 
+    k=r
+    goto loop
+  endif
+
+  p=$psd
+
+  if p<20 then
+    k=6
+    goto loop
+  endif
+
+  if p>49 then
+    k=8
+    goto loop
+  endif
+
+  if r<0 then loop
+
+final:
+  print "done - ";r
+  stand 16
+
+  

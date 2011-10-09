@@ -1,70 +1,77 @@
 'demo Sample sound test
 
-   STAND $NS
-
+   STAND $NS  'attention !
+   F=0        'switch display modes
 
 Loop:
+   print "Listen"
 
-   PRINT "LISTEN"
-
-   SAMPLE 5,5000,1,64
-
+   SAMPLE 4,5000,1,64 //min level 4, 5 secs, 1ms, 64 samples
    IF $NE=0 THEN Done
-
    FFT @!,1000
 
-   PRINT @![1,31]
+   if f then 
+      Gosub ShowFFt
+   else
+      Gosub moveservos
+   endif
 
-   n=$IMAX(@!)
+   wait 50
 
-   PRINT "Pk=";$MAX(@!);"  Hz=";n
-
-
-   'servo 11   53-135 +80
-
-   'servo 14  196-127 -60
-
-   D=-1
-
-   IF N=21 THEN
-
-      LET d=2
-
-   ENDIF
-
-
-   E=-1
-
-   IF N=13 THEN
-
-      LET e=2
-
-   ENDIF
-
-
-   LET p=$SERVO(11)+d
-
-   LET p=$RANGE(p,50,140)
-
-
-   LET q=$SERVO(14)-e
-
-   LET q=$RANGE(q,120,200)
-
-
-   PRINT "P=";p;", Q=";q; ", D=";d; ",E=";e
-
-
-   SERVO 11=p
-
-   SERVO 14=q
-
-
+   if $kir<0 then Loop
+   F=1-F
    GOTO Loop
 
 Done:
-
+   print "Finished"
+   stand $NS
    END
+
+Showfft:
+   gosub clscreen
+   n=$MAX(@![1,31])
+
+   for e=0 to 30
+     print e+1;" ";
+     v=(@![e]*50)/n
+     out 45,v
+     out 80
+     print
+   next e
+
+   t=1+$IMAX(@!)
+   PRINT "Pk=";n;"[";t;"] Hz=";t*16
+   return
+
+clscreen:
+   OUT 27 'esc
+   OUT 91 '[
+   OUT 50 '2
+   OUT 74 'J
+   return
+
+moveservos:
+   gosub clscreen
+   n=$MAX(@!)
+
+   d = @![16] ' Approx 256 +/- 8Hz
+   d = (50*d)/n
+   p=d
+
+   e = @![21] ' Approx 336 +/- 8Hz
+   e = (50*e)/n
+   q=e
+
+   out 45,p
+   PRINT "P=";p
+
+   out 45,q
+   PRINT "Q=";q
+
+   SERVO 11= 48+p
+   SERVO 14=205-q
+
+   return
 
 
 

@@ -1,0 +1,95 @@
+'record and play back
+const dely 500
+
+gosub clearz
+
+print "Press Key or IR to record"
+print "< [] > A to stop"
+
+check: if $kir<0 then check
+
+print "Start"
+
+loop:
+ A=$servo(10)
+ B=$servo(11)
+ C=$servo(12)
+ SERVO 13=254-a
+ SERVO 14=254-b
+ SERVO 15=254-c
+ out `.
+
+ WAIT 100
+
+ k=$kir
+ if k<0 then loop
+
+ if k=7 then
+   gosub recordz
+ endif
+
+ if k=8 then
+   gosub playz
+ endif
+
+ if k=6 then
+  gosub clearz
+ endif
+
+ if k=1 then
+   stand 16
+   end
+ endif
+
+ GOTO loop
+
+recordz:
+  print "record moves"  
+  print i,a,b,c
+  insert i,a
+  i=i+1
+  insert i,b
+  i=i+1
+  insert i,c
+  i=i+1
+  return
+
+playz:
+  print "Play moves = ";$NE
+  i=0
+loop2:
+  a=@![i]
+  b=@![i+1]
+  c=@![i+2]
+  print i,":",a,":",b,":",c
+
+  servo 10=a
+  servo 11=b
+  servo 12=c
+
+  SERVO 13=254-a
+  SERVO 14=254-b
+  SERVO 15=254-c
+
+  i=i+3
+ 
+  wait 500
+  if i<$NE then loop2
+
+  servo 10=@
+  servo 11=@
+  servo 12=@
+
+  return
+
+clearz:
+  print "clear moves"
+  stand 16
+  servo 10=@
+  servo 11=@
+  servo 12=@
+  delete *
+  i=0
+  return
+
+

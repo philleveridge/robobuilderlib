@@ -1,0 +1,26 @@
+'rem test new list features
+
+  PRINT @{5,1,2,3,4,5}
+  SET 3,7
+  PRINT @!
+  INSERT 3,8
+  PRINT @!
+  DELETE 3
+  PRINT @!
+
+  FOR I = 0 TO $NE-1
+    PRINT @![I]
+  NEXT I
+
+'stack em 
+INSERT 0,4   'push
+INSERT 0,5   'push
+INSERT 0,6   'push
+print @![0]
+delete 0     'pop
+print @![0]
+delete 0     'pop
+print @![0]
+delete 0     'pop
+
+

@@ -1,0 +1,96 @@
+    STAND $NS
+
+    f=0
+  
+    Print "Press any key"
+check:  if $kir<0 then check
+
+   i=$z ' initial value of z 
+   print "Initial vale of z = ";i
+   wait 1000
+
+loop:
+
+   z=i-$z
+
+   o=0 ' if in doubt
+
+   if z<-14 then
+      o=-4
+   endif
+
+   t=(z>-15)&(z<-9)
+   if t then
+      o=-2
+   endif
+
+   t=(z>-10)&(z<-4)
+   if t then
+      o=-1
+   endif
+
+   t=(z>5)&(z<11)
+   if t then
+      o=1
+   endif
+
+   t=(z>10)&(z<16)
+   if t then
+      o=2
+   endif
+
+   if z>15 then
+      o=4
+   endif
+
+   gosub showz
+
+   p=$servo(10)+o
+   q=$servo(13)-o
+
+   print z;"...";o;" P=";p;" Q=";q
+
+
+   if f then
+      servo 10=p
+      servo 13=q
+
+      gosub showz
+   else
+      gosub showz
+      wait 50
+   endif
+
+   
+   k=$kir
+   if k<0 then loop
+
+   if k=1 then
+     print "Flag=";f
+     f=1-f
+     goto loop
+   endif
+
+
+final: 
+   print "Done"
+   stand $NS
+   end
+
+showz:
+   'gosub clrscreen
+   LET T=60+$RANGE(Z,-60,60)
+   T=T/3
+   OUT 45,T
+   OUT 80
+   OUT 45,(40-T)
+   print " Z ";Z
+
+   return
+
+clrscreen:
+   OUT 27 'esc
+   OUT 91 '[
+   OUT 50 '2
+   OUT 74 'J
+   return

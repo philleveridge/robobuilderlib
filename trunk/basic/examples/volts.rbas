@@ -1,0 +1,40 @@
+const ulimit 9650
+const mlimit 8600
+const llimit 8100
+
+loop:
+gosub clrscreen
+v=$volt
+print v;"mV Detected"
+
+if v>ulimit then
+   print "Plugged In"
+   v=ulimit
+endif
+
+if v<llimit then
+   print "Low battery"
+   v=llimit
+endif
+
+if v>mlimit then
+  p=(10*(v-mlimit))/(ulimit-mlimit)
+  p=50+5*p
+else
+  p=(10*(v-llimit))/(mlimit-llimit)	
+  p=5*p
+endif
+
+ print v;" (";p;") %"
+
+wait 1000
+goto loop
+
+clrscreen:
+   OUT 27 'esc
+   OUT 91 '[
+   OUT 50 '2
+   OUT 74 'J
+   return
+
+

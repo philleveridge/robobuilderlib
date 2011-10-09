@@ -1,0 +1,21 @@
+'record and play back
+const dely 500
+
+stand 16
+servo 13=@
+servo 14=@
+servo 15=@
+
+print "ready - press Key or IR to record"
+check: if $kir<0 then check
+
+loop:
+ A=$servo(13)
+ B=$servo(14)
+ C=$servo(15)
+ SERVO 10=254-a
+ SERVO 11=254-b
+ SERVO 12=254-c
+ WAIT Dely
+ GOTO loop
+
