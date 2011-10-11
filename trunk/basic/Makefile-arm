@@ -1,0 +1,62 @@
+#
+PROJECT        = armbasic
+
+TRGT = arm-linux-gnueabi-
+CC   = $(TRGT)gcc
+CP   = $(TRGT)objcopy
+BIN  = $(CP) -O ihex 
+AS   = $(TRGT)gcc -x assembler-with-cpp
+
+MCU  = cortex-m3
+LDSCRIPT = cortex/LPC1756-ROM.ld
+FULL_PRJ = $(PROJECT)_rom
+
+ASRC = ./crt0.s
+
+SRC =  armbasic.c edit.c arm.c fix_fft.c \
+      ./cortex/cor_init.c \
+      ./cortex/breakpoint.c \
+      ./cortex/coridium.c
+
+UINCDIR =./include \
+         ./cortex
+
+OBJS    = $(ASRC:.s=.o) $(SRC:.c=.o)
+
+MCFLAGS = -mcpu=$(MCU)
+DEFS = -DLPC175x -DTHUMB
+
+
+INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
+LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
+
+
+ASFLAGS = $(MCFLAGS) -g  -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
+CPFLAGS = $(MCFLAGS) $(OPT) -mthumb -fomit-frame-pointer -Wall -Wstrict-prototypes -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
+LDFLAGS = $(MCFLAGS) -mthumb-interwork -nostartfiles -T$(LDSCRIPT) -Wl,-Map=$(FULL_PRJ).map,--cref,--no-warn-mismatch $(LIBDIR) -lm
+
+LIBS = cortex/cor_hwlib.o \
+       cortex/cor_wrflash.o \
+       cortex/mem.o \
+       cortex/string.o \
+       cortex/printf.o \
+       cortex/IRQ_M3.o 
+
+all: $(OBJS) $(FULL_PRJ).elf $(FULL_PRJ).hex
+
+%.o : %.c
+	$(CC) -c $(CPFLAGS) -I . $(INCDIR) $< -o $@
+
+%.o : %.s
+	$(AS) -c $(ASFLAGS) $< -o $@
+
+%elf: $(OBJS)
+
+	$(CC) $(OBJS) $(LDFLAGS) $(LIBS) -o $@
+  
+%hex: %elf
+	$(BIN) $< $@
+
+clean:
+	-rm -f $(OBJS)
+

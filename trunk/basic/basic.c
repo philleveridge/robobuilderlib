@@ -105,7 +105,7 @@ const prog_char *tokens[] ={
 	"MTYPE", "LIGHTS", "SORT",   "FFT",
 	"SAMPLE","SCALE",  "DATA",
 	"SET", 	"INSERT", "DELETE",
-	"GEN",  "NETWORk"
+	"GEN",  "NETWORK", "SELECT"
 };
 
 char *specials[] = { 
@@ -559,6 +559,7 @@ void basic_load(int tf)
 		case GET:
 		case GEN:
 		case NETWORK:
+		case SELECT:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -800,6 +801,24 @@ void quicksort(int list[],int m,int n)
       quicksort(list,m,j-1);
       quicksort(list,j+1,n);
    }
+}
+
+int sigmoid(int v, int t)
+{
+	int map[40] = {
+		1,  2,  3,  4,  5,  6,  8,  10, 12, 15, 19, 24, 31, 38, 47, 57, 69, 82, 97, 112,
+		128,144,159,174,187,199,209,218,225,232,237,241,244,246,248,250,251,252,253,254};
+
+	switch (t)
+	{
+	case 0: return v; // no change
+	case 1: return (v>0)?10:0; //delta
+	case 2: // 1/(1-e^-x) actually 256/(1-e^(x/4))
+		if(v<-20) v=-20;
+		if(v>19)  v=19;
+		v=(map[v+20]-127)/4;
+		return v;
+	}
 }
 
 int get_bit(int pn, int bn)
@@ -1092,17 +1111,11 @@ int get_special(char **str, int *res)
 			v = v*(1-v);
 		}
 		break;
-	case sSIG:  // 1/(1-e^-x) actually 256/(1-e^(x/4))
+	case sSIG:
 		v=0;
 		if (getArg(str,&v))
 		{
-			int map[40] = {
-				1,2,3,4,5,6,8,10,12,15,19,24,31,38,47,57,69,82,97,112,
-				128,144,159,174,187,199,209,218,225,232,237,241,244,246,248,250,251,252,253,254,254
-			};
-            if(v<-20) v=-20;
-            if(v>19)  v=19;
-            v=(map[v+20]-127)/4;
+			v=sigmoid(v,2);
 		}
 		break;
 	case sABS: // $ABS(x)
@@ -1907,8 +1920,23 @@ int execute(line_t line, int dbf)
 					}
 					else
 					{
-						rprintf ("%d", scene[0]);
-						for (n=1; n<nis; n++) {rprintf (",%d",scene[n]);}
+						int k,w=0;
+						if (*p==':')
+						{
+							p++;
+							if (eval_expr(&p, &w) != NUMBER)
+							{
+								errno=3; break;
+							}
+						}
+						if (w<=0)  w=nis;
+						if (w>nis) w=nis;
+						for (k=0; k<(nis/w); k++)
+						{
+							rprintf ("%d", scene[(k*w)]);
+							for (n=1; n<w; n++) {rprintf (",%d",scene[(k*w)+n]);}
+							rprintfCRLF();
+						}
 					}
 				}
 				else
@@ -2322,6 +2350,7 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case DELETE:
+	case SELECT:
 		// i.e. DELETE 5
 		// or   DELETE *
 		//      DELETE 5,7
@@ -2364,9 +2393,19 @@ int execute(line_t line, int dbf)
 					errno=3;break;
 				}
 			}
-			for (i=n; i<nis; i++)
-				scene[i]=scene[i+n2];
-			nis=nis-n2;
+			if(line.token==DELETE)
+			{
+				for (i=n; i<nis; i++)
+					scene[i]=scene[i+n2+1];
+				nis=nis-n2-1;
+			}
+			else
+			{
+				// select
+				for (i=0; i<=n2; i++)
+					scene[i]=scene[i+n];
+				nis=n2+1;
+			}
 		}
 		break;
 	case SET:
@@ -2634,15 +2673,17 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case NETWORK:
-		// NETWORK  [No neurons] [No W] [no layers] [no ineach layer]
-		// NETWORK 3 4 2 2 1
+		// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
+		// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
 		{
-			int i, param[5];
+			int i, j, param[7];
 			p=line.text;
-			for (i=0; i<5; i++)
+			for (i=0; i<7; i++)
 			{
+				param[i]=0;
 				eval_expr(&p, &param[i]);
-				if (*p==',' && i<4)
+				if (*p==0 && i>5) break;
+				if (*p==',' && i<6)
 				{
 					p++;
 				}
@@ -2652,6 +2693,140 @@ int execute(line_t line, int dbf)
 				}
 			}
 			// code here
+			int noi=param[0], noo=param[1], flg=param[2], sho=0;
+			int nl1=param[3], nl2=param[4], nl3=param[5];
+	        int ofset=param[6];
+
+	        sho = (flg&4); // show output
+	        flg = flg & 3; // 0, 1 or 2 (sigmoid mode)
+
+			if (noi<=0 || noo<=0)
+			{
+				// number input & output >0
+				rprintfStr("Err:: Input and output must be gt 0\n");
+				errno=3;
+				break;
+			}
+
+			if (nl3!= noo && nl3!=0)
+			{
+				//layer 3 = number outputs
+				rprintfStr("Err:: layer 3 neurons must match output (or be zero)\n");
+				errno=3;
+				break;
+			}
+
+			if (nl3==0 && nl2!=0)
+			{
+				//layer 3 = number outputs
+				rprintfStr("Err:: layer 3 must be non-zero if layer 2 has nodes \n");
+				errno=3;
+				break;
+			}
+
+			int l1o[nl1];
+			int l2o[nl2];
+			int l3o[nl3];
+
+			if (sho)
+			{
+				rprintf("NOI   = %d\n", noi);
+				rprintf("NOO   = %d\n", noo);
+				rprintf("Flags = %d\n", flg);
+				rprintf("NO L1 = %d\n", nl1);
+				rprintf("NO L2 = %d\n", nl2);
+				rprintf("NO L3 = %d\n\n", nl3);
+				if (ofset>0) rprintf("Offset = %d\n\n", ofset);
+			}
+
+			ofset= ofset* (((noi+1)*nl1) + ((nl1+1)*nl2) + ((nl2+1)*nl3));
+
+			int t=noi+noo+ofset-1; // index through weights and threshold
+
+			for (i=0; i<nl1; i++)
+			{
+				if (sho) rprintf("INPUT NEURON = %d\n", i+1);
+				int s=0;
+				for (j=0; j<noi; j++)
+				{
+					t=t+1;
+					s += scene[j]*scene[t];
+					if (sho) rprintf("Input=%d (%d x %d)\n",j,scene[j],scene[t]);
+				}
+				t++;
+				if (sho) rprintf("Th=-(%d)\n",scene[t]);
+
+				s -= scene[t];
+				l1o[i]=sigmoid(s,flg);
+				if (sho) rprintf("O=%d\n", l1o[i]);
+			}
+
+			for (i=0; i<nl2; i++)
+			{
+				int s=0;
+				if (sho) rprintf("HIDDEN NEURON = %d\n", i+1);
+				for (j=0; j<nl1; j++)
+				{
+					t++;
+					s += l1o[j]*scene[t];
+					printf("Input=%d (%d x %d)\n", j,l1o[j],scene[t]);
+				}
+				t++;
+				if (sho) rprintf("Th=-(%d)\n",scene[t]);
+
+				s -= scene[t];
+
+				l2o[i]=sigmoid(s,flg);
+				if (sho) rprintf("O=%d\n", l2o[i]);
+			}
+
+			for (i=0; i<nl3; i++)
+			{
+				int inp, s=0;
+				if (sho) rprintf("OUTPUT NEURON = %d\n", i+1);
+
+				if (nl2==0)
+				{
+					for (j=0; j<nl1; j++)
+					{
+						t++;
+						inp=l1o[j];
+						s += inp*scene[t];
+
+						if (sho) rprintf("Input=%d (%d x %d)\n",j,inp,scene[t]);
+					}
+				}
+				else
+				{
+					for (j=0; j<nl2; j++)
+					{
+						t++;
+						inp=l2o[j];
+						s += inp*scene[t];
+
+						if (sho) rprintf("Input=%d (%d x %d)\n",j,inp,scene[t]);
+					}
+				}
+
+
+				t++;
+				if (sho) rprintf("Th=-(%d)\n",scene[t]);
+
+				s -= scene[t];
+
+				l3o[i]=sigmoid(s,flg);
+				if (sho) rprintf("O=%d\n", l3o[i]);
+
+			}
+
+			for (i=0; i<noo; i++)
+			{
+				if (nl3==0)
+					scene[noi+i]=l1o[i]; // if no output layer use layer 1
+				else
+					scene[noi+i]=l3o[i];
+			}
+
 		}
 		break;
 	default:
