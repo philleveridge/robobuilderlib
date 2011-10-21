@@ -813,7 +813,9 @@ int sigmoid(int v, int t)
 	{
 	case 0: return v; // no change
 	case 1: return (v>0)?10:0; //delta
-	case 2: // 1/(1-e^-x) actually 256/(1-e^(x/4))
+	case 2: return (v>0)?10:-10; //delta
+	case 3: return (v>0)?1:0; //delta
+	case 4: // 1/(1-e^-x) actually 256/(1-e^(x/4))
 		if(v<-20) v=-20;
 		if(v>19)  v=19;
 		v=(map[v+20]-127)/4;
@@ -1104,18 +1106,29 @@ int get_special(char **str, int *res)
 			v=map[v];
 		}
 		break;
-	case sDSIG: // x*(1-x)
+	case sDSIG: // $DISG(x) -> x*(1-x)
 		v=0;
 		if (getArg(str,&v))
 		{
 			v = v*(1-v);
 		}
 		break;
-	case sSIG:
+	case sSIG: //$SIG(n[,t])
 		v=0;
 		if (getArg(str,&v))
 		{
 			v=sigmoid(v,2);
+		}
+		else
+		{
+			if (**str==',')
+			{
+				int r;
+				(*str)++;
+				eval_expr(str, &r);
+				v=sigmoid(v,r);
+				(*str)++;
+			}
 		}
 		break;
 	case sABS: // $ABS(x)
@@ -2636,15 +2649,15 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case GEN:
-		// GEN [No Gn], length, Mute rate, Mute rnge, Val[min/max]
+		// GEN [No Gn], length, Mute rate%, Mute rnge, Val[min/max], type
 		// GEN 4 16 5 2 0 254
 		{
-			int i, param[6];
+			int i, param[7];
 			p=line.text;
-			for (i=0; i<6; i++)
+			for (i=0; i<7; i++)
 			{
 				eval_expr(&p, &param[i]);
-				if (*p==',' && i<5)
+				if (*p==',' && i<6)
 				{
 					p++;
 				}
@@ -2654,19 +2667,68 @@ int execute(line_t line, int dbf)
 				}
 			}
 
-			for (i=1; i<=param[0]; i++)
+			int ty=param[6]&3; // 0-1 2
+			int sho=param[6]&8; // show flag
+			int nog=param[0];
+			int ln=param[1];
+			int mr=param[2];
+
+			if (sho)
 			{
-				int e;
-				for (e=0; e<param[1]; e++)
+				rprintf("Type      = %d\n", ty);
+				rprintf("length    = %d\n", ln);
+				rprintf("Off       = %d\n", nog);
+				rprintf("Mut rate  = %d\%\n", mr);
+
+			}
+
+			for (i=1; i<=nog; i++)
+			{
+				int v,e;
+				int co1=0;
+				int co2=0;
+
+				if (ty>0)
 				{
-					int v=scene[e];
-					if (rand()%10<param[2])
+					co1 = rand()%ln;
+					co2 = rand()%ln;
+					if (co2<co1) swap(&co1,&co2);
+					if (ty>0) rprintf("CO pt1    = %d\n", co1);
+					if (ty>1) rprintf("CO pt2    = %d\n", co2);
+				}
+
+				for (e=0; e<ln; e++)
+				{
+					if (ty==0)
+					{
+						v=scene[e];    // gene from parent 1
+					}
+					if (ty==1)
+					{
+						// single cross over
+						if (e<=co1)
+							v=scene[e]; //straight copy p1
+						else
+							v=scene[e+ln]; //straight copy p2
+					}
+					if (ty==2)
+					{
+						// two cross over
+						if (e<=co1 || e>=co2)
+							v=scene[e]; //straight copy p1
+						else
+							v=scene[e+ln]; //straight copy p2
+					}
+
+					if (rand()%100<mr)
 					{
 						v += (rand()%(2*param[3]))-param[3];
 						if (v<param[4]) v=param[4];
 						if (v>param[5]) v=param[5];
 					}
-					scene[param[1]*i+e]=v; //straight xopy
+
+					scene[param[1]*i+e]=v; //straight copy
+
 				}
 				nis = (1+param[0])*param[1];
 			}
@@ -2697,8 +2759,8 @@ int execute(line_t line, int dbf)
 			int nl1=param[3], nl2=param[4], nl3=param[5];
 	        int ofset=param[6];
 
-	        sho = (flg&4); // show output
-	        flg = flg & 3; // 0, 1 or 2 (sigmoid mode)
+	        sho = (flg&8); // show output
+	        flg = flg & 7; // 0, 1, 2 or 4 (sigmoid mode)
 
 			if (noi<=0 || noo<=0)
 			{
@@ -2825,6 +2887,8 @@ int execute(line_t line, int dbf)
 					scene[noi+i]=l1o[i]; // if no output layer use layer 1
 				else
 					scene[noi+i]=l3o[i];
+
+				if (sho) rprintf("O=%d\n", scene[noi+i]);
 			}
 
 		}
