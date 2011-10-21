@@ -1,0 +1,10 @@
+#SWIGFLG=-debug-typemap  -debug-tmsearch -debug-tmused 
+SWIGFLG=
+
+octave_cpp: robobuilder.i robobuilder_serial.c
+	swig ${SWIGFLG} -octave -o robobuilder_wrap.cpp -c++ robobuilder.i 
+	mkoctfile -v robobuilder_wrap.cpp robobuilder_serial.c  -o robobuilder.oct
+
+clean:
+	rm *.oct *.o
+
