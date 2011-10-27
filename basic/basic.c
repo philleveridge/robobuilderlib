@@ -2748,12 +2748,11 @@ int execute(line_t line, int dbf)
 			{
 				rprintf("Type      = %d\n", ty);
 				rprintf("length    = %d\n", ln);
-				rprintf("Off       = %d\n", nog);
+				rprintf("Generate  = %d\n", nog);
 				rprintf("Mut rate  = %d\%\n", mr);
-
 			}
 
-			for (i=1; i<=nog; i++)
+			for (i=0; i<nog; i++)
 			{
 				int v,e;
 				int co1=0;
@@ -2761,11 +2760,14 @@ int execute(line_t line, int dbf)
 
 				if (ty>0)
 				{
-					co1 = rand()%ln;
-					co2 = rand()%ln;
+					co1 = rand()%(ln+1);
+					co2 = rand()%(ln+1);
 					if (co2<co1) swap(&co1,&co2);
-					if (ty>0) rprintf("CO pt1    = %d\n", co1);
-					if (ty>1) rprintf("CO pt2    = %d\n", co2);
+					if (sho)
+					{
+						if (ty>0) rprintf("CO pt1    = %d\n", co1);
+						if (ty>1) rprintf("CO pt2    = %d\n", co2);
+					}
 				}
 
 				for (e=0; e<ln; e++)
@@ -2777,7 +2779,7 @@ int execute(line_t line, int dbf)
 					if (ty==1)
 					{
 						// single cross over
-						if (e<=co1)
+						if (e<co1)
 							v=scene[e]; //straight copy p1
 						else
 							v=scene[e+ln]; //straight copy p2
@@ -2785,7 +2787,7 @@ int execute(line_t line, int dbf)
 					if (ty==2)
 					{
 						// two cross over
-						if (e<=co1 || e>=co2)
+						if (e<co1 || e>=co2)
 							v=scene[e]; //straight copy p1
 						else
 							v=scene[e+ln]; //straight copy p2
@@ -2798,10 +2800,22 @@ int execute(line_t line, int dbf)
 						if (v>param[5]) v=param[5];
 					}
 
-					scene[param[1]*i+e]=v; //straight copy
+					if (ty==1 || ty==2)
+						scene[2*ln+(ln*i)+e]=v; // copy
+					else
+						scene[ln+(ln*i)+e]=v; // copy
 
 				}
-				nis = (1+param[0])*param[1];
+
+			}
+
+			nis = nog*ln;
+			for (i=0; i<nis; i++)
+			{
+				if (ty==1 || ty==2)
+					scene[i]=scene[i+2*ln];
+				else
+					scene[i]=scene[i+ln];
 			}
 		}
 		break;
