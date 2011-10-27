@@ -537,6 +537,9 @@ void basic_load(int tf)
 		    if (*cp=='%') { newline.var=2; cp++;}
 			newline.text=cp;
 			break;
+
+		case SORT:
+		    if (*cp=='#') { newline.var=1; cp++;}
 		case MOVE:	
 		case OUT:	
 		case RUN:
@@ -547,7 +550,6 @@ void basic_load(int tf)
 		case SPEED:
 		case MTYPE:
 		case LIGHTS:
-		case SORT:
 		case FFT:
 		case STAND: 
 		case SCALE:
@@ -2454,12 +2456,81 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case SORT: 
-		if (eval_expr(&line.text, &n) != ARRAY)
+		if (line.var==1)
 		{
-			errno=1;
-			break;
+			//Length of gen, no of generation, no to surive
+			// e.g.
+			// PRINT @{12,1,1,1,2,2,2,3,3,3,1,5,2}
+			// SORT #3,3,3
+
+			int i, param[3];
+			p=line.text;
+			for (i=0; i<3; i++)
+			{
+				eval_expr(&p, &param[i]);
+				if (*p==',' && i<2)
+				{
+					p++;
+				}
+				else if (*p !=0)
+				{
+					errno=3; break;
+				}
+			}
+
+			int sho=0; //1;
+			int lgn=param[0];
+			int nog=param[1];
+			int nts=param[2];
+
+			if (sho)
+			{
+				rprintf("length    = %d\n", lgn);
+				rprintf("N of Gen  = %d\n", nog);
+				rprintf("N to Save = %d\n", nts);
+				if (nts<1 || nts>nog)
+				{
+					errno=3; break;
+				}
+			}
+
+			for (i=0; i<nts; i++)
+			{
+				int j,k,mx;
+				int sof=lgn*nog + i;
+
+				mx=scene[sof];
+				//rprintf("loop %d (%d,%d)\n", i, sof, mx);
+
+				for (j=sof+1; j<sof+nts; j++)
+				{
+					if (scene[j] > mx )
+					{
+						//swap fit factors
+						//rprintf("swap %d and %d\n", i, i+(j-sof));
+						scene[sof]= scene[j];
+						scene[j]=mx;
+						mx=scene[sof];
+						//swap genes
+						for (k=0; k<lgn; k++)
+						{
+							int t=scene[k+i*lgn];
+							scene[k+i*lgn]=scene[k+(i+j-sof)*lgn];
+							scene[k+(i+j-sof)*lgn]=t;
+						}
+					}
+				}
+			}
 		}
-		quicksort(scene,0,nis-1);
+		else
+		{
+			if (eval_expr(&line.text, &n) != ARRAY)
+			{
+				errno=1;
+				break;
+			}
+			quicksort(scene,0,nis-1);
+		}
 		break;
 	case SAMPLE: 
 		//SAMPLE n,d
