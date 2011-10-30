@@ -533,13 +533,11 @@ void basic_load(int tf)
 			newline.text=cp;
 			break;
 		case PRINT:
+		case SORT:
 		    if (*cp=='#') { newline.var=1; cp++;}
 		    if (*cp=='%') { newline.var=2; cp++;}
 			newline.text=cp;
 			break;
-
-		case SORT:
-		    if (*cp=='#') { newline.var=1; cp++;}
 		case MOVE:	
 		case OUT:	
 		case RUN:
@@ -1946,11 +1944,11 @@ int execute(line_t line, int dbf)
 						}
 						if (w<=0)  w=nis;
 						if (w>nis) w=nis;
-						for (k=0; k<(nis/w); k++)
+						for (k=0; k<=(nis/w); k++)
 						{
-							rprintf ("%d", scene[(k*w)]);
-							for (n=1; n<w; n++) {rprintf (",%d",scene[(k*w)+n]);}
-							rprintfCRLF();
+							if (k*w<nis) rprintf ("%d", scene[(k*w)]);
+							for (n=1; (n<w) && ((k*w+n)<nis); n++) {rprintf (",%d",scene[(k*w)+n]);}
+							if (k*w<nis) rprintfCRLF();
 						}
 					}
 				}
@@ -2502,7 +2500,7 @@ int execute(line_t line, int dbf)
 				mx=scene[sof];
 				//rprintf("loop %d (%d,%d)\n", i, sof, mx);
 
-				for (j=sof+1; j<sof+nts; j++)
+				for (j=sof+1; j<(lgn+1)*nog; j++)
 				{
 					if (scene[j] > mx )
 					{
@@ -2511,6 +2509,7 @@ int execute(line_t line, int dbf)
 						scene[sof]= scene[j];
 						scene[j]=mx;
 						mx=scene[sof];
+						//rprintf("MAX=%d\n", mx);
 						//swap genes
 						for (k=0; k<lgn; k++)
 						{
@@ -2521,6 +2520,7 @@ int execute(line_t line, int dbf)
 					}
 				}
 			}
+			nis = nts*lgn;
 		}
 		else
 		{
