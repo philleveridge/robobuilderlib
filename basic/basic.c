@@ -115,7 +115,7 @@ char *specials[] = {
 		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
 		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
 		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
-		"RANGE", "SIG",  "DSIG"
+		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS"
 };
 
 
@@ -941,6 +941,7 @@ int get_special(char **str, int *res)
 	char *p=*str;
 	int t=token_match(specials, str, NOSPECS);
 	int v=0;
+	int rt=NUMBER;
 	
 	switch(t) {
 	case sMIC:
@@ -1131,6 +1132,37 @@ int get_special(char **str, int *res)
 			}
 		}
 		break;
+	case sSTAND: // $STAND(x)
+		v=0;
+		if (getArg(str,&v))
+		{
+			int i;
+			if (v<1)  v=1;
+			if (v>18) v=18;
+			for (i=0; i<v; i++)
+			{
+				if (v<=16)
+					scene[i]=basic16[i];
+				else
+					scene[i]=basic18[i];
+			}
+			nis=i;
+			rt=ARRAY;
+		}
+		break;
+	case sZEROS: // $ZEROS(x)
+		v=0;
+		if (getArg(str,&v))
+		{
+			int i;
+			for (i=0; i<v; i++)
+			{
+				scene[i]=0;
+			}
+			nis=i;
+			rt=ARRAY;
+		}
+		break;
 	case sABS: // $ABS(x)
 		v=0; 
 		if (getArg(str,&v))
@@ -1296,8 +1328,8 @@ int get_special(char **str, int *res)
 		return -1;
 	}
 	*res=v;
-	t=strlen(specials[t]);
-	return t;
+	//t=strlen(specials[t]);
+	return rt;
 }
 
 
@@ -1561,7 +1593,8 @@ unsigned char eval_expr(char **str, int *res)
 			break;
 		case '$':
 			//special var?
-			get_special(str, &n1);
+			if (get_special(str, &n1)==ARRAY)
+				return ARRAY;
 			break;
 		default:
 			done=1;

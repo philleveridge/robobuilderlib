@@ -32,6 +32,7 @@ enum { 	sMIC=0, sGX, sGY, sGZ, sPSD, sVOLT, sIR,
 		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
 		sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
 		sSIN, sCOS, sIMAX, sHAM, sRANGE, sSIG, sDSIG,
+		sSTAND, sZEROS,
 		NOSPECS
 	};
 
