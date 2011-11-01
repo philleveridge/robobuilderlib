@@ -559,16 +559,30 @@ extern int z_value,y_value,x_value,gDistance;
 
 	int dm=0;
 	void setdh(int n) {dm=n;}
+
 	void standup (int n)
 	{
-		if (n<18)
-			PlayPose(1000, 10, 4, basic16, 16); //huno basic
-		else
+		void standup (int n)
 		{
-			if (dm)
-			    PlayPose(1000, 10, 4, basicdh, 18); //huno with hip
-			else
-			    PlayPose(1000, 10, 4, basic18, 18); //huno with hip
+			int nw = n%32;
+			BYTE temp[nw];
+			for (int j=0; j<nw; j++)
+			{
+				if (nw<16)
+					temp[j]=basic16[j]; //huno with hip
+				else
+				{
+					if (dm)
+						temp[j]=basicdh[j]; //huno with hip
+					else
+						temp[j]=basic18[j]; //huno with hip
+				}
+				if (j<16 && (n&32==32))
+				{
+					temp[j] += offset[j];
+				}
+			}
+			PlayPose(1000, 10, 4, temp, nw); //huno basic
 		}
 	}
 
