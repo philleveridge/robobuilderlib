@@ -1,0 +1,45 @@
+#summary Linux Build of BASIC interpreter.
+
+= Introduction =
+
+The is a linux build of the Basic interpreter. At start up it will test on serial port /dev/ttyUSB0 for a connection to Robobuilder running DCMP. If it can connect it will display version. Any robot/RBC specific functions can then be carried using the remote link.
+
+= Command line options =
+
+  * DEBUG - verbose debug statement
+  * LOAD  - this will auto-load bindata.txt
+  * FAST  - this attempts to connect at 232400B to DCMP 
+  * IR    - this switches on polling the IR status - this puts a load on the comms hence it optional - default is off
+
+= BASIC differences =
+
+Commands
+  * Z - this will store the current program to local folder (bindata.txt)
+  * z - this loads bindata.txt (rather than attempting file transfer)
+
+= Example Session =
+
+{{{
+phil@phil-linux:~$ ./Basic
+Running Unix emulator ...
+DCMP v=3.12
+Clear Program 
+Basic v=$Revision: 365 $
+Commands: i r l c z q s V R F $
+19 servos connected
+0 lines in memory
+: i
+Enter Program '.' to Finish
+> 10 FOR I=1 TO 1000000
+> 20 LET A=A+1
+> 30 NEXT I
+> 
+
+3 lines entered, [45/3072] Bytes
+: r
+Run Program 
+Elapsed Time 00:04-020
+: 
+}}}
+
+Another clear difference is the speed! 4s for 2M operation, oe 2uS per instruction. 
