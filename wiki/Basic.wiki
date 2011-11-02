@@ -6,7 +6,9 @@ This gives Robobuilder the ability to create simple actions in an elementary bas
 
 First, click here to download [http://robobuilderlib.googlecode.com/files/BASIC-317.zip all file required]. 
 
-*Note: update to firmware now available* - http://robobuilderlib.googlecode.com/files/Basic336.hex
+Note: current firmware (v336) - http://robobuilderlib.googlecode.com/files/Basic336.hex
+
+*_New version coming soon_*
 
 Next extract Basic.hex and upload on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
 
@@ -30,6 +32,9 @@ At the prompt type
   * z - download (requires client - see below)
   * q - check servos connected
   * V - print version / build
+  * s - stand
+  * $ - enter demo mode
+  * X - enter bat charge mode
 
 There is also a windows client application (BasicClient.exe) to simplify the download of programs - see wiki for more details.
 
@@ -105,7 +110,7 @@ SYNTAX:
 [LINE No] WAIT number
 [Line No] SERVO ID=EXPR | '@' | '~'
 [LINE No] LIST [VAR]=N,1,2,3 ..
-[LINE No] MOVE @[VAR],100,20
+[LINE No] MOVE @[VAR],1,25 
 [Line No] GOSUB [Line No]
 [Line No] RETURN
 [Line No] STAND [16 | 18]  
@@ -125,6 +130,9 @@ SYNTAX:
 [Line No] SET index,value
 [Line No] INSERT index,value
 [Line No] DELETE index
+[Line No] SELECT index,index
+[Line No] GEN No_Gn,length,Mute rate%,Mute rnge,Val[min,max]
+[Line No] NETWORK - new  tbc
 }}}
 
 ||Special register access ($)||Description||
@@ -144,18 +152,24 @@ SYNTAX:
 ||$MAPIR(x)    ||Maps value from IR to built in action code||
 ||$FIND(x, @A) ||Look for item less than or equal to X and return index||
 ||$CVB2I(x)    ||Converts byte to int, i.e. 4 -> 4 and 254 -> -2||
-||$MAX||    ||
-||$MIN||    ||
+||$MAX(@n)||return maximum element value in array n ||
+||$MIN(@n)|| return minimum element value in array n    ||
 ||$NORM||   ||
-||$SUM||    ||
-||$HAM||    ||
-||$RANGE||  ||
-
+||$SUM(@n)|| return sum of element values in array n    ||
+||$HAM(@a,@b)||    ||
+||$SIN(x)||Sine of X where X 0-233 and return is +/-32K||
+||$COS(x)||Cosine of X where X 0-233 and return is +/-32K||
+||$RANGE(a,b,c)||return b < a < c ||
+||$SIG(x[,n])||  SIGMOID(x) - different scaling options set by n||
+||$DSIG(x)||SIGMOID derivative i.e.returns x*(1-x)  ||
+||$STAND(x)||return an array of positions related to stand  ||
+||$ZEROS(x)||return an array of zeros  ||
 
 
 ||Command||Description||
 ||SERVO ID=POS  ||set servo id to position POS / @ / ~||
-||LIST/MOVE     ||sends a Scene - 'n' Servo Positions, Plus time, no frames||
+||LIST v=n,1,2,..n   ||Set V to a list of n elements ||
+||MOVE @P,a,b    ||sends a Scene of servos position in array P,a steps in b ms Note: b/a > 25||
 ||POKE 10,A     ||Put A into Byte 10||
 ||PUT PORT:A:8 = 3 ||set DDR of Port A = 3 (PIN0,PIN1 readable)||
 ||PUT PORT:A:2 = 1 ||set Port A bit 2 =1 (assuming writeable)||
@@ -168,7 +182,9 @@ SYNTAX:
 ||SPEED 2||Speed torque setting on Move 0-4 (0 maximum, 4 minimum) ||
 ||MTYPE 3||Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear ||
 ||STEP 5=30,50,5||STEP servo 5 from position 30 to position 50 in increments of 5 checking progress and stopping if obstruction||
-
+||SORT #a,b,c||specialised sort for use with GEN- tbc||
+||GEN 8,6,0,0,0,5,2||tbc||
+||NETWORK  2,1,4,2,0,1||creates a 3 neuron network (2 input 1 output) ||
 *Built in motions:*
 {{{
 0) PunchLeft
