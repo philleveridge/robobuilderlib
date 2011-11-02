@@ -727,7 +727,7 @@ BYTE readservos(int n)
 
 // Different type of move interpolation
 // from http://robosavvy.com/forum/viewtopic.php?t=5306&start=30
-// orinial by RN1AsOf091407
+// original by RN1AsOf091407
 
 int PP_mtype=Linear;
 
@@ -862,31 +862,30 @@ void PlayMotion(BYTE n)
 
 int dm=0;
 void setdh(int n) {dm=n;}
+
 void standup (int n)
 {
-	void standup (int n)
+	int nw = n%32;
+	BYTE temp[nw];
+	for (int j=0; j<nw; j++)
 	{
-		int nw = n%32;
-		BYTE temp[nw];
-		for (int j=0; j<nw; j++)
+		if (nw<=16)
+			temp[j]=basic16[j]; //huno with hip
+		else
 		{
-			if (nw<16)
-				temp[j]=basic16[j]; //huno with hip
+			if (dm)
+				temp[j]=basicdh[j]; //huno with hip
 			else
-			{
-				if (dm)
-					temp[j]=basicdh[j]; //huno with hip
-				else
-					temp[j]=basic18[j]; //huno with hip
-			}
-			if (j<16 && (n&32==32))
-			{
-				temp[j] += offset[j];
-			}
+				temp[j]=basic18[j]; //huno with hip
 		}
-		PlayPose(1000, 10, 4, temp, nw); //huno basic
+		if (j<16 && (n&32==32))
+		{
+			temp[j] += offset[j];
+		}
 	}
+	PlayPose(1000, 10, 4, temp, nw); //huno basic
 }
+
 
 
 /************************************************************************/

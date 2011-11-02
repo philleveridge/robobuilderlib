@@ -3392,6 +3392,24 @@ void basic()
 		case 'R': // run
 			basic_run(1);
 			break;
+
+		case 'G': // gosub
+			{
+				int t,gn=0;
+				while(1)
+				{
+					ch=GetByte();
+					if (ch <'0' || ch>'9') break;
+					rprintfChar(ch);
+					gn=gn*10+ch-'0';
+				}
+				t=gotoln(gn);
+				if (t>0)
+					rprintf("Go(sub) %d = %d\n",gn,t);
+				else
+					rprintf("? No such line %d\n",gn);
+			}
+			break;
 		case 'l': // list 
 			basic_list();
 			break;
