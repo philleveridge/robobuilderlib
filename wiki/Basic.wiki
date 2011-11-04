@@ -13,9 +13,9 @@ If you're not using Windows, you can still download the custom firmware into you
 
 If you want just to try it out (and not load on to Robot) then there is nn old windows OS build is available  (basic.exe). It input/outputs using windows console. Robot hardware functions are stubbed out.  And now there is a *_New: A linux build available_* - http://robobuilderlib.googlecode.com/files/Basic372
 
-So assuming you have downloaded the program (and installed the firmware - reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html vt100 terminal emulator]. You should see the following:
+So assuming you have downloaded the program (and installed the firmware) - reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html vt100 terminal emulator] on the serial port (i.e. COM1 at 115200). You should see the following:
 {{{
-Basic v=$Revision: 366 $
+Basic v=$Revision: 367 $
 Commands: i r l c z q s V R F $
 
 16 servos connected
@@ -23,7 +23,7 @@ Commands: i r l c z q s V R F $
 :
 }}}
 
-At the prompt type 
+At the prompt type one of the following
   * i - input a new program [. at start of line will exit input mode]
   * r - run current program [or press Red button on IR remote]
   * R - run in TRACE mode
@@ -34,12 +34,10 @@ At the prompt type
   * V - print version / build
   * s - stand
   * $ - enter demo mode
-  * X - enter bat charge mode
+  * X - enter battery charge mode
   * g - Go to specific line number
 
-There is also a windows client application (BasicClient.exe) to simplify the download of programs - see wiki for more details.
-
-For more details and programming guide see the PDF  manual also in the ZIP file.
+For more details and programming guide see the PDF manual.
 
 The start mode is command mode signified by ':'. On pressing I it enters input mode and  you get a '>' prompt, In input mode any valid program code with a line number is stored in flash - and will be there after you turn the robot off. With no line number the command will be immediately executed. 
 
