@@ -4,16 +4,16 @@
 
 This gives Robobuilder the ability to create simple actions in an elementary basic language. The software is beta release.
 
-*_New version  firmware (v366)_* - http://robobuilderlib.googlecode.com/files/Basic366.hex
+*_New version  firmware (v367)_* - http://robobuilderlib.googlecode.com/files/Basic367.hex
 
 Next extract Basic.hex and upload on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
 
-An old windows OS build is available in the zip file. It input/outputs using windows console. Robot hardware functions are stubbed out. 
+If you're not using Windows, you can still download the custom firmware into your bot using the [ http://www.strout.net/info/robotics/utilities/avrbl-downloader/AVRBL Downloader tool]. Or there's a Java based tool available in the source tree.
 
 
-*_New: A linux build is now available_*
+If you want just to try it out (and not load on to Robot) then there is nn old windows OS build is available  (basic.exe). It input/outputs using windows console. Robot hardware functions are stubbed out.  And now there is a *_New: A linux build available_* - http://robobuilderlib.googlecode.com/files/Basic372
 
-Reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html vt100 terminal emulator]. You should see the following:
+So assuming you have downloaded the program (and installed the firmware - reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html vt100 terminal emulator]. You should see the following:
 {{{
 Basic v=$Revision: 366 $
 Commands: i r l c z q s V R F $
@@ -35,6 +35,7 @@ At the prompt type
   * s - stand
   * $ - enter demo mode
   * X - enter bat charge mode
+  * g - Go to specific line number
 
 There is also a windows client application (BasicClient.exe) to simplify the download of programs - see wiki for more details.
 
@@ -45,7 +46,7 @@ The start mode is command mode signified by ':'. On pressing I it enters input m
 Here is an example session :
 
 {{{
-Basic v=$Revision: 366 $
+Basic v=$Revision: 367 $
 Commands: i r l c z q s V R F $
 16 servos connected
 0 lines in memory
@@ -128,6 +129,7 @@ SYNTAX:
 [Line No] FFT list,scale
 [Line No] SCALE list,scale
 [Line No] SET index,value
+[Line No] SORT @array  | SORT #a,b,c
 [Line No] INSERT index,value
 [Line No] DELETE index
 [Line No] SELECT index,index
