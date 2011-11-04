@@ -564,8 +564,13 @@ void basic_load(int tf)
 			break;
 		case LIST:
 		case DATA:
-			// read Variable		
-			if ((newline.var = getVar(&cp))<0)
+			// read Variable
+			if (*cp=='!')
+			{
+				newline.var=32;
+				cp++;
+			}
+			else if ((newline.var = getVar(&cp))<0)
 			{
 				errno=3;
 			}
@@ -1097,8 +1102,35 @@ int get_special(char **str, int *res)
 		v=uartGetByte();
 		if (v<0) v=irGetByte();
 		break;
-	case sRND:
-		v=rand();
+	case sRND: // $RND 0 < n < 255 or $RND(6,0,5) ->{6,n,n,n,n,n,n} 0<n<5
+		if (**str=='(')
+		{
+			int i,a=0,b=0,c=0;
+			(*str)++;
+			eval_expr(str, &a);
+			if (**str==',')
+			{
+				(*str)++;
+				eval_expr(str, &b);
+				if (**str==',')
+				{
+					(*str)++;
+					eval_expr(str, &c);
+				}
+			}
+			(*str)++;  // ')'
+
+			if (b>c) swap(&b,&c);
+
+			for (i=0; i<a; i++)
+			{
+				scene[i]=(rand()%(c-b))+b;
+			}
+			nis=a;
+			rt=ARRAY;
+		}
+		else
+		   v=rand();
 		break;
 	case sIR2ACT: //$IR2ACT(10) -> x
 		v=0;
@@ -1689,6 +1721,25 @@ int gp;
 		
 void basic_run(int dbf)
 {
+	fmflg=0;
+
+	nxtline=0;
+
+	if (nextchar()!=0xAA) {
+		rprintfStr("No program loaded\r\n");
+		return;
+	}
+
+	//point top at EEPROM
+	rprintfStr("Run Program \r\n");
+
+	firstline();
+
+	basic_start(dbf);
+}
+
+void basic_start(int dbf)
+{
 	// Repeat
 	//   load from memory
 	//   Execute action
@@ -1698,26 +1749,14 @@ void basic_run(int dbf)
 	line_t line;
 	char buf[MAX_LINE];
 	
+	errno=0;
+
 	fp=0; // Upto 3 nested for/next
 
 	gp=0;  // 3 nested gosubs
 
 	cs=0; // reset line number cache
-	
-	fmflg=0;
-	
-	nxtline=0;
 
-	if (nextchar()!=0xAA) {
-		rprintfStr("No program loaded\r\n");
-		return;
-	}
-	
-	//point top at EEPROM
-	rprintfStr("Run Program \r\n");	
-	errno=0;
-	firstline();
-	
 	while (tmp != 0xCC && nxtline < EEPROM_MEM_SZ )
 	{
 		int tc;
@@ -2138,9 +2177,25 @@ int execute(line_t line, int dbf)
 		break;			
 	case LIST: 
 	case DATA: 
-		variable[line.var] = lastline+8;
+		if (line.var==32)
+		{
+			if (line.token==DATA) // DATA
+			{
+				int i=0;
+				nis=line.text[1];
+				for (i=0; i<nis; i++)
+					scene[i]=(unsigned char)line.text[i+2];
+			}
+			else
+				eval_list(line.text);
+		}
+		else
+		{
+			variable[line.var] = lastline+8;
+		}
 		break;		
-	case XACT:	case RUN:		
+	case XACT:
+	case RUN:
 		n=0;
 		p=line.text;
 		if (eval_expr(&p, &n) != NUMBER)
@@ -3360,7 +3415,8 @@ void basic()
 
 		ch = GetByte();
 		if (ch > 26) {
-			rprintfChar(ch);rprintfCRLF();
+			rprintfChar(ch);
+			if (!(ch== 'G'|| ch=='g')) rprintfCRLF();
 		}
 		switch (ch)
 		{
@@ -3394,20 +3450,26 @@ void basic()
 			break;
 
 		case 'G': // gosub
+		case 'g': // gosub
 			{
-				int t,gn=0;
-				while(1)
-				{
-					ch=GetByte();
-					if (ch <'0' || ch>'9') break;
-					rprintfChar(ch);
-					gn=gn*10+ch-'0';
-				}
-				t=gotoln(gn);
-				if (t>0)
-					rprintf("Go(sub) %d = %d\n",gn,t);
-				else
-					rprintf("? No such line %d\n",gn);
+			int ch2,t,gn=0;
+			while(1)
+			{
+				ch2=GetByte();
+				if (ch2 <'0' || ch2>'9') break;
+				rprintfChar(ch2);
+				gn=gn*10+ch2-'0';
+			}
+			rprintfCRLF();
+			t=gotoln(gn);
+			if (t>0)
+			{
+				//rprintf("Go(sub) %d = %d\n",gn,t);
+				setline(t);
+				basic_start(ch == 'G');
+			}
+			else
+				rprintf("? No such line %d\n",gn);
 			}
 			break;
 		case 'l': // list 
