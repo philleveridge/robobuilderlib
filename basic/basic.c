@@ -81,6 +81,7 @@ int   fix_fftr(int f[], int m, int inverse);
 void  lights(int n); 
 extern BYTE cpos[];
 extern WORD send_hex_str(char *bus_str, int n);
+extern WORD send_hex_array(int *p, int n);
 
 extern BYTE				sData[];
 extern int 				sDcnt;
@@ -150,6 +151,7 @@ const  prog_char *error_msgs[] = {
 							
 int errno;
 int fmflg;
+static int dbg=0;
 
 void PerformAction (int Action)
 {	
@@ -808,11 +810,12 @@ void quicksort(int list[],int m,int n)
    }
 }
 
+const unsigned char smap[40] = {
+	1,  2,  3,  4,  5,  6,  8,  10, 12, 15, 19, 24, 31, 38, 47, 57, 69, 82, 97, 112,
+	128,144,159,174,187,199,209,218,225,232,237,241,244,246,248,250,251,252,253,254};
+
 int sigmoid(int v, int t)
 {
-	int map[40] = {
-		1,  2,  3,  4,  5,  6,  8,  10, 12, 15, 19, 24, 31, 38, 47, 57, 69, 82, 97, 112,
-		128,144,159,174,187,199,209,218,225,232,237,241,244,246,248,250,251,252,253,254};
 
 	switch (t)
 	{
@@ -823,7 +826,7 @@ int sigmoid(int v, int t)
 	case 4: // 1/(1-e^-x) actually 256/(1-e^(x/4))
 		if(v<-20) v=-20;
 		if(v>19)  v=19;
-		v=(map[v+20]-127)/4;
+		v=(smap[v+20]-127)/4;
 		return v;
 	}
 }
@@ -939,7 +942,7 @@ int getArg(char **str, int *res)
 	return 0;
 }
 
-unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
+const unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
 
 int get_special(char **str, int *res)
 {
@@ -1472,11 +1475,11 @@ unsigned char eval_expr(char **str, int *res)
             {
 				int i;
 				(*str)++;
-				for (i=0;i<32; i++)
+				for (i=0;i<16; i++)
 				{
 					scene[i] = offset[i];
 				}
-				nis=32;
+				nis=16;
 			}
 			else
             if (**str=='{')
@@ -2001,7 +2004,10 @@ int execute(line_t line, int dbf)
 					if (line.var==1)
 					{
 						// send to wxkbus
-						for (n=0; n<nis; n++) ; //tbd
+						WORD w=send_hex_array(scene,nis);
+						scene[0]=w/256;
+						scene[1]=w%256;
+						nis=2;
 					}
 					else
 					{
@@ -2073,7 +2079,7 @@ int execute(line_t line, int dbf)
 		}
 		break;		
 	case MOVE: 
-		// MOVE @A,500,10
+		// MOVE @A,20,2000
 		// MOVE @A
 		// No args - send servo positions synchronously
 		// with args (No Frames / Time in Ms) - use MotionBuffer
@@ -2082,6 +2088,8 @@ int execute(line_t line, int dbf)
 		if (p!=0 && *p != 0)
 		{	
 			int j, fm=0, tm=0;
+			BYTE pos[32];
+
 			if (eval_expr(&p, &fm) != ARRAY)
 			{
 				errno=1;
@@ -2100,22 +2108,22 @@ int execute(line_t line, int dbf)
 
 			for (j=0; j<nis; j++)
 			{
-				if (j<16) scene[j] += offset[j];
-
-			}
-			{
-				BYTE pos[32];
-				for (j=0; j<nis; j++)
+				if (j<16)
 				{
-					if (scene[j]>=0 && scene[j]<=254) 
-						pos[j] = scene[j];
-					if (scene[j]<0) 
-						pos[j] = 0;
-					if (scene[j]>254) 
-						pos[j] = 254;
+					scene[j] += offset[j];
 				}
-				PlayPose(tm, fm, 4, pos, (fmflg==0)?nis:0);
+
+				if (scene[j]>=0 && scene[j]<=254)
+					pos[j] = scene[j];
+				if (scene[j]<0)
+					pos[j] = 0;
+				if (scene[j]>254)
+					pos[j] = 254;
+
+				if (dbg) rprintf("DBG:: MOVE %d=%d\n", j, pos[j]);
 			}
+
+			if (!dbg) PlayPose(tm, fm, 4, pos, (fmflg==0)?nis:0);
 			fmflg=1;
 		}
 		//
@@ -2227,7 +2235,7 @@ int execute(line_t line, int dbf)
 			p=line.text;
 			if (p==0 || *p=='\0')
 			{				
-				for (i=0; i<32; i++)
+				for (i=0; i<16; i++)
 				{
 					offset[i]=0;
 				}
@@ -2238,20 +2246,12 @@ int execute(line_t line, int dbf)
 				{
 					offset[i]=(basic18[i]-basic16[i]);
 				}
-				for (i=16; i<32; i++)
-				{
-					offset[i]=0;
-				}
 			}
 			else if (eval_expr(&p, &n)==ARRAY)
 			{
-				for (i=0; i<nis; i++)
+				for (i=0; i<16 && i<nis; i++)
 				{
 					offset[i]=scene[i];
-				}
-				for (i=nis; i<32; i++)
-				{
-					offset[i]=0;
 				}
 			}
 			else
@@ -3395,6 +3395,12 @@ void testforreset()
 	}
 }
 
+void init()
+{
+	int i;
+	for (i=0; i<16; i++) offset[i]=0;
+}
+
 void basic()
 {
 	int ch;
@@ -3402,6 +3408,8 @@ void basic()
 	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q s V R F $\r\n");
 
 	testforreset();
+
+	void init();
 
 	rprintf   ("%d servos connected\r\n", readservos(0));
 	rprintf   ("%d lines in memory\r\n", findend());
@@ -3524,6 +3532,10 @@ void basic()
 			basic_clear();
 			binmode(); // enter binary mode
 			rprintf ("%d lines loaded\r\n", findend());
+			break;
+		case '~':
+			dbg=1-dbg;
+			if (dbg) rprintf("DEBUG ON\n");
 			break;
 
 #ifndef AVR
