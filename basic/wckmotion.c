@@ -692,7 +692,7 @@ struct FlashMotionData mlist[] =
 // if flag set read initial positions
 
 BYTE cpos[32];
-int offset[32];
+int offset[16];
 BYTE nos=0;
 
 const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
@@ -945,6 +945,22 @@ WORD send_hex_str(char *bus_str, int n)
 			b1 <<=4;
 			if ((*bus_str>='0') && (*bus_str<='9')) b1 += *bus_str-'0' ;
 			if ((*bus_str>='A') && (*bus_str<='Z')) b1 += *bus_str-'A' + 10 ;
+			wckSendByte(b1);
+		}
+
+		r = ((0xFF&wckGetByte(25))<<8) | (0xFF&wckGetByte(25));
+		return r;
+}
+
+WORD send_hex_array(int *p, int n)
+{
+		int i;
+		BYTE b1;
+		WORD r=0;
+
+		for (i=0;i<n;i++)
+		{
+			b1=(BYTE)p[i];
 			wckSendByte(b1);
 		}
 

@@ -273,6 +273,24 @@ WORD send_hex_str(char *bus_str, int n)
 		return r;
 }
 
+WORD send_hex_array(int *p, int n)
+{
+		int i;
+		BYTE b1,b2;
+		WORD r=0;
+
+		for (i=0;i<n;i++)
+		{
+			b1=(BYTE)p[i];
+			writebyte(b1);
+		}
+
+		b1=readbyte();
+		b2=readbyte();
+		r = ((0xFF&b1)<<8) | (0xFF&b2);
+		return r;
+}
+
 
 
 /**************************************************************************************
