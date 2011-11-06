@@ -2488,7 +2488,7 @@ int execute(line_t line, int dbf)
 					errno=3; break;
 				}
 				if (n2>n && n2<nis)
-					n2=n2-n;
+					n2=1+n2-n;
 				else
 				{
 					errno=3;break;
@@ -2497,15 +2497,15 @@ int execute(line_t line, int dbf)
 			if(line.token==DELETE)
 			{
 				for (i=n; i<nis; i++)
-					scene[i]=scene[i+n2+1];
-				nis=nis-n2-1;
+					scene[i]=scene[i+n2];
+				nis=nis-n2;
 			}
 			else
 			{
 				// select
-				for (i=0; i<=n2; i++)
+				for (i=0; i<n2; i++)
 					scene[i]=scene[i+n];
-				nis=n2+1;
+				nis=n2;
 			}
 		}
 		break;
@@ -2933,7 +2933,7 @@ int execute(line_t line, int dbf)
 	        int ofset=param[6];
 
 	        sho = (flg&8); // show output
-	        flg = flg & 7; // 0, 1, 2 or 4 (sigmoid mode)
+	        flg = flg & 7; // 0, 1, 2, 3  or 4 (sigmoid mode)
 
 			if (noi<=0 || noo<=0)
 			{
@@ -2963,6 +2963,12 @@ int execute(line_t line, int dbf)
 			int l2o[nl2];
 			int l3o[nl3];
 
+		    i=ofset;
+		    if (nl2==0)
+		    	ofset= ofset* (((noi+1)*nl1) + ((nl1+1)*nl3));
+		    else
+		    	ofset= ofset* (((noi+1)*nl1) + ((nl1+1)*nl2) + ((nl2+1)*nl3));
+
 			if (sho)
 			{
 				rprintf("NOI   = %d\n", noi);
@@ -2971,10 +2977,9 @@ int execute(line_t line, int dbf)
 				rprintf("NO L1 = %d\n", nl1);
 				rprintf("NO L2 = %d\n", nl2);
 				rprintf("NO L3 = %d\n\n", nl3);
-				if (ofset>0) rprintf("Offset = %d\n\n", ofset);
-			}
 
-			ofset= ofset* (((noi+1)*nl1) + ((nl1+1)*nl2) + ((nl2+1)*nl3));
+				if (ofset>0) rprintf("Offset = %d (%d)\n\n", i,ofset);
+			}
 
 			int t=noi+noo+ofset-1; // index through weights and threshold
 
