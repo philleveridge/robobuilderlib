@@ -109,7 +109,7 @@ const prog_char *tokens[] ={
 	"GEN",  "NETWORK", "SELECT"
 };
 
-char *specials[] = { 
+const  prog_char  *specials[] = {
 	    "MIC",   "X",    "Y",    "Z",    "PSD", 
 		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
 		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
@@ -146,9 +146,7 @@ const  prog_char *error_msgs[] = {
 	"Bad Line",
 	"Bad List"
 	};
-	
 
-							
 int errno;
 int fmflg;
 static int dbg=0;
@@ -707,6 +705,13 @@ void basic_load(int tf)
 		{	
 			if (newline.lineno==0)
 			{
+				if (newline.token==LIST || newline.token==DATA
+						|| newline.token==FOR || newline.token==GOTO
+						|| newline.token==NEXT || newline.token==RETURN
+						|| newline.token==IF || newline.token==GOSUB)
+				{
+					rprintf("Command not available in immediate mode\r\n");
+				}
 				fmflg=0;
 				if (tf==1)
 					gtick=0;
