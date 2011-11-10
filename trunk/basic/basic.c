@@ -1874,34 +1874,34 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case POKE: // POKE A,B  or POKE A,$B or POKE 0,@
-                {
-                        int f=1;
+         {
+            int f=1;
  			int i;
 	 		n=0;
 			p=line.text;
-		        if (*p=='$')
+		    if (*p=='$')
 			{
-		            p++;
-                            f=0;
+		        p++;
+		        f=0;
 			}
  			if (*p=='@')
 			{
-		            p++;
+		        p++;
 			    for (i=0; i<nis; i++)
-				   eeprom_write_byte(PERSIST+i, scene[i]);      
+				   eeprom_write_byte(PERSIST+i, scene[i]);
 			}
-			if (eval_expr(&p, &n)==NUMBER)
+ 			else if (eval_expr(&p, &n)==NUMBER)
 			{
 				// put result into address line.var
 				BYTE addr=line.var;
-                                if (f)
+                if (f)
 				   eeprom_write_byte(FIRMWARE+addr, n);
-                                else
+                else
 				   eeprom_write_byte(PERSIST+addr, n);                             
 			}
 			else
 				errno=1;
-                }
+        }
 		break;
 	case PUT: 
 		n=0;
@@ -1918,9 +1918,6 @@ int execute(line_t line, int dbf)
 			variable[line.var] = n;
 		else
 			errno=1;
-		//else
-		//handle error
-		//rprintf ("assign %c= %d\r\n", line.var, n); // DEBUG
 		break;
 	case SERVO:
 		{
@@ -2084,26 +2081,47 @@ int execute(line_t line, int dbf)
 		}
 		break;		
 	case MOVE: 
-		// MOVE @A,20,2000
+		// MOVE @A,C,D
+		// Move to position @A, in C steps, taking D ms
 		// MOVE @A
 		// No args - send servo positions synchronously
 		// with args (No Frames / Time in Ms) - use MotionBuffer
+		// MOVE A,B,C,D
+		// Move to position @![a,a+b],C,D
 		p=line.text;
 			
 		if (p!=0 && *p != 0)
 		{	
-			int j, fm=0, tm=0;
+			int j, fm=0, tm=0, st=0, nb=0;
 			BYTE pos[32];
 
-			if (eval_expr(&p, &fm) != ARRAY)
+			switch (eval_expr(&p, &fm))
 			{
-				errno=1;
+			case ARRAY:
+				if (*p=='\0')
+				{
+					if (nis>0)
+						wckSyncPosSend(nis-1, speed, scene, 0);
+					return tmp;
+				}
 				break;
-			}
-			if (*p=='\0')
-			{
-				if (nis>0) 
-					wckSyncPosSend(nis-1, speed, scene, 0);
+			case NUMBER:
+				st=fm;
+				if (*p==',')
+				{
+					p++;
+					if (eval_expr(&p, &nb) != NUMBER)
+					{
+						errno=1;
+						return 0;
+					}
+				}
+				if (st>=nis || st+nb>nis)
+				{
+					errno=1;
+					return 0;
+				}
+				break;
 			}
 
 			if (*p++ != ',') { errno=1; break;}
@@ -2111,24 +2129,33 @@ int execute(line_t line, int dbf)
 			if (*p++ != ',') { errno=1; break;}
 			eval_expr(&p, &tm);
 
-			for (j=0; j<nis; j++)
+			if (nb==0) nb=nis-st;
+
+			for (j=0; j<nb; j++)
 			{
-				if (j<16)
+				if (scene[j+st]>=0 && scene[j+st]<=254)
+					pos[j] = scene[j+st];
+				else
 				{
-					scene[j] += offset[j];
+					errno=1;
+					return 0;
 				}
 
-				if (scene[j]>=0 && scene[j]<=254)
-					pos[j] = scene[j];
-				if (scene[j]<0)
+				if (j<16)
+				{
+					pos[j] += offset[j];
+				}
+
+				if (pos[j]<0)
 					pos[j] = 0;
-				if (scene[j]>254)
+
+				if (pos[j]>254)
 					pos[j] = 254;
 
 				if (dbg) rprintf("DBG:: MOVE %d=%d\n", j, pos[j]);
 			}
 
-			if (!dbg) PlayPose(tm, fm, 4, pos, (fmflg==0)?nis:0);
+			if (!dbg) PlayPose(tm, fm, speed, pos, (fmflg==0)?nis:0);
 			fmflg=1;
 		}
 		//
@@ -2144,7 +2171,7 @@ int execute(line_t line, int dbf)
 			if (eval_expr(&p, &n) != ARRAY)
 			{
 				errno=1;
-				break;
+				return 0;
 			}
 			for (i=0; i<nis; i++)
 			  ob[i]=scene[i];
@@ -2164,7 +2191,7 @@ int execute(line_t line, int dbf)
 			if  (*p++ != ',')
 			{
 				errno=1;
-				break;	
+				return 0;
 			}
 			if (eval_expr(&p, &ibc)==NUMBER)
 			{
@@ -2173,7 +2200,7 @@ int execute(line_t line, int dbf)
 					if (eval_expr(&p, &n) != ARRAY)
 					{
 						errno=1;
-						break;
+						return 0;
 					}
 				}
 				else
@@ -2214,7 +2241,7 @@ int execute(line_t line, int dbf)
 		if (eval_expr(&p, &n) != NUMBER)
 		{
 			errno=1;
-			break;
+			return 0;
 		}
 		PerformAction(n);		
 		break;
@@ -2226,7 +2253,7 @@ int execute(line_t line, int dbf)
 			if (eval_expr(&p, &n) != NUMBER)
 			{
 				errno=1;
-				break;
+				return 0;
 			}
 		}
 		delay_ms(n);
@@ -2298,22 +2325,22 @@ int execute(line_t line, int dbf)
 			p=line.text;
 			if (eval_expr(&p, &sf)!=NUMBER)
 			{
-				errno=3; break;
+				errno=3; return 0;
 			}
 			if (*p++ != ',')
 			{
-				errno=2; break;
+				errno=2; return 0;
 			}
 			if (eval_expr(&p, &st)!=NUMBER)
 			{
-				errno=3; break;
+				errno=3; return 0;
 			}
 			if (*p==',')
 			{
 				p++;
 				if (eval_expr(&p, &si)!=NUMBER)
 				{
-					errno=3; break;
+					errno=3; return 0;
 				}
 				sd=si+1;
 				if (*p==',')
@@ -2321,14 +2348,14 @@ int execute(line_t line, int dbf)
 					p++;
 					if (eval_expr(&p, &sd)!=NUMBER)
 					{
-						errno=3; break;
+						errno=3; return 0;
 					}
 					if (*p==',')
 					{
 						p++;
 						if (eval_expr(&p, &sw)!=NUMBER)
 						{
-							errno=3; break;
+							errno=3; return 0;
 						}
 					}
 				}
@@ -2400,13 +2427,16 @@ int execute(line_t line, int dbf)
 			p++;
 			if (eval_expr(&p, &tn)!=ARRAY)
 			{
-				errno=3; break;
+				errno=3; return 0;
 			}
 			MIC_SAMPLING=0;
 			if (nis==5)
 				blights(n, scene);
 			else
+			{
 				errno=3; // must be 5 elements
+				return 0;
+			}
 		}
 		else
 		{
