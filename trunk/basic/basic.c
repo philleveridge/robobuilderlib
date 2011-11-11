@@ -49,8 +49,8 @@ $Revision$
 
 #define MAX_LINE  		130 
 #define MAX_TOKEN 		8
-#define MAX_FOR_NEST	3
-#define MAX_GOSUB_NEST	2
+#define MAX_FOR_NEST	6
+#define MAX_GOSUB_NEST	3
 #define MAX_FOR_EXPR	20 
 #define MAX_DEPTH 		6
 
@@ -1554,39 +1554,19 @@ unsigned char eval_expr(char **str, int *res)
 			}
 			if (**str == '[')
 			{
-				int ind;
 				(*str)++;
-				eval_expr(str, &ind);
-				if (ind>=nis) ind=nis-1;
-				if (ind<0)    ind=0;
+				n1=0;
+				eval_expr(str, &n1);
+				if (n1>=nis) n1=nis-1;
+				if (n1<0)    n1=0;
 
-				if (**str == ',')
-				{
-					//sub list
-					int ct;
-					(*str)++;
-					eval_expr(str, &ct);
-					if (ct>=nis || ct==0) ct=nis-1;
-					if (ct>0 && tmp>=0 && ct>tmp)
-					{
-						int i=0;
-						for (i=tmp; i<=ct; i++)
-						{
-							scene[i-tmp]=scene[i];
-						}
-						nis=ct-tmp+1;
-					}
-					(*str)++;
-				}
-				else
-				{
-					n1 = scene[ind];
-					(*str)++;
-					break;
-				}
+				n1 = scene[n1];
+				(*str)++;
+				break;
 			}
 			if (**str == '+' || **str == '-' || **str == '.')
 			{
+				/*
 				//add array
 				int i,tnis;
 				int tempB[SCENESZ];
@@ -1627,6 +1607,7 @@ unsigned char eval_expr(char **str, int *res)
 						nis=m;
 					}
 				}
+				*/
 			}
 
 			return ARRAY;
@@ -1658,14 +1639,22 @@ unsigned char eval_expr(char **str, int *res)
 			}
 			else
 			{
-				rprintf("eval error %d, %d\r\n", op, sp);
+				rprintf("eval stack error %d, %d\r\n", op, sp);
 				return ERROR; 
 			}
 		}
 		else
 		{
-			stack[sp-2] = math(stack[sp-2],stack[sp-1],ops[op-1]);
-			sp--;
+			if (op > 0 && sp>1)
+			{
+				stack[sp-2] = math(stack[sp-2],stack[sp-1],ops[op-1]);
+				sp--;
+			}
+			else
+			{
+				rprintf("eval stack error %d, %d\r\n", op, sp);
+				return ERROR;
+			}
 		}
 		op--;
 	}
@@ -1846,12 +1835,21 @@ int execute(line_t line, int dbf)
 					variable[line.var] = n;		
 			}
 			fp++;
+
+			if (dbg) {
+				rprintf("DBG: for %d-> %d\n", fp, forptr[fp]);
+			}
 		}
 		break;
 	case NEXT: 
 		// increment var and check condition
-		if (fp>0) {
+		if (fp>0)
+		{
 			int t_ptr=forptr[fp-1];
+
+			if (dbg) {
+				rprintf("DBG: next %d-> %d\n", fp, t_ptr);
+			}
 
 			// increment var
 			variable[line.var]++;
@@ -2303,7 +2301,7 @@ int execute(line_t line, int dbf)
 				p++;
 				eval_expr(&p, &l);
 			}
-			while (l-->0) rprintfChar(n);
+			while (l>0) { rprintfChar(n); l--;}
 			break;
 		case ARRAY:
 			for (l=0; l<nis; l++)
