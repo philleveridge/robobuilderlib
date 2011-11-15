@@ -10,12 +10,11 @@ Next extract Basic.hex and upload on to the RBC module using the [http://robobui
 
 If you're not using Windows, you can still download the custom firmware into your bot using the [ http://www.strout.net/info/robotics/utilities/avrbl-downloader/AVRBL Downloader tool]. Or there's a Java based tool available in the source tree.
 
-
-If you want just to try it out (and not load on to Robot) then there is nn old windows OS build is available  (basic.exe). It input/outputs using windows console. Robot hardware functions are stubbed out.  And now there is a *_New: A linux build available_* - http://robobuilderlib.googlecode.com/files/Basic372
+If you want just to try it out (and not load on to Robot) then there are  windows and Linux OS builds is available  (basic.exe). It input/outputs using console. Some Robot hardware functions are available if the robot is running DCMP firmware connected om serial port.
 
 So assuming you have downloaded the program (and installed the firmware) - reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html vt100 terminal emulator] on the serial port (i.e. COM1 at 115200). You should see the following:
 {{{
-Basic v=$Revision: 367 $
+Basic v=$Revision: 380 $
 Commands: i r l c z q s V R F $
 
 16 servos connected
