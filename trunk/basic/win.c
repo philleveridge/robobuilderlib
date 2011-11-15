@@ -4,8 +4,6 @@
 #include <conio.h>
 #include <math.h>
 
-//#include "win.h"
-
 #define GetCurrentDir _getcwd
 
 extern void basic();
@@ -193,11 +191,52 @@ void initfirmware() {
 	binmode2();
 }
 
+int irf=0;
+extern char device[];
 
 int main(int argc, char *argv[])
 {
+	int i, lf=0, sf=0;
+	strcpy(device,"COM3");
+
+	for (i=1; i<argc; i++)
+	{
+		if (!strcmp(argv[i],"DEBUG"))
+			dbg=1;
+
+		if (!strcmp(argv[i],"SIM"))
+			simflg=1;
+
+		if (!strcmp(argv[i],"REMOTE"))
+			remote=1;
+
+		if (!strcmp(argv[i],"LOAD"))
+			lf=1;
+
+		if (!strcmp(argv[i],"FAST"))
+			sf=1;
+
+		if (!strcmp(argv[i],"IR"))
+			irf=1;
+
+		if (!strcmp(argv[i],"COM") && i<argc-1)
+		{
+			// pick up portname
+			strcpy(device,argv[i+1]);
+			i++;
+		}
+
+	}
+
+	printf("Running Windows Remote emulator ...\n");
+	//dbg=1;
+
 	initsocket();
 	initfirmware();
+	basic_zero();
+	if (lf)
+		binmode();
+
 	basic();
 }
 

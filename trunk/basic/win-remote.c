@@ -18,7 +18,7 @@ int fd = -1;
 
 HANDLE hSerial=0;
 
-const char *device = "COM3";
+char device[128];
 
 long Baud = 115200;
 
@@ -101,7 +101,7 @@ void writebyte(int b)
 
 int readbyte()
 {
-	char szBuff[2] = {0};
+	BYTE szBuff[2] = {0};
 	int cnt=0;
 	DWORD dwBytesRead = 0;
 
@@ -116,7 +116,7 @@ int readbyte()
 		return -1;
 	}
 
-	return szBuff[0];
+	return (dwBytesRead==1)?CI2B(szBuff[0]):-1;
 
 }
 
@@ -339,6 +339,7 @@ WORD send_hex_array(int *p, int n)
 extern int z_value,y_value,x_value,gDistance;
 
    int CB2I(int x) {if (x<128) return x; else return x-256;}
+   int CI2B(int x) {if (x<0) return (256+x)%256; else return x%256;}
 
    int readXYZ()
    {
@@ -495,7 +496,7 @@ extern int z_value,y_value,x_value,gDistance;
 	int readservos(int n)
 	{
 		BYTE i;
-	        if (n==0) n=31;
+	    if (n==0) n=30;
 		for (i=0; i<n; i++)
 		{
 			int p = wckPosRead(i);

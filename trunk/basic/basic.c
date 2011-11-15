@@ -2952,10 +2952,15 @@ int execute(line_t line, int dbf)
 		// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
 		// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
 
-#ifndef WIN32
+
 		{
 			int i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t;
+#ifdef WIN32
 
+			int l1o[20];
+			int l2o[20];
+			int l3o[20];
+#endif
 			p=line.text;
 			for (i=0; i<7; i++)
 			{
@@ -3008,11 +3013,12 @@ int execute(line_t line, int dbf)
 				break;
 			}
 
+#ifndef WIN32
 
 			int l1o[nl1];
 			int l2o[nl2];
 			int l3o[nl3];
-
+#endif
 
 		    i=ofset;
 		    if (nl2==0)
@@ -3036,8 +3042,8 @@ int execute(line_t line, int dbf)
 
 			for (i=0; i<nl1; i++)
 			{
-				if (sho) rprintf("INPUT NEURON = %d\n", i+1);
 				int s=0;
+				if (sho) rprintf("INPUT NEURON = %d\n", i+1);
 				for (j=0; j<noi; j++)
 				{
 					t=t+1;
@@ -3121,7 +3127,7 @@ int execute(line_t line, int dbf)
 			}
 
 		}
-#endif
+
 		break;
 	default:
 		errno=8; // DEBUG
