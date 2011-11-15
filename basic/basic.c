@@ -35,8 +35,13 @@ $Revision$
 #define Sqrt sqrt
 #endif
 
-#ifdef WIN
+#ifdef WIN32
+
+#include <stdio.h>
+#include <string.h>
+
 #include "win.h"
+
 #endif
 
 #ifdef LINUX
@@ -74,6 +79,8 @@ extern int Sin(BYTE d);
 extern int fix_fft(short fr[], short fi[], short m, short inverse);
 
 extern int chargemode();
+
+void basic_start(int dbf);
 
 /***********************************/
 
@@ -2565,7 +2572,8 @@ int execute(line_t line, int dbf)
 			}
 			if (line.token==INSERT)
 			{
-				for (int i=nis-1; i>=ind; i--)
+				int i;
+				for (i=nis-1; i>=ind; i--)
 					scene[i+1]=scene[i];
 				nis++;
 			}
@@ -2582,7 +2590,7 @@ int execute(line_t line, int dbf)
 			// PRINT @{12,1,1,1,2,2,2,3,3,3,1,5,2}
 			// SORT #3,3,3
 
-			int i, param[3];
+			int i, param[3],sho=0,lgn,nog,nts;
 			p=line.text;
 			for (i=0; i<3; i++)
 			{
@@ -2597,10 +2605,10 @@ int execute(line_t line, int dbf)
 				}
 			}
 
-			int sho=0; //1;
-			int lgn=param[0];
-			int nog=param[1];
-			int nts=param[2];
+			sho=0; //1;
+			lgn=param[0];
+			nog=param[1];
+			nts=param[2];
 
 			if (sho)
 			{
@@ -2844,7 +2852,7 @@ int execute(line_t line, int dbf)
 		// GEN [No Gn], length, Mute rate%, Mute rnge, Val[min/max], type
 		// GEN 4 16 5 2 0 254
 		{
-			int i, param[7];
+			int i, param[7],ty,sho,nog,ln,mr;
 			p=line.text;
 			for (i=0; i<7; i++)
 			{
@@ -2859,18 +2867,18 @@ int execute(line_t line, int dbf)
 				}
 			}
 
-			int ty=param[6]&3; // 0-1 2
-			int sho=param[6]&8; // show flag
-			int nog=param[0];
-			int ln=param[1];
-			int mr=param[2];
+			ty=param[6]&3; // 0-1 2
+			sho=param[6]&8; // show flag
+			nog=param[0];
+			ln=param[1];
+			mr=param[2];
 
 			if (sho)
 			{
 				rprintf("Type      = %d\n", ty);
 				rprintf("length    = %d\n", ln);
 				rprintf("Generate  = %d\n", nog);
-				rprintf("Mut rate  = %d\%\n", mr);
+				rprintf("Mut rate  = %d\n", mr);
 			}
 
 			for (i=0; i<nog; i++)
@@ -2943,8 +2951,11 @@ int execute(line_t line, int dbf)
 	case NETWORK:
 		// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
 		// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
+
+#ifndef WIN32
 		{
-			int i, j, param[7];
+			int i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t;
+
 			p=line.text;
 			for (i=0; i<7; i++)
 			{
@@ -2961,9 +2972,14 @@ int execute(line_t line, int dbf)
 				}
 			}
 			// code here
-			int noi=param[0], noo=param[1], flg=param[2], sho=0;
-			int nl1=param[3], nl2=param[4], nl3=param[5];
-	        int ofset=param[6];
+			noi=param[0];
+			noo=param[1];
+			flg=param[2];
+			sho=0;
+			nl1=param[3];
+			nl2=param[4];
+			nl3=param[5];
+	        ofset=param[6];
 
 	        sho = (flg&8); // show output
 	        flg = flg & 7; // 0, 1, 2, 3  or 4 (sigmoid mode)
@@ -2992,9 +3008,11 @@ int execute(line_t line, int dbf)
 				break;
 			}
 
+
 			int l1o[nl1];
 			int l2o[nl2];
 			int l3o[nl3];
+
 
 		    i=ofset;
 		    if (nl2==0)
@@ -3014,7 +3032,7 @@ int execute(line_t line, int dbf)
 				if (ofset>0) rprintf("Offset = %d (%d)\n\n", i,ofset);
 			}
 
-			int t=noi+noo+ofset-1; // index through weights and threshold
+			t=noi+noo+ofset-1; // index through weights and threshold
 
 			for (i=0; i<nl1; i++)
 			{
@@ -3103,6 +3121,7 @@ int execute(line_t line, int dbf)
 			}
 
 		}
+#endif
 		break;
 	default:
 		errno=8; // DEBUG
@@ -3447,7 +3466,7 @@ void basic()
 
 	testforreset();
 
-	void init();
+	init();
 
 	rprintf   ("%d servos connected\r\n", readservos(0));
 	rprintf   ("%d lines in memory\r\n", findend());
