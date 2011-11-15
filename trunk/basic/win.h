@@ -2,6 +2,10 @@
 
 #define uint16_t unsigned int
 #define uint8_t  unsigned char
+
+#define WORD  unsigned int
+#define BYTE  unsigned char
+
 #define EEMEM
 #define prog_char char
 #define PINA _port[0]
@@ -22,9 +26,13 @@ char _port[8];
 #define PORTF _port[5]
 #define PORTG _port[6]
 
+#define SDATASZ 128
+#define RUN_LED1_ON
+#define RUN_LED1_OFF
+
 #define rprintf			printf 
-#define rprintfChar		putchar 
-#define rprintfStr(z)	printf("%s", z) 
+//#define rprintfChar		putchar 
+//#define rprintfStr(z)	printf("%s", z) 
 
 //from win.c
 extern void			eeprom_read_block (unsigned char *b, char *d, int l);
@@ -39,8 +47,34 @@ extern void			rprintfStrLen(char *p, int s, int l);
 extern void			initfirmware();
 extern void			binmode();
 
-const unsigned char  basic18[];
-const unsigned char  basic16[];
+extern const unsigned char  basic18[];
+extern const unsigned char  basic16[];
+
 int  offset[];
 extern int PP_mtype;
 void PlayPose(int d, int s, int f, unsigned char data[], int n);
+
+extern int z_value;
+extern int y_value;
+extern int x_value;
+extern int gVOLTAGE;
+extern int gDistance;
+
+extern volatile WORD    gMSEC;
+extern volatile BYTE    gSEC;
+extern volatile BYTE    gMIN;
+extern volatile BYTE    gHOUR;
+//extern volatile WORD    gSEC_DCOUNT;
+//extern volatile WORD    gMIN_DCOUNT;
+
+extern volatile BYTE	MIC_SAMPLING;
+
+
+extern int 	dbg;
+extern int	simflg;
+extern int	remote;
+
+extern void rprintfCRLF();
+extern void rprintfStr(char *z);
+extern void rprintfChar(char c);
+//extern int  uartGetByte() ;
