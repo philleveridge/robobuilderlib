@@ -4,7 +4,7 @@
 
 This gives Robobuilder the ability to create simple actions in an elementary basic language. The software is beta release.
 
-*_New version  firmware (v375)_* - http://robobuilderlib.googlecode.com/files/Basic375.hex
+*_New version  firmware (v382)_* - http://robobuilderlib.googlecode.com/files/Basic382.hex
 
 Next extract Basic.hex and upload on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
 
