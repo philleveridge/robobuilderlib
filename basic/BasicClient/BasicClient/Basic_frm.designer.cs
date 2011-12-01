@@ -29,11 +29,13 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Basic_frm));
             this.output = new System.Windows.Forms.TextBox();
             this.comPort = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,7 +56,6 @@
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.label1 = new System.Windows.Forms.Label();
             this.term = new System.Windows.Forms.TextBox();
-            this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -115,24 +116,31 @@
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
+            // newToolStripMenuItem
+            // 
+            this.newToolStripMenuItem.Name = "newToolStripMenuItem";
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.newToolStripMenuItem.Text = "New";
+            this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
+            // 
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.loadToolStripMenuItem.Text = "Load";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -209,13 +217,11 @@
             this.input.Name = "input";
             this.input.Size = new System.Drawing.Size(777, 367);
             this.input.TabIndex = 14;
-            this.input.Text = "\'      test program\nconst  DLY 400\n       C=12\n       PRINT \"Test Passive\"\nLoop: " +
-                " SERVO C=@ \'set servo passive\n       PRINT \"Servo \";C;\" = \"; $SERVO(C)\n       WA" +
-                "IT DLY   \'0.5secs\n       GOTO Loop\n";
+            this.input.Text = resources.GetString("input.Text");
             this.input.SelectionChanged += new System.EventHandler(this.input_SelectionChanged);
-            this.input.MouseMove += new System.Windows.Forms.MouseEventHandler(this.input_MouseMove);
-            this.input.MouseHover += new System.EventHandler(this.input_MouseHover);
             this.input.MouseLeave += new System.EventHandler(this.input_MouseLeave);
+            this.input.MouseHover += new System.EventHandler(this.input_MouseHover);
+            this.input.MouseMove += new System.Windows.Forms.MouseEventHandler(this.input_MouseMove);
             // 
             // helptext
             // 
@@ -300,13 +306,6 @@
             this.term.Size = new System.Drawing.Size(768, 357);
             this.term.TabIndex = 0;
             this.term.Text = "Connect to robot";
-            // 
-            // newToolStripMenuItem
-            // 
-            this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.newToolStripMenuItem.Text = "New";
-            this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // Basic_frm
             // 

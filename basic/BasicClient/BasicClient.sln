@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C# Express 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicIDE", "BasicClient\BasicIDE.csproj", "{69E84D44-87E2-4E96-B98C-538118A18760}"
 EndProject
 Global

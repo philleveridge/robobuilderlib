@@ -67,6 +67,7 @@ namespace RobobuilderLib
 	        "MTYPE", "LIGHTS", "SORT",   "FFT", 
             "SAMPLE","SCALE",  "DATA",
             "SET",   "INSERT", "DELETE",
+            "GEN",  "NETWORK", "SELECT",
             "ENDIF" // leave at end
         };
         
@@ -80,7 +81,8 @@ namespace RobobuilderLib
             I2CO,  I2CI,   STEP,   SPEED, 
             MTYPE, LIGHTS, SORT,   FFT, 
             SAMPLE,SCALE,  DATA,
-            SET, INSERT, DELETE,
+            SET, INSERT,   DELETE,
+            GEN, NETWORK,  SELECT,
             ENDIF
 	        };
 							
@@ -133,6 +135,10 @@ namespace RobobuilderLib
             help.Add("SET",      "SET index,value");
             help.Add("INSERT",   "INSERT index,value");
             help.Add("DELETE",   "DELETE n");
+            help.Add("GEN", "GEN n");
+            help.Add("NETWORK", "NETWORK a,b,c,d,e,f");
+            help.Add("SELECT", "SELECT n,[m|*]");
+
             // special regs
             help.Add("$MIC",    "$MIC");
             help.Add("$X",      "$X - acceleromter");
@@ -163,6 +169,8 @@ namespace RobobuilderLib
             help.Add("$IMAX",   "$IMAX(list,n) - as $MAX but return index rather than vlue of item");
             help.Add("$HAM",    "$HAM(list a, list b) - Hamming distance between  a and b");
             help.Add("$RANGE",  "$RANGE(a,min,max) return a");
+            help.Add("$SIG",    "$SIG(a) - Sigmoid function");
+            help.Add("$DSIG",   "$SIG(a) - Derivative Sigmoid function");
         }
 
         /*------------------------------------- -------------------------------------*/
@@ -303,6 +311,11 @@ namespace RobobuilderLib
                     if (ch >= 'A' && ch <= 'Z') n = n * 16 + ch - 'A';
                     r += Convert.ToChar(n);
                     i += 2;
+                }
+                else if (!sflag && c == "`")
+                {
+                    r += Convert.ToInt32(a[i+1]);
+                    i++;
                 }
                 else
                     r += c;
@@ -626,7 +639,9 @@ namespace RobobuilderLib
                                 nestedif[nif++] = 3;
                             else
                                 nestedif[nif++]   = codeptr;
-                            z = Regex.Replace(z, "(.*) THEN", String.Format("($1 )?   {0} :    0000",ln.lineno+5));
+                            //z = Regex.Replace(z, "(.*) THEN", String.Format("($1 )?   {0} :    0000",ln.lineno+5));
+                            z = Regex.Replace(z, "(.*) THEN", String.Format("$1,{0},0000", ln.lineno + 5));
+                        
                         }
                         else
                         {
@@ -635,8 +650,13 @@ namespace RobobuilderLib
                                 z = Regex.Replace(z, n, labels[n].ToString());
                             }
 
-                            z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "($1 )?   $2 :   $3");
-                            z = Regex.Replace(z, "(.*) THEN (.*)", "($1 )?    $2:0");
+                            //z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "($1 )?   $2 :   $3");
+                            //z = Regex.Replace(z, "(.*) THEN (.*)", "($1 )?    $2:0");
+
+                            z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "$1,$2,$3");
+                            z = Regex.Replace(z, "(.*) THEN (.*)", "$1,$2,0");
+
+
                         }
                         ln.text = z;
                         break;
@@ -648,7 +668,7 @@ namespace RobobuilderLib
                             int n = nestedif[nif - 1];
                             int ls = code[n + 6] + code[n + 7] * 256;
                             //
-                            string tx = (ln.lineno + 5).ToString();
+                            string tx = (ln.lineno + 3).ToString();
                             for (int x = 0; x < 4; x++)
                             {
                                 if (x < tx.Length)
@@ -685,8 +705,8 @@ namespace RobobuilderLib
                                 }
                                 else
                                 {
-                                    code[n + 4] = (byte)((ln.lineno + 5) % 256);
-                                    code[n + 5] = (byte)((ln.lineno + 5) / 256);
+                                    code[n + 4] = (byte)((ln.lineno + 3) % 256);
+                                    code[n + 5] = (byte)((ln.lineno + 3) / 256);
                                 }
                             }
                             continue;
