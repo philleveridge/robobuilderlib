@@ -515,9 +515,11 @@ namespace RobobuilderLib
                         Console.WriteLine("Expr={0}",express(ln.text)); // check expression
 
                         break;
+                    case KEY.SORT:
                     case KEY.PRINT:
                         z = upperIt(z);
                         if (z.Length>0 && z[0] == '#') {ln.var=1; z=z.Substring(1); }
+                        if (z.Length>0 && z[0] == '%') {ln.var=2; z=z.Substring(1); }
                         ln.text = process_arg(z);
                         break;
                     case KEY.MOVE:
@@ -530,7 +532,6 @@ namespace RobobuilderLib
                     case KEY.SPEED:
                     case KEY.MTYPE:
                     case KEY.LIGHTS:
-                    case KEY.SORT:
                     case KEY.FFT:
                     case KEY.STAND:
                     case KEY.SAMPLE: 
@@ -540,14 +541,30 @@ namespace RobobuilderLib
                         ln.text = upperIt(z);
                         break;
                     case KEY.LIST:
-                        t1 = GetVar(GetWord(ref z));
-                        if (t1 < 0) errno = 3; else ln.var = (byte)t1;
+                        if (z[0] == '!')
+                        {
+                            t1 = 32;
+                            z = z.Substring(1);
+                        }
+                        else{
+                            t1 = GetVar(GetWord(ref z));
+                            if (t1 < 0) { errno = 3; break; }
+                        }
+                        ln.var = (byte)t1;
                         if (GetNext(ref z, false) != "=") { errno = 1; }
                         ln.text = upperIt(z);
                         break;
                     case KEY.DATA:
-                        t1 = GetVar(GetWord(ref z));
-                        if (t1 < 0) errno = 3; else ln.var = (byte)t1;
+                        if (z[0] == '!')
+                        {
+                            t1 = 32;
+                            z = z.Substring(1);
+                        }
+                        else{
+                            t1 = GetVar(GetWord(ref z));
+                            if (t1 < 0) { errno = 3; break; }
+                        }
+                        ln.var = (byte)t1;
                         if (GetNext(ref z,false) != "=") { errno = 1; }
                         z = upperIt(z).Trim();
                         int nob=0; // FF nb b1 b2 ... bn 

@@ -19,7 +19,7 @@ namespace RobobuilderLib
         bool readyDownload = false;
         string bfn = "basic.exe";
         string bdn = "bindata.txt";
-        string cprt = "COM5";
+        string cprt = "COM4";
 
         string version = "$Revision$";  //$Revision$
 
