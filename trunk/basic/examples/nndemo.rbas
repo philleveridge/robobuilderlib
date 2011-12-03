@@ -1,7 +1,11 @@
 '
 ' two neurons two inputs, three neurons
-' I1 I2 
-' W11 W12 W21 W22 T1 T2 W31 W32 T3
+'
+'  I1 --  N1
+'      X     > N3 - O1
+'  I2 --  N2
+'
+' W11 W12 T1 W21 W22 T2 W31 W32 T3
 ' X   Y  
 ' O1 = I1xW11 + I2xW12 -t1
 ' O2 = I1xW21 + I2*W12 -t2
@@ -45,8 +49,8 @@ setup:
 
 show:
    print "Neuron Status"
-   print "N1 ";@w[0];" : ";@w[1];" Th= ";@w[4]
-   print "N2 ";@w[2];" : ";@w[3];" Th= ";@w[5]
+   print "N1 ";@w[0];" : ";@w[1];" Th= ";@w[2]
+   print "N2 ";@w[3];" : ";@w[4];" Th= ";@w[5]
    print "N3 ";@w[6];" : ";@w[7];" Th= ";@w[8]
    return
 
@@ -60,13 +64,13 @@ frecog:
 
    n=x*@w[0]
    n=n+z*@w[1]
-   n=n-@w[4]
+   n=n-@w[2]
    n=$sig(n)
 
    'neuron 2
 
-   m=x*@w[2]
-   m=m+z*@w[3]
+   m=x*@w[3]
+   m=m+z*@w[4]
    m=m-@w[5]
    m=$sig(m)
 

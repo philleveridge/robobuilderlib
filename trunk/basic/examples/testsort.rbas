@@ -1,0 +1,49 @@
+'i
+'PRINT @{12,1,1,1,2,2,2,3,3,3,1,5,2}
+'SORT #3,3,3
+'PRINT @!
+' output = 2,2,2,3,3,3,1,1,1,5,2,1		
+
+'GEN 4 16 5 2 0 254
+'i
+
+PRINT "EVOLUTION DEMO"
+PRINT @{12,1,1,1,1,1,1,3,3,3,3,3,3}:6
+
+loop:
+
+'GEN 8,6,0,0,0,5,2
+GEN 8,6,25,2,1,6,2      'GEN [No Gn], length, Mute rate%, Mute rnge, Val[min/max], type
+
+gosub score
+
+PRINT @!:6
+
+SORT #6,8,2              'Length of gen, no of generation, no to surive
+
+PRINT "TOP TWO:"
+PRINT @!:6
+
+print "To Stop press q"
+k=$kbd
+
+if k<>`q then loop
+
+score:
+  for l=0 to 7
+  s=0
+  for m=0 to 5
+    t=(l*6)+m
+    'print "S=";s;" T=";t;" @=";@![t]
+    if @![t]=(m+1) then
+       s=s+5
+    else
+       s=s-2
+    endif
+   next m
+   'print "L=";L;" S=";s
+   INSERT $NE,s
+  next l
+return
+
+
