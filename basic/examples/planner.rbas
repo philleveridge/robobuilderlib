@@ -1,0 +1,145 @@
+'
+'
+'
+
+PRINT $ZEROS(64)
+
+'set up  obtacles
+
+set 17,-500
+set 18,-500
+set 19,-500
+set 26,-500
+set 27,-500
+set 45,100
+
+loop:
+
+print @!:8
+
+for i=0 to 7
+   for j=0 to 7
+      t=j+i*8
+      m=@![t]
+      c=m
+
+      if i<7 then
+         t= ((i+1)*8)+j
+         t= @![t]-5
+         if m<t then
+           m=t
+         endif
+      endif
+
+      if i>0 then
+         t= ((i-1)*8)+j
+         t= @![t]-5
+         if m<t then
+           m=t
+         endif
+      endif
+
+      if j<7 then
+         t=(i*8)+j+1
+         t= @![t]-5
+         if m<t then
+           m=t
+         endif
+      endif
+
+      if j>0 then
+         t= (i*8)+j-1
+         t= @![t]-5
+         if m<t then
+           m=t
+         endif
+      endif
+
+      if c>=0 then
+             insert $NE,m
+      else
+             insert $NE,c
+      endif
+
+      if @![10]>0 then dne 
+
+   next j
+
+next i
+print "?"
+k=$kbd
+
+delete 0,63
+goto loop
+
+dne:
+
+print @!:8
+
+for k=0 to 7
+   for l=0 to 7
+
+     t=l+k*8
+     m=@![t]
+
+     if m=100 then
+         out `O
+         goto nxt
+     endif
+
+     if m<0 then
+         out `#
+         goto nxt
+     endif
+
+     p=`.
+
+     if k<7 then
+         t=((k+1)*8)+l
+         t=@![t]
+         if m<t then
+           m=t
+           p=`V
+         endif
+     endif
+
+     if k>0 then
+         t=((k-1)*8)+l
+         t=@![t]
+         if m<t then
+           m=t
+           p=`^
+         endif
+     endif
+
+     if l<7 then
+         t=l+1+k*8
+         t= @![t]
+         if m<t then
+           m=t
+           p=`>
+         endif
+     endif
+
+     if l>0 then
+         t=(L-1)+K*8
+         t= @![t]
+         if m<t then
+           m=t
+           p=`<
+         endif
+     endif
+     out p
+nxt:
+     out 32
+     next l
+     print
+next k
+
+print "done"
+
+end
+
+
+
+
