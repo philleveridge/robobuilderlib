@@ -19,7 +19,7 @@ namespace RobobuilderLib
         bool readyDownload = false;
         string bfn = "basic.exe";
         string bdn = "bindata.txt";
-        string cprt = "COM4";
+        string cprt = "";
 
         string version = "$Revision$";  //$Revision$
 
@@ -49,10 +49,32 @@ namespace RobobuilderLib
                 simulatorToolStripMenuItem.Visible = false;
             }
 
-            compiler = new Basic();
-            comPort.Text = cprt;
+            comselect.Items.Clear();
+            foreach (string s1 in System.IO.Ports.SerialPort.GetPortNames())
+            {
+                comselect.Items.Add(s1);
+            }
 
-            s = new SerialPort(comPort.Text, 115200);
+            if (comselect.Items.Count <= 0)
+            {
+                MessageBox.Show("No serial ports detected");
+            }
+
+            if (comselect.Items.Count == 1)
+            {
+                comselect.SelectedIndex = 0;
+                comPort.Text = (string)comselect.Items[0];
+            }
+
+            if (comselect.Items.Count > 1)
+            {
+                comPort.Text = cprt;
+            }
+
+            if (cprt!="") s = new SerialPort(comPort.Text, 115200);
+
+            compiler = new Basic();
+
 
             term.KeyPress += new KeyPressEventHandler(output_KeyPress);
 
@@ -448,6 +470,12 @@ namespace RobobuilderLib
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
             input.Clear();
+        }
+
+        private void comselect_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            comPort.Text = (string)comselect.Items[comselect.SelectedIndex];
+            if (comPort.Text != "") s = new SerialPort(comPort.Text, 115200);
         }
 
 
