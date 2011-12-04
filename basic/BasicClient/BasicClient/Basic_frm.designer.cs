@@ -56,6 +56,7 @@
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.label1 = new System.Windows.Forms.Label();
             this.term = new System.Windows.Forms.TextBox();
+            this.comselect = new System.Windows.Forms.ListBox();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -76,11 +77,12 @@
             // 
             // comPort
             // 
-            this.comPort.Location = new System.Drawing.Point(645, 365);
+            this.comPort.Location = new System.Drawing.Point(265, 363);
             this.comPort.Name = "comPort";
             this.comPort.Size = new System.Drawing.Size(87, 20);
             this.comPort.TabIndex = 9;
             this.comPort.Text = "COM5";
+            this.comPort.Visible = false;
             // 
             // button1
             // 
@@ -271,6 +273,7 @@
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.comselect);
             this.tabPage3.Controls.Add(this.label1);
             this.tabPage3.Controls.Add(this.term);
             this.tabPage3.Controls.Add(this.button1);
@@ -286,7 +289,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(481, 366);
+            this.label1.Location = new System.Drawing.Point(390, 365);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(69, 13);
             this.label1.TabIndex = 14;
@@ -306,6 +309,16 @@
             this.term.Size = new System.Drawing.Size(768, 357);
             this.term.TabIndex = 0;
             this.term.Text = "Connect to robot";
+            // 
+            // comselect
+            // 
+            this.comselect.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.comselect.FormattingEnabled = true;
+            this.comselect.Location = new System.Drawing.Point(599, 365);
+            this.comselect.Name = "comselect";
+            this.comselect.Size = new System.Drawing.Size(133, 15);
+            this.comselect.TabIndex = 15;
+            this.comselect.SelectedIndexChanged += new System.EventHandler(this.comselect_SelectedIndexChanged);
             // 
             // Basic_frm
             // 
@@ -361,5 +374,6 @@
         private System.Windows.Forms.TextBox term;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
+        private System.Windows.Forms.ListBox comselect;
     }
 }
