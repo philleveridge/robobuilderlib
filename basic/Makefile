@@ -80,7 +80,7 @@ size: ${TARGET}
 install: ${TARGET}
 	@echo
 	@echo "cp Basic.hex Basic_$(grep Revision basic.c| head -1 | sed -e 's/[$]Revision: //' | sed -e 's/ \$//')"
-	@java -cp /home/phil/NetBeansProjects/RBCLoader/dist/RBCLoader.jar rbcloader.Rloader Basic.hex 
+	@java -jar /home/phil/Desktop/R2/RBCLoader.jar Basic.hex 
 
 
 ## Clean target

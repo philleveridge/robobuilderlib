@@ -28,7 +28,7 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 
 ## Linker flags
 #LDFLAGS = $(COMMON)
-LDFLAGS +=  -Wl,-Map=RBASIC.map -lpthread -lm
+LDFLAGS +=  -Wl,-Map=RBASIC.map 
 
 
 ## Intel Hex file production flags
@@ -42,6 +42,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 ## Objects that must be built in order to link
 
 OBJECTS = basic.o edit.o fix_fft.o linux.o linux-remote.o #sock-linux.o
+LIBS = -lpthread -lm
 
 
 ## Objects explicitly added by the user

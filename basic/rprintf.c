@@ -18,6 +18,7 @@
 //		which can be found at http://www.gnu.org/licenses/gpl.txt
 //
 //*****************************************************************************
+#define RPRINTF_COMPLEX
 
 #include <avr/pgmspace.h>
 //#include <string-avr.h>
@@ -35,7 +36,7 @@
 #define READMEMBYTE(a,char_ptr)	((a)?(pgm_read_byte(char_ptr)):(*char_ptr))
 
 #ifdef RPRINTF_COMPLEX
-	static unsigned char buf[128];
+	static unsigned char buf[12];
 #endif
 
 // use this to store hex conversion in RAM
@@ -373,6 +374,27 @@ int rprintf1RamRom(unsigned char stringInRom, const char *format, ...)
 
 
 #ifdef RPRINTF_COMPLEX
+
+unsigned char Isdigit(char c)
+{
+	if((c >= 0x30) && (c <= 0x39))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+int atoiRamRom(unsigned char stringInRom, char *str)
+{
+	int num = 0;;
+
+	while(Isdigit(READMEMBYTE(stringInRom,str)))
+	{
+		num *= 10;
+		num += ((READMEMBYTE(stringInRom,str++)) - 0x30);
+	}
+	return num;
+}
+
 // *** rprintf2RamRom ***
 // called by rprintf() - does a more powerful printf (supports %d, %u, %o, %x, %c, %s)
 // Supports:
@@ -568,25 +590,7 @@ int rprintf2RamRom(unsigned char stringInRom, const char *sfmt, ...)
 	return 0;
 }
 
-unsigned char Isdigit(char c)
-{
-	if((c >= 0x30) && (c <= 0x39))
-		return TRUE;
-	else
-		return FALSE;
-}
 
-int atoiRamRom(unsigned char stringInRom, char *str)
-{
-	int num = 0;;
-
-	while(Isdigit(READMEMBYTE(stringInRom,str)))
-	{
-		num *= 10;
-		num += ((READMEMBYTE(stringInRom,str++)) - 0x30);
-	}
-	return num;
-}
 
 #endif
 
