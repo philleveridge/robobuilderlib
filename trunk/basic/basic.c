@@ -19,7 +19,6 @@ $Revision$
 #include <avr/interrupt.h>
 #include "uart.h"
 #include "rprintf.h"
-#include "math.h"
 #include "wckmotion.h"
 
 // Standard Input/Output functions
@@ -32,7 +31,15 @@ $Revision$
 #include "ir.h"
 #include "accelerometer.h"
 
-#define Sqrt sqrt
+//#define Sqrt sqrt
+
+int Sqrt(long x)
+{
+   double f=sqrt((double)x);
+   return (int)f;
+}
+
+
 #endif
 
 #ifdef WIN32
@@ -52,22 +59,22 @@ $Revision$
 
 #include "edit.h"
 
-#define MAX_LINE  		130 
-#define MAX_TOKEN 		8
+#define MAX_LINE  	100 
+#define MAX_TOKEN 	8
 #define MAX_FOR_NEST	6
-#define MAX_GOSUB_NEST	3
+#define MAX_GOSUB_NEST	5
 #define MAX_FOR_EXPR	20 
-#define MAX_DEPTH 		6
+#define MAX_DEPTH 	5
 
 /***********************************/
 
 BYTE EEMEM FIRMWARE        	[64];  		// leave blank - used by Robobuilder OS
 BYTE EEMEM BASIC_PROG_SPACE	[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
-BYTE EEMEM PERSIST			[256];                     // persistent data store
+BYTE EEMEM PERSIST		[256];                     // persistent data store
 
 extern void Perform_Action	(BYTE action);
-extern int	getHex			(int d);
-extern int	delay_ms		(int d);
+extern int	getHex		(int d);
+extern int	delay_ms	(int d);
 extern void SampleMotion	(unsigned char); 
 extern void sound_init		();
 extern void SendToSoundIC	(BYTE cmd) ;
@@ -746,7 +753,7 @@ int variable[26]; // only A-Z at moment
 int scene[SCENESZ];	  // generic array
 int nis=0;        // number of item isn array
 int  eval_list(char *p);
-unsigned char eval_expr(char **str, int *res);
+unsigned char eval_expr(char **str, long *res);
 enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 int speed=2;
 int mtype=2;
@@ -938,7 +945,7 @@ void set_bit(int p, int b, int n)
 	}
 }
 
-int getArg(char **str, int *res)
+int getArg(char **str, long *res)
 {
 	if (**str=='(') 
 	{
@@ -956,11 +963,11 @@ int getArg(char **str, int *res)
 
 const unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
 
-int get_special(char **str, int *res)
+int get_special(char **str, long *res)
 {
 	char *p=*str;
 	int t=token_match(specials, str, NOSPECS);
-	int v=0;
+	long v=0;
 	int rt=NUMBER;
 	
 	switch(t) {
@@ -982,7 +989,7 @@ int get_special(char **str, int *res)
 	case sMAX:
 	case sIMAX:
 		{
-			int st=0;
+			long st=0;
 			int k=0,m;
 
 			if (**str!='(')
@@ -1072,7 +1079,7 @@ int get_special(char **str, int *res)
 	case sNORM:
 		if (getArg(str,&v))
 		{
-			int m=0;
+			long m=0;
 			for (v=0; v<nis; v++)
 			{
 				m += (scene[v]*scene[v]);
@@ -1120,7 +1127,7 @@ int get_special(char **str, int *res)
 	case sRND: // $RND 0 < n < 255 or $RND(6,0,5) ->{6,n,n,n,n,n,n} 0<n<5
 		if (**str=='(')
 		{
-			int i,a=0,b=0,c=0;
+			long i,a=0,b=0,c=0;
 			(*str)++;
 			eval_expr(str, &a);
 			if (**str==',')
@@ -1171,7 +1178,7 @@ int get_special(char **str, int *res)
 		{
 			if (**str==',')
 			{
-				int r;
+				long r;
 				(*str)++;
 				eval_expr(str, &r);
 				v=sigmoid(v,r);
@@ -1224,14 +1231,14 @@ int get_special(char **str, int *res)
 			v = Sqrt(v);
 		}
 		break;
-	case sSIN: // $SQRT(x)
+	case sSIN: // $SIN(x)
 		v=0; 
 		if (getArg(str,&v))
 		{
 			v = Sin(v%256);
 		}
 		break;
-	case sCOS: // $SQRT(x)
+	case sCOS: // $COS(x)
 		v=0; 
 		if (getArg(str,&v))
 		{
@@ -1290,7 +1297,7 @@ int get_special(char **str, int *res)
 	case sRANGE:
 		if (**str=='(') 
 		{
-			int a,b,c;
+			long a,b,c;
 			(*str)++;
 			eval_expr(str, &a); 
 			if (**str==',')
@@ -1380,7 +1387,7 @@ int get_special(char **str, int *res)
 }
 
 
-int math(int n1, int n2, char op)
+long math(long n1, long n2, char op)
 {
 	switch (op) {
 	case '+': 
@@ -1422,17 +1429,17 @@ int str_expr(char *str)
 	return str-p;
 }
 
-unsigned char eval_expr(char **str, int *res)
+unsigned char eval_expr(char **str, long *res)
 {
 	char c;
 	
-	int n1=0;
-	int stack[MAX_DEPTH]; 
+	long n1=0;
+	long stack[MAX_DEPTH]; 
 	char ops[MAX_DEPTH];
 	
 	int sp=0;
 	int op=0;
-	int tmp=0;
+	long tmp=0;
 	int done=0;
 	
 	while (**str != '\0' && !done)
@@ -1804,7 +1811,7 @@ void basic_start(int dbf)
 		
 		if (dbf && (line.token==LET || line.token==GET || line.token==FOR || line.token==SERVO || line.token==NEXT ))
 		{
-				rprintf ("%c = %d\r\n", line.var+'A', variable[line.var]);
+				rprintf ("%c = %ld\r\n", line.var+'A', variable[line.var]);
 		}
 		if (tmp == 0) tmp=tc;
 	}
@@ -1817,7 +1824,7 @@ int execute(line_t line, int dbf)
 	//	 Move to next line
 	BYTE tmp=0;
 	char *p;			
-	int n;
+	long n;
 
 	switch (line.token)
 	{
@@ -1984,7 +1991,8 @@ int execute(line_t line, int dbf)
 			switch (eval_expr(&p, &n))
 			{
 			case NUMBER:
-				rprintf ("%d", n);
+				//rprintfNum (10, 6, 1,' ', n);
+				rprintf ("%ld", n); //COMPLEX FORM
 				break;
 			case STRING:
 				n=str_expr(p);
@@ -2018,7 +2026,7 @@ int execute(line_t line, int dbf)
 					}
 					else
 					{
-						int k,w=0;
+						int k; long w=0;
 						if (*p==':')
 						{
 							p++;
@@ -2097,7 +2105,8 @@ int execute(line_t line, int dbf)
 			
 		if (p!=0 && *p != 0)
 		{	
-			int j, fm=0, tm=0, st=0, nb=0;
+			int j, tm=0, st=0;
+			long fm=0, nb=0;
 			BYTE pos[32];
 
 			switch (eval_expr(&p, &fm))
@@ -2168,7 +2177,7 @@ int execute(line_t line, int dbf)
 	case I2CO: 	//IC2O Addr,@{5,1,1,1,1}
 	{
 		BYTE ob[20];
-		int i, addr=0;
+		long i, addr=0;
 		p=line.text;
 		if (eval_expr(&p, &addr)==NUMBER)
 		{
@@ -2186,7 +2195,7 @@ int execute(line_t line, int dbf)
 	}
 	case I2CI: 	//IC2I Addr,n[,@{}]
 		{
-		int i, addr=0, ibc=0;
+		int i; long ibc=0, addr=0;
 		p=line.text;			
 		if (eval_expr(&p, &addr)==NUMBER)
 		{
@@ -2297,7 +2306,7 @@ int execute(line_t line, int dbf)
 		break;
 	case OUT: 
 		{
-		int l=1;
+		long l=1;
 		n=0;
 		p=line.text;
 		switch (eval_expr(&p, &n))
@@ -2320,7 +2329,7 @@ int execute(line_t line, int dbf)
 	case STEP: 
 		//STEP servo=from,to[,inc][,dlay]
 		{
-			int sf, st, si=5, sp, sn, sw=75, cnt=0, sd=8;
+			long sf, st, si=5, sp, sn, sw=75, cnt=0, sd=8;
 			int v=line.var;
 			if (v>=0 && v<=31)
 				v=variable[v];
@@ -2428,7 +2437,7 @@ int execute(line_t line, int dbf)
 		if (*p==',')
 		{
 			//LIGHTS A,@{5,5,10,15,20,25}
-			int tn;
+			long tn;
 			p++;
 			if (eval_expr(&p, &tn)!=ARRAY)
 			{
@@ -2497,7 +2506,7 @@ int execute(line_t line, int dbf)
 		//      DELETE 5,7
 		//      DELETE 5,*
 		{
-			int i,n2;
+			long i,n2;
 			p=line.text;
 			if (*p=='*')
 			{
@@ -2590,7 +2599,7 @@ int execute(line_t line, int dbf)
 			// PRINT @{12,1,1,1,2,2,2,3,3,3,1,5,2}
 			// SORT #3,3,3
 
-			int i, param[3],sho=0,lgn,nog,nts;
+			long i, param[3],sho=0,lgn,nog,nts;
 			p=line.text;
 			for (i=0; i<3; i++)
 			{
@@ -2665,7 +2674,7 @@ int execute(line_t line, int dbf)
 		//SAMPLE n,d
 		// trigger level =n, max delay= d, (4ms per sample)
 		{
-			int n=4, d=2000; // defaults
+			long n=4, d=2000; // defaults
 			p=line.text;
 			if (eval_expr(&p, &n)==NUMBER)
 			{
@@ -2852,7 +2861,7 @@ int execute(line_t line, int dbf)
 		// GEN [No Gn], length, Mute rate%, Mute rnge, Val[min/max], type
 		// GEN 4 16 5 2 0 254
 		{
-			int i, param[7],ty,sho,nog,ln,mr;
+			long i, param[7],ty,sho,nog,ln,mr;
 			p=line.text;
 			for (i=0; i<7; i++)
 			{

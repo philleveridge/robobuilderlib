@@ -42,7 +42,7 @@ void writebyte(int b)
 {
 	char buf[1];
 	if(fd == -1) {
-	  printf( "open port\n" );
+	  printf( "write byte failed - no port\n" );
 	  return;
 	}
 
@@ -54,7 +54,7 @@ int readbyte()
 {
 	char buf[1];
 	if(fd == -1) {
-	  printf( "open port\n" );
+	  printf( "read byte failed - no port\n" );
 	  return -1;
 	}
 
@@ -77,7 +77,7 @@ int readbyte()
 void closeport()
 {
 	if(fd == -1) {
-	  printf( "open port\n" );
+	  printf( "failed to close port\n" );
 	  return;
 	}
 
@@ -110,6 +110,12 @@ void initsocket(int f)
 
 	openport();
 
+        if (fd== -1)
+        {
+		simflg=0;
+                return;
+	}
+
     //check DCMP version
 
 	wckReadPos(30,0);
@@ -125,11 +131,6 @@ void initsocket(int f)
 	}
 }
 
-int testsocket(char *echoString)
-{
-	/* Dummy - no socket needed */
-	return -1;
-}
 
 /* wck commands */
 void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)

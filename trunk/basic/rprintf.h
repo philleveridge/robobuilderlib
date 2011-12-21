@@ -41,6 +41,10 @@
 #ifndef RPRINTF_H
 #define RPRINTF_H
 
+#define RPRINTF_COMPLEX
+
+//#define RPRINTF_COMPLEX
+
 // needed for use of PSTR below
 #include <avr/pgmspace.h>
 
