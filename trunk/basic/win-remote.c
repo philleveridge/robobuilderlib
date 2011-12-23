@@ -5,6 +5,8 @@
 
 int delay_ms(int);
 
+extern int dbg;
+
 //#include <pthread.h>
 //static pthread_mutex_t cs_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -39,7 +41,7 @@ void openport()
 			0);
 	if(hSerial==INVALID_HANDLE_VALUE)
 	{
-		printf("Failed to get handle\n");
+		if (dbg) printf("Failed to get handle\n");
 		if(GetLastError()==ERROR_FILE_NOT_FOUND){
 		//serial port does not exist. Inform user.
 		}
@@ -52,7 +54,7 @@ void openport()
 	if (!GetCommState(hSerial, &dcbSerialParams)) 
 	{
 		//error getting state
-		printf("Failed to get state\n");
+		if (dbg) printf("Failed to get state\n");
 		return;
 	}
 	dcbSerialParams.BaudRate=CBR_115200;
@@ -63,7 +65,7 @@ void openport()
 	if(!SetCommState(hSerial, &dcbSerialParams))
 	{
 		//error setting serial port state
-		printf("Failed to set state\n");
+		if (dbg) printf("Failed to set state\n");
 		return;
 	}
 		
@@ -76,7 +78,7 @@ void openport()
 	if(!SetCommTimeouts(hSerial, &timeouts))
 	{
 		//error setting serial port state
-		printf("Failed to set timeouts\n");
+		if (dbg) printf("Failed to set timeouts\n");
 		return;
 	}
 
@@ -137,6 +139,7 @@ void closeport()
 
 /**************************************************************************************/
 
+extern int		remote;
 
 void initsocket(int f)
 {
@@ -147,6 +150,13 @@ void initsocket(int f)
 	//	Baud = CBR_230400;
 
 	openport();
+
+	if (fd<0)
+	{
+		printf ("Not connected\n");
+		remote=0;
+		return;
+	}
 
     //check DCMP version
 
@@ -404,6 +414,8 @@ extern int z_value,y_value,x_value,gDistance;
 
 	   response[0]=0;
 	   response[1]=0;
+
+	   if (!remote) return;
 
 	   writebyte(0xFF);
 	   id = (5 << 5 | (id % 31));
