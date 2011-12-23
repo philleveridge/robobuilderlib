@@ -6,7 +6,6 @@
 
 #include "uart.h"
 #include "rprintf.h"
-#include "math.h"
 #else
 //windows mods
 #include "win.h"

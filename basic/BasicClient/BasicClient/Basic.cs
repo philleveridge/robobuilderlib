@@ -407,7 +407,7 @@ namespace RobobuilderLib
                     r[i] = ln + " " + z;
                 precomp += r[i] + "\r\n";
                 i++;
-                lnc += 5;
+                lnc += 3;
                 z = "";
             }
             //
@@ -657,7 +657,7 @@ namespace RobobuilderLib
                             else
                                 nestedif[nif++]   = codeptr;
                             //z = Regex.Replace(z, "(.*) THEN", String.Format("($1 )?   {0} :    0000",ln.lineno+5));
-                            z = Regex.Replace(z, "(.*) THEN", String.Format("$1,{0},0000", ln.lineno + 5));
+                            z = Regex.Replace(z, "(.*) THEN", String.Format("$1,{0},0000", ln.lineno + 3));
                         
                         }
                         else
@@ -685,7 +685,7 @@ namespace RobobuilderLib
                             int n = nestedif[nif - 1];
                             int ls = code[n + 6] + code[n + 7] * 256;
                             //
-                            string tx = (ln.lineno + 3).ToString();
+                            string tx = (ln.lineno +3).ToString();
                             for (int x = 0; x < 4; x++)
                             {
                                 if (x < tx.Length)
@@ -711,7 +711,7 @@ namespace RobobuilderLib
                                 {
                                     int ls = code[n + 6] + code[n + 7] * 256;
                                     //
-                                    string tx = (ln.lineno + 5).ToString();
+                                    string tx = (ln.lineno + 3).ToString();
                                     for (int x = 0; x < 4; x++)
                                     {
                                         if (x < tx.Length)
