@@ -93,7 +93,7 @@ void closeport()
 /**************************************************************************************/
 
 #define	DBO(x) {if (dbg) {x}}
-extern int simflg, dbg;
+extern int simflg, remote, dbg;
 
 #include <pthread.h>
 
@@ -112,7 +112,7 @@ void initsocket(int f)
 
         if (fd== -1)
         {
-		simflg=0;
+		remote=0;
                 return;
 	}
 
@@ -126,7 +126,7 @@ void initsocket(int f)
 		printf ("Not connected\n");
 
 		closeport();
-		simflg=0;
+		remote=0;
 		//exit(1);
 	}
 }
@@ -360,6 +360,7 @@ extern int z_value,y_value,x_value,gDistance;
 
    int wckReadPos(int id, int d1)
    {
+	if (!remote) return 0;
 	   pthread_mutex_lock( &cs_mutex );
 
 	   response[0]=0;
@@ -379,6 +380,7 @@ extern int z_value,y_value,x_value,gDistance;
 
    int wckPassive(int id)
    {
+	if (!remote) return 0;
 	   pthread_mutex_lock( &cs_mutex );
 
 	   response[0]=0;
@@ -399,6 +401,7 @@ extern int z_value,y_value,x_value,gDistance;
 
    int wckMovePos(int id, int pos, int torq)
    {
+	if (!remote) return 0;
 	   pthread_mutex_lock( &cs_mutex );
 
 	   response[0]=0;
@@ -423,6 +426,8 @@ extern int z_value,y_value,x_value,gDistance;
 	{
 		int i = 0;
 		int CheckSum = 0;
+
+	if (!remote) return 0;
 
 		pthread_mutex_lock( &cs_mutex );
 
