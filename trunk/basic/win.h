@@ -1,4 +1,6 @@
 //windows mods
+#define PARSE
+
 
 #define uint16_t unsigned int
 #define uint8_t  unsigned char

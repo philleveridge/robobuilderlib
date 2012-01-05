@@ -2,6 +2,10 @@
 // edit functions - include file for edit.c
 //==============================================================================
 
+#ifndef EDIT_H
+
+#define EDIT_H
+
 #define EEPROM_MEM_SZ 	3072 // 3K
 
 typedef struct basic_line {
@@ -52,5 +56,7 @@ extern int		getlineno(int p);
 extern uint16_t lastline;  // last line added
 extern void		readtext(int ln, char *b);
 extern int		findend();
+
+#endif
 
 

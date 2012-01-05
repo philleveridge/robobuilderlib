@@ -55,9 +55,9 @@ int Sqrt(long x)
 #include "linux.h"
 #endif
 
-
-
 #include "edit.h"
+#include "express.h"
+#include "functions.h"
 
 #define MAX_LINE  	100 
 #define MAX_TOKEN 	8
@@ -79,11 +79,8 @@ extern void SampleMotion	(unsigned char);
 extern void sound_init		();
 extern void SendToSoundIC	(BYTE cmd) ;
 
-/***********************************/
 
-extern int Cos(BYTE d);
-extern int Sin(BYTE d);
-extern int fix_fft(short fr[], short fi[], short m, short inverse);
+/***********************************/
 
 extern int chargemode();
 
@@ -123,16 +120,6 @@ const prog_char *tokens[] ={
 	"GEN",  "NETWORK", "SELECT"
 };
 
-const  prog_char  *specials[] = {
-	    "MIC",   "X",    "Y",    "Z",    "PSD", 
-		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
-		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
-		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
-		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
-		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
-		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS"
-};
-
 
 //wait for byte or IR press
 int  GetByte()
@@ -161,7 +148,7 @@ const  prog_char *error_msgs[] = {
 	"Bad List"
 	};
 
-int errno;
+int BasicErr;
 int fmflg;
 static int dbg=0;
 
@@ -385,7 +372,7 @@ void basic_load(int tf)
 					
 	struct basic_line newline;	
 	
-	errno=0;
+	BasicErr=0;
 
 	rprintfStr("Enter Program '.' to Finish\r\n");
 	
@@ -393,16 +380,16 @@ void basic_load(int tf)
 	{
 		// for each line entered
 
-		if (errno > 0 && errno<6) {
+		if (BasicErr > 0 && BasicErr<6) {
 			rprintfStr ("Error - '" );
-			rprintfStr (error_msgs[errno]);
+			rprintfStr (error_msgs[BasicErr]);
 			rprintfStr ("'\r\n" );
 			rprintf ("Pos=%d [%c]\r\n", (cp-line), line[cp-line]);
-			errno=0;
+			BasicErr=0;
 		}
-		else if (errno!=0)
+		else if (BasicErr!=0)
 		{
-			rprintf ("Panic %d\r\n", errno);
+			rprintf ("Panic %d\r\n", BasicErr);
 			return;
 		}
 
@@ -438,7 +425,7 @@ void basic_load(int tf)
 
 		if ( (newline.token=token_match((char **)tokens, &cp, NOTOKENS))==255)           // sizeof(tokens)/))<0)
 		{
-			errno=2;
+			BasicErr=2;
 			continue;
 		}
 			
@@ -451,18 +438,18 @@ void basic_load(int tf)
 			// read Variable		
 			if ((newline.var = getVar(&cp))<0)
 			{
-				errno=3;
+				BasicErr=3;
 			}
 			// '='
 			if (getNext(&cp) != '=')
 			{
-				errno=1;
+				BasicErr=1;
 			}
 			// expression
 			if (newline.token==FOR)
 			{
 				char *to = strstr(cp," TO ");
-				if (to==0) errno=1;
+				if (to==0) BasicErr=1;
 			}
 			//else
 				newline.text=cp;
@@ -472,14 +459,14 @@ void basic_load(int tf)
 			newline.var = getNum(&cp);
 			if (getNext(&cp) != ',')
 			{
-				errno=1;
+				BasicErr=1;
 			}			
 			newline.text=cp;
 			break;
 		case PUT: 
 			if ((newline.var = token_match(specials, &cp, sizeof(specials)))<0)
 			{
-				errno=3;
+				BasicErr=3;
 			}
 			
 			if (newline.var == sPORT)
@@ -487,26 +474,26 @@ void basic_load(int tf)
 				char pn, pb;
 				if (getNext(&cp) != ':')
 				{
-					errno=3;
+					BasicErr=3;
 				}	
 
 				pn = getNext(&cp) ;
 				
 				if (pn<'A' || pn >'G') 
 				{
-					errno=3;
+					BasicErr=3;
 				}
 				
 				if (getNext(&cp) != ':')
 				{
-					errno=3;
+					BasicErr=3;
 				}	
 				
 				pb = getNext(&cp) ;
 				
 				if ((pb<'0' || pb >'8'))
 				{
-					errno=3;
+					BasicErr=3;
 				}
 				
 				//Now have PORT:$pn:$pb
@@ -515,12 +502,12 @@ void basic_load(int tf)
 			}
 			else
 			{
-				errno=1;
+				BasicErr=1;
 			}
 			// '='
 			if (getNext(&cp) != '=')
 			{
-				errno=1;
+				BasicErr=1;
 			}					
 			newline.text=cp;
 			break;
@@ -534,7 +521,7 @@ void basic_load(int tf)
 				newline.var = getNum(&cp);
 				if (newline.var<0 || newline.var>31)
 				{
-					errno=3;
+					BasicErr=3;
 					break;
 				}
 				newline.var += 32;
@@ -542,7 +529,7 @@ void basic_load(int tf)
 			// '='
 			if (getNext(&cp) != '=')
 			{
-				errno=1;
+				BasicErr=1;
 			}			
 			newline.text=cp;
 			break;
@@ -586,12 +573,12 @@ void basic_load(int tf)
 			}
 			else if ((newline.var = getVar(&cp))<0)
 			{
-				errno=3;
+				BasicErr=3;
 			}
 			// '='
 			if (getNext(&cp) != '=')
 			{
-				errno=1;
+				BasicErr=1;
 			}
 			if (newline.token==LIST)
 			{
@@ -650,7 +637,7 @@ void basic_load(int tf)
 			if (p_then != 0) 
 				strncpy(p_then, ")?  ",4);
 			else
-				errno=3;
+				BasicErr=3;
 				
 			if (p_else != 0) 
 				strncpy(p_else,":   ",4);
@@ -677,7 +664,7 @@ void basic_load(int tf)
 					}
 				}
 				else
-					errno=3;
+					BasicErr=3;
 
 				p_else = strstr(cp, " ELSE");
 
@@ -707,15 +694,15 @@ void basic_load(int tf)
 		case NEXT:
 			if ((newline.var = getVar(&cp))<0)
 			{
-				errno=3;
+				BasicErr=3;
 			}
 			break;
 		default:
-			errno=2;
+			BasicErr=2;
 			break;
 		}			
 		
-		if (errno==0)
+		if (BasicErr==0)
 		{	
 			if (newline.lineno==0)
 			{
@@ -749,12 +736,10 @@ RUNTIME routines
 *************************************************************************************************************/
 #define SCENESZ 128
 
-int variable[26]; // only A-Z at moment
+
 int scene[SCENESZ];	  // generic array
 int nis=0;        // number of item isn array
-int  eval_list(char *p);
-unsigned char eval_expr(char **str, long *res);
-enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
+
 int speed=2;
 int mtype=2;
 
@@ -829,854 +814,6 @@ void quicksort(int list[],int m,int n)
    }
 }
 
-const unsigned char smap[40] = {
-	1,  2,  3,  4,  5,  6,  8,  10, 12, 15, 19, 24, 31, 38, 47, 57, 69, 82, 97, 112,
-	128,144,159,174,187,199,209,218,225,232,237,241,244,246,248,250,251,252,253,254};
-
-int sigmoid(int v, int t)
-{
-
-	switch (t)
-	{
-	case 0: return v; // no change
-	case 1: return (v>0)?10:0; //delta
-	case 2: return (v>0)?10:-10; //delta
-	case 3: return (v>0)?1:0; //delta
-	case 4: // 1/(1-e^-x) actually 256/(1-e^(x/4))
-		if(v<-20) v=-20;
-		if(v>19)  v=19;
-		v=(smap[v+20]-127)/4;
-		return v;
-	}
-}
-
-int get_bit(int pn, int bn)
-{
-	int n;
-	switch(pn)
-	{
-	case 0:
-		n = PINA;
-		break;
-	case 1:
-		n = PINB;
-		break;
-	case 2:
-		n = PINC;
-		break;
-	case 3:
-		n = PIND;
-		break;
-	case 4:
-		n = PINE;
-		break;
-	case 5:
-		n = PINF;
-		break;
-	case 6:
-		n = PING;
-		break;
-	default:
-		return 0;
-	}
-	
-	if (bn<8)
-	{
-		// mask result with bit
-		int mask = 1<< bn;
-		n &= mask;
-	}
-	return n;
-}
-
-void set_bit(int p, int b, int n)
-{
-	//rprintf ("Debug - set to port:%d:%d = %d\r\n", p ,b, n);
-	
-	volatile BYTE *port;
-	BYTE mask;
-	
-	if (b<0 || b>8) return;
-		
-	switch(p)
-	{
-	case 0:
-		port=&PORTA;
-		break;
-	case 1:
-		port=&PORTB;
-		break;
-	case 2:
-		port=&PORTC;
-		break;
-	case 3:
-		port=&PORTD;
-		break;
-	case 4:
-		port=&PORTE;
-		break;
-	case 5:
-		port=&PORTF;
-		break;
-	case 6:
-		port=&PORTG;
-		break;
-	default:
-		rprintf ("panic error\r\n");
-		return;
-	}
-	
-	if (b==8) // set DDR
-	{
-		port -= 1; // now points to DDR
-		*port = n;
-		return;
-	}
-	
-	mask = (1<<b);
-	
-	if (n==0)	
-	{	
-		*port &= ~mask; //clear bit
-	}
-	else
-	{
-		*port |= mask;  //set bit
-	}
-}
-
-int getArg(char **str, long *res)
-{
-	if (**str=='(') 
-	{
-		(*str)++;
-		eval_expr(str, res);
-		if (**str==')')
-		{
-			(*str)++;
-			return 1;
-		}
-
-	}
-	return 0;
-}
-
-const unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
-
-int get_special(char **str, long *res)
-{
-	char *p=*str;
-	int t=token_match(specials, str, NOSPECS);
-	long v=0;
-	int rt=NUMBER;
-	
-	switch(t) {
-	case sMIC:
-		{
-			int lc;
-
-			for (lc=0; lc<SDATASZ; lc++) 
-			{
-				v += sData[lc];  // sum the buffer
-				sData[lc]=0;     // and clear
-			}
-			MIC_SAMPLING=1; // on by default, but make sure
-		}
-		break;
-	case sTICK:
-		v=gtick;
-		break;	
-	case sMAX:
-	case sIMAX:
-		{
-			long st=0;
-			int k=0,m;
-
-			if (**str!='(')
-				break;
-
-			(*str)++;
-
-			if (eval_expr(str, res)==ARRAY)
-			{
-				if (**str==',')
-				{
-					(*str)++;
-					if (eval_expr(str, &st)!=NUMBER)
-						break;
-				}
-				if (**str!=')')
-					break;
-				(*str)++;
-			}
-			m=scene[st];
-			for (v=st; v<nis; v++)
-			{
-				if (scene[v]>m) { m=scene[v]; k=v;}
-			}
-			v=(t==sMAX)?m:k;
-		}
-		break;	
-	case sMIN:
-		if (getArg(str,&v))
-		{
-			int m=scene[0];
-			for (v=0; v<nis; v++)
-			{
-				if (scene[v]<m) m=scene[v];
-			}
-			v=m;
-		}
-		break;
-	case sSUM:
-		if (getArg(str,&v))
-		{
-			int m=0;
-			for (v=0; v<nis; v++)
-			{
-				m += scene[v];
-			}
-			v=m;
-		}
-		break;
-	case sHAM:
-		// TBD - calculate HAMMING distance between 2 arrays
-		// $HAM(n,@A,@B)
-		//eg PRINT $HAM(0,@{3,1,2,3},@{3,3,2,1}
-		if (**str=='(') 
-		{
-			(*str)++;
-			eval_expr(str, res); 
-			if (**str==',')
-			{
-				int n=*res;
-				(*str)++;
-				if (eval_expr(str, res)==ARRAY)
-				{
-					if (**str==',')
-					{
-						int i,tnis=nis;
-						int tempB[SCENESZ];
-						(*str)++;
-						for (i=0;i<SCENESZ; i++)
-						{
-							tempB[i]=scene[i];
-						}
-						if (eval_expr(str, res)==ARRAY)
-						{
-							int m=(nis>tnis)?nis:tnis;
-							for (i=0;i<m; i++)
-							{
-								v += ((abs(((i<tnis)?tempB[i]:0) - ((i<nis)?scene[i]:0))<=n)?1:0); 
-							}
-						}	
-						(*str)++;  // ')'
-					}
-				}
-			}
-		}
-		break;
-	case sNORM:
-		if (getArg(str,&v))
-		{
-			long m=0;
-			for (v=0; v<nis; v++)
-			{
-				m += (scene[v]*scene[v]);
-			}
-			v=Sqrt(m);
-		}
-		break;
-	case sGX:
-		Acc_GetData();
-		v=x_value;
-		break;	
-	case sGY:
-		Acc_GetData();
-		v=y_value;
-		break;		
-	case sGZ:
-		Acc_GetData();
-		v=z_value;
-		break;	
-	case sNE:
-		v=nis;
-		break;	
-	case sTYPE:
-	case sNS:
-		v=nos;
-		break;	
-	case sPSD:
-		Get_AD_PSD();
-		v = gDistance;
-		break;
-	case sVOLT:
-		Get_VOLTAGE();
-		v = gVOLTAGE;
-		break;
-	case sIR:
-		while ((v= irGetByte())<0) ; //wait for IR
-		break;
-	case sKBD:
-		while ((v= uartGetByte())<0) ; // wait for input
-		break;	
-	case sKIR:
-		v=uartGetByte();
-		if (v<0) v=irGetByte();
-		break;
-	case sRND: // $RND 0 < n < 255 or $RND(6,0,5) ->{6,n,n,n,n,n,n} 0<n<5
-		if (**str=='(')
-		{
-			long i,a=0,b=0,c=0;
-			(*str)++;
-			eval_expr(str, &a);
-			if (**str==',')
-			{
-				(*str)++;
-				eval_expr(str, &b);
-				if (**str==',')
-				{
-					(*str)++;
-					eval_expr(str, &c);
-				}
-			}
-			(*str)++;  // ')'
-
-			if (b>c) swap(&b,&c);
-
-			for (i=0; i<a; i++)
-			{
-				scene[i]=(rand()%(c-b))+b;
-			}
-			nis=a;
-			rt=ARRAY;
-		}
-		else
-		   v=rand();
-		break;
-	case sIR2ACT: //$IR2ACT(10) -> x
-		v=0;
-		if (getArg(str,&v))
-		{
-			v=map[v];
-		}
-		break;
-	case sDSIG: // $DISG(x) -> x*(1-x)
-		v=0;
-		if (getArg(str,&v))
-		{
-			v = v*(1-v);
-		}
-		break;
-	case sSIG: //$SIG(n[,t])
-		v=0;
-		if (getArg(str,&v))
-		{
-			v=sigmoid(v,2);
-		}
-		else
-		{
-			if (**str==',')
-			{
-				long r;
-				(*str)++;
-				eval_expr(str, &r);
-				v=sigmoid(v,r);
-				(*str)++;
-			}
-		}
-		break;
-	case sSTAND: // $STAND(x)
-		v=0;
-		if (getArg(str,&v))
-		{
-			int i;
-			if (v<1)  v=1;
-			if (v>18) v=18;
-			for (i=0; i<v; i++)
-			{
-				if (v<=16)
-					scene[i]=basic16[i];
-				else
-					scene[i]=basic18[i];
-			}
-			nis=i;
-			rt=ARRAY;
-		}
-		break;
-	case sZEROS: // $ZEROS(x)
-		v=0;
-		if (getArg(str,&v))
-		{
-			int i;
-			for (i=0; i<v; i++)
-			{
-				scene[i]=0;
-			}
-			nis=i;
-			rt=ARRAY;
-		}
-		break;
-	case sABS: // $ABS(x)
-		v=0; 
-		if (getArg(str,&v))
-		{
-			v = v<0?-v:v;
-		}
-		break;
-	case sSQRT: // $SQRT(x)
-		v=0; 
-		if (getArg(str,&v))
-		{
-			v = Sqrt(v);
-		}
-		break;
-	case sSIN: // $SIN(x)
-		v=0; 
-		if (getArg(str,&v))
-		{
-			v = Sin(v%256);
-		}
-		break;
-	case sCOS: // $COS(x)
-		v=0; 
-		if (getArg(str,&v))
-		{
-			v = Cos(v%256);
-		}
-		break;
-	case sCVB2I: // $CVB2I(x)  255 -> -1
-		v=0; 
-		if (getArg(str,&v))
-		{
-			v = cbyte(v);
-		}
-		break;
-	case sROM: // $ROM(x) or $ROM$(X) or $ROM@(x)
-                if (**str=='$')
-                {
-			(*str)++;
-			if (getArg(str,&v))
-			{
-				v = eeprom_read_byte((BYTE*)(PERSIST+v));
-			}
-		}
-		else
-                if (**str=='@')
-                {
-			(*str)++;
-			if (getArg(str,&v))
-			{
-				int i;
-				nis = v;
-				for (i=0;i<nis;i++)
-					scene[i] = eeprom_read_byte((BYTE*)(PERSIST+i));
-			}
-		}
-		else
-                {
-			if (getArg(str,&v))
-			{
-				v = eeprom_read_byte((BYTE*)(FIRMWARE+v));
-			}
-		}
-		break;
-	case sSERVO: // SERVO(nn)
-		//$servo
-		if (**str!='(') 
-		{
-			v=readservos(0);
-		}
-		else
-		// get position of servo id=nn
-		if (getArg(str,&v))
-		{
-			v = wckPosRead(v);
-		}
-		break;
-	case sRANGE:
-		if (**str=='(') 
-		{
-			long a,b,c;
-			(*str)++;
-			eval_expr(str, &a); 
-			if (**str==',')
-			{
-				(*str)++;
-				eval_expr(str, &b); 
-				if (**str==',')
-				{
-					(*str)++;
-					eval_expr(str, &c); 
-				}
-				if (**str!=')')
-				{
-					errno=1;
-					break;
-				}
-				(*str)++;
-				if (a<b) v=b;
-				else
-					if (a>c) v=c;
-					else 
-						v=a;
-			}
-		}
-		break;
-	case sFIND:
-		//$FIND(x,@A)
-		if (**str=='(') 
-		{
-			(*str)++;
-			eval_expr(str, res); 
-			if (**str==',')
-			{
-				int n=*res;
-				(*str)++;
-				if (eval_expr(str, res)==ARRAY)
-				{
-					int i;
-					v=0;
-					for (i=0; i<nis; i++)
-					{
-						if (scene[i]==n)
-						{
-							v=i; break;
-						}
-						if (scene[i]>n)
-						{
-							if (i>0) v=i-1; 
-							break;
-						}
-					}
-					if (i==nis) v=nis-1; // no match
-					if (**str==')')
-					{
-						(*str)++;
-					}
-				}
-			}
-		}
-		break;		
-	case sPORT: // PORT:A:n
-		// get position of servo id=nn
-		v=0;
-		if (**str==':') {
-			(*str)++;
-			}
-		if (**str>='A' && **str<='G' ) {
-			v= (**str-'A');
-			(*str)++;
-			}	
-		t=8;
-		if (**str==':') {   // Optional Bit specficied
-			(*str)++;
-			if (**str>='0' && **str<='7' ) {
-				t=  (**str - '0');
-				(*str)++;
-				}
-		}				
-		*res=get_bit(v, t);         //need to read port with PINA etc 
-		return (*str-p); // not finished yet
-	default:
-		return -1;
-	}
-	*res=v;
-	//t=strlen(specials[t]);
-	return rt;
-}
-
-
-long math(long n1, long n2, char op)
-{
-	switch (op) {
-	case '+': 
-		n1=n1+n2; break;
-	case '-':
-		n1=n1-n2; break;
-	case '*':
-		n1=n2*n1; break;
-	case '/':
-		n1=n1/n2; break;
-	case '&':
-		n1=n2 && n1; break;
-	case '|':
-		n1=n1 || n2; break;
-	case '%':
-		n1=n1%n2; break;
-	case '>':
-		n1=(n1>n2)?1:0; break;		
-	case '<':
-		n1=(n1<n2)?1:0; break;	
-	case 'l':
-		n1=(n1<=n2)?1:0; break;	
-	case 'g':
-		n1=(n1>=n2)?1:0; break;	
-	case 'n':
-		n1=(n1!=n2)?1:0; break;	
-	case '=':
-		n1=(n2==n1)?1:0; break;		
-	}
-	return n1;
-}
-
-int str_expr(char *str)
-{
-	char *p=str;
-	if (*str == '\0') return 0;
-
-	while (*str != '"') str++;
-	return str-p;
-}
-
-unsigned char eval_expr(char **str, long *res)
-{
-	char c;
-	
-	long n1=0;
-	long stack[MAX_DEPTH]; 
-	char ops[MAX_DEPTH];
-	
-	int sp=0;
-	int op=0;
-	long tmp=0;
-	int done=0;
-	
-	while (**str != '\0' && !done)
-	{
-		if ((c = **str)==')')
-			break;
-		
-		(*str)++;
-
-		if (c>='0' && c<='9')
-		{
-			n1 = n1*10 + c - '0';
-		}
-		else
-		if (c>='A' && c<='Z')
-		{
-			n1 = variable[c-'A'];
-		}
-		else
-		switch (c)
-		{
-		case '(':
-			eval_expr(str, &tmp);
-			n1 = tmp;
-			(*str)++;
-			break;
-		case '?' :
-		case '+' :
-		case '-' :
-		case '*' :
-		case '/' :
-		case '>' :
-		case '<' :
-		case '=' :
-		case '&' :
-		case '|' :
-		case '%' :
-		case ':' :
-			if (c=='>' && **str=='=') {c='g'; (*str)++;}
-			if (c=='<' && **str=='=') {c='l'; (*str)++;}
-			if (c=='<' && **str=='>') {c='n'; (*str)++;}
-			ops[op++]=c;
-			stack[sp++]=n1;
-			n1=0;
-			break;
-		case '"':
-			return STRING;
-		case ' ':
-			break; //ignore sp
-		case '@':
-			if (**str=='#')
-            {
-				int i;
-				(*str)++;
-				for (i=0;i<16; i++)
-				{
-					scene[i] = offset[i];
-				}
-				nis=16;
-			}
-			else
-            if (**str=='{')
-            {
-                // literal
-                int cnt;
-                (*str)++;
-                cnt=eval_list(*str);
-                *str = *str+cnt;
-                if (**str!='}')
-                {
-					break;
-                }
-				(*str)++;
-            }
-			else
-            if (**str=='!')
-            {
-				//use current array
-				(*str)++;
-			}
-			else
-            if (**str=='<')
-            {
-				//use sound array
-				for (n1=0; (n1<MIC_NOS && n1<SDATASZ && n1<SCENESZ); n1++) 
-				{
-					scene[n1] = sData[n1];     // and clear
-				}
-				nis=MIC_NOS;
-				(*str)++;
-			}
-			else
-            if (**str=='?')
-            {
-				//use servo pos array
-				readservos(nos);
-
-				for (n1=0; n1<nos; n1++) 
-				{
-					scene[n1] = cpos[n1];     // and clear
-				}
-				nis=nos;
-				(*str)++;
-			}
-            else
-            {
-				char tmpA[128];
-				n1 = **str-'A';
-				if (n1<0 || n1 >25)
-				{
-					break;
-				}
-				n1 = variable[n1];
-				readtext(n1, tmpA);				
-				if (tmpA[0]==0xFF) // DATA
-				{
-					int i=0;
-					nis=tmpA[1];
-					for (i=0; i<nis; i++)
-						scene[i]=(unsigned char)tmpA[i+2];
-				}
-				else
-					eval_list(tmpA);
-				//
-				(*str)++;
-			}
-			if (**str == '[')
-			{
-				(*str)++;
-				n1=0;
-				eval_expr(str, &n1);
-				if (n1>=nis) n1=nis-1;
-				if (n1<0)    n1=0;
-
-				n1 = scene[n1];
-				(*str)++;
-				break;
-			}
-			if (**str == '+' || **str == '-' || **str == '.')
-			{
-				/*
-				//add array
-				int i,tnis;
-				int tempB[SCENESZ];
-				char o = **str;
-				(*str)++;
-				for (i=0;i<SCENESZ; i++)
-				{
-					tempB[i]=scene[i];
-				}
-				tnis=nis;
-				if (eval_expr(str,res)==ARRAY)
-				{
-					if (o=='.')
-					{
-						if (tnis+nis<SCENESZ) 
-						{
-							int m=(nis>tnis)?nis:tnis;
-							for (i=m-1;i>=0; i--)
-							{
-								if (i<nis)
-									scene[i+tnis] = scene[i];
-								if (i<tnis)
-									scene[i]     = tempB[i];
-							}
-							nis=nis+tnis;
-						}
-					}
-					else
-					{
-						int m=(nis>tnis)?nis:tnis;
-						for (i=0;i<m; i++)
-						{
-							if (o == '+') 
-								scene[i] = ((i<tnis)?tempB[i]:0) + ((i<nis)?scene[i]:0); 
-							else 
-								scene[i] = ((i<tnis)?tempB[i]:0) - ((i<nis)?scene[i]:0); 
-						}
-						nis=m;
-					}
-				}
-				*/
-			}
-
-			return ARRAY;
-			break;
-		case '$':
-			//special var?
-			if (get_special(str, &n1)==ARRAY)
-				return ARRAY;
-			break;
-		default:
-			done=1;
-			(*str)--;
-		}
-	}
-
-	stack[sp++] = n1;
-
-	while (op>0) {
-		if (ops[op-1]==':')
-		{
-			if (op > 1 && ops[op - 2] == '?' && sp>2)
-			{
-				if (stack[sp - 3] == 0)
-					stack[sp - 3] = stack[sp - 1];
-				else
-					stack[sp - 3] = stack[sp - 2];
-				op--;
-				sp-=2;
-			}
-			else
-			{
-				rprintf("eval stack error %d, %d\r\n", op, sp);
-				return ERROR; 
-			}
-		}
-		else
-		{
-			if (op > 0 && sp>1)
-			{
-				stack[sp-2] = math(stack[sp-2],stack[sp-1],ops[op-1]);
-				sp--;
-			}
-			else
-			{
-				rprintf("eval stack error %d, %d\r\n", op, sp);
-				return ERROR;
-			}
-		}
-		op--;
-	}
-
-	*res = stack[0];
-	return NUMBER;
-}
-
 
 int gotoln(int gl)
 {
@@ -1693,39 +830,11 @@ int gotoln(int gl)
 }
 
 
-int put_special(int var, int n)
-{
-	if (var>= 30)
-	{
-		set_bit((var-30)/10, (var % 10), n);
-	}
-	return 0;
-}
 
-int eval_list(char *p)
-{
-	// eval list "5,1,2,3,4,5" ->scene[5]
-	int i,n;
-	char *t=p;
-	
-	eval_expr(&p, &nis);
-		
-	if (*p++ != ',') { errno=6; return 0; }
-	for (i=0;i<nis;i++)
-	{
-		n=0;
-		eval_expr(&p, &n);
-		if (i!=(nis-1) && *p++ != ',') { errno=6; return 0; }
-		scene[i]=n;
-	}
-	return p-t;
-}
 
 int  forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
 char nxtptr[MAX_FOR_NEST][MAX_FOR_EXPR];   // Upto 3 nested for/next
-
 int fp; 
-
 
 int gosub[MAX_GOSUB_NEST];  // 3 nested gosubs
 int gp;  
@@ -1760,7 +869,7 @@ void basic_start(int dbf)
 	line_t line;
 	char buf[MAX_LINE];
 	
-	errno=0;
+	BasicErr=0;
 
 	fp=0; // Upto 3 nested for/next
 
@@ -1771,9 +880,9 @@ void basic_start(int dbf)
 	while (tmp != 0xCC && nxtline < EEPROM_MEM_SZ )
 	{
 		int tc;
-		if (errno !=0)
+		if (BasicErr !=0)
 		{
-			rprintf("Runtime error %d on line %d\r\n", errno, line.lineno);
+			rprintf("Runtime error %d on line %d\r\n", BasicErr, line.lineno);
 			return;
 		}
 
@@ -1840,7 +949,7 @@ int execute(line_t line, int dbf)
 
 			to = strstr(p," TO ");
 			if (to==0) 
-				errno=1;
+				BasicErr=1;
 			else
 			{
 				strncpy(nxtptr[fp],to+4, MAX_FOR_EXPR);
@@ -1872,7 +981,7 @@ int execute(line_t line, int dbf)
 			p=nxtptr[fp-1];
 			if (eval_expr(&p, &n)!=NUMBER)
 			{
-				errno=1;
+				BasicErr=1;
 				break; //need to handle error	
 			}			
 			if (variable[line.var] <= n) { 
@@ -1912,7 +1021,7 @@ int execute(line_t line, int dbf)
 				   eeprom_write_byte(PERSIST+addr, n);                             
 			}
 			else
-				errno=1;
+				BasicErr=1;
         }
 		break;
 	case PUT: 
@@ -1921,7 +1030,7 @@ int execute(line_t line, int dbf)
 		if (eval_expr(&p, &n)==NUMBER)
 			put_special(line.var, n);
 		else
-			errno=1;
+			BasicErr=1;
 		break;
 	case LET: 
 		n=0;
@@ -1929,7 +1038,7 @@ int execute(line_t line, int dbf)
 		if (eval_expr(&p, &n)==NUMBER)
 			variable[line.var] = n;
 		else
-			errno=1;
+			BasicErr=1;
 		break;
 	case SERVO:
 		{
@@ -1975,7 +1084,7 @@ int execute(line_t line, int dbf)
 			int t = gotoln(line.value);
 			if (t<0)
 			{
-				errno=3; return 0xcc;	
+				BasicErr=3; return 0xcc;	
 			}		
 			setline(t);
 			tmp=1;
@@ -2032,7 +1141,7 @@ int execute(line_t line, int dbf)
 							p++;
 							if (eval_expr(&p, &w) != NUMBER)
 							{
-								errno=3; break;
+								BasicErr=3; break;
 							}
 						}
 						if (w<=0)  w=nis;
@@ -2052,7 +1161,7 @@ int execute(line_t line, int dbf)
 			if (*p=='\0') break; // done
 
 			if (*p!=';' && *p!=',') {
-				errno=4; //rprintf ("synatx prob= [%d]\r\n", *p); // DEBUG
+				BasicErr=4; //rprintf ("synatx prob= [%d]\r\n", *p); // DEBUG
 				break;
 			}
 			if (*p==';' && *(p+1)=='\0') // last one
@@ -2071,7 +1180,7 @@ int execute(line_t line, int dbf)
 		{
 			if (*p++ != ',')
 			{
-				errno=5; break;
+				BasicErr=5; break;
 			}
 
 			if (n == 0)
@@ -2086,7 +1195,7 @@ int execute(line_t line, int dbf)
 			{
 				int t = gotoln(n);
 				if (t<0)
-					errno=5;
+					BasicErr=5;
 				else
 					setline(t);
 				tmp=1;
@@ -2126,21 +1235,21 @@ int execute(line_t line, int dbf)
 					p++;
 					if (eval_expr(&p, &nb) != NUMBER)
 					{
-						errno=1;
+						BasicErr=1;
 						return 0;
 					}
 				}
 				if (st>=nis || st+nb>nis)
 				{
-					errno=1;
+					BasicErr=1;
 					return 0;
 				}
 				break;
 			}
 
-			if (*p++ != ',') { errno=1; break;}
+			if (*p++ != ',') { BasicErr=1; break;}
 			eval_expr(&p, &fm);
-			if (*p++ != ',') { errno=1; break;}
+			if (*p++ != ',') { BasicErr=1; break;}
 			eval_expr(&p, &tm);
 
 			if (nb==0) nb=nis-st;
@@ -2151,7 +1260,7 @@ int execute(line_t line, int dbf)
 					pos[j] = scene[j+st];
 				else
 				{
-					errno=1;
+					BasicErr=1;
 					return 0;
 				}
 
@@ -2181,10 +1290,10 @@ int execute(line_t line, int dbf)
 		p=line.text;
 		if (eval_expr(&p, &addr)==NUMBER)
 		{
-			if (*p++ != ',') { errno=1; break;}
+			if (*p++ != ',') { BasicErr=1; break;}
 			if (eval_expr(&p, &n) != ARRAY)
 			{
-				errno=1;
+				BasicErr=1;
 				return 0;
 			}
 			for (i=0; i<nis; i++)
@@ -2204,7 +1313,7 @@ int execute(line_t line, int dbf)
 			
 			if  (*p++ != ',')
 			{
-				errno=1;
+				BasicErr=1;
 				return 0;
 			}
 			if (eval_expr(&p, &ibc)==NUMBER)
@@ -2213,7 +1322,7 @@ int execute(line_t line, int dbf)
 				{
 					if (eval_expr(&p, &n) != ARRAY)
 					{
-						errno=1;
+						BasicErr=1;
 						return 0;
 					}
 				}
@@ -2254,7 +1363,7 @@ int execute(line_t line, int dbf)
 		p=line.text;
 		if (eval_expr(&p, &n) != NUMBER)
 		{
-			errno=1;
+			BasicErr=1;
 			return 0;
 		}
 		PerformAction(n);		
@@ -2266,7 +1375,7 @@ int execute(line_t line, int dbf)
 		{
 			if (eval_expr(&p, &n) != NUMBER)
 			{
-				errno=1;
+				BasicErr=1;
 				return 0;
 			}
 		}
@@ -2301,7 +1410,7 @@ int execute(line_t line, int dbf)
 				}
 			}
 			else
-				errno=1;
+				BasicErr=1;
 		}
 		break;
 	case OUT: 
@@ -2339,22 +1448,22 @@ int execute(line_t line, int dbf)
 			p=line.text;
 			if (eval_expr(&p, &sf)!=NUMBER)
 			{
-				errno=3; return 0;
+				BasicErr=3; return 0;
 			}
 			if (*p++ != ',')
 			{
-				errno=2; return 0;
+				BasicErr=2; return 0;
 			}
 			if (eval_expr(&p, &st)!=NUMBER)
 			{
-				errno=3; return 0;
+				BasicErr=3; return 0;
 			}
 			if (*p==',')
 			{
 				p++;
 				if (eval_expr(&p, &si)!=NUMBER)
 				{
-					errno=3; return 0;
+					BasicErr=3; return 0;
 				}
 				sd=si+1;
 				if (*p==',')
@@ -2362,14 +1471,14 @@ int execute(line_t line, int dbf)
 					p++;
 					if (eval_expr(&p, &sd)!=NUMBER)
 					{
-						errno=3; return 0;
+						BasicErr=3; return 0;
 					}
 					if (*p==',')
 					{
 						p++;
 						if (eval_expr(&p, &sw)!=NUMBER)
 						{
-							errno=3; return 0;
+							BasicErr=3; return 0;
 						}
 					}
 				}
@@ -2432,7 +1541,7 @@ int execute(line_t line, int dbf)
 		p=line.text;
 		if (eval_expr(&p, &n)!=NUMBER)
 		{
-			errno=3; break;
+			BasicErr=3; break;
 		}
 		if (*p==',')
 		{
@@ -2441,14 +1550,14 @@ int execute(line_t line, int dbf)
 			p++;
 			if (eval_expr(&p, &tn)!=ARRAY)
 			{
-				errno=3; return 0;
+				BasicErr=3; return 0;
 			}
 			MIC_SAMPLING=0;
 			if (nis==5)
 				blights(n, scene);
 			else
 			{
-				errno=3; // must be 5 elements
+				BasicErr=3; // must be 5 elements
 				return 0;
 			}
 		}
@@ -2462,7 +1571,7 @@ int execute(line_t line, int dbf)
 		p=line.text;
 		if (eval_expr(&p, &n)!=NUMBER)
 		{
-			errno=3; break;
+			BasicErr=3; break;
 		}
 		if (n<0) PP_mtype=0;
 		PP_mtype=n%4;
@@ -2470,7 +1579,7 @@ int execute(line_t line, int dbf)
 		p=line.text;
 		if (eval_expr(&p, &n)!=NUMBER)
 		{
-			errno=3; break;
+			BasicErr=3; break;
 		}
 		if (speed<0) n=0;
 		speed=n%4;
@@ -2496,7 +1605,7 @@ int execute(line_t line, int dbf)
 			setline(gosub[--gp]);
 			tmp=1;
 		} else {
-			errno=7;
+			BasicErr=7;
 		}
 		break;
 	case DELETE:
@@ -2516,11 +1625,11 @@ int execute(line_t line, int dbf)
 			}
 			if (eval_expr(&p, &n)!=NUMBER)
 			{
-				errno=3; break;
+				BasicErr=3; break;
 			}
 			if (n<0 || n>=128)
 			{
-				errno=3; break;
+				BasicErr=3; break;
 			}
 			if (*p==',' && *(p+1)=='*')
 			{
@@ -2534,13 +1643,13 @@ int execute(line_t line, int dbf)
 				p++;
 				if (eval_expr(&p, &n2)!=NUMBER)
 				{
-					errno=3; break;
+					BasicErr=3; break;
 				}
 				if (n2>n && n2<nis)
 					n2=1+n2-n;
 				else
 				{
-					errno=3;break;
+					BasicErr=3;break;
 				}
 			}
 			if(line.token==DELETE)
@@ -2568,16 +1677,16 @@ int execute(line_t line, int dbf)
 			p=line.text;
 			if (eval_expr(&p, &n)!=NUMBER)
 			{
-				errno=3; break;
+				BasicErr=3; break;
 			}
 			ind=n;
 			if (*p++ != ',' || n<0 || n>=128)
 			{
-				errno=3; break;
+				BasicErr=3; break;
 			}
 			if (eval_expr(&p, &n)!=NUMBER)
 			{
-				errno=3; break;
+				BasicErr=3; break;
 			}
 			if (line.token==INSERT)
 			{
@@ -2610,7 +1719,7 @@ int execute(line_t line, int dbf)
 				}
 				else if (*p !=0)
 				{
-					errno=3; break;
+					BasicErr=3; break;
 				}
 			}
 
@@ -2626,7 +1735,7 @@ int execute(line_t line, int dbf)
 				rprintf("N to Save = %d\n", nts);
 				if (nts<1 || nts>nog)
 				{
-					errno=3; break;
+					BasicErr=3; break;
 				}
 			}
 
@@ -2664,7 +1773,7 @@ int execute(line_t line, int dbf)
 		{
 			if (eval_expr(&line.text, &n) != ARRAY)
 			{
-				errno=1;
+				BasicErr=1;
 				break;
 			}
 			quicksort(scene,0,nis-1);
@@ -2732,7 +1841,7 @@ int execute(line_t line, int dbf)
 					}
 				}
 				else
-					errno=1;
+					BasicErr=1;
 			}
 		}
 		break;
@@ -2742,7 +1851,7 @@ int execute(line_t line, int dbf)
 			p=line.text;
 			if (eval_expr(&p, &n) != ARRAY)
 			{
-				errno=1;
+				BasicErr=1;
 				break;
 			}
 			n=0;
@@ -2773,7 +1882,7 @@ int execute(line_t line, int dbf)
 			p=line.text;
 			if (eval_expr(&p, &n) != ARRAY)
 			{
-				errno=1;
+				BasicErr=1;
 				break;
 			}
 			n=0;
@@ -2793,7 +1902,7 @@ int execute(line_t line, int dbf)
 			else
 			{
 				rprintf ("Invalid sample size must be one of 8,16,32 or 64\n");
-				errno=1;
+				BasicErr=1;
 				break;
 			}
 			if (n>1)  //scale the array
@@ -2872,7 +1981,7 @@ int execute(line_t line, int dbf)
 				}
 				else if (*p !=0)
 				{
-					errno=3; break;
+					BasicErr=3; break;
 				}
 			}
 
@@ -2982,7 +2091,7 @@ int execute(line_t line, int dbf)
 				}
 				else if (*p !=0)
 				{
-					errno=3; break;
+					BasicErr=3; break;
 				}
 			}
 			// code here
@@ -3002,7 +2111,7 @@ int execute(line_t line, int dbf)
 			{
 				// number input & output >0
 				rprintfStr("Err:: Input and output must be gt 0\n");
-				errno=3;
+				BasicErr=3;
 				break;
 			}
 
@@ -3010,7 +2119,7 @@ int execute(line_t line, int dbf)
 			{
 				//layer 3 = number outputs
 				rprintfStr("Err:: layer 3 neurons must match output (or be zero)\n");
-				errno=3;
+				BasicErr=3;
 				break;
 			}
 
@@ -3018,7 +2127,7 @@ int execute(line_t line, int dbf)
 			{
 				//layer 3 = number outputs
 				rprintfStr("Err:: layer 3 must be non-zero if layer 2 has nodes \n");
-				errno=3;
+				BasicErr=3;
 				break;
 			}
 
@@ -3139,7 +2248,7 @@ int execute(line_t line, int dbf)
 
 		break;
 	default:
-		errno=8; // DEBUG
+		BasicErr=8; // DEBUG
 		tmp=0xCC;
 	}		
 	return tmp;
@@ -3209,6 +2318,9 @@ void dump_firmware()
 		rprintfStr ("\r\n");	
 	}
 }
+
+extern const  prog_char  *specials[];
+
 
 void basic_list()
 {
@@ -3528,7 +2640,11 @@ void basic()
 		case 'R': // run
 			basic_run(1);
 			break;
-
+#ifdef PARSE
+		case 't': // test
+			testeval();
+			break;
+#endif
 		case 'G': // gosub
 		case 'g': // gosub
 			{

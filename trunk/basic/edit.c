@@ -6,17 +6,20 @@
 
 #include "uart.h"
 #include "rprintf.h"
-#else
-//windows mods
+#endif
+
+#ifdef WIN32
+#include <stdio.h>
+#include <string.h>
 #include "win.h"
 #endif
 
+#ifdef LINUX
+#include "linux.h"
+#endif
 
 #include <stdio.h>
 #include "edit.h"
-
-#define WORD  unsigned int
-#define BYTE  unsigned char
 
 extern BYTE EEMEM BASIC_PROG_SPACE[];  // this is where the tokenised code will be stored
 extern int strlen(char *p);
