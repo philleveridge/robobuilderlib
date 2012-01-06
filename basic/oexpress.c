@@ -23,21 +23,24 @@
 #define isdelim(c)  (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' \
                     || c == '^' || c == '(' || c == ')' || c == ',' || c == '=')
 
-#define isalpha(c)  ((c >= 'A' && c <= 'Z') || c == '_')
+#define isalpha(c)  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_')
 
 tOBJ varobj[26];
 
 char exprbuff[64];
 char *e;
-char tokbuff[25];
-char *tb;
+char tokbuff[5];
+int  tb;
+
+int    tnum;
+double tfloat;
 
 enum  TOKTYP {NUMI, NUMF, DELI, ALPHA};
 
 int get_token() 
 {
 	int ty=DELI;
-	tb=tokbuff;
+	tb=0;
     while (iswhite(*e))     // space or tab
     {
         e++;
@@ -46,23 +49,40 @@ int get_token()
 	if (isnumdot(*e))
 	{
 		int r=NUMI;
+		double dn=0.1;
+		tnum=0;
 		while (isnumdot(*e))
 		{
-			if (*e=='.') r=NUMF;
-			*tb++=*e++;
+			if (*e=='.') 
+			{
+				r=NUMF;
+				tfloat=(double)tnum;
+			}
+			else
+			{	
+				if (r==NUMI)
+					tnum  = tnum*10 + (*e-'0');
+				else
+				{
+					tfloat= tfloat + dn * (*e-'0'); 
+					dn=dn/10;
+				}
+			}
+			e++;
 		}
-		*tb=0;
 		return r;
 	}
 
 	if (isalpha(*e))
 	{
-		*tb++=*e++;
-		while (!isdelim(*e))
+		tokbuff[tb++]=toupper(*e++);
+		while (isalpha(*e) || isnumber(*e))
 		{
-			*tb++=*e++;
+			tokbuff[tb]=toupper(*e++);
+			tb=tb+1;
+			if (tb>4) tb=4;
 		}
-		*tb=0;
+		tokbuff[tb]=0;
 		return ALPHA;
 	}
 
@@ -78,10 +98,16 @@ tOBJ eval_oxpr(char *s)
 	switch (get_token())
 	{
 	case ALPHA:
+		r.type   = STR;
+		r.string = tokbuff;
 		break;
 	case NUMI:
+		r.type   = INT;
+		r.number = tnum;
 		break;
 	case NUMF:
+		r.type   = FLOAT;
+		r.floatpoint = tfloat;
 		break;
 	case DELI:
 		break;
@@ -91,10 +117,13 @@ tOBJ eval_oxpr(char *s)
 
 void printtype(tOBJ r)
 {
-
         if (r.type == INT)
         {
                 rprintf("%d", r.number);
+        }
+		else if (r.type == FLOAT)
+        {
+                rprintf("%f", r.floatpoint);
         }
         else if (r.type == STR)
         {
