@@ -25,6 +25,9 @@
 
 #define isalpha(c)  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_')
 
+#define isspecial(c)  ( c == '+' || c == '-' || c == '*'  || c == '/')
+
+
 tOBJ varobj[26];
 
 char exprbuff[64];
@@ -35,7 +38,41 @@ int  tb;
 int    tnum;
 double tfloat;
 
-enum  TOKTYP {NUMI, NUMF, DELI, ALPHA};
+
+
+typedef struct ops {
+        char *name;
+		int level;
+		int type;
+		void *func;
+} tOP, *tOPp;
+
+tOP oplist[] = { 
+	{"+",    1, PLUS,  NULL},
+	{"-",    1, MINUS, NULL},
+	{"/",    2, DIVD,  NULL},
+	{"*",    2, MULT,  NULL},
+	{"AND",  0, LAND,  NULL},
+	{"OR",   0, LOR,   NULL},
+	{"SIN",  2, NA,    NULL},  //function single arg
+	{"MAX",  2, NA,    NULL},  //function list arg
+};
+
+tOBJ omath(tOBJ o1, tOBJ o2, int op);
+
+int getOP(char *str)
+{
+	int i=0;
+	while (i<sizeof(oplist)/sizeof(tOP))
+	{
+		//printf ("%d %s\n", i,oplist[i].name);
+		if (!strcmp(oplist[i].name,str))
+			return i;
+		i++;
+	}
+	return -1;
+}
+
 
 int get_token() 
 {
@@ -44,6 +81,12 @@ int get_token()
     while (iswhite(*e))     // space or tab
     {
         e++;
+    }
+
+    // check for end of expression
+    if (*e == '\0')
+    {
+        return DELI;
     }
 
 	if (isnumdot(*e))
@@ -73,6 +116,17 @@ int get_token()
 		return r;
 	}
 
+	if (isspecial(*e))
+	{
+			tokbuff[tb++]=*e++;
+			tokbuff[tb]=0;
+
+		if (getOP(tokbuff)<0)
+			return DELI;
+		else
+			return OPR;
+	}
+
 	if (isalpha(*e))
 	{
 		tokbuff[tb++]=toupper(*e++);
@@ -83,7 +137,11 @@ int get_token()
 			if (tb>4) tb=4;
 		}
 		tokbuff[tb]=0;
-		return ALPHA;
+
+		if (getOP(tokbuff)<0)
+			return ALPHA;
+		else
+			return OPR;
 	}
 
 	return ty;
@@ -91,26 +149,70 @@ int get_token()
 
 tOBJ eval_oxpr(char *s)
 {
-	tOBJ r;
+	tOBJ r,a,b;
+	int op=NA;
+
 	r.type=EMPTY;
 	strncpy(exprbuff,s,63);
 	e=exprbuff;
+
 	switch (get_token())
 	{
 	case ALPHA:
-		r.type   = STR;
-		r.string = tokbuff;
+		a.type   = STR;
+		a.string = tokbuff;
 		break;
 	case NUMI:
-		r.type   = INT;
-		r.number = tnum;
+		a.type   = INT;
+		a.number = tnum;
 		break;
 	case NUMF:
-		r.type   = FLOAT;
-		r.floatpoint = tfloat;
+		a.type   = FLOAT;
+		a.floatpoint = tfloat;
 		break;
+	case OPR:
 	case DELI:
-		break;
+		return r; //error return null
+	}
+
+	while (1)
+	{
+		switch (get_token())
+		{
+		case OPR:
+			op = getOP(tokbuff);
+			op = oplist[op].type;
+			break;
+		case ALPHA:
+		case NUMI:
+		case NUMF:
+			return r; //error return null
+		case DELI:
+			if (*e==0)
+				return a; //single argument
+			else
+				return r; //error return null
+		}
+
+		switch (get_token())
+		{
+		case NUMI:
+			b.type   = INT;
+			b.number = tnum;
+			break;
+		case NUMF:
+			b.type   = FLOAT;
+			b.floatpoint = tfloat;
+			break;
+		case ALPHA:
+		case OPR:
+		case DELI:
+			return r; //error return null
+		}
+
+		r = omath(a, b, op);
+		a = r;
+		r.type=EMPTY;
 	}
 	return r;
 }
@@ -154,6 +256,77 @@ void printtype(tOBJ r)
         }
         return;
 }
+
+tOBJ omath(tOBJ o1, tOBJ o2, int op)
+{
+	tOBJ r;
+	r.type=EMPTY;
+
+	if (o1.type==INT && o2.type==INT)
+	{
+		r.type=INT;
+		switch (op)
+		{
+		case PLUS:
+			r.number = o1.number + o2.number; break;
+		case MINUS:
+			r.number = o1.number - o2.number; break;
+		case MULT:
+			r.number = o1.number * o2.number; break;
+		case DIVD:
+			r.number = o1.number / o2.number; break;
+		case LAND:
+			r.number = o1.number && o2.number; break;
+		case LOR:
+			r.number = o1.number || o2.number; break;
+		default:
+			r.type=EMPTY; //error
+			break;
+		}
+	}
+
+	if (o1.type==FLOAT || o2.type==FLOAT)
+	{
+		double a=0.0,b=0.0;
+
+		r.type=FLOAT;
+		if (o1.type==FLOAT) a=o1.floatpoint;
+		if (o1.type==INT) a=(double)o1.number;
+
+		if (o2.type==FLOAT) b=o2.floatpoint;
+		if (o2.type==INT) b=(double)o2.number;
+
+		switch (op)
+		{
+		case PLUS:
+			r.floatpoint = a + b; break;
+		case MINUS:
+			r.floatpoint = a - b; break;
+		case MULT:
+			r.floatpoint = a * b; break;
+		case DIVD:
+			r.floatpoint = a / b; break;
+		default:
+			r.type=EMPTY; //error
+			break;
+		}
+	}
+
+	return r;
+}
+
+int set(char *name, tOBJ r)
+{
+	return -1; //not exist
+}
+
+tOBJ get(char *name)
+{
+	tOBJ r;
+	r.type=EMPTY;
+	return r; //not found
+}
+
 
 tOBJ print(tOBJ r)
 {
