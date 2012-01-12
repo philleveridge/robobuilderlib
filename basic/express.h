@@ -11,7 +11,9 @@ extern unsigned char eval_expr(char **str, long *res);
 extern int			eval_list(char *p);
 extern long			math(long n1, long n2, char op);
 
-enum  TYPE {SYM, INT, BOOL, FUNC, FLOAT, STR, CELL, EMPTY};
+enum  TYPE		{SYM, INT, BOOL, FUNC, FLOAT, STR, CELL, EMPTY};
+enum  TOKTYP	{NUMI, NUMF, DELI, ALPHA, OPR};
+enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR};
 
 typedef struct object {
         int   type;
