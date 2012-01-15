@@ -27,6 +27,7 @@
 
 #define isspecial(c)  ( c == '+' || c == '-' || c == '*'  || c == '/')
 
+#define MAXSTACK 10
 
 tOBJ varobj[26];
 
@@ -37,8 +38,6 @@ int  tb;
 
 int    tnum;
 double tfloat;
-
-
 
 typedef struct ops {
         char *name;
@@ -59,6 +58,73 @@ tOP oplist[] = {
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
+tOBJ print(tOBJ r);
+
+/**********************************************************/
+/*  stack                                                 */
+/**********************************************************/
+
+tOBJ stackobj[MAXSTACK];
+int sop=0;
+
+int push(tOBJ a)
+{
+	if (sop<MAXSTACK-1)
+	{
+		stackobj[sop++] = a;
+		return 1;
+	}
+	return 0;
+}
+
+tOBJ pop()
+{
+	tOBJ e;
+	e.type=EMPTY;
+
+	if (sop>0)
+	{
+		e=stackobj[sop-1];
+		sop--;
+	}
+	return e;
+}
+
+tOBJ peek(int n)
+{
+	tOBJ e;
+	e.type=EMPTY;
+
+	if (sop-1-n >= 0)
+	{
+		return stackobj[sop-1-n];
+	}
+	return e;
+}
+
+void clear()
+{
+	sop=0;
+}
+
+void stackprint()
+{
+	int i;
+	rprintfStr ("Stack\n");
+	for (i=0;i<sop;i++)
+	{
+		rprintf ("%d ", i);
+		print(stackobj[i]);
+		rprintfCRLF();
+	}
+}
+
+int stacksize()
+{
+	return sop;
+}
+
+/**********************************************************/
 
 int getOP(char *str)
 {
@@ -151,6 +217,7 @@ tOBJ eval_oxpr(char *s)
 {
 	tOBJ r,a,b;
 	int op=NA;
+	int lf=1;
 
 	r.type=EMPTY;
 	strncpy(exprbuff,s,63);
@@ -175,13 +242,14 @@ tOBJ eval_oxpr(char *s)
 		return r; //error return null
 	}
 
-	while (1)
+	push(a);
+
+	while (lf)
 	{
 		switch (get_token())
 		{
 		case OPR:
 			op = getOP(tokbuff);
-			op = oplist[op].type;
 			break;
 		case ALPHA:
 		case NUMI:
@@ -189,10 +257,31 @@ tOBJ eval_oxpr(char *s)
 			return r; //error return null
 		case DELI:
 			if (*e==0)
-				return a; //single argument
+			{
+				lf=0; continue;
+			}
 			else
 				return r; //error return null
 		}
+			
+		if (stacksize()>1)
+		{
+			tOBJ t1 = peek(1);
+			if (t1.type= INT && (oplist[op].level<oplist[t1.number].level))
+			{
+				//
+				b = pop();
+				r = pop();
+				a = pop();
+				a = omath(a, b, oplist[r.number].type);
+				push(a);
+			}
+		}
+
+		r.type=INT;
+		r.number = op;	
+		push(r);
+
 
 		switch (get_token())
 		{
@@ -207,14 +296,22 @@ tOBJ eval_oxpr(char *s)
 		case ALPHA:
 		case OPR:
 		case DELI:
+			r.type=EMPTY;
 			return r; //error return null
 		}
 
-		r = omath(a, b, op);
-		a = r;
-		r.type=EMPTY;
+		push(b);
 	}
-	return r;
+	//stackprint();
+	b = pop();
+	while (stacksize()>1)
+	{
+		r = pop();
+		a = pop();
+		b = omath(a, b, oplist[r.number].type);
+	}
+	clear();
+	return b;
 }
 
 void printtype(tOBJ r)
@@ -261,6 +358,8 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 {
 	tOBJ r;
 	r.type=EMPTY;
+
+	// print(o1); rprintfStr(" "); print(o2); rprintf(" %d\n", op); //debug info
 
 	if (o1.type==INT && o2.type==INT)
 	{
@@ -311,7 +410,6 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			break;
 		}
 	}
-
 	return r;
 }
 

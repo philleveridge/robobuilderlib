@@ -44,6 +44,15 @@ int eval_list(char *p)
 	return p-t;
 }
 
+int preci(char s)
+{
+	char *o = "+-*/><gl=n&%|:?";
+	int mp[] = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
+	char *p = strchr(o,s);
+	if (p==0) return -1;
+	return mp[(p-o)];
+}
+
 unsigned char eval_expr(char **str, long *res)
 {
 	char c;
@@ -96,6 +105,13 @@ unsigned char eval_expr(char **str, long *res)
 			if (c=='>' && **str=='=') {c='g'; (*str)++;}
 			if (c=='<' && **str=='=') {c='l'; (*str)++;}
 			if (c=='<' && **str=='>') {c='n'; (*str)++;}
+
+			if (op>0 && (preci(c)<preci(ops[op-1])))
+			{
+				n1 = math(n1,stack[sp-1],ops[op-1]);
+				sp--;
+				op--;
+			}
 			ops[op++]=c;
 			stack[sp++]=n1;
 			n1=0;
