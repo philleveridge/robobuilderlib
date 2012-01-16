@@ -73,6 +73,19 @@ unsigned char eval_expr(char **str, long *res)
 		
 		(*str)++;
 
+		if (c=='A' && **str=='N' && *(*str+1)=='D')
+		{
+			c='&';
+			(*str)++;
+			(*str)++;
+		}
+
+		if (c=='O' && **str=='R')
+		{
+			(*str)++;
+			c='|';
+		}
+
 		if (c>='0' && c<='9')
 		{
 			n1 = n1*10 + c - '0';

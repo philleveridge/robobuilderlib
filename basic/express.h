@@ -13,7 +13,7 @@ extern long			math(long n1, long n2, char op);
 
 enum  TYPE		{SYM, INT, BOOL, FUNC, FLOAT, STR, CELL, EMPTY};
 enum  TOKTYP	{NUMI, NUMF, DELI, ALPHA, OPR};
-enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR};
+enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR};
 
 typedef struct object {
         int   type;

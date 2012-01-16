@@ -21,11 +21,10 @@
 #define isnumber(c)  (c >= '0' && c <= '9')
 
 #define isdelim(c)  (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' \
-                    || c == '^' || c == '(' || c == ')' || c == ',' || c == '=')
+                    || c == '^' || c == '(' || c == ')' || c == ',' || c == '='  || c == '$')
 
 #define isalpha(c)  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_')
 
-#define isspecial(c)  ( c == '+' || c == '-' || c == '*'  || c == '/')
 
 #define MAXSTACK 10
 
@@ -51,6 +50,8 @@ tOP oplist[] = {
 	{"-",    1, MINUS, NULL},
 	{"/",    2, DIVD,  NULL},
 	{"*",    2, MULT,  NULL},
+	{"(",    5, OBR,   NULL},
+	{")",    5, CBR,   NULL},
 	{"AND",  0, LAND,  NULL},
 	{"OR",   0, LOR,   NULL},
 	{"SIN",  2, NA,    NULL},  //function single arg
@@ -139,7 +140,6 @@ int getOP(char *str)
 	return -1;
 }
 
-
 int get_token() 
 {
 	int ty=DELI;
@@ -182,7 +182,7 @@ int get_token()
 		return r;
 	}
 
-	if (isspecial(*e))
+	if (isdelim(*e))
 	{
 			tokbuff[tb++]=*e++;
 			tokbuff[tb]=0;
@@ -213,105 +213,96 @@ int get_token()
 	return ty;
 }
 
-tOBJ eval_oxpr(char *s)
+
+void reduce()
 {
 	tOBJ r,a,b;
+	//
+	if (stacksize()>=3)
+	{
+		b = pop();
+		r = pop();
+		a = pop();
+		a = omath(a, b, oplist[r.number].type);
+		push(a);
+	}
+}
+
+
+
+tOBJ eval_oxpr(char *s)
+{
+	tOBJ r;
 	int op=NA;
 	int lf=1;
+	int tk=0;
 
 	r.type=EMPTY;
 	strncpy(exprbuff,s,63);
 	e=exprbuff;
 
-	switch (get_token())
-	{
-	case ALPHA:
-		a.type   = STR;
-		a.string = tokbuff;
-		break;
-	case NUMI:
-		a.type   = INT;
-		a.number = tnum;
-		break;
-	case NUMF:
-		a.type   = FLOAT;
-		a.floatpoint = tfloat;
-		break;
-	case OPR:
-	case DELI:
-		return r; //error return null
-	}
-
-	push(a);
-
 	while (lf)
 	{
-		switch (get_token())
+		tk = get_token();
+		switch (tk)
 		{
+		case ALPHA:
+			r.type   = STR;
+			r.string = tokbuff;
+			push(r);
+			break;
+		case NUMI:
+			r.type   = INT;
+			r.number = tnum;
+			push(r);
+			break;
+		case NUMF:
+			r.type   = FLOAT;
+			r.floatpoint = tfloat;
+			push(r);
+			break;
 		case OPR:
 			op = getOP(tokbuff);
-			break;
-		case ALPHA:
-		case NUMI:
-		case NUMF:
-			return r; //error return null
-		case DELI:
-			if (*e==0)
+			if (oplist[op].type == CBR)
 			{
-				lf=0; continue;
+				tOBJ t1 = peek(1);
+				while (oplist[t1.number].type != OBR)
+				{
+					//stackprint();
+					reduce();
+					t1 = peek(1);
+				}
+				r=pop();  //temp pop result
+				pop();    //pop of OBR
+				push(r);  //push back on
+				continue;
 			}
 			else
-				return r; //error return null
-		}
-			
-		if (stacksize()>1)
-		{
-			tOBJ t1 = peek(1);
-			if (t1.type= INT && (oplist[op].level<oplist[t1.number].level))
+			if (stacksize()>1)
 			{
-				//
-				b = pop();
-				r = pop();
-				a = pop();
-				a = omath(a, b, oplist[r.number].type);
-				push(a);
+				tOBJ t1 = peek(1);
+				if (t1.type= INT && (oplist[t1.number].type != OBR) && (oplist[op].level<=oplist[t1.number].level) )
+				{
+					reduce();
+				}
 			}
-		}
-
-		r.type=INT;
-		r.number = op;	
-		push(r);
-
-
-		switch (get_token())
-		{
-		case NUMI:
-			b.type   = INT;
-			b.number = tnum;
+			r.type=INT;
+			r.number = op;	
+			push(r);
 			break;
-		case NUMF:
-			b.type   = FLOAT;
-			b.floatpoint = tfloat;
-			break;
-		case ALPHA:
-		case OPR:
 		case DELI:
-			r.type=EMPTY;
-			return r; //error return null
+			lf=0; 
+			continue;
 		}
-
-		push(b);
 	}
 	//stackprint();
-	b = pop();
 	while (stacksize()>1)
 	{
-		r = pop();
-		a = pop();
-		b = omath(a, b, oplist[r.number].type);
+		reduce();
 	}
+	r=pop();
 	clear();
-	return b;
+	return r;
 }
 
 void printtype(tOBJ r)
