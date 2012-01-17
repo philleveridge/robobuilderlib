@@ -8,6 +8,14 @@
 #include "linux.h"
 #endif
 
+#ifdef AVR
+#include "main.h"
+#include "global.h"
+#include "macro.h"
+#include "wckmotion.h"
+#include "rprintf.h"
+#endif
+
 #include "express.h"
 #include "functions.h"
 
