@@ -24,7 +24,7 @@
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
 #define isnumber(c)  (c >= '0' && c <= '9')
 
-#define isdelim(c)  (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' \
+#define isdelim(c)  (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<'  || c == '>'  \
                     || c == '^' || c == '(' || c == ')' || c == ',' || c == '='  || c == '$')
 
 #define isalpha(c)  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_')
@@ -32,10 +32,10 @@
 
 #define MAXSTACK 10
 
-tOBJ varobj[26];
+char varname[256];
+tOBJ varobj[50];
+int nov=0;
 
-
-enum  TYPE {SYM, INT, BOOL, FUNC, FLOAT, STR, CELL, EMPTY};
 
 char exprbuff[64];
 char *e;
@@ -55,19 +55,25 @@ typedef struct ops {
 
 tOBJ osin(tOBJ a);
 tOBJ opi (tOBJ a);
+tOBJ get(char *name);
+int set(char *name, tOBJ r);
 
 tOP oplist[] = { 
-	{"+",    1, PLUS,  2, NULL},
-	{"-",    1, MINUS, 2, NULL},
-	{"/",    2, DIVD,  2, NULL},
-	{"*",    2, MULT,  2, NULL},
-	{"(",    5, OBR,   1, NULL},
-	{")",    5, CBR,   1, NULL},
-	{"AND",  0, LAND,  2, NULL},
-	{"OR",   0, LOR,   2, NULL},
-	{"SIN",  4, NA,    1, osin},  //function single arg
-	{"PI",   4, NA,    0, opi },  //const
-	{"MAX",  4, NA,    3, NULL},   //function list arg - tbd
+	{"+",    10, PLUS,  2, NULL},
+	{"-",    10, MINUS, 2, NULL},
+	{"/",    20, DIVD,  2, NULL},
+	{"*",    20, MULT,  2, NULL},
+	{"<",    5,  LT,    2, NULL},
+	{">",    5,  GT,    2, NULL},
+	{"=",    5,  EQL,   2, NULL},
+	{"<>",   5,  NEQ,   2, NULL},
+	{"(",    50, OBR,   1, NULL},
+	{")",    50, CBR,   1, NULL},
+	{"AND",  8,  LAND,  2, NULL},
+	{"OR",   8,  LOR,   2, NULL},
+	{"SIN",  40, NA,    1, osin},  //function single arg
+	{"PI",   40, NA,    0, opi },  //const
+	{"MAX",  40, NA,    3, NULL},   //function list arg - tbd
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -196,8 +202,13 @@ int get_token()
 
 	if (isdelim(*e))
 	{
+		if (*e=='<' && *(e+1)=='>')
+		{
 			tokbuff[tb++]=*e++;
-			tokbuff[tb]=0;
+		}
+
+		tokbuff[tb++]=*e++;
+		tokbuff[tb]=0;
 
 		if (getOP(tokbuff)<0)
 			return DELI;
@@ -234,6 +245,7 @@ void reduce()
 	{
 		b = pop();
 		r = pop();
+		if (r.type!=INTGR) return;
 		if (oplist[r.number].nop==2 && oplist[r.number].func == NULL)
 		{
 			a = pop();
@@ -254,6 +266,7 @@ tOBJ eval_oxpr(char *s)
 	int op=NA;
 	int lf=1;
 	int tk=0;
+	int tmp;
 
 	r.type=EMPTY;
 	strncpy(exprbuff,s,63);
@@ -265,12 +278,11 @@ tOBJ eval_oxpr(char *s)
 		switch (tk)
 		{
 		case ALPHA:
-			r.type   = STR;
-			r.string = tokbuff;
+			r = get(tokbuff);
 			push(r);
 			break;
 		case NUMI:
-			r.type   = INT;
+			r.type   = INTGR;
 			r.number = tnum;
 			push(r);
 			break;
@@ -306,12 +318,12 @@ tOBJ eval_oxpr(char *s)
 			if (stacksize()>1)
 			{
 				tOBJ t1 = peek(1);
-				if (t1.type= INT && (oplist[t1.number].type != OBR) && (oplist[op].level<=oplist[t1.number].level) )
+				if (t1.type= INTGR && (oplist[t1.number].type != OBR) && (oplist[op].level<=oplist[t1.number].level) )
 				{
 					reduce();
 				}
 			}
-			r.type=INT;
+			r.type=INTGR;
 			r.number = op;	
 			push(r);
 			break;
@@ -332,42 +344,42 @@ tOBJ eval_oxpr(char *s)
 
 void printtype(tOBJ r)
 {
-        if (r.type == INT)
-        {
-                rprintf("%d", r.number);
-        }
-		else if (r.type == FLOAT)
-        {
-                rprintf("%f", r.floatpoint);
-        }
-        else if (r.type == STR)
-        {
-                rprintfStr(r.string);
-        }
-        else if (r.type == SYM)
-        {
-                rprintfStr(r.string);
-        }
-        else if (r.type == BOOL)
-        {
-                if ( r.number==0)
-                        rprintfStr("False");
-                else
-                        rprintfStr("True");
-        }
-        else if (r.type == EMPTY)
-        {
-                rprintfStr("NIL");
-        }
-        else if (r.type == FUNC)
-        {
-                rprintfStr("FUNCTION");   
-        }
-        else    
-        {               
-                rprintfStr("? error - type\n");   
-        }
-        return;
+    if (r.type == INTGR)
+    {
+            rprintf("%d", r.number);
+    }
+	else if (r.type == FLOAT)
+    {
+            rprintf("%f", r.floatpoint);
+    }
+    else if (r.type == STR)
+    {
+            rprintfStr(r.string);
+    }
+    else if (r.type == SYM)
+    {
+            rprintfStr(r.string);
+    }
+    else if (r.type == BOOLN)
+    {
+        if ( r.number==0)
+                rprintfStr("False");
+        else
+                rprintfStr("True");
+    }
+    else if (r.type == EMPTY)
+    {
+        rprintfStr("NIL");
+    }
+    else if (r.type == FUNC)
+    {
+        rprintfStr("FUNCTION");   
+    }
+    else    
+    {               
+            rprintfStr("? error - type\n");   
+    }
+    return;
 }
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op)
@@ -377,9 +389,9 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 
 	// print(o1); rprintfStr(" "); print(o2); rprintf(" %d\n", op); //debug info
 
-	if (o1.type==INT && o2.type==INT)
+	if (o1.type==INTGR && o2.type==INTGR)
 	{
-		r.type=INT;
+		r.type=INTGR;
 		switch (op)
 		{
 		case PLUS:
@@ -394,6 +406,14 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.number = o1.number && o2.number; break;
 		case LOR:
 			r.number = o1.number || o2.number; break;
+		case EQL:
+			r.number = o1.number == o2.number; break;
+		case NEQ:
+			r.number = o1.number != o2.number; break;
+		case LT:
+			r.number = o1.number < o2.number; break;
+		case GT:
+			r.number = o1.number > o2.number; break;
 		default:
 			r.type=EMPTY; //error
 			break;
@@ -406,10 +426,10 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 
 		r.type=FLOAT;
 		if (o1.type==FLOAT) a=o1.floatpoint;
-		if (o1.type==INT) a=(double)o1.number;
+		if (o1.type==INTGR) a=(double)o1.number;
 
 		if (o2.type==FLOAT) b=o2.floatpoint;
-		if (o2.type==INT) b=(double)o2.number;
+		if (o2.type==INTGR) b=(double)o2.number;
 
 		switch (op)
 		{
@@ -421,6 +441,14 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.floatpoint = a * b; break;
 		case DIVD:
 			r.floatpoint = a / b; break;
+		case LT:
+			r.type=INTGR; r.number = a < b; break;
+		case EQL:
+			r.type=INTGR; r.number = a == b; break;
+		case NEQ:
+			r.type=INTGR; r.number = a != b; break;
+		case GT:
+			r.type=INTGR; r.number = a > b; break;
 		default:
 			r.type=EMPTY; //error
 			break;
@@ -429,26 +457,79 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	return r;
 }
 
-int set(char *name, tOBJ r)
-{
-	return -1; //not exist
-}
-
 tOBJ get(char *name)
 {
+	int i=0;
+	char *p=varname;
 	tOBJ r;
 	r.type=EMPTY;
-	return r; //not found
+
+	if (strlen(name)==1 && isalpha(*name)) //backwards compat
+	{
+		r.type=INTGR;
+		r.number=variable[*name-'A'];
+		return r;
+	}
+
+	while (i<nov)
+	{
+		if (strcmp(p,name)==0)
+		{
+			return varobj[i];
+		}
+		p=p+strlen(p)+1;
+		i++;
+	}
+	return r;
 }
+
+int set(char *name, tOBJ r)
+{
+	int n = 0;
+	char *p=varname;
+
+	if (strlen(name)==1 && isalpha(*name)) //backwards compat
+	{
+		if (r.type==INTGR)
+			variable[*name-'A']=r.number;
+		if (r.type==FLOAT)
+			variable[*name-'A']=(int)r.floatpoint;
+		if (r.type==EMPTY)
+			variable[*name-'A']=0;
+		return 1;
+	}
+
+	while (n<nov)
+	{
+		if (strcmp(p,name)==0)
+		{
+			varobj[n]=r;
+			return 1;
+		}
+		p=p+strlen(p)+1;
+		n++;
+	}
+	if (nov<50)
+	{
+		varobj[nov++]=r;
+		strcpy(p,name);
+		p=p+strlen(p)+1;
+		*p='\0';
+		return 0; //added
+	}
+	else
+		return -1;
+}
+
 
 tOBJ osin(tOBJ a)
 {
 	tOBJ r;
 	r.type=FLOAT;
 	r.floatpoint=0.0;
-	if (a.type==INT)
+	if (a.type==INTGR)
 	{
-		r.type = INT;
+		r.type = INTGR;
 		r.number = Sin(a.number%256);
 	}
 
@@ -463,37 +544,42 @@ tOBJ opi(tOBJ a)
 {
 	tOBJ r;
 	r.type=FLOAT;
-	r.floatpoint=3.1415;
+	r.floatpoint=3.1415926;
 	return r;
 }
 
 tOBJ print(tOBJ r)
 {
-        if (r.type == CELL)
-        {
-                struct cell  *c = r.cell;
-                rprintfStr("(");  
-                print(c->head);
+    if (r.type == CELL)
+    {
+        struct cell  *c = r.cell;
+        rprintfStr("(");  
+        print(c->head);
                 
-                while (c->tail != (void *)0)
-                {
-                        c=c->tail;
-                        rprintfStr(" ");
-                        print(c->head);
-                }
-                rprintfStr(")");
-        }
-        else
+        while (c->tail != (void *)0)
         {
-                printtype(r);
+                c=c->tail;
+                rprintfStr(" ");
+                print(c->head);
         }
-        return r;
+        rprintfStr(")");
+    }
+    else
+    {
+		printtype(r);
+    }
+    return r;
 }
 
 void testeval()
 {
 	char lines[128];
 	tOBJ v;
+
+	v.type=INTGR; v.number=20;
+	set("TEST", v);
+	v.type=FLOAT; v.floatpoint=20.0;
+	set("FP", v);
 
 	while (1)
 	{

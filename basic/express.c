@@ -73,6 +73,23 @@ unsigned char eval_expr(char **str, long *res)
 	int op=0;
 	long tmp=0;
 	int done=0;
+
+#ifdef PARSE
+	if (**str=='!')
+	{
+		tOBJ v;
+		(*str)++;
+		v=eval_oxpr(*str);
+		if (v.type==INTGR)
+			n1=v.number;
+		else if (v.type==FLOAT)
+			n1=(int)v.floatpoint;
+		else n1=0;
+		*res=n1;
+		while (**str!='\0') (*str)++;
+		return NUMBER;
+	}
+#endif
 	
 	while (**str != '\0' && !done)
 	{
@@ -127,7 +144,7 @@ unsigned char eval_expr(char **str, long *res)
 			if (c=='<' && **str=='=') {c='l'; (*str)++;}
 			if (c=='<' && **str=='>') {c='n'; (*str)++;}
 
-			if (op>0 && (preci(c)<preci(ops[op-1])))
+			if (op>0 && (preci(c)<=preci(ops[op-1])))
 			{
 				n1 = math(n1,stack[sp-1],ops[op-1]);
 				sp--;
