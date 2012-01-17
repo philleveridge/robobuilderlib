@@ -120,6 +120,9 @@ const prog_char *tokens[] ={
 	"GEN",  "NETWORK", "SELECT"
 };
 
+extern const prog_char *specials[];
+extern const prog_char map[];
+
 
 //wait for byte or IR press
 int  GetByte()
@@ -464,7 +467,8 @@ void basic_load(int tf)
 			newline.text=cp;
 			break;
 		case PUT: 
-			if ((newline.var = token_match(specials, &cp, sizeof(specials)))<0)
+			//if ((newline.var = token_match(specials, &cp, sizeof(specials)))<0)
+			if ((newline.var = token_match(specials, &cp, NOSPECS))<0)
 			{
 				BasicErr=3;
 			}
