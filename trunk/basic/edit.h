@@ -48,12 +48,12 @@ extern void    	insertln(line_t newline);
 extern void    	deleteln(int lineno);
 extern void    	clearln();
 extern line_t 	readln(char *bp);
-extern uint8_t 	nextchar();
-extern uint16_t nxtline;
-extern void    	setline(uint16_t);
+extern unsigned char 	nextchar();
+extern unsigned int nxtline;
+extern void    	setline(unsigned int);
 extern int		firstline();
 extern int		getlineno(int p);
-extern uint16_t lastline;  // last line added
+extern unsigned int lastline;  // last line added
 extern void		readtext(int ln, char *b);
 extern int		findend();
 
