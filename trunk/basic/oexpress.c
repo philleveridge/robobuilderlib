@@ -1,10 +1,12 @@
 #ifdef WIN32
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "win.h"
 #endif
 
 #ifdef LINUX
+#include <math.h>
 #include "linux.h"
 #endif
 
@@ -42,20 +44,25 @@ typedef struct ops {
         char *name;
 		int level;
 		int type;
-		void *func;
+		int nop;
+		tOBJ (*func)(tOBJ);
 } tOP, *tOPp;
 
+tOBJ osin(tOBJ a);
+tOBJ opi (tOBJ a);
+
 tOP oplist[] = { 
-	{"+",    1, PLUS,  NULL},
-	{"-",    1, MINUS, NULL},
-	{"/",    2, DIVD,  NULL},
-	{"*",    2, MULT,  NULL},
-	{"(",    5, OBR,   NULL},
-	{")",    5, CBR,   NULL},
-	{"AND",  0, LAND,  NULL},
-	{"OR",   0, LOR,   NULL},
-	{"SIN",  2, NA,    NULL},  //function single arg
-	{"MAX",  2, NA,    NULL},  //function list arg
+	{"+",    1, PLUS,  2, NULL},
+	{"-",    1, MINUS, 2, NULL},
+	{"/",    2, DIVD,  2, NULL},
+	{"*",    2, MULT,  2, NULL},
+	{"(",    5, OBR,   1, NULL},
+	{")",    5, CBR,   1, NULL},
+	{"AND",  0, LAND,  2, NULL},
+	{"OR",   0, LOR,   2, NULL},
+	{"SIN",  4, NA,    1, osin},  //function single arg
+	{"PI",   4, NA,    0, opi },  //const
+	{"MAX",  4, NA,    3, NULL},   //function list arg - tbd
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -218,17 +225,23 @@ void reduce()
 {
 	tOBJ r,a,b;
 	//
-	if (stacksize()>=3)
+	if (stacksize()>=2)
 	{
 		b = pop();
 		r = pop();
-		a = pop();
-		a = omath(a, b, oplist[r.number].type);
-		push(a);
+		if (oplist[r.number].nop==2 && oplist[r.number].func == NULL)
+		{
+			a = pop();
+			a = omath(a, b, oplist[r.number].type);
+			push(a);
+		}
+		if (oplist[r.number].func != NULL)
+		{
+			b = (*oplist[r.number].func)(b);
+			push(b);
+		}
 	}
 }
-
-
 
 tOBJ eval_oxpr(char *s)
 {
@@ -263,6 +276,13 @@ tOBJ eval_oxpr(char *s)
 			break;
 		case OPR:
 			op = getOP(tokbuff);
+			if (oplist[op].nop==0 && oplist[op].func != NULL)
+			{
+				r = (*oplist[op].func)(r);
+				push(r);
+				continue;
+			}
+			else
 			if (oplist[op].type == CBR)
 			{
 				tOBJ t1 = peek(1);
@@ -416,6 +436,31 @@ tOBJ get(char *name)
 	return r; //not found
 }
 
+tOBJ osin(tOBJ a)
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=0.0;
+	if (a.type==INT)
+	{
+		r.type = INT;
+		r.number = Sin(a.number%256);
+	}
+
+	if (a.type==FLOAT)
+	{
+		r.floatpoint=sin(a.floatpoint);
+	}
+	return r;
+}
+
+tOBJ opi(tOBJ a)
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=3.1415;
+	return r;
+}
 
 tOBJ print(tOBJ r)
 {
