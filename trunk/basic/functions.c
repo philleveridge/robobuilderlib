@@ -1,3 +1,18 @@
+#ifdef AVR
+#include <avr/eeprom.h> 
+#include <avr/pgmspace.h>
+
+#include "global.h"
+#include "main.h"
+#include "macro.h"
+
+#include "adc.h"
+#include "ir.h"
+#include "accelerometer.h"
+#include "wckmotion.h"
+#include "rprintf.h"
+#endif
+
 #ifdef WIN32
 #include <stdio.h>
 #include <string.h>
