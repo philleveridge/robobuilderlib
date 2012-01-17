@@ -12,7 +12,8 @@ extern int			eval_list(char *p);
 extern long			math(long n1, long n2, char op);
 
 enum  TOKTYP	{NUMI, NUMF, DELI, ALPHA, OPR};
-enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR};
+enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ};
+enum  TYPE		{SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY};
 
 typedef struct object {
         int   type;
@@ -31,5 +32,9 @@ typedef struct cell {
 } tCELL, *tCELLp; 
 
 typedef tOBJ (*PFP)(tCELLp);
+
+#ifdef PARSE
+tOBJ eval_oxpr(char *s);
+#endif
 
 #endif
