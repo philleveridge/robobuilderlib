@@ -8,6 +8,8 @@
 #ifdef LINUX
 #include <math.h>
 #include "linux.h"
+
+#define NULL (void *)0
 #endif
 
 #include "express.h"
@@ -31,6 +33,9 @@
 #define MAXSTACK 10
 
 tOBJ varobj[26];
+
+
+enum  TYPE {SYM, INT, BOOL, FUNC, FLOAT, STR, CELL, EMPTY};
 
 char exprbuff[64];
 char *e;
@@ -487,19 +492,17 @@ tOBJ print(tOBJ r)
 
 void testeval()
 {
-		char lines[128];
-		tOBJ v;
+	char lines[128];
+	tOBJ v;
 
-		while (1)
-		{
-			printf("::  ");
-			gets(lines);
-			if (lines[0]==0 || lines[0]=='.')
-				break;
-			v=eval_oxpr(lines);
-			print(v);
-			rprintfCRLF();
-		}
+	while (1)
+	{
+		readLine(lines);
+		if (lines[0]=='.') break;
+		v=eval_oxpr(lines);
+		print(v);
+		rprintfCRLF();
+	}
 }
 
 
