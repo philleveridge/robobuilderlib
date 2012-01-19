@@ -46,15 +46,18 @@ int    tnum;
 double tfloat;
 
 typedef struct ops {
-        char *name;
-		int level;
-		int type;
-		int nop;
-		tOBJ (*func)(tOBJ);
+        char	*name;
+		int		level;
+		unsigned char type;
+		int		nop;
+		void	(*func)();
 } tOP, *tOPp;
 
-tOBJ osin(tOBJ a);
-tOBJ opi (tOBJ a);
+void osin ();
+void opsd ();
+void omax ();
+void oprint ();
+
 tOBJ get(char *name);
 int set(char *name, tOBJ r);
 
@@ -69,11 +72,12 @@ tOP oplist[] = {
 	{"<>",   5,  NEQ,   2, NULL},
 	{"(",    50, OBR,   1, NULL},
 	{")",    50, CBR,   1, NULL},
+	{",",    50, COMMA, 1, NULL},
 	{"AND",  8,  LAND,  2, NULL},
 	{"OR",   8,  LOR,   2, NULL},
 	{"SIN",  40, NA,    1, osin},  //function single arg
-	{"PI",   40, NA,    0, opi },  //const
-	{"MAX",  40, NA,    3, NULL},   //function list arg - tbd
+	{"PSD",  40, NA,    0, opsd},  //const
+	{"MAX",  40, NA,    2, omax},   //function two args
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -85,6 +89,9 @@ tOBJ print(tOBJ r);
 
 tOBJ stackobj[MAXSTACK];
 int sop=0;
+
+unsigned char stackop[MAXSTACK];
+int oop=0;
 
 int push(tOBJ a)
 {
@@ -239,24 +246,35 @@ int get_token()
 
 void reduce()
 {
-	tOBJ r,a,b;
-	//
-	if (stacksize()>=2)
+	tOBJ a,b;
+	int i;
+
+	if (oop<=0)
+		return; //nothing to do
+
+	i=stackop[--oop];
+
+	if (oplist[i].nop==2 && oplist[i].func == NULL)
 	{
 		b = pop();
-		r = pop();
-		if (r.type!=INTGR) return;
-		if (oplist[r.number].nop==2 && oplist[r.number].func == NULL)
+		a = pop();
+		a = omath(a, b, oplist[i].type);
+		push(a);
+	}
+	
+	if (oplist[i].nop==1 && oplist[i].func == NULL)
+	{
+		//
+	}
+
+	if (oplist[i].func != NULL)
+	{
+		if(oplist[i].nop>stacksize())
 		{
-			a = pop();
-			a = omath(a, b, oplist[r.number].type);
-			push(a);
+			rprintf("Insuffcient parameters\n");
 		}
-		if (oplist[r.number].func != NULL)
-		{
-			b = (*oplist[r.number].func)(b);
-			push(b);
-		}
+		else
+			(*oplist[i].func)();
 	}
 }
 
@@ -295,51 +313,50 @@ tOBJ eval_oxpr(char *s)
 			op = getOP(tokbuff);
 			if (oplist[op].nop==0 && oplist[op].func != NULL)
 			{
-				r = (*oplist[op].func)(r);
-				push(r);
+				(*oplist[op].func)();
 				continue;
 			}
 			else
-			if (oplist[op].type == CBR)
+			if (oop>0 && (oplist[op].type == CBR || oplist[op].type==COMMA))
 			{
-				tOBJ t1 = peek(1);
-				while (oplist[t1.number].type != OBR)
+				int i=stackop[oop-1];
+				while (oplist[i].type != OBR && oplist[i].type != COMMA)
 				{
 					//stackprint();
 					reduce();
-					t1 = peek(1);
+					i=stackop[oop-1];
 				}
-				r=pop();  //temp pop result
-				pop();    //pop of OBR
-				push(r);  //push back on
 				continue;
 			}
 			else
-			if (stacksize()>1)
+			if (oop>0)
 			{
-				tOBJ t1 = peek(1);
-				if (t1.type= INTGR && (oplist[t1.number].type != OBR) && (oplist[op].level<=oplist[t1.number].level) )
+				int i = stackop[oop-1];
+				if ((oplist[i].type != OBR) && (oplist[op].level<=oplist[i].level) )
 				{
 					reduce();
 				}
 			}
-			r.type=INTGR;
-			r.number = op;	
-			push(r);
+			stackop[oop++]=op;
 			break;
 		case DELI:
 			lf=0; 
 			continue;
 		}
 	}
-	//stackprint();
-	while (stacksize()>1)
+
+	while (oop>0)
 	{
 		reduce();
 	}
-	r=pop();
-	clear();
-	return r;
+
+	if (stacksize()>1)
+	{
+		printf("Suntax error - too many on stack\n");
+		stackprint();
+		clear();
+	}
+	return pop();
 }
 
 void printtype(tOBJ r)
@@ -377,7 +394,7 @@ void printtype(tOBJ r)
     }
     else    
     {               
-            rprintfStr("? error - type\n");   
+        rprintfStr("? error - type\n");   
     }
     return;
 }
@@ -522,11 +539,12 @@ int set(char *name, tOBJ r)
 }
 
 
-tOBJ osin(tOBJ a)
+void osin()
 {
-	tOBJ r;
+	tOBJ r,a;
 	r.type=FLOAT;
 	r.floatpoint=0.0;
+	a=pop();
 	if (a.type==INTGR)
 	{
 		r.type = INTGR;
@@ -537,15 +555,51 @@ tOBJ osin(tOBJ a)
 	{
 		r.floatpoint=sin(a.floatpoint);
 	}
-	return r;
+	push(r);
+	return ;
 }
 
-tOBJ opi(tOBJ a)
+void opsd()
 {
 	tOBJ r;
-	r.type=FLOAT;
-	r.floatpoint=3.1415926;
-	return r;
+	r.type=INTGR;
+	r.number=50;
+	push(r);
+	return;
+}
+
+void oprint()
+{
+	int i=stacksize();
+	while (i>0)
+	{
+		print(peek(--i));
+		rprintfStr(" ");
+	}
+	rprintfCRLF();
+	clear();
+	return;
+}
+
+
+void omax()
+{
+	tOBJ r,a;
+	r=pop();
+	a=pop();
+
+	if (r.type==INTGR && a.type==INTGR)
+	{
+		if (a.number>r.number) r=a;
+	}
+		
+	if (r.type==FLOAT && a.type==FLOAT)
+	{
+		if (a.floatpoint>r.floatpoint) r=a;
+	}
+
+	push(r);
+	return;
 }
 
 tOBJ print(tOBJ r)
@@ -571,23 +625,76 @@ tOBJ print(tOBJ r)
     return r;
 }
 
+int get_str_token(char *s)
+{
+	int tk = get_token();
+	
+	if (s==(char *)0 && tk==ALPHA)
+		return 1;
+
+	if (tk==ALPHA && !strcmp(tokbuff,s))
+		return 1;
+	return 0;
+}
+
+int get_opr_token(unsigned char op)
+{
+	int tk = get_token();
+	if (tk==OPR && oplist[getOP(tokbuff)].type==op)
+		return 1;
+	return 0;
+}
+
 void testeval()
 {
-	char lines[128];
 	tOBJ v;
 
 	v.type=INTGR; v.number=20;
 	set("TEST", v);
-	v.type=FLOAT; v.floatpoint=20.0;
-	set("FP", v);
+	v.type=FLOAT; v.floatpoint=3.1415926;
+	set("PI", v);
 
 	while (1)
 	{
-		readLine(lines);
-		if (lines[0]=='.') break;
-		v=eval_oxpr(lines);
-		print(v);
-		rprintfCRLF();
+		v.type=EMPTY;
+
+		readLine(exprbuff);
+		if (exprbuff[0]=='.') break;
+
+		e=exprbuff;
+		if (get_str_token("LET")==1)
+		{
+			if (get_str_token(NULL)==1)
+			{	
+				char var[5];
+				strncpy(var,tokbuff, 5);
+				if (get_opr_token(EQL)==1)
+				{
+					v=eval_oxpr(e);
+					set(var,v);
+				}	
+			}
+			continue;
+		}
+
+		e=exprbuff;
+		if (get_str_token("PRIN")==1)
+		{
+			while (*e!='\0')
+			{
+				v=eval_oxpr(e);
+				print(v);
+				if (*e!=';') 
+				{
+					rprintfCRLF();
+				}
+				else
+					e++;
+			}
+			continue;
+		}
+
+		rprintfStr("No match ?\n");
 	}
 }
 

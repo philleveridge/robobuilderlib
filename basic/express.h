@@ -12,7 +12,7 @@ extern int			eval_list(char *p);
 extern long			math(long n1, long n2, char op);
 
 enum  TOKTYP	{NUMI, NUMF, DELI, ALPHA, OPR};
-enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ};
+enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ, COMMA};
 enum  TYPE		{SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY};
 
 typedef struct object {
