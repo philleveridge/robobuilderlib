@@ -107,9 +107,17 @@ unsigned char eval_expr(char **str, long *res)
 
 		if (c=='O' && **str=='R')
 		{
-			(*str)++;
 			c='|';
+			(*str)++;
+			(*str)++;
 		}
+
+		if (c=='M' && **str=='O'  && *(*str+1)=='D')
+		{
+			(*str)++;
+			c='%';
+		}
+
 
 		if (c>='0' && c<='9')
 		{

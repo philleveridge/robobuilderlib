@@ -59,7 +59,7 @@ void omax ();
 void oprint ();
 
 tOBJ get(char *name);
-int set(char *name, tOBJ r);
+int  set(char *name, tOBJ r);
 
 tOP oplist[] = { 
 	{"+",    10, PLUS,  2, NULL},
@@ -82,6 +82,22 @@ tOP oplist[] = {
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
 tOBJ print(tOBJ r);
+
+/**********************************************************/
+/*  strings                                              */
+/**********************************************************/
+
+char strings[256], *estr=&strings[0];
+char *newstring(char *s)
+{
+	char *r=estr;
+	if (estr-&strings[0]>254)
+		return 0;
+	strcpy(estr, s);
+	estr=estr+strlen(s);
+	*estr++='\0';
+	return r;
+}
 
 /**********************************************************/
 /*  stack                                                 */
