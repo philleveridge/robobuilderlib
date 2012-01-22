@@ -930,9 +930,8 @@ void send_bus_str(char *bus_str, int n)
 
 WORD send_hex_str(char *bus_str, int n)
 {
-		BYTE b1,b2;
+		BYTE b1;
 		WORD r=0;
-		int ch;
 		char *eos = bus_str+n;
 
 		while  ((bus_str<eos) && *bus_str != 0)

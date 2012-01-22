@@ -1,6 +1,9 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
+extern int str_expr(char *str);
+extern int put_special(int var, int n);
+
 extern int					get_special(char **str, long *res);
 extern void					set_bit(int p, int b, int n);
 extern int					get_bit(int pn, int bn);

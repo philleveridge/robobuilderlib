@@ -39,6 +39,12 @@ int Sqrt(long x)
    return (int)f;
 }
 
+extern void strcat(char *, char *);
+extern void strcpy(char *, char *);
+extern void strncpy(char *, char *, int);
+extern char * strstr(char *, char *);
+
+int dbg=0;
 
 #endif
 
@@ -64,7 +70,9 @@ int Sqrt(long x)
 #define MAX_FOR_NEST	6
 #define MAX_GOSUB_NEST	5
 #define MAX_FOR_EXPR	20 
-#define MAX_DEPTH 	5
+#define SCENESZ 	128
+
+extern int dbg;
 
 /***********************************/
 
@@ -78,6 +86,7 @@ extern int	delay_ms	(int d);
 extern void SampleMotion	(unsigned char); 
 extern void sound_init		();
 extern void SendToSoundIC	(BYTE cmd) ;
+
 
 
 /***********************************/
@@ -153,7 +162,7 @@ const  prog_char *error_msgs[] = {
 
 int BasicErr;
 int fmflg;
-static int dbg=0;
+
 
 void PerformAction (int Action)
 {	
@@ -417,7 +426,7 @@ void basic_load(int tf)
 		{	
 			if (cp>line+n || *cp  !=' ')
 			{
-				printf ("Delete - %d\r\n", newline.lineno);
+				rprintf ("Delete - %d\r\n", newline.lineno);
 				deleteln(newline.lineno);
 				continue;
 			}
@@ -653,7 +662,7 @@ void basic_load(int tf)
 		case IF:
 			// A THEN B ELSE C =>  A,B[,C]
 			{
-				char *p_then,*p_else,*cp2;
+				char *p_then,*p_else;
 				newline.text=cp-1;
 				p_then = strstr(cp, " THEN");
 
@@ -738,8 +747,6 @@ void basic_load(int tf)
 RUNTIME routines
 
 *************************************************************************************************************/
-#define SCENESZ 128
-
 
 int scene[SCENESZ];	  // generic array
 int nis=0;        // number of item isn array
@@ -836,12 +843,12 @@ int gotoln(int gl)
 
 
 
-int  forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
-char nxtptr[MAX_FOR_NEST][MAX_FOR_EXPR];   // Upto 3 nested for/next
-int fp; 
+static int  forptr[MAX_FOR_NEST];   // Upto 3 nested for/next
+static char nxtptr[MAX_FOR_NEST][MAX_FOR_EXPR];   // Upto 3 nested for/next
+static int fp; 
 
-int gosub[MAX_GOSUB_NEST];  // 3 nested gosubs
-int gp;  
+static int gosub[MAX_GOSUB_NEST];  // 3 nested gosubs
+static int gp;  
 		
 void basic_run(int dbf)
 {
@@ -862,6 +869,8 @@ void basic_run(int dbf)
 	basic_start(dbf);
 }
 
+char buf[MAX_LINE];
+
 void basic_start(int dbf)
 {
 	// Repeat
@@ -871,7 +880,6 @@ void basic_start(int dbf)
 
 	BYTE tmp=0;
 	line_t line;
-	char buf[MAX_LINE];
 	
 	BasicErr=0;
 
@@ -961,11 +969,12 @@ int execute(line_t line, int dbf)
 				if (eval_expr(&p, &n)==NUMBER)
 					variable[line.var] = n;		
 			}
-			fp++;
 
 			if (dbg) {
 				rprintf("DBG: for %d-> %d\n", fp, forptr[fp]);
 			}
+
+			fp++;
 		}
 		break;
 	case NEXT: 
@@ -974,12 +983,13 @@ int execute(line_t line, int dbf)
 		{
 			int t_ptr=forptr[fp-1];
 
+			// increment var
+			variable[line.var] = variable[line.var] + (long)1;
+
 			if (dbg) {
-				rprintf("DBG: next %d-> %d\n", fp, t_ptr);
+				rprintf("DBG: NEXT %d-> %d  %d %ld\n", fp-1, t_ptr, line.var, variable[line.var]);
 			}
 
-			// increment var
-			variable[line.var]++;
 			// test against expr2 i.e var<=expr2
 			n=0;
 			p=nxtptr[fp-1];
@@ -987,7 +997,12 @@ int execute(line_t line, int dbf)
 			{
 				BasicErr=1;
 				break; //need to handle error	
-			}			
+			}
+
+			if (dbg) {
+				rprintf("DBG: VAR %c  %ld<= %ld\n", line.var+'A', variable[line.var], n);
+			}
+			
 			if (variable[line.var] <= n) { 
 				// if true set ptr=stack; 
 				setline(t_ptr); tmp=1;
@@ -1046,7 +1061,7 @@ int execute(line_t line, int dbf)
 		break;
 	case SERVO:
 		{
-			int v=line.var;
+			long v=line.var;
 			if (v>=0 && v<=31)
 				v=variable[v];
 			else
@@ -1218,8 +1233,8 @@ int execute(line_t line, int dbf)
 			
 		if (p!=0 && *p != 0)
 		{	
-			int j, tm=0, st=0;
-			long fm=0, nb=0;
+			int j, st=0;
+			long tm=0,fm=0, nb=0;
 			BYTE pos[32];
 
 			switch (eval_expr(&p, &fm))
@@ -1358,7 +1373,7 @@ int execute(line_t line, int dbf)
 		}
 		else
 		{
-			variable[line.var] = lastline+8;
+			variable[line.var] = (long)(lastline+8);
 		}
 		break;		
 	case XACT:
@@ -1443,7 +1458,7 @@ int execute(line_t line, int dbf)
 		//STEP servo=from,to[,inc][,dlay]
 		{
 			long sf, st, si=5, sp, sn, sw=75, cnt=0, sd=8;
-			int v=line.var;
+			long v=line.var;
 			if (v>=0 && v<=31)
 				v=variable[v];
 			else
@@ -1960,7 +1975,7 @@ int execute(line_t line, int dbf)
 	case GET:
 		//tbc
 		{
-			int ch,c=0;
+			int ch=0,c=0;
 			while (ch!=10 && ch!=13)
 			{
 				while ((ch = uartGetByte())<0) ; // wait for input
@@ -1997,15 +2012,15 @@ int execute(line_t line, int dbf)
 
 			if (sho)
 			{
-				rprintf("Type      = %d\n", ty);
-				rprintf("length    = %d\n", ln);
-				rprintf("Generate  = %d\n", nog);
-				rprintf("Mut rate  = %d\n", mr);
+				rprintf("Type      = %ld\n", ty);
+				rprintf("length    = %ld\n", ln);
+				rprintf("Generate  = %ld\n", nog);
+				rprintf("Mut rate  = %ld\n", mr);
 			}
 
 			for (i=0; i<nog; i++)
 			{
-				int v,e;
+				int v=0,e;
 				int co1=0;
 				int co2=0;
 
@@ -2188,7 +2203,7 @@ int execute(line_t line, int dbf)
 				{
 					t++;
 					s += l1o[j]*scene[t];
-					printf("Input=%d (%d x %d)\n", j,l1o[j],scene[t]);
+					rprintf("Input=%d (%d x %d)\n", j,l1o[j],scene[t]);
 				}
 				t++;
 				if (sho) rprintf("Th=-(%d)\n",scene[t]);
@@ -2545,11 +2560,11 @@ void binmode()
 }
 #endif
 
-int outdigit(int n,int c)
+void outdigit(int n,int c)
 {
 	char tb[6];
 	int i;
-	if (c>4) return -1;
+	if (c>4) return;
 
 	for (i=0; i<c; i++)
 	{
@@ -2559,7 +2574,8 @@ int outdigit(int n,int c)
 	tb[c]='\0';
 	rprintfStr(tb);
 }
-int uptime()
+
+void uptime()
 {
         outdigit(gHOUR,2);
         rprintfChar(':');
