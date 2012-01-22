@@ -3,22 +3,22 @@
 
 enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 
-extern int variable[26];
+extern long variable[];
 
-#define MAX_DEPTH 	5
+#define MAX_DEPTH  5
 
-extern unsigned char eval_expr(char **str, long *res);
-extern int			eval_list(char *p);
-extern long			math(long n1, long n2, char op);
+extern unsigned char 	eval_expr(char **str, long *res);
+extern int		eval_list(char *p);
+extern long		math(long n1, long n2, char op);
 
-enum  TOKTYP	{NUMI, NUMF, DELI, ALPHA, OPR};
-enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ, COMMA};
-enum  TYPE		{SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY};
+
+
+#ifdef PARSE
 
 typedef struct object {
         int   type;
-        union { int		q;
-				float   floatpoint; 
+        union { int	q;
+		float   floatpoint; 
                 int     number; 
                 char    *string;
                 void    *cell;
@@ -33,8 +33,12 @@ typedef struct cell {
 
 typedef tOBJ (*PFP)(tCELLp);
 
-#ifdef PARSE
+enum  TOKTYP	{NUMI, NUMF, DELI, ALPHA, OPR};
+enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ, COMMA};
+enum  TYPE	{SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY};
+
 tOBJ eval_oxpr(char *s);
+
 #endif
 
 #endif

@@ -46,3 +46,5 @@ void send_bus_str 	(char *bus_str, int n);
 
 /*------------------  ----------------*/  
 
+extern void setdh(int n);
+

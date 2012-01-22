@@ -31,15 +31,24 @@ extern BYTE				nos;
 extern volatile BYTE	MIC_SAMPLING;
 extern volatile BYTE    MIC_NOS;
 
-int variable[26]; // only A-Z at moment
+extern int dbg;
+
+const char *o 	= "+-*/><gl=n&%|:?";
+const int mp[]  = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
+long variable[26]; // only A-Z at moment
+
+extern void readtext(int ln, char *b);
+extern char *strchr(char *, int);
 
 int eval_list(char *p)
 {
 	// eval list "5,1,2,3,4,5" ->scene[5]
-	int i,n;
+	int i;
+	long n;
 	char *t=p;
 	
-	eval_expr(&p, &nis);
+	eval_expr(&p, &n);
+	nis=(int)n;
 		
 	if (*p++ != ',') { BasicErr=6; return 0; }
 	for (i=0;i<nis;i++)
@@ -52,25 +61,41 @@ int eval_list(char *p)
 	return p-t;
 }
 
+
+
+
 int preci(char s)
 {
-	char *o = "+-*/><gl=n&%|:?";
-	int mp[] = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
 	char *p = strchr(o,s);
 	if (p==0) return -1;
 	return mp[(p-o)];
 }
+
+static long stack[MAX_DEPTH]; 
+static char ops[MAX_DEPTH];	
+static int sp=0;
+static int op=0;
+
+void dumpstack()
+{
+	int sc;
+	if (dbg) {
+		rprintf("Ops %d\n", op); 
+		for (sc=0;sc<op;sc++) rprintf("%d - [%c]\n", sc,ops[sc]);
+		rprintf("stack %d\n", sp); 
+		for (sc=0;sc<sp;sc++) rprintf("%d - %d\n", sc,stack[sc]);
+	}
+	return;
+}
+
 
 unsigned char eval_expr(char **str, long *res)
 {
 	char c;
 	
 	long n1=0;
-	long stack[MAX_DEPTH]; 
-	char ops[MAX_DEPTH];
-	
-	int sp=0;
-	int op=0;
+	int tsp=sp;
+	int top=op;
 	long tmp=0;
 	int done=0;
 
@@ -90,6 +115,11 @@ unsigned char eval_expr(char **str, long *res)
 		return NUMBER;
 	}
 #endif
+
+	dumpstack(); // debug
+	if (dbg) {
+		rprintf("Eval =%s\n", *str); 
+	}
 	
 	while (**str != '\0' && !done)
 	{
@@ -152,15 +182,28 @@ unsigned char eval_expr(char **str, long *res)
 			if (c=='<' && **str=='=') {c='l'; (*str)++;}
 			if (c=='<' && **str=='>') {c='n'; (*str)++;}
 
-			if (op>0 && (preci(c)<=preci(ops[op-1])))
+
+
+			if (op>top && (preci(c)<=preci(ops[op-1])))
 			{
 				n1 = math(n1,stack[sp-1],ops[op-1]);
 				sp--;
 				op--;
 			}
-			ops[op++]=c;
-			stack[sp++]=n1;
+
+			if (sp<MAX_DEPTH-1 && op<MAX_DEPTH-1)
+			{
+				ops[op++]=c;
+				stack[sp++] = n1;
+			}
+			else
+			{
+				rprintf("eval stack %d,%d\n", top,tsp);
+				 *res=0; 
+				return NUMBER;
+			}
 			n1=0;
+dumpstack(); // debug
 			break;
 		case '"':
 			return STRING;
@@ -224,13 +267,13 @@ unsigned char eval_expr(char **str, long *res)
             else
             {
 				char tmpA[128];
-				n1 = **str-'A';
+				n1 = (long)(**str-'A');
 				if (n1<0 || n1 >25)
 				{
 					break;
 				}
-				n1 = variable[n1];
-				readtext(n1, tmpA);				
+				n1 = variable[(int)n1];
+				readtext((int)n1, tmpA);				
 				if (tmpA[0]==0xFF) // DATA
 				{
 					int i=0;
@@ -314,12 +357,17 @@ unsigned char eval_expr(char **str, long *res)
 		}
 	}
 
-	stack[sp++] = n1;
+	if (sp<MAX_DEPTH-1)
+		stack[sp++] = n1;
+	else
+	{
+		rprintf("eval stack \n"); *res=0; return NUMBER;
+	}
 
-	while (op>0) {
+	while (op>top) {
 		if (ops[op-1]==':')
 		{
-			if (op > 1 && ops[op - 2] == '?' && sp>2)
+			if (op > top+1 && ops[op - 2] == '?' && sp>tsp+2)
 			{
 				if (stack[sp - 3] == 0)
 					stack[sp - 3] = stack[sp - 1];
@@ -336,7 +384,7 @@ unsigned char eval_expr(char **str, long *res)
 		}
 		else
 		{
-			if (op > 0 && sp>1)
+			if (op > top && sp>tsp+1)
 			{
 				stack[sp-2] = math(stack[sp-2],stack[sp-1],ops[op-1]);
 				sp--;
@@ -350,7 +398,8 @@ unsigned char eval_expr(char **str, long *res)
 		op--;
 	}
 
-	*res = stack[0];
+	*res = stack[tsp];
+	sp=tsp; 
 	return NUMBER;
 }
 
