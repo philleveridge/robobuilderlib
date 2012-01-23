@@ -4,7 +4,7 @@
 extern int str_expr(char *str);
 extern int put_special(int var, int n);
 
-extern int					get_special(char **str, long *res);
+extern int					get_special(char **str, long *res, int t);
 extern void					set_bit(int p, int b, int n);
 extern int					get_bit(int pn, int bn);
 extern int					sigmoid(int v, int t);

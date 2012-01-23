@@ -5,7 +5,7 @@ enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 
 extern long variable[];
 
-#define MAX_DEPTH  5
+#define MAX_DEPTH  10
 
 extern unsigned char 	eval_expr(char **str, long *res);
 extern int		eval_list(char *p);

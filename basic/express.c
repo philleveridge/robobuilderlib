@@ -16,6 +16,7 @@
 #include "rprintf.h"
 #endif
 
+#include "edit.h"
 #include "express.h"
 #include "functions.h"
 
@@ -35,6 +36,19 @@ extern int dbg;
 
 const char *o 	= "+-*/><gl=n&%|:?";
 const int mp[]  = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
+
+const  prog_char  *specials[] = {
+	    "MIC",   "X",    "Y",    "Z",    "PSD", 
+		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
+		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
+		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
+		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
+		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
+		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS"
+};
+
+
+
 long variable[26]; // only A-Z at moment
 
 extern void readtext(int ln, char *b);
@@ -71,6 +85,8 @@ int preci(char s)
 	return mp[(p-o)];
 }
 
+char tmpBuff[100];
+
 static long stack[MAX_DEPTH]; 
 static char ops[MAX_DEPTH];	
 static int sp=0;
@@ -88,6 +104,28 @@ void dumpstack()
 	return;
 }
 
+void epush(long n)
+{
+	if (sp<MAX_DEPTH-1)
+		stack[sp++] = n;
+	else
+	{
+		rprintf("eval stack error\n");
+		op=0;sp=0;
+	}
+}
+
+long epop()
+{
+	if (sp>0)
+		return stack[--sp];
+	else
+	{
+		rprintf("eval stack error\n");
+		op=0;sp=0;
+		return 0;
+	}
+}
 
 unsigned char eval_expr(char **str, long *res)
 {
@@ -98,6 +136,7 @@ unsigned char eval_expr(char **str, long *res)
 	int top=op;
 	long tmp=0;
 	int done=0;
+	int i;
 
 #ifdef PARSE
 	if (**str=='!')
@@ -116,8 +155,9 @@ unsigned char eval_expr(char **str, long *res)
 	}
 #endif
 
-	dumpstack(); // debug
+
 	if (dbg) {
+		dumpstack(); // debug
 		rprintf("Eval =%s\n", *str); 
 	}
 	
@@ -198,7 +238,8 @@ unsigned char eval_expr(char **str, long *res)
 			}
 			else
 			{
-				rprintf("eval stack %d,%d\n", top,tsp);
+				rprintf("eval stack err %d,%d\n", top,tsp);
+				op=0;sp=0;
 				 *res=0; 
 				return NUMBER;
 			}
@@ -211,8 +252,7 @@ dumpstack(); // debug
 			break; //ignore sp
 		case '@':
 			if (**str=='#')
-            {
-				int i;
+            		{
 				(*str)++;
 				for (i=0;i<16; i++)
 				{
@@ -244,9 +284,9 @@ dumpstack(); // debug
             if (**str=='<')
             {
 				//use sound array
-				for (n1=0; (n1<MIC_NOS && n1<SDATASZ && n1<SCENESZ); n1++) 
+				for (i=0; (i<MIC_NOS && i<SDATASZ && i<SCENESZ); i++) 
 				{
-					scene[n1] = sData[n1];     // and clear
+					scene[i] = sData[i];     // and clear
 				}
 				nis=MIC_NOS;
 				(*str)++;
@@ -257,32 +297,31 @@ dumpstack(); // debug
 				//use servo pos array
 				readservos(nos);
 
-				for (n1=0; n1<nos; n1++) 
+				for (i=0; i<nos; i++) 
 				{
-					scene[n1] = cpos[n1];     // and clear
+					scene[i] = cpos[i];     // and clear
 				}
 				nis=nos;
 				(*str)++;
 			}
             else
             {
-				char tmpA[128];
-				n1 = (long)(**str-'A');
-				if (n1<0 || n1 >25)
+
+				i = (**str-'A');
+				if (i<0 || i >25)
 				{
 					break;
 				}
-				n1 = variable[(int)n1];
-				readtext((int)n1, tmpA);				
-				if (tmpA[0]==0xFF) // DATA
+				n1 = variable[i];
+				readtext(i, tmpBuff);				
+				if (tmpBuff[0]==0xFF) // DATA
 				{
-					int i=0;
-					nis=tmpA[1];
+					nis=tmpBuff[1];
 					for (i=0; i<nis; i++)
-						scene[i]=(unsigned char)tmpA[i+2];
+						scene[i]=(unsigned char)tmpBuff[i+2];
 				}
 				else
-					eval_list(tmpA);
+					eval_list(tmpBuff);
 				//
 				(*str)++;
 			}
@@ -291,10 +330,10 @@ dumpstack(); // debug
 				(*str)++;
 				n1=0;
 				eval_expr(str, &n1);
-				if (n1>=nis) n1=nis-1;
-				if (n1<0)    n1=0;
+				if (n1>=nis) n1=(long)(nis-1);
+				if (n1<0)    n1=(long)0;
 
-				n1 = scene[n1];
+				n1 = (long)scene[(int)n1];
 				(*str)++;
 				break;
 			}
@@ -348,8 +387,84 @@ dumpstack(); // debug
 			break;
 		case '$':
 			//special var?
-			if (get_special(str, &n1)==ARRAY)
-				return ARRAY;
+			{
+				int noargs=0;
+				n1=0;
+				tmp=0;
+				for (i=0; i<NOSPECS; i++)
+				{
+					if (!strncmp(*str, specials[i], strlen(specials[i])))
+						break;
+				}
+	
+				if (i==NOSPECS)
+				{
+					return -1; 		// no_match : match
+				}
+
+				*str = *str + strlen(specials[i]);
+
+				if (	i == sIR2ACT||
+					i == sDSIG  ||
+					i == sSQRT  ||
+					i == sSTAND ||
+					i == sZEROS ||
+					i == sABS   ||
+					i == sCOS   ||
+					i == sCVB2I ||
+					i == sSIN   ||
+					i == sNORM  ||
+					i == sSUM   ||
+					i == sSERVO ||
+					i == sROM   ||
+					i == sMIN   || 
+					i == sMAX   || 
+					i == sIMAX   )
+				{
+					noargs=1;
+				}
+
+				if (i==sRND)
+				{
+					noargs=3;
+					if (**str!='(') noargs=0;
+				}
+
+				if (i==sRANGE)
+				{
+					noargs=3;
+				}
+
+				if (i==sSIG || i==sFIND)
+				{
+					noargs=2;
+				}
+
+				if (noargs>0 && **str=='(') 
+				{
+					n1=noargs;
+					while (noargs  > 0)
+					{
+						tmp=0;
+						(*str)++;
+						eval_expr(str, &tmp);
+						epush(tmp);
+						
+						if (**str!=')' && **str!=',')
+						{
+							return -1;
+						}
+						noargs--;
+					}
+					tmp=n1;
+					(*str)++;
+					if (tmp==1) tmp=epop();
+				}
+
+				if (get_special(str, &tmp, i)==ARRAY)
+					return ARRAY;
+				n1=tmp;
+			}
 			break;
 		default:
 			done=1;
@@ -357,12 +472,7 @@ dumpstack(); // debug
 		}
 	}
 
-	if (sp<MAX_DEPTH-1)
-		stack[sp++] = n1;
-	else
-	{
-		rprintf("eval stack \n"); *res=0; return NUMBER;
-	}
+	epush(n1);
 
 	while (op>top) {
 		if (ops[op-1]==':')
@@ -379,6 +489,7 @@ dumpstack(); // debug
 			else
 			{
 				rprintf("eval stack error %d, %d\r\n", op, sp);
+				op=0;sp=0;
 				return ERROR; 
 			}
 		}
@@ -391,7 +502,8 @@ dumpstack(); // debug
 			}
 			else
 			{
-				rprintf("eval stack error %d, %d\r\n", op, sp);
+				rprintf("eval stack pop error %d, %d [%d,%d]\r\n", op, sp, top, tsp);
+				op=0;sp=0;
 				return ERROR;
 			}
 		}
