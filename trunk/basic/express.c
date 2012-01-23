@@ -85,7 +85,7 @@ int preci(char s)
 	return mp[(p-o)];
 }
 
-char tmpBuff[100];
+unsigned char tmpBuff[100];
 
 static long stack[MAX_DEPTH]; 
 static char ops[MAX_DEPTH];	
@@ -306,13 +306,12 @@ dumpstack(); // debug
 			}
             else
             {
-
 				i = (**str-'A');
 				if (i<0 || i >25)
 				{
 					break;
 				}
-				n1 = variable[i];
+				i = variable[i];
 				readtext(i, tmpBuff);				
 				if (tmpBuff[0]==0xFF) // DATA
 				{
