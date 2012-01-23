@@ -64,7 +64,7 @@ $(TARGET): $(OBJECTS)
 
 ## Clean target
 clean:
-	-rm -rf $(OBJECTS) Basic.elf dep/* Basic.hex Basic.eep Basic.lss Basic.map
+	-rm -rf $(OBJECTS) 
 
 
 ## Other dependencies

@@ -47,163 +47,95 @@ extern BYTE EEMEM		PERSIST				[];  // persistent data store
 
 const unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
 
+extern long epop(); //from express.c
 
 const unsigned char smap[40] = {
 	1,  2,  3,  4,  5,  6,  8,  10, 12, 15, 19, 24, 31, 38, 47, 57, 69, 82, 97, 112,
 	128,144,159,174,187,199,209,218,225,232,237,241,244,246,248,250,251,252,253,254};
 
 
-const  prog_char  *specials[] = {
-	    "MIC",   "X",    "Y",    "Z",    "PSD", 
-		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
-		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
-		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
-		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
-		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
-		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS"
-};
-
-
-int getArg(char **str, long *res)
+int get_special(char **str, long *res, int t)
 {
-	if (**str=='(') 
-	{
-		(*str)++;
-		eval_expr(str, res);
-		if (**str==')')
-		{
-			(*str)++;
-			return 1;
-		}
+	long v=*res;	
+	int lc;
 
-	}
-	return 0;
-}
-
-int get_special(char **str, long *res)
-{
-	char *p=*str;
-	int t=token_match(specials, str, NOSPECS);
-	long v=0;
-	int rt=NUMBER;
-	
 	switch(t) {
-	case sMIC:
-		{
-			int lc;
-
-			for (lc=0; lc<SDATASZ; lc++) 
-			{
-				v += sData[lc];  // sum the buffer
-				sData[lc]=0;     // and clear
-			}
-			MIC_SAMPLING=1; // on by default, but make sure
-		}
+	case sSQRT: // $SQRT(x)
+		v = Sqrt(v);
 		break;
-	case sTICK:
-		v=gtick;
-		break;	
-	case sMAX:
-	case sIMAX:
+	case sSIN: // $SIN(x)
+		v = Sin(v%256);
+		break;
+	case sABS: // $ABS(x)
+		v = v<0?-v:v;
+		break;
+	case sCOS: // $COS(x)
+		v = Cos(v%256);
+		break;
+	case sCVB2I: // $CVB2I(x)  255 -> -1
+		v = cbyte(v);
+		break;
+	case sIR2ACT: //$IR2ACT(10) -> x
+		v=(long)map[(int)v];
+		break;
+	case sNORM:
+		for (lc=0; lc<nis; lc++)
 		{
-			long st=0;
-			int k=0,m;
-
-			if (**str!='(')
-				break;
-
-			(*str)++;
-
-			if (eval_expr(str, res)==ARRAY)
-			{
-				if (**str==',')
-				{
-					(*str)++;
-					if (eval_expr(str, &st)!=NUMBER)
-						break;
-				}
-				if (**str!=')')
-					break;
-				(*str)++;
-			}
-			m=scene[st];
-			for (v=st; v<nis; v++)
-			{
-				if (scene[v]>m) { m=scene[v]; k=v;}
-			}
-			v=(t==sMAX)?m:k;
+			v += (scene[lc]*scene[lc]);
 		}
-		break;	
+		v=Sqrt(v);
+		break;
 	case sMIN:
-		if (getArg(str,&v))
+		v=scene[0];
+		for (lc=0; lc<nis; lc++)
 		{
-			int m=scene[0];
-			for (v=0; v<nis; v++)
-			{
-				if (scene[v]<m) m=scene[v];
-			}
-			v=m;
+			if (scene[lc]<(int)v) v=(long)scene[lc];
 		}
 		break;
 	case sSUM:
-		if (getArg(str,&v))
+		v=0;
+		for (lc=0; lc<nis; lc++)
 		{
-			int m=0;
-			for (v=0; v<nis; v++)
-			{
-				m += scene[v];
-			}
-			v=m;
+			v += (long)scene[lc];
 		}
 		break;
-	case sHAM:
-		// TBD - calculate HAMMING distance between 2 arrays
-		// $HAM(n,@A,@B)
-		//eg PRINT $HAM(0,@{3,1,2,3},@{3,3,2,1}
-		if (**str=='(') 
-		{
-			(*str)++;
-			eval_expr(str, res); 
-			if (**str==',')
-			{
-				int n=*res;
-				(*str)++;
-				if (eval_expr(str, res)==ARRAY)
-				{
-					if (**str==',')
-					{
-						int i,tnis=nis;
-						int tempB[SCENESZ];
-						(*str)++;
-						for (i=0;i<SCENESZ; i++)
-						{
-							tempB[i]=scene[i];
-						}
-						if (eval_expr(str, res)==ARRAY)
-						{
-							int m=(nis>tnis)?nis:tnis;
-							for (i=0;i<m; i++)
-							{
-								v += ((abs(((i<tnis)?tempB[i]:0) - ((i<nis)?scene[i]:0))<=n)?1:0); 
-							}
-						}	
-						(*str)++;  // ')'
-					}
-				}
-			}
-		}
+	case sDSIG: // $DISG(x) -> x*(1-x)
+		v = v*(1-v);
 		break;
-	case sNORM:
-		if (getArg(str,&v))
-		{
-			long m=0;
-			for (v=0; v<nis; v++)
-			{
-				m += (scene[v]*scene[v]);
-			}
-			v=Sqrt(m);
-		}
+	case sSERVO: // SERVO(nn)
+		//$servo
+		if (v==32)
+			v=readservos(0);
+		else
+			v=wckPosRead(v);
 		break;
+	case sMIC:
+		for (lc=0; lc<SDATASZ; lc++) 
+		{
+			v += sData[lc];  // sum the buffer
+			sData[lc]=0;     // and clear
+		}
+		MIC_SAMPLING=1; // on by default, but make sure
+		break;
+	case sSTAND: // $STAND(x)
+		if (v<1)  v=1;
+		if (v>18) v=18;
+		for (lc=0; lc<v; lc++)
+		{
+			if (v<=16)
+				scene[lc]=basic16[lc];
+			else
+				scene[lc]=basic18[lc];
+		}
+		nis=lc;
+		return ARRAY;
+	case sZEROS: // $ZEROS(x)
+		for (lc=0; lc<(int)v && lc<SCENESZ; lc++)
+		{
+			scene[lc]=0;
+		}
+		nis=lc;
+		return ARRAY;
 	case sGX:
 		Acc_GetData();
 		v=x_value;
@@ -241,242 +173,74 @@ int get_special(char **str, long *res)
 		v=uartGetByte();
 		if (v<0) v=irGetByte();
 		break;
-	case sRND: // $RND 0 < n < 255 or $RND(6,0,5) ->{6,n,n,n,n,n,n} 0<n<5
-		if (**str=='(')
+	case sTICK:
+		v=gtick;
+		break;
+	case sRND: 
+		if (v==3)
 		{
-			long i,a=0,b=0,c=0;
-			(*str)++;
-			eval_expr(str, &a);
-			if (**str==',')
-			{
-				(*str)++;
-				eval_expr(str, &b);
-				if (**str==',')
-				{
-					(*str)++;
-					eval_expr(str, &c);
-				}
-			}
-			(*str)++;  // ')'
-
+			long a=0,b=0,c=0;
+			c=epop();
+			b=epop();
+			a=epop();
 			if (b>c) swap(&b,&c);
 
-			for (i=0; i<a; i++)
+			for (lc=0; lc<a; lc++)
 			{
-				scene[i]=(rand()%(c-b))+b;
+				scene[lc]=(rand()%(c-b))+b;
 			}
-			nis=a;
-			rt=ARRAY;
+			nis=(int)a;
+			return ARRAY;
 		}
 		else
 		   v=rand();
-		break;
-	case sIR2ACT: //$IR2ACT(10) -> x
-		v=0;
-		if (getArg(str,&v))
+		break;	
+	case sSIG: //$SIG(n,t)
+		if (v==2) 
 		{
-			v=map[v];
+			long r=epop();
+			v=epop();
+			v=sigmoid(v,r);
 		}
-		break;
-	case sDSIG: // $DISG(x) -> x*(1-x)
-		v=0;
-		if (getArg(str,&v))
-		{
-			v = v*(1-v);
-		}
-		break;
-	case sSIG: //$SIG(n[,t])
-		v=0;
-		if (getArg(str,&v))
-		{
-			v=sigmoid(v,2);
-		}
-		else
-		{
-			if (**str==',')
-			{
-				long r;
-				(*str)++;
-				eval_expr(str, &r);
-				v=sigmoid(v,r);
-				(*str)++;
-			}
-		}
-		break;
-	case sSTAND: // $STAND(x)
-		v=0;
-		if (getArg(str,&v))
-		{
-			int i;
-			if (v<1)  v=1;
-			if (v>18) v=18;
-			for (i=0; i<v; i++)
-			{
-				if (v<=16)
-					scene[i]=basic16[i];
-				else
-					scene[i]=basic18[i];
-			}
-			nis=i;
-			rt=ARRAY;
-		}
-		break;
-	case sZEROS: // $ZEROS(x)
-		v=0;
-		if (getArg(str,&v))
-		{
-			int i;
-			for (i=0; i<v; i++)
-			{
-				scene[i]=0;
-			}
-			nis=i;
-			rt=ARRAY;
-		}
-		break;
-	case sABS: // $ABS(x)
-		v=0; 
-		if (getArg(str,&v))
-		{
-			v = v<0?-v:v;
-		}
-		break;
-	case sSQRT: // $SQRT(x)
-		v=0; 
-		if (getArg(str,&v))
-		{
-			v = Sqrt(v);
-		}
-		break;
-	case sSIN: // $SIN(x)
-		v=0; 
-		if (getArg(str,&v))
-		{
-			v = Sin(v%256);
-		}
-		break;
-	case sCOS: // $COS(x)
-		v=0; 
-		if (getArg(str,&v))
-		{
-			v = Cos(v%256);
-		}
-		break;
-	case sCVB2I: // $CVB2I(x)  255 -> -1
-		v=0; 
-		if (getArg(str,&v))
-		{
-			v = cbyte(v);
-		}
-		break;
-	case sROM: // $ROM(x) or $ROM$(X) or $ROM@(x)
-                if (**str=='$')
-                {
-			(*str)++;
-			if (getArg(str,&v))
-			{
-				v = eeprom_read_byte((BYTE*)(PERSIST+v));
-			}
-		}
-		else
-                if (**str=='@')
-                {
-			(*str)++;
-			if (getArg(str,&v))
-			{
-				int i;
-				nis = v;
-				for (i=0;i<nis;i++)
-					scene[i] = eeprom_read_byte((BYTE*)(PERSIST+i));
-			}
-		}
-		else
-                {
-			if (getArg(str,&v))
-			{
-				v = eeprom_read_byte((BYTE*)(FIRMWARE+v));
-			}
-		}
-		break;
-	case sSERVO: // SERVO(nn)
-		//$servo
-		if (**str!='(') 
-		{
-			v=readservos(0);
-		}
-		else
-		// get position of servo id=nn
-		if (getArg(str,&v))
-		{
-			v = wckPosRead(v);
-		}
-		break;
+		break;	
 	case sRANGE:
-		if (**str=='(') 
+		if (v==3) 
 		{
 			long a,b,c;
-			(*str)++;
-			eval_expr(str, &a); 
-			if (**str==',')
-			{
-				(*str)++;
-				eval_expr(str, &b); 
-				if (**str==',')
-				{
-					(*str)++;
-					eval_expr(str, &c); 
-				}
-				if (**str!=')')
-				{
-					BasicErr=1;
-					break;
-				}
-				(*str)++;
-				if (a<b) v=b;
-				else
-					if (a>c) v=c;
-					else 
-						v=a;
-			}
+			c=epop();
+			b=epop();
+			a=epop();
+			if (a<b) 
+				v=b;
+			else
+			if (a>c) 
+				v=c;
+			else 
+				v=a;
 		}
 		break;
 	case sFIND:
-		//$FIND(x,@A)
-		if (**str=='(') 
+		if (v==2) 
 		{
-			(*str)++;
-			eval_expr(str, res); 
-			if (**str==',')
+			int n;
+			epop(); // this will be ZERO
+			n=(int)epop();
+			for (lc=0; lc<nis; lc++)
 			{
-				int n=*res;
-				(*str)++;
-				if (eval_expr(str, res)==ARRAY)
+				if (scene[lc]==n)
 				{
-					int i;
-					v=0;
-					for (i=0; i<nis; i++)
-					{
-						if (scene[i]==n)
-						{
-							v=i; break;
-						}
-						if (scene[i]>n)
-						{
-							if (i>0) v=i-1; 
-							break;
-						}
-					}
-					if (i==nis) v=nis-1; // no match
-					if (**str==')')
-					{
-						(*str)++;
-					}
+					v=(long)lc; break;
+				}
+				if (scene[lc]>n)
+				{
+					if (lc>0) v=(long)(lc-1); 
+					break;
 				}
 			}
+			if (lc==nis) v=(long)(nis-1); // no match
 		}
 		break;		
 	case sPORT: // PORT:A:n
-		// get position of servo id=nn
 		v=0;
 		if (**str==':') {
 			(*str)++;
@@ -494,13 +258,45 @@ int get_special(char **str, long *res)
 				}
 		}				
 		*res=get_bit(v, t);         //need to read port with PINA etc 
-		return (*str-p); // not finished yet
+		return NUMBER; 
+
+	case sROM: // $ROM(x) or $ROM$(X) or $ROM@(x)
+		v = eeprom_read_byte((BYTE*)(FIRMWARE+v));
+		break;
+/*              if (**str=='$')
+                {
+			v = eeprom_read_byte((BYTE*)(PERSIST+v));
+		}
+                if (**str=='@')
+                {
+			nis =(int) v;
+			for (lc=0;lc<nis;lc++)
+				scene[lc] = eeprom_read_byte((BYTE*)(PERSIST+lc));
+		}*/
+	case sMAX:
+	case sIMAX:
+		// MAX(@A,[n]) 
+		{
+		int m=scene[(int)v];
+		int k;
+		for (lc=0; lc<nis  && lc<SCENESZ; lc++)
+		{
+			if (scene[lc]>m) { m=scene[lc]; k=lc;}
+		}
+		v=(t==sMAX)?m:k;
+		}
+		break;	
+	case sHAM:
+		// calculate HAMMING distance between 2 arrays
+		// $HAM(n,@A,@B) - withdrawn
+		v=0;
+		break;
+
 	default:
 		return -1;
 	}
 	*res=v;
-	//t=strlen(specials[t]);
-	return rt;
+	return NUMBER;
 }
 
 
@@ -535,7 +331,7 @@ int sigmoid(int v, int t)
 	case 4: // 1/(1-e^-x) actually 256/(1-e^(x/4))
 		if(v<-20) v=-20;
 		if(v>19)  v=19;
-		v=(smap[v+20]-127)/4;
+		v=(smap[v+20]-127)/4; //commented out for now
 		return v;
 	}
 	return 0;
