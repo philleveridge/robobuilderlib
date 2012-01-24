@@ -159,10 +159,7 @@ So putting this all together the following code will generate a continuous walki
 15 LIST C=16,  0,  2,  8, 5,  0, 15, 2, 8,  6, 15, 5,11, 5,  5,  5,  5
 20 FOR X=0 TO 15
 25 FOR Y=0 TO 15
-30 LET P=(X+@C[y])*16
-35 LET P=$SIN(P)/32
-40 LET P=(@A[Y]*P)/1024
-45 LET P=@B[Y]+P
+30 LET P=@B[Y]+@A[Y]*$SIN(P(X+@C[y])/32768
 50 PRINT P;":";
 55 SERVO y=p
 60 NEXT Y
@@ -172,7 +169,7 @@ So putting this all together the following code will generate a continuous walki
 }}}
 
 ==How it works==
-The lines 30-45 breaks the calculation into simpler steps as BASIC unfortunately crashes with long expression due to shortage of memory. The calculation is sent to the servo in line 55. The program is fast enough to run a smooth walking gate. It will continue to run until it detects IR or keyboard press (or you turn it off!)
+The lines 30 calculates the SIN wave value for each servo in turn. The calculation is sent to the servo in line 55. The program is fast enough to run a smooth walking gate. It will continue to run until it detects IR or keyboard press (or you turn it off!)
 
 =modify RBC Serial Number=
 
@@ -188,12 +185,12 @@ Some times the firmware can get corrupted and the serial number is lost. When th
 If you see 13 digits all is well. If not find your serial number (its printed on the RBC unit) and update the ROM from interactive /input mode using for example:
 
 {{{
-POKE 1,48
-POKE 2,49
+POKE 1,`0
+POKE 2,`1
 etc ...
 }}}
 
-This will set the first digit to ASCII 48 or '0', second to '1' etc ... (Sorry you will have to covert your s/n to ASCII yourself - hint is 48 + digit [0-9]
+Note the "Back-quote" which converts the from Ascii character to numeric value. So `0 become 48.
 
 *Use this with CAUTION !!!!!*
 
