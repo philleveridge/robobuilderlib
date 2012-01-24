@@ -38,13 +38,14 @@ const char *o 	= "+-*/><gl=n&%|:?";
 const int mp[]  = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
 
 const  prog_char  *specials[] = {
-	    "MIC",   "X",    "Y",    "Z",    "PSD", 
+
 		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
 		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
 		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
 		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
 		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
-		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS"
+		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS",
+		"MIC",   "X",    "Y",    "Z",    "PSD", 
 };
 
 
@@ -524,6 +525,11 @@ long math(long n1, long n2, char op)
 	case '*':
 		n1=n2*n1; break;
 	case '/':
+		if (n2==0)
+		{
+			rprintf ("Err - div 0\r\n");
+			return 0;
+		}
 		n1=n1/n2; break;
 	case '&':
 		n1=n2 && n1; break;
