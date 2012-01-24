@@ -31,12 +31,13 @@ enum {
 	};
 
 
-enum { 	sMIC=0, sGX, sGY, sGZ, sPSD, sVOLT, sIR, 
+enum { 	sVOLT=0, sIR, 
 		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
 		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
 		sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
 		sSIN, sCOS, sIMAX, sHAM, sRANGE, sSIG, sDSIG,
 		sSTAND, sZEROS,
+		sMIC, sGX, sGY, sGZ, sPSD, 
 		NOSPECS
 	};
 

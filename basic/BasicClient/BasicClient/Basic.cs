@@ -400,11 +400,23 @@ namespace RobobuilderLib
                     if (tok.Length == 1 && tok[0] >= 'A' && tok[0] <= 'Z')
                         tok = "LET " + tok;
 
+                    if (tok == "ENDIF")
+                    {
+                        //
+                        if (i > 0 && r[i - 1].Contains("ENDIF"))
+                        {
+                            lnc = lnc - 3;
+                        }
+                    }
+
                     Console.WriteLine(lnc + " " + tok + z);
                     r[i] = "" + lnc + " " + tok + z;
                 }
                 else
                     r[i] = ln + " " + z;
+
+                r[i] = process_arg(r[i]);
+
                 precomp += r[i] + "\r\n";
                 i++;
                 lnc += 3;
@@ -646,7 +658,7 @@ namespace RobobuilderLib
                         if (t < 0) errno = 3; else ln.var = (byte)t;
                         break;
                     case KEY.IF:
-                        // IF A THEN B ELSE C =>  GOTO (A)?B:C
+                        // IF A THEN B ELSE C =>  IF A,B,C
                         z = z.ToUpper();
 
                         // mutliline else
@@ -846,6 +858,121 @@ namespace RobobuilderLib
                 }
                 m += "\r\n" ;
             }
+            m += basic_list();
+            Console.Write(m);
+            return m;
+        }
+
+        String basic_list()
+        {
+            string m = "";
+	        basic_line line;
+	        char[] buf = new char[256];
+            int i=0;
+
+	        m += ("List Program \r\n");
+
+	        if (code[i]!= 0xAA ) {
+		        m += ("No program loaded\r\n");
+		        return m;
+	        }
+            i = i + 3; //ignore start pointer
+
+	        while (i<codeptr && code[i] != 0xCC )
+	        {
+                //m += String.Format("{0} : ", i); 
+
+                line.lineno= code[i++]%256 + code[i++]*256 ;
+                line.token = code[i++];
+                line.var= code[i++];
+                line.value= code[i++]%256 + code[i++]*256 ;
+                line.text = "";
+                int ll = code[i++] % 256 + code[i++] * 256;
+
+                if ((KEY)line.token != KEY.DATA)
+                {
+                    for (int i2 = i; i2 < ll-1; i2++)
+                    {
+                        if (code[i2]!=0)
+                            line.text += (char)(code[i2]);
+                    }
+                }
+
+		        if (line.lineno==0) continue;
+
+		        /* list code */
+	
+		        m +=  String.Format("{0} ", line.lineno); 
+		        m +=  (tokens[line.token]);
+		        m +=  (" "); 
+		
+		        if ((KEY)line.token==KEY.LET || (KEY)line.token==KEY.GET || (KEY)line.token==KEY.FOR || (KEY)line.token==KEY.LIST || (KEY)line.token==KEY.DATA)
+			        m +=  String.Format("{0} = ", (char)('A' + line.var));
+			
+		        if ((KEY)line.token==KEY.PUT)
+		        {
+			        if (line.var <30)
+			        {
+				        m +=  (specials[line.var]); 
+			        }
+			        else
+			        {
+				        char a, b;
+				        a=(char)('A' + (line.var - 30) /10) ;
+				        b=(char)('0' + (line.var % 10)) ;
+				        m +=  String.Format("PORT:{0}:{1}", a, b);			
+			        }
+			        m +=  (" = ");
+		        }
+
+		        if ((KEY)line.token==KEY.SERVO || (KEY)line.token==KEY.STEP)
+		        {
+			        if (line.var>=32)
+				        m +=  String.Format("{0}=", (char)(line.var-32));
+			        else
+				        m +=  String.Format("{0}=", (char)(line.var+'A'));
+		        }
+			
+		        if ((KEY)line.token==KEY.PRINT && line.var==1)
+			        m +=  ("# ");
+
+		        if ((KEY)line.token==KEY.PRINT && line.var==2)
+			        m += ("@ ");
+			
+		        if ((KEY)line.token==KEY.IF)
+		        {
+                    string r = Regex.Replace(line.text, "(.*),(.*),(.*)","$1 THEN $2 ELSE $3");
+                    m += r;
+
+		        }
+		        else
+		        if ((KEY)line.token==KEY.NEXT) 
+		        {
+			        m +=  String.Format("{0}", (char)(line.var+'A'));
+		        }
+		        else
+		        if ((KEY)line.token==KEY.DATA)
+		        {
+                    int i2;
+                    int n = code[i];
+			        m +=  String.Format("%d", code[i+1]);
+			        for (i2=1; i2<n; i2++)
+				        m += String.Format(",%d", code[i+i2]);
+		        }
+		        else
+		        if ((KEY)line.token==KEY.FOR)
+		        {
+                    m += line.text;
+		        }
+		        else
+		        if ((KEY)line.token==KEY.GOTO || (KEY)line.token==KEY.GOSUB || (KEY)line.token==KEY.PLAY  ) 
+			        m += String.Format("{0}", line.value);
+		        else
+			        m +=  line.text;
+
+                i = ll;
+		        m += "\r\n";
+	        }
             Console.Write(m);
             return m;
         }
