@@ -4,7 +4,9 @@
 
 This gives Robobuilder the ability to create simple actions in an elementary basic language. The software is beta release.
 
-*_New version  firmware (v382)_* - http://robobuilderlib.googlecode.com/files/Basic382.hex
+*_New version  firmware (v408)_* - http://robobuilderlib.googlecode.com/files/Basic408.hex
+
+* Features - improved stability and expression handling. Adds AND and OR
 
 Next extract Basic.hex and upload on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
 
@@ -14,7 +16,7 @@ If you want just to try it out (and not load on to Robot) then there are  window
 
 So assuming you have downloaded the program (and installed the firmware) - reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html vt100 terminal emulator] on the serial port (i.e. COM1 at 115200). You should see the following:
 {{{
-Basic v=$Revision: 380 $
+Basic v=$Revision: 408 $
 Commands: i r l c z q s V R F $
 
 16 servos connected
@@ -43,7 +45,7 @@ The start mode is command mode signified by ':'. On pressing I it enters input m
 Here is an example session :
 
 {{{
-Basic v=$Revision: 367 $
+Basic v=$Revision: 408 $
 Commands: i r l c z q s V R F $
 16 servos connected
 0 lines in memory
@@ -155,7 +157,6 @@ SYNTAX:
 ||$MIN(@n)|| return minimum element value in array n    ||
 ||$NORM||   ||
 ||$SUM(@n)|| return sum of element values in array n    ||
-||$HAM(@a,@b)||    ||
 ||$SIN(x)||Sine of X where X 0-233 and return is +/-32K||
 ||$COS(x)||Cosine of X where X 0-233 and return is +/-32K||
 ||$RANGE(a,b,c)||return b < a < c ||
@@ -268,13 +269,14 @@ Output:
 Note: lists are number from zero. First element (5) is the length of the list
 
 10) OUT - show PSD sensor output as a bar
-10 out 45,$psd
-20 out 42
+10 out `-,$psd
+20 out `*
 30 print
 40 goto 10
 Output:
 ----------*
-Ascii value '-' 45, '*' 42, and If $PSD value is say 10 
+
+Note use of Backquote now which converts to Ascii value '-' 45, '*' 42
 
 11) ROM  and OUT - displays serial number
 10 FOR I=1 to 13
@@ -341,7 +343,7 @@ output:
 16) Generate random numbers
 Also use % to get modulo of $rnd - so example return 10 numbers between 0 and 5
 10 for i=1 to 10
-20 print $rnd % 6
+20 print $rnd MOD 6
 30 next i
 output:
 5
@@ -385,10 +387,10 @@ Grippers available from Ipswich Robotics :
 The buttons on the back of the RBC are normally logic high and go low when pressed. The are access via bits 0 &1 on PORTA -
 
 10 print "Press PF1 or PF2 to start"
-20 if ($port:a:0=1)&($port:a:1=2) then 20
+20 if ($port:a:0=1) AND ($port:a:1=2) then 20
 30 print "Done"
 
-Note the use of the & for logic AND.
+Note also supports alternative use of the & for logic AND.
 
 21) Switch LEDS on and OFF
 The LEDs can be access via the PORT as well. Red Power LED is on Port C bit 7. This LED is on when bit is zero and off when bit is 1. So the following will flash the light
