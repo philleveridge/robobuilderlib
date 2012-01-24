@@ -154,12 +154,12 @@ A contains a 16 element list containing the amplitudes of the sine waves. To acc
 So putting this all together the following code will generate a continuous walking motion,:
 
 {{{
-5 LIST A=16, 10, 13, 15,11, 10, 10,13,15, 11, 10,22, 1, 9, 22,  1,  9
-10 LIST B=16,122,166,210,92,107,129,83,42,159,144,91,43,50,161,209,205
-15 LIST C=16,  0,  2,  8, 5,  0, 15, 2, 8,  6, 15, 5,11, 5,  5,  5,  5
+5 DATA A=10,13,15,11,10,10,13,15,11,10,22,1,9,22,1,9
+10 DATA B=122,166,210,92,107,129,83,42,159,144,91,43,50,161,209,205
+15 DATA C=0,2,8,5,0,15,2,8,6,15,5,11,5,5,5,5
 20 FOR X=0 TO 15
 25 FOR Y=0 TO 15
-30 LET P=@B[Y]+@A[Y]*$SIN(P(X+@C[y])/32768
+30 LET P=@B[Y]+@A[Y]*$SIN((X+@C[y])*16)/32768
 50 PRINT P;":";
 55 SERVO y=p
 60 NEXT Y
@@ -169,6 +169,7 @@ So putting this all together the following code will generate a continuous walki
 }}}
 
 ==How it works==
+Note lines 5-15 use the DATA statement instead of LIST. This is to improve speed as DATA values are evaluated but must simple values between 0 and 255, so reading is faster.
 The lines 30 calculates the SIN wave value for each servo in turn. The calculation is sent to the servo in line 55. The program is fast enough to run a smooth walking gate. It will continue to run until it detects IR or keyboard press (or you turn it off!)
 
 =modify RBC Serial Number=
