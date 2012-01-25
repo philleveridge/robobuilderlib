@@ -120,9 +120,54 @@ void binstore()
 		fputc(*(dig+(c/16)),fp);
 		fputc(*(dig+(c%16)),fp);
 	}
-
-
     fclose(fp);
+}
+
+extern int scene[];
+extern int nis;
+
+int matrixload(int n)
+{
+       FILE *fp;
+	   int i,t;
+	   if ((fp = fopen("data.txt", "r")) == 0)
+	   {
+			printf ("? can't find file - data.txt\n");
+			return -1;
+	   }
+	   for (i=0;i<n;i++)
+	   {
+		   if (fscanf(fp,"%d", &t)<0)
+			   break;
+		   scene[i]=t;
+
+		//printf("%d ", scene[i]); //debug
+	   }
+
+	   printf ("Loaded (%d) - data.txt\n", i);	
+	   nis=i;
+
+	   fclose(fp);
+		return 0;
+}
+
+int matrixstore(int n)
+{
+       FILE *fp;
+	   int i,t;
+
+	   if ((fp = fopen("data.txt", "w")) == 0)
+			return -1;
+
+	   for (i=0;i<n;i++)
+	   {
+		   fprintf(fp,"%d ", scene[i]);
+	   }
+
+	   fclose(fp);
+
+	   printf ("Stored (%d) - data.txt\n", n);	
+	   return 0;
 }
 
 

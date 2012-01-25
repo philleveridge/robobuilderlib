@@ -661,56 +661,78 @@ int get_opr_token(unsigned char op)
 	return 0;
 }
 
-void testeval()
+static int intf=1;
+
+extern int nis;
+
+void extend(char *x)
 {
 	tOBJ v;
+	if (intf) {
+		intf=0; v.type=FLOAT; v.floatpoint=3.1415926; set("PI", v);
+	}
+		
+	v.type=EMPTY;
 
-	v.type=INTGR; v.number=20;
-	set("TEST", v);
-	v.type=FLOAT; v.floatpoint=3.1415926;
-	set("PI", v);
+	e=x;
+	if (get_str_token("LET")==1)
+	{
+		if (get_str_token(NULL)==1)
+		{	
+			char var[5];
+			strncpy(var,tokbuff, 5);
+			if (get_opr_token(EQL)==1)
+			{
+				v=eval_oxpr(e);
+				set(var,v);
+				return;
+			}	
+		}
+	}
 
+	e=x;
+	if (get_str_token("PRIN")==1)
+	{
+		while (*e!='\0')
+		{
+			v=eval_oxpr(e);
+			print(v);
+			if (*e!=';') 
+			{
+				rprintfCRLF();
+			}
+			else
+				e++;
+		}
+		return;
+	}
+
+	e=x;
+	if (get_str_token("MAT")==1)
+	{
+		if (get_str_token("LOAD")==1)
+		{
+			matrixload(128);
+		}
+		if (!strcmp(tokbuff,"STOR"))
+		{
+			matrixstore(nis);
+		}
+		return;
+	}
+
+	rprintfStr("No match ?\n");
+}
+
+void testeval()
+{
 	while (1)
 	{
-		v.type=EMPTY;
-
 		readLine(exprbuff);
 		if (exprbuff[0]=='.') break;
 
-		e=exprbuff;
-		if (get_str_token("LET")==1)
-		{
-			if (get_str_token(NULL)==1)
-			{	
-				char var[5];
-				strncpy(var,tokbuff, 5);
-				if (get_opr_token(EQL)==1)
-				{
-					v=eval_oxpr(e);
-					set(var,v);
-				}	
-			}
-			continue;
-		}
+		extend(exprbuff);
 
-		e=exprbuff;
-		if (get_str_token("PRIN")==1)
-		{
-			while (*e!='\0')
-			{
-				v=eval_oxpr(e);
-				print(v);
-				if (*e!=';') 
-				{
-					rprintfCRLF();
-				}
-				else
-					e++;
-			}
-			continue;
-		}
-
-		rprintfStr("No match ?\n");
 	}
 }
 

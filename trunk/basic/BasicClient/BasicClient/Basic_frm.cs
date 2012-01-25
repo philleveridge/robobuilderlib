@@ -21,7 +21,7 @@ namespace RobobuilderLib
         string bdn = "bindata.txt";
         string cprt = "";
 
-        string version = "$Revision$";  //$Revision$
+        string version = "$Revision$";  
 
         string rx = ".";
 

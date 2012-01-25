@@ -67,7 +67,7 @@ namespace RobobuilderLib
 	        "MTYPE", "LIGHTS", "SORT",   "FFT", 
             "SAMPLE","SCALE",  "DATA",
             "SET",   "INSERT", "DELETE",
-            "GEN",  "NETWORK", "SELECT",
+            "GEN",  "NETWORK", "SELECT", "!",
             "ENDIF" // leave at end
         };
         
@@ -82,7 +82,7 @@ namespace RobobuilderLib
             MTYPE, LIGHTS, SORT,   FFT, 
             SAMPLE,SCALE,  DATA,
             SET, INSERT,   DELETE,
-            GEN, NETWORK,  SELECT,
+            GEN, NETWORK,  SELECT, EXPAND,
             ENDIF
 	        };
 							
@@ -167,7 +167,7 @@ namespace RobobuilderLib
             help.Add("$SIN",    "$SIN(n) n is byte (0-255), result integer value, +/- 32,768");
             help.Add("$COS",    "$COS(n)");
             help.Add("$IMAX",   "$IMAX(list,n) - as $MAX but return index rather than vlue of item");
-            help.Add("$HAM",    "$HAM(list a, list b) - Hamming distance between  a and b");
+            help.Add("$HAM",    "not in use");
             help.Add("$RANGE",  "$RANGE(a,min,max) return a");
             help.Add("$SIG",    "$SIG(a) - Sigmoid function");
             help.Add("$DSIG",   "$SIG(a) - Derivative Sigmoid function");
@@ -488,21 +488,37 @@ namespace RobobuilderLib
                     tok = GetWord(ref z);
                 }
 
-                int t = IsToken(tok);
-                if (t<0)
-                {
-                    errno = 1;
-                    return false;
-                }
-                ln.token = (byte)t;
-                ln.var = (byte)'\0';
+                int t;
                 ln.text = "";
                 ln.value = 0;
-                lnc += 5;
+                ln.var = (byte)'\0';
 
-                if ((z != "") && (GetNext(ref z, true) != " ")) { errno = 1; return false; }
+                if (z.Length>0 && z[0] == '!')
+                {
+                    t = (byte)KEY.EXPAND;
+                    ln.token = (byte)t;
+                    ln.var = (byte)'\0';
+                    z = z.Substring(1);
 
-                z = z.Trim();
+                    lnc += 5;
+                }
+                else
+                {
+                    t = IsToken(tok);
+                    if (t < 0)
+                    {
+                        errno = 1;
+                        return false;
+                    }
+
+                    ln.token = (byte)t;
+
+                    lnc += 5;
+
+                    if ((z != "") && (GetNext(ref z, true) != " ")) { errno = 1; return false; }
+
+                    z = z.Trim();
+                }
 
                 /*************/
 
@@ -550,6 +566,7 @@ namespace RobobuilderLib
                     case KEY.INSERT: // new commands
                     case KEY.SET:
                     case KEY.DELETE:
+                    case KEY.EXPAND:
                         ln.text = upperIt(z);
                         break;
                     case KEY.LIST:
