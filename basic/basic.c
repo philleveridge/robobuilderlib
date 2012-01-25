@@ -126,7 +126,7 @@ const prog_char *tokens[] ={
 	"MTYPE", "LIGHTS", "SORT",   "FFT",
 	"SAMPLE","SCALE",  "DATA",
 	"SET", 	"INSERT", "DELETE",
-	"GEN",  "NETWORK", "SELECT"
+	"GEN",  "NETWORK", "SELECT", "!"
 };
 
 extern const prog_char *specials[];
@@ -433,12 +433,22 @@ void basic_load(int tf)
 			cp++;
 		}
 
-		while (*cp == ' ') cp++;
+		while (*cp == ' ') 
+			cp++;
 
-		if ( (newline.token=token_match((char **)tokens, &cp, NOTOKENS))==255)           // sizeof(tokens)/))<0)
+		if (*cp == '!') {
+			newline.token=EXTEND;
+			cp++;
+			//printf ("extended\n");
+		}
+		else
 		{
-			BasicErr=2;
-			continue;
+			//printf ("normal\n");
+			if ( (newline.token=token_match((char **)tokens, &cp, NOTOKENS))<0)           // sizeof(tokens)/))<0)
+			{
+				BasicErr=2;
+				continue;
+			}
 		}
 			
 		while (*cp == ' ') cp++;
@@ -574,6 +584,7 @@ void basic_load(int tf)
 		case GEN:
 		case NETWORK:
 		case SELECT:
+		case EXTEND:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -1987,13 +1998,15 @@ int execute(line_t line, int dbf)
 		break;
 	case GEN:
 		// GEN [No Gn], length, Mute rate%, Mute rnge, Val[min/max], type
-		// GEN 4 16 5 2 0 254
+		// GEN 4,16,5,2,0,254,0
 		{
-			long i, param[7],ty,sho,nog,ln,mr;
+			int i, param[7],ty,sho,nog,ln,mr,mm;
+			long t;
 			p=line.text;
 			for (i=0; i<7; i++)
 			{
-				eval_expr(&p, &param[i]);
+				eval_expr(&p, &t);
+				param[i]=(int)t;
 				if (*p==',' && i<6)
 				{
 					p++;
@@ -2009,13 +2022,15 @@ int execute(line_t line, int dbf)
 			nog=param[0];
 			ln=param[1];
 			mr=param[2];
+			mm=param[3];
 
 			if (sho)
 			{
-				rprintf("Type      = %ld\n", ty);
-				rprintf("length    = %ld\n", ln);
-				rprintf("Generate  = %ld\n", nog);
-				rprintf("Mut rate  = %ld\n", mr);
+				rprintf("Type      = %d\n", ty);
+				rprintf("length    = %d\n", ln);
+				rprintf("Generate  = %d\n", nog);
+				rprintf("Mut rate  = %d\n", mr);
+				rprintf("Mut range = +/-%d\n", mm);
 			}
 
 			for (i=0; i<nog; i++)
@@ -2061,7 +2076,7 @@ int execute(line_t line, int dbf)
 
 					if (rand()%100<mr)
 					{
-						v += (rand()%(2*param[3]))-param[3];
+						v = v + (rand()%(2*mm))-mm;
 						if (v<param[4]) v=param[4];
 						if (v>param[5]) v=param[5];
 					}
@@ -2070,9 +2085,7 @@ int execute(line_t line, int dbf)
 						scene[2*ln+(ln*i)+e]=v; // copy
 					else
 						scene[ln+(ln*i)+e]=v; // copy
-
 				}
-
 			}
 
 			nis = nog*ln;
@@ -2088,10 +2101,9 @@ int execute(line_t line, int dbf)
 	case NETWORK:
 		// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
 		// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
-
-
 		{
 			int i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t;
+			long t2;
 #ifdef WIN32
 
 			int l1o[20];
@@ -2102,7 +2114,8 @@ int execute(line_t line, int dbf)
 			for (i=0; i<7; i++)
 			{
 				param[i]=0;
-				eval_expr(&p, &param[i]);
+				eval_expr(&p, &t2);
+				param[i]=(int)t2;
 				if (*p==0 && i>5) break;
 				if (*p==',' && i<6)
 				{
@@ -2266,6 +2279,13 @@ int execute(line_t line, int dbf)
 		}
 
 		break;
+	case EXTEND:
+#ifdef AVR
+		rprintfStr("? Cmd not available\r\n");
+#else
+		extend(line.text);
+#endif
+		break;
 	default:
 		BasicErr=8; // DEBUG
 		tmp=0xCC;
@@ -2410,18 +2430,6 @@ void basic_list()
 			// replace ? THEN,  : ELSE (unless :0)
 			char *cp2, *p_then=0, *p_else=0, *cp = line.text;
 			int l = strlen(cp);
-			//if (l>2 && cp[l-2]==',' && cp[l-1]=='0')
-			//{
-			//	cp[l-2]=' ';  cp[l-1]=' ';
-			//}
-			//p_then = strstr(cp, ")?  ");
-			//p_else = strstr(cp, ":   ");
-			//if (p_then != 0)
-			//	strncpy(p_then, "THEN",4);
-			//
-			//if (p_else != 0)
-			//	strncpy(p_else,"ELSE",4);
-
 			cp2=cp+l;
 
 			while (cp2>cp)
@@ -2660,11 +2668,6 @@ void basic()
 		case 'R': // run
 			basic_run(1);
 			break;
-#ifdef PARSE
-		case 't': // test
-			testeval();
-			break;
-#endif
 		case 'G': // gosub
 		case 'g': // gosub
 			{
@@ -2694,33 +2697,27 @@ void basic()
 		case 'c': // clear 
 			basic_clear();
 			break;
-
 		case 's': // stand
 		case 22:  //*+A
 			rprintf("Stand %d\r\n", nos);
 			standup(nos);
 			break;
-
 		case 'S': // stand
 			rprintf("ok\r\n");
 			setdh(1);
 			standup(nos);
 			break;
-
 		case 'o': // output lights
 			sample_sound(1); // sound meter on
 			break;
-
 		case 'O': // 
 			rprintf("PSD off\r\n");
 			PSD_off();
 			break;
-
 		case 'X': // charge
 			rprintf("testing charge\r\n");
 			chargemode();
 			break;
-
 		case 'C': // zero &clear 
 			basic_zero();
 			break;
@@ -2745,24 +2742,14 @@ void basic()
 			dbg=1-dbg;
 			if (dbg) rprintf("DEBUG ON\n");
 			break;
-
-#ifndef AVR
-		case 'Z': // upload  (Unix version only)
-			binstore();
-			rprintf ("stored\r\n");
-			break;
-#endif
 		case 'q': // query 
 			rprintf ("%d servos connected\r\n", readservos(0));
 			rprintf ("%d lines stored\r\n", findend());
 			rprintf ("Uptime: "); uptime(); rprintf ("\r\n");
-
 			break;
-
 		case '$':
 		case 23: //*+1 Demo mode
 			rprintf ("DEMO MODE\r\n");
-
 			while (1)
 			{
 				rprintf (">: ");
@@ -2780,8 +2767,22 @@ void basic()
 					PerformAction(map[ch]);
 				}
 			}
-
 			break;
+#ifndef AVR
+		case 'Z': // upload  (Unix & windows version only)
+			binstore();
+			rprintf ("stored\r\n");
+			break;
+		case 'm': // matrix 
+			matrixload(128);
+			break;
+		case 'M': // matrix 
+			matrixstore(nis);
+			break;
+		case 't': // test
+			testeval();
+			break;
+#endif
 		default:
 			rprintfStr("\r\n");
 			break;
