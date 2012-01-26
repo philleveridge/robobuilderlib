@@ -110,7 +110,7 @@ SYNTAX:
 [LINE No] WAIT number
 [Line No] SERVO ID=EXPR | '@' | '~'
 [LINE No] LIST [VAR]=N,1,2,3 ..
-[LINE No] MOVE @[VAR],1,25 
+[LINE No] MOVE @[VAR],c,d | @[Var] | a,b,c,d
 [Line No] GOSUB [Line No]
 [Line No] RETURN
 [Line No] STAND [16 | 18]  
@@ -132,8 +132,8 @@ SYNTAX:
 [Line No] INSERT index,value
 [Line No] DELETE index
 [Line No] SELECT index,index
-[Line No] GEN No_Gn,length,Mute rate%,Mute rnge,Val[min,max]
-[Line No] NETWORK - new  tbc
+[Line No] GEN No_Gn,length,Mute rate%,Mute rnge,Val[min,max],type
+[Line No] NETWORK No input,No outputs,flag,no lay 1,no lay 2, no lay3
 }}}
 
 ||Special register access ($)||Description||
@@ -169,7 +169,8 @@ SYNTAX:
 ||Command||Description||
 ||SERVO ID=POS  ||set servo id to position POS / @ / ~||
 ||LIST v=n,1,2,..n   ||Set V to a list of n elements ||
-||MOVE @P,a,b    ||sends a Scene of servos position in array P,a steps in b ms Note: b/a > 25||
+||MOVE @P,c,d    ||sends a Scene of servos position in array P,c steps in total of d ms (i.e. @A,10,1000 each step is 100ms||
+||MOVE a,b,c,d    ||sends a Scene of servos position in @![a,a+b] c steps d ms so each step d/c >25ms||
 ||POKE 10,A     ||Put A into Byte 10||
 ||PUT PORT:A:8 = 3 ||set DDR of Port A = 3 (PIN0,PIN1 readable)||
 ||PUT PORT:A:2 = 1 ||set Port A bit 2 =1 (assuming writeable)||
@@ -183,7 +184,7 @@ SYNTAX:
 ||MTYPE 3||Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear ||
 ||STEP 5=30,50,5||STEP servo 5 from position 30 to position 50 in increments of 5 checking progress and stopping if obstruction||
 ||SORT #a,b,c||specialised sort for use with GEN- tbc||
-||GEN 8,6,0,0,0,5,2||tbc||
+||GEN 8,6,0,0,0,5,2||GENerate array,||
 ||NETWORK  2,1,4,2,0,1||creates a 3 neuron network (2 input 1 output) ||
 *Built in motions:*
 {{{
