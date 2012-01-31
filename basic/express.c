@@ -46,14 +46,19 @@ const  prog_char  *specials[] = {
 		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
 		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS",
 		"MIC",   "X",    "Y",    "Z",    "PSD", 
+		"GREY",  "TURTLE"
 };
 
+
+extern int listread(char ln, int n);
 
 
 long variable[26]; // only A-Z at moment
 
 extern void readtext(int ln, char *b);
 extern char *strchr(char *, int);
+
+char arrayname;
 
 int eval_list(char *p)
 {
@@ -75,9 +80,6 @@ int eval_list(char *p)
 	}
 	return p-t;
 }
-
-
-
 
 int preci(char s)
 {
@@ -180,15 +182,14 @@ unsigned char eval_expr(char **str, long *res)
 		{
 			c='|';
 			(*str)++;
-			(*str)++;
 		}
 
 		if (c=='M' && **str=='O'  && *(*str+1)=='D')
 		{
-			(*str)++;
 			c='%';
+			(*str)++;
+			(*str)++;
 		}
-
 
 		if (c>='0' && c<='9')
 		{
@@ -253,7 +254,8 @@ dumpstack(); // debug
 			break; //ignore sp
 		case '@':
 			if (**str=='#')
-            		{
+            {
+				arrayname = '!';
 				(*str)++;
 				for (i=0;i<16; i++)
 				{
@@ -266,6 +268,8 @@ dumpstack(); // debug
             {
                 // literal
                 int cnt;
+				arrayname = '!';
+
                 (*str)++;
                 cnt=eval_list(*str);
                 *str = *str+cnt;
@@ -279,6 +283,7 @@ dumpstack(); // debug
             if (**str=='!')
             {
 				//use current array
+				arrayname = **str;
 				(*str)++;
 			}
 			else
@@ -290,12 +295,14 @@ dumpstack(); // debug
 					scene[i] = sData[i];     // and clear
 				}
 				nis=MIC_NOS;
+				arrayname = '!';
 				(*str)++;
 			}
 			else
             if (**str=='?')
             {
 				//use servo pos array
+				arrayname = '!';
 				readservos(nos);
 
 				for (i=0; i<nos; i++) 
@@ -312,16 +319,18 @@ dumpstack(); // debug
 				{
 					break;
 				}
-				i = variable[i];
-				readtext(i, tmpBuff);				
-				if (tmpBuff[0]==0xFF) // DATA
-				{
-					nis=tmpBuff[1];
-					for (i=0; i<nis; i++)
-						scene[i]=(unsigned char)tmpBuff[i+2];
-				}
-				else
-					eval_list(tmpBuff);
+				arrayname = **str;
+
+				//i = variable[i];
+				//readtext(i, tmpBuff);				
+				//if (tmpBuff[0]==0xFF) // DATA
+				//{
+				//	nis=tmpBuff[1];
+				//	for (i=0; i<nis; i++)
+				//		scene[i]=(unsigned char)tmpBuff[i+2];
+				//}
+				//else
+				//	eval_list(tmpBuff);
 				//
 				(*str)++;
 			}
@@ -330,57 +339,16 @@ dumpstack(); // debug
 				(*str)++;
 				n1=0;
 				eval_expr(str, &n1);
-				if (n1>=nis) n1=(long)(nis-1);
-				if (n1<0)    n1=(long)0;
+				//if (n1>=nis) n1=(long)(nis-1);
+				//if (n1<0)    n1=(long)0;
+				//n1 = (long)scene[(int)n1];
 
-				n1 = (long)scene[(int)n1];
+				n1 = (long)listread(arrayname, (int)n1);
 				(*str)++;
 				break;
 			}
 			if (**str == '+' || **str == '-' || **str == '.')
 			{
-				/*
-				//add array
-				int i,tnis;
-				int tempB[SCENESZ];
-				char o = **str;
-				(*str)++;
-				for (i=0;i<SCENESZ; i++)
-				{
-					tempB[i]=scene[i];
-				}
-				tnis=nis;
-				if (eval_expr(str,res)==ARRAY)
-				{
-					if (o=='.')
-					{
-						if (tnis+nis<SCENESZ) 
-						{
-							int m=(nis>tnis)?nis:tnis;
-							for (i=m-1;i>=0; i--)
-							{
-								if (i<nis)
-									scene[i+tnis] = scene[i];
-								if (i<tnis)
-									scene[i]     = tempB[i];
-							}
-							nis=nis+tnis;
-						}
-					}
-					else
-					{
-						int m=(nis>tnis)?nis:tnis;
-						for (i=0;i<m; i++)
-						{
-							if (o == '+') 
-								scene[i] = ((i<tnis)?tempB[i]:0) + ((i<nis)?scene[i]:0); 
-							else 
-								scene[i] = ((i<tnis)?tempB[i]:0) - ((i<nis)?scene[i]:0); 
-						}
-						nis=m;
-					}
-				}
-				*/
 			}
 
 			return ARRAY;
@@ -404,22 +372,11 @@ dumpstack(); // debug
 
 				*str = *str + strlen(specials[i]);
 
-				if (	i == sIR2ACT||
-					i == sDSIG  ||
-					i == sSQRT  ||
-					i == sSTAND ||
-					i == sZEROS ||
-					i == sABS   ||
-					i == sCOS   ||
-					i == sCVB2I ||
-					i == sSIN   ||
-					i == sNORM  ||
-					i == sSUM   ||
-					i == sSERVO ||
-					i == sROM   ||
-					i == sMIN   || 
-					i == sMAX   || 
-					i == sIMAX   )
+				if (i == sIR2ACT|| i == sDSIG  || i == sSQRT  || i == sSTAND ||
+					i == sZEROS || i == sABS   || i == sCOS   || i == sCVB2I ||
+					i == sSIN   || i == sNORM  || i == sSUM   || i == sSERVO ||
+					i == sROM   || i == sMIN   || i == sMAX   || i == sIMAX  ||
+					i == sGREY  || i == sTURTLE )
 				{
 					noargs=1;
 				}
@@ -462,7 +419,10 @@ dumpstack(); // debug
 				}
 
 				if (get_special(str, &tmp, i)==ARRAY)
+				{
+					arrayname = '!';
 					return ARRAY;
+				}
 				n1=tmp;
 			}
 			break;

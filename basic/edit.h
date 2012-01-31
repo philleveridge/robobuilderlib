@@ -39,6 +39,7 @@ enum { 	sVOLT=0, sIR,
 		sSIN, sCOS, sIMAX, sHAM, sRANGE, sSIG, sDSIG,
 		sSTAND, sZEROS,
 		sMIC, sGX, sGY, sGZ, sPSD, 
+		sGREY, sTURTLE,
 		NOSPECS
 	};
 

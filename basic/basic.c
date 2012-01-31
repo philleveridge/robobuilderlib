@@ -87,7 +87,13 @@ extern void SampleMotion	(unsigned char);
 extern void sound_init		();
 extern void SendToSoundIC	(BYTE cmd) ;
 
+/**********   lists *************************/
 
+extern char arrayname;
+extern int  listread   (char ln, int n);
+extern void listdelete (char ln, int indx1, int indx2, int selflg);
+extern void listset    (char ln, int ind, long v, int insrtflg);
+extern int  listreadc  (char ln);
 
 /***********************************/
 
@@ -730,8 +736,8 @@ void basic_load(int tf)
 		{	
 			if (newline.lineno==0)
 			{
-				if (newline.token==LIST || newline.token==DATA
-						|| newline.token==FOR || newline.token==GOTO
+				if (    //newline.token==DATA || 
+					    newline.token==FOR || newline.token==GOTO
 						|| newline.token==NEXT || newline.token==RETURN
 						|| newline.token==IF || newline.token==GOSUB)
 				{
@@ -1153,7 +1159,7 @@ int execute(line_t line, int dbf)
 				p=p+n+1;
 				break;
 			case ARRAY:
-				if (nis>0)
+				if (listsize(arrayname)>0)
 				{
 					if (line.var==1)
 					{
@@ -1165,7 +1171,7 @@ int execute(line_t line, int dbf)
 					}
 					else
 					{
-						int k; long w=0;
+						int k,sz; long w=0;
 						if (*p==':')
 						{
 							p++;
@@ -1174,13 +1180,22 @@ int execute(line_t line, int dbf)
 								BasicErr=3; break;
 							}
 						}
-						if (w<=0)  w=nis;
-						if (w>nis) w=nis;
-						for (k=0; k<=(nis/w); k++)
+						//if (w<=0)  w=nis;
+						//if (w>nis) w=nis;
+						//for (k=0; k<=(nis/w); k++)
+						//{
+						//	if (k*w<nis) rprintf ("%d", scene[(k*w)]);
+						//	for (n=1; (n<w) && ((k*w+n)<nis); n++) {rprintf (",%d",scene[(k*w)+n]);}
+						//	if (k*w<nis) rprintfCRLF();
+						//}
+						sz=listsize(arrayname);
+						if (w<=0)  w=sz;
+						if (w>sz) w=sz;
+						for (k=0; k<=(sz/w); k++)
 						{
-							if (k*w<nis) rprintf ("%d", scene[(k*w)]);
-							for (n=1; (n<w) && ((k*w+n)<nis); n++) {rprintf (",%d",scene[(k*w)+n]);}
-							if (k*w<nis) rprintfCRLF();
+							if (k*w<sz) rprintf ("%d", listread(arrayname, k*w));
+							for (n=1; (n<w) && ((k*w+n)<listsize(arrayname)); n++) {rprintf (",%d",listread(arrayname, k*w+n));}
+							if (k*w<sz) rprintfCRLF();
 						}
 					}
 				}
@@ -1251,6 +1266,7 @@ int execute(line_t line, int dbf)
 			switch (eval_expr(&p, &fm))
 			{
 			case ARRAY:
+				listreadc(arrayname);
 				if (*p=='\0')
 				{
 					if (nis>0)
@@ -1326,6 +1342,7 @@ int execute(line_t line, int dbf)
 				BasicErr=1;
 				return 0;
 			}
+			listreadc(arrayname);
 			for (i=0; i<nis; i++)
 			  ob[i]=scene[i];
 			I2C_write(addr, nis, ob);
@@ -1369,23 +1386,28 @@ int execute(line_t line, int dbf)
 		}
 		break;			
 	case LIST: 
+		//new lists
+		list_eval((line.var==32)?'!' : ('A' + line.var), line.text, 0);
+		break;
 	case DATA: 
-		if (line.var==32)
-		{
-			if (line.token==DATA) // DATA
-			{
-				int i=0;
-				nis=line.text[1];
-				for (i=0; i<nis; i++)
-					scene[i]=(unsigned char)line.text[i+2];
-			}
-			else
-				eval_list(line.text);
-		}
-		else
-		{
-			variable[line.var] = (long)(lastline+8);
-		}
+		list_eval((line.var==32)?'!' : ('A' + line.var), line.text, 1);
+		break;
+		//if (line.var==32)
+		//{
+		//	if (line.token==DATA) // DATA
+		//	{
+		//		int i=0;
+		//		nis=line.text[1];
+		//		for (i=0; i<nis; i++)
+		//			scene[i]=(unsigned char)line.text[i+2];
+		//	}
+		//	else
+		//		eval_list(line.text);
+		//}
+		//else
+		//{
+		//	variable[line.var] = (long)(lastline+8);
+		//}
 		break;		
 	case XACT:
 	case RUN:
@@ -1434,9 +1456,19 @@ int execute(line_t line, int dbf)
 			}
 			else if (eval_expr(&p, &n)==ARRAY)
 			{
-				for (i=0; i<16 && i<nis; i++)
+				if (arrayname=='!')
 				{
-					offset[i]=scene[i];
+					for (i=0; i<16 && i<nis; i++)
+					{
+						offset[i]=scene[i];
+					}
+				}else{
+					//
+					int sz=listsize(arrayname);
+					for (i=0; i<16 && i<sz; i++)
+					{
+						offset[i]=listread(arrayname,i);
+					}
 				}
 			}
 			else
@@ -1459,8 +1491,8 @@ int execute(line_t line, int dbf)
 			while (l>0) { rprintfChar(n); l--;}
 			break;
 		case ARRAY:
-			for (l=0; l<nis; l++)
-				rprintfChar(scene[l]);
+			for (l=0; l<listsize(arrayname); l++)
+				rprintfChar(listread(arrayname,l));
 			break;
 		}
 		}
@@ -1582,6 +1614,9 @@ int execute(line_t line, int dbf)
 			{
 				BasicErr=3; return 0;
 			}
+
+			listreadc(arrayname);
+
 			MIC_SAMPLING=0;
 			if (nis==5)
 				blights(n, scene);
@@ -1630,7 +1665,6 @@ int execute(line_t line, int dbf)
 		}
 		break;
 	case RETURN: 
-
 		if (gp>0) {
 			setline(gosub[--gp]);
 			tmp=1;
@@ -1646,11 +1680,24 @@ int execute(line_t line, int dbf)
 		//      DELETE 5,*
 		{
 			long i,n2;
+			char an='!';
 			p=line.text;
+
+			if (*p=='@')
+			{
+				p++;
+				an=*p;
+				if (an<'A' || an>'Z' || *(p+1) != ',')
+				{
+					BasicErr=3; break;
+				}
+				p++;				
+				p++;
+			}
 			if (*p=='*')
 			{
 				p++;
-				nis=0;
+				//nis=0;
 				break;
 			}
 			if (eval_expr(&p, &n)!=NUMBER)
@@ -1664,7 +1711,7 @@ int execute(line_t line, int dbf)
 			if (*p==',' && *(p+1)=='*')
 			{
 				p+=2;
-				nis=n;
+				//nis=n;
 				break;
 			}
 			n2=1;
@@ -1675,36 +1722,52 @@ int execute(line_t line, int dbf)
 				{
 					BasicErr=3; break;
 				}
-				if (n2>n && n2<nis)
-					n2=1+n2-n;
-				else
-				{
-					BasicErr=3;break;
-				}
+				//if (n2>n && n2<nis)
+				//	n2=1+n2-n;
+				//else
+				//{
+				//	BasicErr=3;break;
+				//}
 			}
-			if(line.token==DELETE)
-			{
-				for (i=n; i<nis; i++)
-					scene[i]=scene[i+n2];
-				nis=nis-n2;
-			}
-			else
-			{
+
+			listdelete(an, n, n2, line.token==DELETE);
+
+			//if(line.token==DELETE)
+			//{
+			//	for (i=n; i<nis; i++)
+			//		scene[i]=scene[i+n2];
+			//	nis=nis-n2;
+			//}
+			//else
+			//{
 				// select
-				for (i=0; i<n2; i++)
-					scene[i]=scene[i+n];
-				nis=n2;
-			}
+			//	for (i=0; i<n2; i++)
+			//		scene[i]=scene[i+n];
+			//	nis=n2;
+			//}
 		}
 		break;
 	case SET:
 	case INSERT:
-		// i.e. SET I,V
+		// i.e. SET [@A,]I,V
 		// current array ![I]=V
 		{
 			int ind=0;
-
+			char an;
 			p=line.text;
+
+			if (*p=='@')
+			{
+				p++;
+				an=*p;
+				if (an<'A' || an>'Z' || *(p+1) != ',')
+				{
+					BasicErr=3; break;
+				}
+				p++;
+				p++;
+			}
+
 			if (eval_expr(&p, &n)!=NUMBER)
 			{
 				BasicErr=3; break;
@@ -1718,16 +1781,18 @@ int execute(line_t line, int dbf)
 			{
 				BasicErr=3; break;
 			}
-			if (line.token==INSERT)
-			{
-				int i;
-				for (i=nis-1; i>=ind; i--)
-					scene[i+1]=scene[i];
-				nis++;
-			}
-			else
-				if (ind>=nis) nis=ind+1; // reset size
-			scene[ind]=n;
+
+			listset(an, ind, n, line.token==INSERT);
+			//if (line.token==INSERT)
+			//{
+			//	int i;
+			//	for (i=nis-1; i>=ind; i--)
+			//		scene[i+1]=scene[i];
+			//	nis++;
+			//}
+			//else
+			//	if (ind>=nis) nis=ind+1; // reset size
+			//scene[ind]=n;
 		}
 		break;
 	case SORT: 
@@ -2693,8 +2758,12 @@ void basic()
 			break;
 		case 'l': // list 
 			basic_list();
+
+			listdump();
+
 			break;
 		case 'c': // clear 
+			listinit();
 			basic_clear();
 			break;
 		case 's': // stand
