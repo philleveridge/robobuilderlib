@@ -39,17 +39,18 @@ extern BYTE				nos;
 extern volatile BYTE	MIC_SAMPLING;
 extern volatile WORD	gtick;
 
+extern int dbg;
+
 #define MAXLIST 5
 #define LISTMEM 128
 
-int listmem	[LISTMEM];
+static int  listmem	[LISTMEM];
+static char names	[MAXLIST];
+static char len	        [MAXLIST];
+static int  lists	[MAXLIST];
 
-char names	[MAXLIST];
-char len	[MAXLIST];
-int  lists	[MAXLIST];
-
-int  nol=0;
-int  eol=0;
+static int  nol=0;
+static int  eol=0;
 
 int list_eval(char, char *p, int);
 
@@ -119,6 +120,8 @@ int *listarray(char ln)
 void listdestroy(char ln)
 {
 	int t,i,li,sz;
+	if (dbg) {rprintf("Destroy %c\n", ln); }
+
 	if (ln=='!')
 		return;
 
@@ -153,6 +156,10 @@ void listdestroy(char ln)
 int listcreate(char ln, int size, int type)
 {
 	int t=listexist(ln);
+
+	if (dbg) {rprintf("Create %c\n", ln); }
+
+
 	if (t>=0 && len[t]==size)
 		return t;
 
@@ -182,7 +189,6 @@ int listreadi(int l, int n)
 
 int listread(char ln, int n)
 {
-	int l;
 	if (ln=='!')
 		return scene[n];
 	return listreadi(listexist(ln),n);
@@ -332,14 +338,17 @@ int list_eval(char ln, char *p, int ty)
 {
 	// eval list "5,1,2,3,4,5" ->scene[5]
 	unsigned char r;
-	int i,ind;
+	int i,ind, sz;
 	long n;
 	char *t=p;
 
-	if (ln=='!' && ty==0)
-	{
-		return eval_list(p);
-	}
+	if (dbg) {rprintf("Eval %c\n", ln); }
+
+
+	//if (ln=='!' && ty==0)
+	//{
+	//	return eval_list(p);
+	//}
 
 	if (ty==1) 		// DATA
 	{
@@ -379,23 +388,36 @@ int list_eval(char ln, char *p, int ty)
 		return 0;
 	}
 
-	ind = listcreate(ln,n,1);
+	if (ln != '!') 
+	{
+		ind = listcreate(ln,(int)n,1);
+		sz  = len[ind];
+	}
+	else
+	{
+		ind =0;
+		sz=nis=(int)n;
+	}
+
 
 	if (ind>=0)
 	{		
 		if (*t++ != ',') 
 		{ 
-			BasicErr=6; return 0; 
+			BasicErr=7; return 0; 
 		}
-		for (i=0;i<len[ind];i++)
+		for (i=0;i<sz;i++)
 		{
 			n=0;
 			eval_expr(&t, &n);
-			if (i!=(len[ind]-1) && *t++ != ',') 
+			if (i!=(sz-1) && *t++ != ',') 
 			{ 
 				BasicErr=6; return 0; 
 			}
-			listwritei(ind,i,n);
+			if (ln != '!')
+				listwritei(ind,i,(int)n);
+			else
+				scene[i]=(int)n;
 		}
 		return t-p;
 	}
@@ -425,8 +447,8 @@ void join(char ln1, char ln2)   // "@A . @B"
 void add_sub(char ln1, char ln2, char op)   // "@A +/- @B"
 {
 	//add - sub arrays
-	int *arrayA, szA;
-	int *arrayB, szB;
+	//int *arrayA, szA;
+	//int *arrayB, szB;
 
 	/*
 	int i,tnis;
