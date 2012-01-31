@@ -64,6 +64,7 @@ int dbg=0;
 #include "edit.h"
 #include "express.h"
 #include "functions.h"
+#include "lists.h"
 
 #define MAX_LINE  	100 
 #define MAX_TOKEN 	8
@@ -87,13 +88,7 @@ extern void SampleMotion	(unsigned char);
 extern void sound_init		();
 extern void SendToSoundIC	(BYTE cmd) ;
 
-/**********   lists *************************/
 
-extern char arrayname;
-extern int  listread   (char ln, int n);
-extern void listdelete (char ln, int indx1, int indx2, int selflg);
-extern void listset    (char ln, int ind, long v, int insrtflg);
-extern int  listreadc  (char ln);
 
 /***********************************/
 
@@ -880,6 +875,8 @@ void basic_run(int dbf)
 
 	//point top at EEPROM
 	rprintfStr("Run Program \r\n");
+
+	listinit ();
 
 	firstline();
 
