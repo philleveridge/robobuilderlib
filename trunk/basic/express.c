@@ -51,9 +51,6 @@ const  prog_char  *specials[] = {
 };
 
 
-extern int listread(char ln, int n);
-
-
 long variable[26]; // only A-Z at moment
 
 extern void readtext(int ln, char *b);
@@ -61,35 +58,12 @@ extern char *strchr(char *, int);
 
 char arrayname;
 
-int eval_list(char *p)
-{
-	// eval list "5,1,2,3,4,5" ->scene[5]
-	int i;
-	long n;
-	char *t=p;
-	
-	eval_expr(&p, &n);
-	nis=(int)n;
-		
-	if (*p++ != ',') { BasicErr=6; return 0; }
-	for (i=0;i<nis;i++)
-	{
-		n=0;
-		eval_expr(&p, &n);
-		if (i!=(nis-1) && *p++ != ',') { BasicErr=6; return 0; }
-		scene[i]=n;
-	}
-	return p-t;
-}
-
 int preci(char s)
 {
 	char *p = strchr(o,s);
 	if (p==0) return -1;
 	return mp[(p-o)];
 }
-
-unsigned char tmpBuff[100];
 
 static long stack[MAX_DEPTH]; 
 static char ops[MAX_DEPTH];	
@@ -272,7 +246,7 @@ dumpstack(); // debug
 				arrayname = '!';
 
                 (*str)++;
-                cnt=eval_list(*str);
+                cnt=list_eval('!',*str,0);
                 *str = *str+cnt;
                 if (**str!='}')
                 {
