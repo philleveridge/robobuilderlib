@@ -51,7 +51,7 @@ int  lists	[MAXLIST];
 int  nol=0;
 int  eol=0;
 
-int list_eval(int s, char *p);
+int list_eval(char, char *p, int);
 
 void listinit()
 {
@@ -170,45 +170,6 @@ int listcreate(char ln, int size, int type)
 	}
 	nol++;
 	return nol-1;
-}
-
-// i.e. LIST A=5,1,2,3,4,5
-//      DATA A=
-//      LIST !=
-//      DATA !=
-int listload(char ln, int typ, char *text)
-{
-	int l,i,sz, *array;
-
-	if (ln=='!')
-	{
-		sz=nis;
-		array = &scene[0];
-	}
-
-	else
-	{
-		l = listexist(ln);
-		if (l<0) return 0;
-		sz=len[l];
-		array=&listmem[lists[l]];
-	}
-
-	if (typ) // DATA
-	{
-		nis=(unsigned char)text[1];
-		for (i=0; i<sz; i++)
-			*(array+i)=(unsigned char)text[i+2];
-	}
-	else
-	{
-		if (ln=='!')
-			eval_list(text);
-		else
-			list_eval(l, text);
-	}
-
-	return 0;
 }
 
 int listreadi(int l, int n)

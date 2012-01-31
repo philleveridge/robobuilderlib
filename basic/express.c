@@ -19,6 +19,7 @@
 #include "edit.h"
 #include "express.h"
 #include "functions.h"
+#include "lists.h"
 
 extern int				nis;
 extern int				BasicErr;
