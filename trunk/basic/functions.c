@@ -39,11 +39,9 @@ extern BYTE				nos;
 extern volatile BYTE	MIC_SAMPLING;
 extern volatile WORD	gtick;
 
-
 extern BYTE EEMEM		FIRMWARE        	[];  // leave blank - used by Robobuilder OS
 extern BYTE EEMEM		BASIC_PROG_SPACE	[];  // this is where the tokenised code will be stored
 extern BYTE EEMEM		PERSIST				[];  // persistent data store
-
 
 const unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
 
@@ -52,7 +50,6 @@ extern long epop(); //from express.c
 const unsigned char smap[40] = {
 	1,  2,  3,  4,  5,  6,  8,  10, 12, 15, 19, 24, 31, 38, 47, 57, 69, 82, 97, 112,
 	128,144,159,174,187,199,209,218,225,232,237,241,244,246,248,250,251,252,253,254};
-
 
 int get_special(char **str, long *res, int t)
 {
@@ -74,6 +71,20 @@ int get_special(char **str, long *res, int t)
 		break;
 	case sCVB2I: // $CVB2I(x)  255 -> -1
 		v = cbyte(v);
+		break;
+	case sGREY: 
+		// "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'. "
+		v =  " .:-=+*#%@"[v%10];
+		break;
+	case sTURTLE: 
+		{
+		char *p="^>V<";
+		char *t = strchr(p,(char)v);
+		if (t==(char *)0)
+			v= -1;
+		else
+			v= t-p;
+		}
 		break;
 	case sIR2ACT: //$IR2ACT(10) -> x
 		v=(long)map[(int)v];

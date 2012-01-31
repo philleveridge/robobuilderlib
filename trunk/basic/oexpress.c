@@ -653,6 +653,15 @@ int get_str_token(char *s)
 	return 0;
 }
 
+int get_integer()
+{
+	int tk = get_token();
+	
+	if (tk==NUMI)
+		return tnum;;
+	return 0;
+}
+
 int get_opr_token(unsigned char op)
 {
 	int tk = get_token();
@@ -661,9 +670,13 @@ int get_opr_token(unsigned char op)
 	return 0;
 }
 
-static int intf=1;
+static int  intf=1;
 
-extern int nis;
+extern int   nis;
+
+extern int   gotoln(int gl);
+extern void  setline(WORD p);
+extern int   BasicErr;
 
 void extend(char *x)
 {
@@ -719,6 +732,28 @@ void extend(char *x)
 			matrixstore(nis);
 		}
 		return;
+	}
+
+	e=x;
+	if (get_str_token("IF")==1)
+	{
+			int n,t;
+			v=eval_oxpr(e);
+			if (get_str_token("THEN")==1)
+			{
+				n=get_integer();
+				if (v.type==NUMI && v.number==0 && get_str_token("ELSE")==1)
+				{
+					n=get_integer();
+				}
+				t = gotoln(n);
+				if (t<0)
+					BasicErr=5;
+				else
+					setline(t);
+
+				return;
+			}
 	}
 
 	rprintfStr("No match ?\n");
