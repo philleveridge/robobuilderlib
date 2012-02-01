@@ -181,6 +181,9 @@ int listcreate(char ln, int size, int type)
 
 int listreadi(int l, int n)
 {
+	if (l== -1 && n>=0 && n<nis)
+		return scene[n];
+
 	if (l<0 || n<0 || n>=len[l] )
 		return 0;
 	else
@@ -213,7 +216,9 @@ int listreadc(char ln)
 
 void listwritei(int ind, int n, int v)
 {
-	if (!(ind<0 || n<0 || n>=len[ind] ))
+	if (ind == -1 && n>=0 && n<=128)
+		scene[n]=v;
+	if (ind >=0 && n>=0 && n<len[ind] )
 		listmem[lists[ind]+n]=v;
 }
 
@@ -253,27 +258,38 @@ void listset(char ln, int ind, long v, int insrtflg)
 // current array ![I]=V
 {
 	int i, *array, sz, msz, l;
-	
-	l = listexist(ln);
-	if (l<0) return;
 
-	array=&listmem[lists[l]];
-	sz = len[l];
-
-	if (l==nol-1)
-		msz=eol-lists[l];
+	if (ln=='!')
+	{
+		sz=nis;
+		msz=128;
+		array=scene;
+	}
 	else
-		msz=lists[l+1]-lists[l];
+	{	
+		l = listexist(ln);
+		if (l<0) return;
+
+		array=&listmem[lists[l]];
+		sz = len[l];
+
+		if (l==nol-1)
+			msz=eol-lists[l];
+		else
+			msz=lists[l+1]-lists[l];
+	}
 
 
-	if (ind<0 || ind>sz-1)
+	if (ind<0 || ind>msz-1)
 		return; // error
 
 	if (insrtflg)
 	{
 		int s2;
-		if (ln=='!' || sz<msz) s2=sz-1; 
-		else s2=sz-2;
+		if (ln=='!' || sz<msz) 
+			s2=sz-1; 
+		else 
+			s2=sz-2;
 
 		for (i=s2; i>=ind; i--)
 			*(array+i+1)=*(array+i);
@@ -283,8 +299,7 @@ void listset(char ln, int ind, long v, int insrtflg)
 		else if (sz<msz)
 			len[l]++;
 	}
-	else
-		if (ln=='!' && ind>=nis) nis=ind+1; // reset size
+//
 
 	*(array+ind)=v;
 }
@@ -297,38 +312,64 @@ void listset(char ln, int ind, long v, int insrtflg)
 void listdelete(char ln, int indx1, int indx2, int selflg)
 {
 	int i,n2,l;
-	int *array, sz;
+	int *array;
+	int sz;
 	
-	l = listexist(ln);
-	if (l<0) return;
-
-	array=&listmem[lists[l]];
-	sz = len[l];
-
-	if (indx2==0) indx2=sz;
-	if (indx1<0 || indx1>indx2) indx1=0;
-	if (indx2<indx1 || indx2>sz) indx2=sz;
-
-	n2=indx2-indx1+1;
-
-	if(selflg)
+	if (ln=='!')
 	{
-		for (i=indx1; i<sz; i++)
-			*(array+i)=*(array+i+n2);
-		if (ln=='!')
-			nis=nis-n2;
-		else
-			len[l]=len[l]-n2;
+		sz=nis;
+		array=scene;
 	}
 	else
 	{
-		// select
-		for (i=0; i<n2; i++)
-			*(array+i)=*(array+i+indx1);
-		if (ln=='!')
-			nis=n2;
-		else
-			len[l]=n2;
+		l = listexist(ln);
+		if (l<0) return;
+
+		array=&listmem[lists[l]];
+		sz = len[l];
+	}
+
+	if (indx2==0) 
+		indx2=sz-1;
+
+	if (indx1<0 || indx1>indx2) 
+		indx1=0;
+
+	if (indx2<indx1 || indx2>sz) 
+		indx2=sz-1;
+
+	n2=indx2-indx1+1;
+
+	switch(selflg) {
+	case 1:
+		{
+			for (i=indx1; i<sz; i++)
+				*(array+i)=*(array+i+n2);
+			if (ln=='!')
+				nis=nis-n2;
+			else
+				len[l]=len[l]-n2;
+		}
+		break;
+	case 0:
+		{
+			// select
+			for (i=0; i<n2; i++)
+				*(array+i)=*(array+i+indx1);
+			if (ln=='!')
+				nis=n2;
+			else
+				len[l]=n2;
+		}
+		break;
+	case 2:
+		{
+			if (ln=='!')
+				nis=0;
+			else
+				len[l]=0;
+		}
+		break;
 	}
 }
 
@@ -336,19 +377,13 @@ extern char arrayname;
 
 int list_eval(char ln, char *p, int ty)
 {
-	// eval list "5,1,2,3,4,5" ->scene[5]
+	// eval list "5,1,2,3,4,5" 
 	unsigned char r;
 	int i,ind, sz;
 	long n;
 	char *t=p;
 
 	if (dbg) {rprintf("Eval %c\n", ln); }
-
-
-	//if (ln=='!' && ty==0)
-	//{
-	//	return eval_list(p);
-	//}
 
 	if (ty==1) 		// DATA
 	{
@@ -370,13 +405,28 @@ int list_eval(char ln, char *p, int ty)
 		int l;
 		if (ln==arrayname)
 			return 0;
-	
-		l = listexist(arrayname);
-		if (l<0) return;
 
-		ind = listcreate(ln,len[l],1);
+		if (arrayname=='!')
+		{
+			l = -1;
+			sz=nis;
+		}
+		else
+		{
+			l = listexist(arrayname);
+			if (l<0) return 0;
+			sz=len[l];
+		}
 
-		for (i=0;i<len[l];i++)
+		if (ln=='!')
+		{
+			ind= -1;
+			nis=sz;
+		}
+		else
+			ind = listcreate(ln,sz,1);
+
+		for (i=0;i<sz;i++)
 		{
 			listwritei(ind,i,listreadi(l,i));
 		}
@@ -392,36 +442,32 @@ int list_eval(char ln, char *p, int ty)
 	{
 		ind = listcreate(ln,(int)n,1);
 		sz  = len[ind];
+		if (ind<0)
+		{
+			BasicErr=8; return 0;
+		}
 	}
 	else
 	{
-		ind =0;
+		ind = -1;
 		sz=nis=(int)n;
 	}
-
-
-	if (ind>=0)
-	{		
-		if (*t++ != ',') 
-		{ 
-			BasicErr=7; return 0; 
-		}
-		for (i=0;i<sz;i++)
-		{
-			n=0;
-			eval_expr(&t, &n);
-			if (i!=(sz-1) && *t++ != ',') 
-			{ 
-				BasicErr=6; return 0; 
-			}
-			if (ln != '!')
-				listwritei(ind,i,(int)n);
-			else
-				scene[i]=(int)n;
-		}
-		return t-p;
+	
+	if (*t++ != ',') 
+	{ 
+		BasicErr=7; return 0; 
 	}
-	return 0;
+	for (i=0;i<sz;i++)
+	{
+		n=0;
+		eval_expr(&t, &n);
+		if (i!=(sz-1) && *t++ != ',') 
+		{ 
+			BasicErr=6; return 0; 
+		}
+		listwritei(ind,i,(int)n);
+	}
+	return t-p;
 }
 
 void join(char ln1, char ln2)   // "@A . @B"

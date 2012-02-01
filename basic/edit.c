@@ -263,7 +263,7 @@ void setline(WORD p)
 	nxtline =p;
 }
 
-void readtext(int ln, char *b)
+void readtext(int ln, unsigned char *b)
 {
 	int i = 0;
 	//eeprom_read_block(bp, BASIC_PROG_SPACE+nxtline+2, l);	
