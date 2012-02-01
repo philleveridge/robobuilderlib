@@ -1684,7 +1684,7 @@ int execute(line_t line, int dbf)
 			{
 				p++;
 				an=*p;
-				if (an<'A' || an>'Z' || *(p+1) != ',')
+				if (an != '!' && ( an<'A' || an>'Z')  || *(p+1) != ',')
 				{
 					BasicErr=3; break;
 				}
@@ -1694,7 +1694,7 @@ int execute(line_t line, int dbf)
 			if (*p=='*')
 			{
 				p++;
-				//nis=0;
+				listdelete(an, 0,0,2); 
 				break;
 			}
 			if (eval_expr(&p, &n)!=NUMBER)
@@ -1705,43 +1705,26 @@ int execute(line_t line, int dbf)
 			{
 				BasicErr=3; break;
 			}
-			if (*p==',' && *(p+1)=='*')
-			{
-				p+=2;
-				//nis=n;
-				break;
-			}
+
 			n2=1;
 			if (*p==',')
 			{
 				p++;
+				if (*p=='*')
+				{
+					p++;
+					n2=0;
+				}
+				else
 				if (eval_expr(&p, &n2)!=NUMBER)
 				{
 					BasicErr=3; break;
 				}
-				//if (n2>n && n2<nis)
-				//	n2=1+n2-n;
-				//else
-				//{
-				//	BasicErr=3;break;
-				//}
 			}
+			else
+				n2=n;
 
 			listdelete(an, n, n2, line.token==DELETE);
-
-			//if(line.token==DELETE)
-			//{
-			//	for (i=n; i<nis; i++)
-			//		scene[i]=scene[i+n2];
-			//	nis=nis-n2;
-			//}
-			//else
-			//{
-				// select
-			//	for (i=0; i<n2; i++)
-			//		scene[i]=scene[i+n];
-			//	nis=n2;
-			//}
 		}
 		break;
 	case SET:
@@ -1750,14 +1733,14 @@ int execute(line_t line, int dbf)
 		// current array ![I]=V
 		{
 			int ind=0;
-			char an;
+			char an='!';
 			p=line.text;
 
 			if (*p=='@')
 			{
 				p++;
 				an=*p;
-				if (an<'A' || an>'Z' || *(p+1) != ',')
+				if (an != '!' && ( an<'A' || an>'Z')  || *(p+1) != ',')
 				{
 					BasicErr=3; break;
 				}
@@ -1780,16 +1763,6 @@ int execute(line_t line, int dbf)
 			}
 
 			listset(an, ind, n, line.token==INSERT);
-			//if (line.token==INSERT)
-			//{
-			//	int i;
-			//	for (i=nis-1; i>=ind; i--)
-			//		scene[i+1]=scene[i];
-			//	nis++;
-			//}
-			//else
-			//	if (ind>=nis) nis=ind+1; // reset size
-			//scene[ind]=n;
 		}
 		break;
 	case SORT: 
@@ -2426,7 +2399,7 @@ extern const  prog_char  *specials[];
 void basic_list()
 {
 	line_t line;
-	char buf[MAX_LINE];
+	unsigned char buf[MAX_LINE];
 
 	BYTE tmp=0;
 	nxtline = 0;	
@@ -2455,7 +2428,12 @@ void basic_list()
 		rprintf (" "); 
 		
 		if (line.token==LET || line.token==GET || line.token==FOR || line.token==LIST || line.token==DATA)
-			rprintf ("%c = ", line.var+'A');
+		{
+			if (line.var!=32)
+				rprintf ("%c = ", line.var+'A');
+			else 
+				rprintfStr ("! = ");
+		}
 			
 		if (line.token==PUT)
 		{
