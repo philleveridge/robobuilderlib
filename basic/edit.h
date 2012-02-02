@@ -57,7 +57,7 @@ extern void    	setline(unsigned int);
 extern int		firstline();
 extern int		getlineno(int p);
 extern unsigned int lastline;  // last line added
-extern void		readtext(int ln, char *b);
+extern void		readtext(int ln, unsigned char *b);
 extern int		findend();
 
 #endif

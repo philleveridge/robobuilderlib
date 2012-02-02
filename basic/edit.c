@@ -208,7 +208,7 @@ int findln(int lineno)
 	return 0;
 }
 
-void readtext(int ln, char *b);
+void readtext(int ln, unsigned char *b);
 
 line_t readln2(char *bp)
 {
