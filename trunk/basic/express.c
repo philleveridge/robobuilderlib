@@ -53,7 +53,7 @@ const  prog_char  *specials[] = {
 
 long variable[26]; // only A-Z at moment
 
-extern void readtext(int ln, char *b);
+extern void readtext(int ln, unsigned char *b);
 extern char *strchr(char *, int);
 
 char arrayname;
