@@ -10,7 +10,8 @@ extern int dbg;
 //#include <pthread.h>
 //static pthread_mutex_t cs_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-#define	DBO(x) {if (dbg) {x}}
+#define	DBO(x)  {if (dbg) {x}}
+#define	DBOR(x) {if (dbg|!remote) {x}}
 
 int wckReadPos(int id, int d1);
 int wckMovePos(int id, int pos, int torq);
@@ -182,22 +183,27 @@ int testsocket(char *echoString)
 /* wck commands */
 void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)
 {
-	DBO(printf ("LINUX: Servo Send %d [%d] -> %d\n", ServoID, Torque, Position);)
+	DBO(printf ("WIN: Servo Send %d [%d] -> %d\n", ServoID, Torque, Position);)
+	if (!remote) return;
+
 	wckMovePos(ServoID, Position, Torque);
 }
 
 int  wckPosRead(char ServoID)
 {
+	if (!remote) return 0;
+
 	if (wckReadPos(ServoID, 0)<0)
 		return -1;
 
-	DBO(printf ("LINUX: Servo Read %d=%d\n", ServoID, response[1]); )
+	DBO(printf ("WIN: Servo Read %d=%d\n", ServoID, response[1]); )
 		return response[1];
 }
 
 void wckSetPassive(char ServoID)
 {
-	DBO(printf ("LINUX: Servo Passive %d\n", ServoID); )
+	DBO(printf ("WIN: Servo Passive %d\n", ServoID); )
+	if (!remote) return ;
 	wckPassive(ServoID);
 }
 
@@ -205,7 +211,8 @@ void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
 {
 	char CheckSum;
 	int i=0;
-	DBO(printf ("LINUX: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);)
+	DBOR(printf ("WIN: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);)
+	if (!remote) return;
 
     //pthread_mutex_lock( &cs_mutex );
 
@@ -230,6 +237,9 @@ void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
 void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
 {
 	char CheckSum;
+	if (!remote) return 0;
+
+
 	CheckSum = (Data1^Data2^Data3^Data4)&0x7f;
 	writebyte(0xFF);
 	writebyte(Data1);
@@ -242,6 +252,7 @@ void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
 void wckWriteIO(unsigned char ServoID, unsigned char IO)
 {
 	DBO(printf ("LINUX: Servo write IO %d=%d\n", ServoID, IO); )
+	if (!remote) return 0;
 
     //pthread_mutex_lock( &cs_mutex );
 
@@ -258,6 +269,7 @@ void wckWriteIO(unsigned char ServoID, unsigned char IO)
 void  I2C_read    (int addr, int ocnt, BYTE * outbuff, int icnt, BYTE * inbuff)
 {
 	printf ("LINR: I2C read %d\n", addr);
+	if (!remote) return 0;
 	//tbc
 	//wckReadPos(30,13) + addr + nbytes +[bytes]
 	//response cnt [buf]
@@ -267,6 +279,7 @@ void  I2C_read    (int addr, int ocnt, BYTE * outbuff, int icnt, BYTE * inbuff)
 int   I2C_write   (int addr, int ocnt, BYTE * outbuff)
 {
 	printf ("WINR: I2C write %d\n", addr);
+	if (!remote) return 0;
 	//tbc
 	//wckReadPos(30,14); + addr + nbytes +[bytes]
 	//response (b1 & b2)
@@ -278,6 +291,7 @@ void  blights(int n, int *vals)
 {
 	BYTE a=0x20,b=0x30;
 	DBO(printf ("WINR: Lights %d [%d,%d,%d,%d,%d]\n",n,vals[0], vals[1], vals[2], vals[3], vals[4]);)
+	if (!remote) return 0;
 
 	if (n > vals[0])   b |= 1;
 	if (n > vals[1])   a |= 2;
@@ -353,6 +367,8 @@ extern int z_value,y_value,x_value,gDistance;
 
    int readXYZ()
    {
+	   	if (!remote) return 0;
+
 	   wckReadPos(30,1);
 		y_value = CB2I(response[0]);
 		z_value = CB2I(response[1]);
@@ -363,6 +379,8 @@ extern int z_value,y_value,x_value,gDistance;
 
    int readPSD()
    {
+	   if (!remote) return 50;
+
 	   wckReadPos(30,5);
 	   gDistance = CB2I(response[0]);
 	   return 0;
@@ -392,6 +410,8 @@ extern int z_value,y_value,x_value,gDistance;
    void readIR()
    {
 	   int t;
+	   if (!remote) return ;
+
 	   wckReadPos(30,7);
 	   t = CB2I(response[0]);
 	   if (irvalue<0) irvalue=t;
@@ -625,13 +645,12 @@ extern int z_value,y_value,x_value,gDistance;
 		delay_ms(dur);
 	}
 
-	const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47, 49, 199, 192, 204, 122, 125};
-	const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47, 49, 199, 205, 205 };
+	const BYTE basic18[] = { 143, 179, 198, 83, 106, 106, 69, 48, 167, 141, 47, 47,  49, 199, 192, 204, 122, 125};
+	const BYTE basic16[] = { 125, 179, 199, 88, 108, 126, 72, 49, 163, 141, 51, 47,  49, 199, 205, 205 };
 	const BYTE basicdh[] = { 143, 179, 198, 83, 105, 106, 68, 46, 167, 140, 77, 70, 152, 165, 181, 98, 120, 124, 99};
 
 	int dm=0;
 	void setdh(int n) {dm=n;}
-
 
 	void standup (int n)
 	{

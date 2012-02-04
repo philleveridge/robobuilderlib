@@ -351,15 +351,21 @@ namespace RobobuilderLib
 
                 if (tok.EndsWith(":"))
                 {
-                    tok = tok.Substring(0, tok.Length - 1);
-                    labels.Add(tok, lnc);  //label
-                    if (GetNext(ref z, true) != " ")
+                    try
                     {
-                        z = "";
+                        tok = tok.Substring(0, tok.Length - 1);
+                        labels.Add(tok, lnc);  //label
+                        if (GetNext(ref z, true) != " ")
+                        {
+                            z = "";
+                            continue;
+                        }
+                        z = z.Trim();
+                        tok = GetWord(ref z);
+                    }catch (Exception e)
+                    {
                         continue;
                     }
-                    z = z.Trim();
-                    tok = GetWord(ref z);
                 }
                 else
                 {
@@ -566,6 +572,9 @@ namespace RobobuilderLib
                     case KEY.INSERT: // new commands
                     case KEY.SET:
                     case KEY.DELETE:
+                    case KEY.GEN:
+                    case KEY.NETWORK:
+                    case KEY.SELECT:
                     case KEY.EXPAND:
                         ln.text = upperIt(z);
                         break;
