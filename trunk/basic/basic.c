@@ -1321,7 +1321,7 @@ int execute(line_t line, int dbf)
 				if (dbg) rprintf("DBG:: MOVE %d=%d\n", j, pos[j]);
 			}
 
-			if (!dbg) PlayPose(tm, fm, speed, pos, (fmflg==0)?nis:0);
+			if (!dbg) PlayPose(tm, fm, speed, pos, (fmflg==0)?nb:0);
 			fmflg=1;
 		}
 		//
@@ -2058,6 +2058,12 @@ int execute(line_t line, int dbf)
 			ln=param[1];
 			mr=param[2];
 			mm=param[3];
+
+			if (mr>0 && mm==0)
+			{
+				rprintf("Error - mutation range must be >0\n", ty);
+				BasicErr=4; 	if (!remote) return 0;break;
+			}
 
 			if (sho)
 			{
