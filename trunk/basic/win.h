@@ -76,6 +76,12 @@ extern int 	dbg;
 extern int	simflg;
 extern int	remote;
 
+#define rprintfProgStr	printf
+#define PSTR(a)			a
+#define strcmp_P		strcmp
+#define strncmp_P		strncmp
+#define strlen_P		strlen
+
 extern void rprintfCRLF();
 extern void rprintfStr(char *z);
 extern void rprintfChar(char c);

@@ -10,8 +10,7 @@ extern long variable[];
 extern unsigned char 	eval_expr(char **str, long *res);
 extern int		eval_list(char *p);
 extern long		math(long n1, long n2, char op);
-
-
+extern void		showvars();
 
 #ifdef PARSE
 

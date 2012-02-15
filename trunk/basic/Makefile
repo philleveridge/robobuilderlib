@@ -74,8 +74,8 @@ $(TARGET): $(OBJECTS)
 
 size: ${TARGET}
 	@echo
-	#@avr-size -C --mcu=${MCU} ${TARGET}
-	@avr-size ${TARGET}
+	@avr-size -C --mcu=${MCU} ${TARGET}
+	#@avr-size ${TARGET}
 
 install: ${TARGET}
 	@echo

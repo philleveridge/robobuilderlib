@@ -242,6 +242,7 @@ extern char device[];
 int main(int argc, char *argv[])
 {
 	int i, lf=0, sf=0;
+	remote=1;
 	strcpy(device,"COM3");
 
 	for (i=1; i<argc; i++)

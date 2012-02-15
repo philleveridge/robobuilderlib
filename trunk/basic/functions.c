@@ -422,7 +422,7 @@ void set_bit(int p, int b, int n)
 		port=&PORTG;
 		break;
 	default:
-		rprintf ("panic error\r\n");
+		rprintfProgStr (PSTR("panic error\r\n"));
 		return;
 	}
 	

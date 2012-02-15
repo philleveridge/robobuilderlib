@@ -9,6 +9,9 @@
 #endif
 
 #ifdef AVR
+#include <avr/eeprom.h> 
+#include <avr/pgmspace.h>
+
 #include "main.h"
 #include "global.h"
 #include "macro.h"
@@ -38,7 +41,7 @@ extern int dbg;
 const char *o 	= "+-*/><gl=n&%|:?";
 const int mp[]  = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
 
-const  prog_char  *specials[] = {
+const  prog_char  specials[37][7] = {
 
 		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
 		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
@@ -54,7 +57,7 @@ const  prog_char  *specials[] = {
 long variable[26]; // only A-Z at moment
 
 extern void readtext(int ln, unsigned char *b);
-extern char *strchr(char *, int);
+extern char *strchr(const char *, int);
 
 char arrayname;
 
@@ -63,6 +66,27 @@ int preci(char s)
 	char *p = strchr(o,s);
 	if (p==0) return -1;
 	return mp[(p-o)];
+}
+
+	
+char *t = "%c = %ld  ";
+
+void showvars()
+{
+	int i,j=0;
+
+	for (i=0; i<24; )
+	{ 
+		for (j=0; j<6; j++)
+		{
+			rprintf ("%c = %ld  ", 'A'+i, variable[i]);
+			i++;
+		}
+		rprintfCRLF();
+	}
+	rprintf ("%c = %ld  ", 'A'+i, variable[i++]);
+	rprintf ("%c = %ld  ", 'A'+i, variable[i]);
+	rprintfCRLF();
 }
 
 static long stack[MAX_DEPTH]; 
@@ -88,7 +112,7 @@ void epush(long n)
 		stack[sp++] = n;
 	else
 	{
-		rprintf("eval stack error\n");
+		rprintfProgStr(PSTR("eval stack error\n"));
 		op=0;sp=0;
 	}
 }
@@ -99,7 +123,7 @@ long epop()
 		return stack[--sp];
 	else
 	{
-		rprintf("eval stack error\n");
+		rprintfProgStr(PSTR("eval stack error\n"));
 		op=0;sp=0;
 		return 0;
 	}
@@ -336,7 +360,7 @@ dumpstack(); // debug
 				tmp=0;
 				for (i=0; i<NOSPECS; i++)
 				{
-					if (!strncmp(*str, specials[i], strlen(specials[i])))
+					if (!strncmp_P(*str, specials[i], strlen_P(specials[i])))
 						break;
 				}
 	
@@ -345,7 +369,7 @@ dumpstack(); // debug
 					return -1; 		// no_match : match
 				}
 
-				*str = *str + strlen(specials[i]);
+				*str = *str + strlen_P(specials[i]);
 
 				if (i == sIR2ACT|| i == sDSIG  || i == sSQRT  || i == sSTAND ||
 					i == sZEROS || i == sABS   || i == sCOS   || i == sCVB2I ||
@@ -462,7 +486,7 @@ long math(long n1, long n2, char op)
 	case '/':
 		if (n2==0)
 		{
-			rprintf ("Err - div 0\r\n");
+			rprintfProgStr (PSTR("Err - div 0\r\n"));
 			return 0;
 		}
 		n1=n1/n2; break;

@@ -93,7 +93,7 @@ void writebyte(int b)
 	DWORD dwBytesWritten = 0;
 
 	if(fd == -1) {
-	  printf( "open port failed\n" );
+	  printf( "write failed\n" );
 	  return;
 	}
 
@@ -109,7 +109,7 @@ int readbyte()
 	DWORD dwBytesRead = 0;
 
 	if(fd == -1) {
-	  printf( "open port failed\n" );
+	  printf( "read failed\n" );
 	  return -1;
 	}
 
