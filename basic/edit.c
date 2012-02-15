@@ -101,7 +101,7 @@ void insertln(line_t newline)
 		if (newline.lineno == n)
 		{
 			int la;
-			printf("Edit line\r\n");
+			rprintfProgStr(PSTR("Edit line\r\n"));
 
 			//delete currentline
 			eeprom_write_byte(BASIC_PROG_SPACE+nxt,   0);
@@ -127,7 +127,7 @@ void insertln(line_t newline)
 		{
 			// insert
 			int la = (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nxt+6));	// start of line after
-			printf("Insert line\r\n");
+			rprintfProgStr(PSTR("Insert line\r\n"));
 			//line before [nxt] need to point to [srt] line
 			eeprom_write_word((WORD *)(BASIC_PROG_SPACE+nxt+6), srt);
 			//this line to its next line [la]
@@ -227,7 +227,7 @@ line_t readln2(char *bp)
 	nxtline+=2;
 	line.next  = (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nxtline));
 		
-	readtext(nxtline+2, line.text);
+	readtext(nxtline+2, (unsigned char*)line.text);
 
 	nxtline=(int)eeprom_read_word((char *)(BASIC_PROG_SPACE+nxtline));	
 	return line;
@@ -309,7 +309,7 @@ int findend()
 
 int findnext(int nl, int v)
 {
-	char ln;
+	char ln=0;
 	while (nl<EEPROM_MEM_SZ)
 	{
 		char cmd = eeprom_read_byte(BASIC_PROG_SPACE+nl+2);	

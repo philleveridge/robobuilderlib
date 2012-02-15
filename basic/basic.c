@@ -46,6 +46,8 @@ extern char * strstr(char *, char *);
 
 int dbg=0;
 
+int remote=0;
+
 #endif
 
 #ifdef WIN32
@@ -54,6 +56,7 @@ int dbg=0;
 #include <string.h>
 
 #include "win.h"
+
 
 #endif
 
@@ -66,12 +69,12 @@ int dbg=0;
 #include "functions.h"
 #include "lists.h"
 
-#define MAX_LINE  	100 
-#define MAX_TOKEN 	8
+#define MAX_LINE  		100 
+#define MAX_TOKEN 		8
 #define MAX_FOR_NEST	6
 #define MAX_GOSUB_NEST	5
 #define MAX_FOR_EXPR	20 
-#define SCENESZ 	128
+#define SCENESZ 		128
 
 extern int dbg;
 
@@ -116,7 +119,7 @@ extern volatile BYTE    MIC_RATE;
 extern volatile BYTE    MIC_NOS;
 extern volatile WORD	gtick;
 
-const prog_char *tokens[] ={
+const prog_char tokens[NOTOKENS][7] ={
 	"LET",   "FOR",    "IF",     "THEN", 
 	"ELSE",  "GOTO",   "PRINT",  "GET",
 	"PUT",   "END",    "LIST",   "XACT",
@@ -127,7 +130,7 @@ const prog_char *tokens[] ={
 	"MTYPE", "LIGHTS", "SORT",   "FFT",
 	"SAMPLE","SCALE",  "DATA",
 	"SET", 	"INSERT", "DELETE",
-	"GEN",  "NETWORK", "SELECT", "!"
+	"GEN",  "NETWOR", "SELECT", "!"
 };
 
 extern const prog_char *specials[];
@@ -195,7 +198,7 @@ void PerformAction (int Action)
 	}
 	else
 	{
-		rprintf("Motion range:  0 - 18\r\n", Action);
+		rprintfProgStr(PSTR("Motion range:  0 - 18\r\n"));
 	}
 }
 
@@ -267,7 +270,7 @@ int getToken(char *str, char *tok)
 	return n;
 }
 
-int token_match(char *list[], char **p_line, int n)
+int token_match(prog_char list[][7], char **p_line, int n)
 {
 	int t;
 	int t1;
@@ -277,7 +280,7 @@ int token_match(char *list[], char **p_line, int n)
 	
 	for (t=0; t<n; t++)
 	{
-		if (!strcmp(buff, list[t]))
+		if (!strcmp_P(buff, list[t]))
 			break;
 	}
 	
@@ -336,7 +339,7 @@ int readLine(char *line)
 		
 		if (start==line && ch=='?' )
 		{
-			rprintf("Program entry mode (. to exit)\r\n");	
+			rprintfProgStr(PSTR("Program entry mode (. to exit)\r\n"));	
 			break;
 		}
 		
@@ -387,7 +390,7 @@ void basic_load(int tf)
 	
 	BasicErr=0;
 
-	rprintfStr("Enter Program '.' to Finish\r\n");
+	rprintfProgStr(PSTR("Enter Program '.' to Finish\r\n"));
 	
 	while (1)
 	{
@@ -736,7 +739,7 @@ void basic_load(int tf)
 						|| newline.token==NEXT || newline.token==RETURN
 						|| newline.token==IF || newline.token==GOSUB)
 				{
-					rprintf("Command not available in immediate mode\r\n");
+					rprintfProgStr(PSTR("Command not available in immediate mode\r\n"));
 				}
 				fmflg=0;
 				if (tf==1)
@@ -869,12 +872,12 @@ void basic_run(int dbf)
 	nxtline=0;
 
 	if (nextchar()!=0xAA) {
-		rprintfStr("No program loaded\r\n");
+		rprintfProgStr(PSTR("No program loaded\r\n"));
 		return;
 	}
 
 	//point top at EEPROM
-	rprintfStr("Run Program \r\n");
+	rprintfProgStr(PSTR("Run Program \r\n"));
 
 	listinit ();
 
@@ -915,7 +918,7 @@ void basic_start(int dbf)
 		line = readln(buf);
 		if (line.lineno==0)
 		{
-			rprintf("End\r\n");
+			rprintfProgStr(PSTR("End\r\n"));
 			return;
 		}
 		
@@ -924,14 +927,25 @@ void basic_start(int dbf)
 		if (dbf) {
 			int kp;
 			rprintf ("TRACE :: %d - ", line.lineno); 
-			rprintfStr (tokens[line.token]);;
+			rprintfProgStr (tokens[line.token]);;
 			while ((kp=uartGetByte())<0) ; // wait for input
 			if (kp == 27)  
 			{
-				rprintfStr (" ** User Break\r\n"); 
+				rprintfProgStr (PSTR(" ** User Break\r\n")); 
 				return;
 			}
+
 			rprintfCRLF();
+
+			if (kp == 'l')  
+			{
+				listdump();
+			}
+
+			if (kp == 'v')  
+			{
+				showvars();
+			}
 		}
 		
 		if (uartGetByte() == 27)  {
@@ -1212,7 +1226,7 @@ int execute(line_t line, int dbf)
 		}
 		// check for last ; (no crlf)
 		if (*p!=';')	
-			rprintfStr ("\r\n"); 			
+			rprintfCRLF (); 			
 		break;	
 	case IF:		
 		n=0;
@@ -1647,7 +1661,7 @@ int execute(line_t line, int dbf)
 		speed=n%4;
 		break;
 	case END: 
-		rprintfStr ("End of program\r\n"); 
+		rprintfProgStr (PSTR("End of program\r\n")); 
 		return 0xCC;
 	case GOSUB: 
 		{
@@ -1966,7 +1980,7 @@ int execute(line_t line, int dbf)
 				m=6;
 			else
 			{
-				rprintf ("Invalid sample size must be one of 8,16,32 or 64\n");
+				rprintfProgStr (PSTR("Invalid sample size must be one of 8,16,32 or 64\n"));
 				BasicErr=1;
 				break;
 			}
@@ -2061,7 +2075,7 @@ int execute(line_t line, int dbf)
 
 			if (mr>0 && mm==0)
 			{
-				rprintf("Error - mutation range must be >0\n", ty);
+				rprintfProgStr(PSTR("Error - mutation range must be >0\n"));
 				BasicErr=4; 	if (!remote) return 0;break;
 			}
 
@@ -2183,7 +2197,7 @@ int execute(line_t line, int dbf)
 			if (noi<=0 || noo<=0)
 			{
 				// number input & output >0
-				rprintfStr("Err:: Input and output must be gt 0\n");
+				rprintfProgStr(PSTR("Err:: Input and output must be gt 0\n"));
 				BasicErr=3;
 				break;
 			}
@@ -2191,7 +2205,7 @@ int execute(line_t line, int dbf)
 			if (nl3!= noo && nl3!=0)
 			{
 				//layer 3 = number outputs
-				rprintfStr("Err:: layer 3 neurons must match output (or be zero)\n");
+				rprintfProgStr(PSTR("Err:: layer 3 neurons must match output (or be zero)\n"));
 				BasicErr=3;
 				break;
 			}
@@ -2199,7 +2213,7 @@ int execute(line_t line, int dbf)
 			if (nl3==0 && nl2!=0)
 			{
 				//layer 3 = number outputs
-				rprintfStr("Err:: layer 3 must be non-zero if layer 2 has nodes \n");
+				rprintfProgStr(("Err:: layer 3 must be non-zero if layer 2 has nodes \n"));
 				BasicErr=3;
 				break;
 			}
@@ -2410,10 +2424,10 @@ void basic_list()
 	BYTE tmp=0;
 	nxtline = 0;	
 
-	rprintfStr("List Program \r\n");
+	rprintfProgStr(PSTR("List Program \r\n"));
 
 	if (nextchar() != 0xAA ) {
-		rprintfStr("No program loaded\r\n");
+		rprintfProgStr(PSTR("No program loaded\r\n"));
 		return;
 	}	
 	
@@ -2430,7 +2444,7 @@ void basic_list()
 		/* list code */
 	
 		rprintf ("%d ", line.lineno); 
-		rprintfStr (tokens[line.token]);
+		rprintfProgStr (tokens[line.token]);
 		rprintf (" "); 
 		
 		if (line.token==LET || line.token==GET || line.token==FOR || line.token==LIST || line.token==DATA)
@@ -2600,7 +2614,7 @@ int bin_read_request()
 void binmode()
 {
 	int r;
-	rprintfStr("start download\r\n");
+	rprintfProgStr(PSTR("start download\r\n"));
 	RUN_LED2_ON;
 	
 	r=bin_read_request();
@@ -2647,7 +2661,7 @@ void testforreset()
 		delay_ms(10);
 		if((PINA&3) == 0)
 		{
-			rprintf   ("reset\r\n");
+			rprintfProgStr(PSTR("reset\r\n"));
 			basic_clear();
 		}
 	}
@@ -2663,7 +2677,7 @@ void basic()
 {
 	int ch;
 
-	rprintfStr("Basic v=$Revision$\r\nCommands: i r l c z q s V R F $\r\n");
+	rprintfProgStr(PSTR("Basic v=$Revision$\r\nCommands: i r l c z q s V R F $\r\n"));
 
 	testforreset();
 
@@ -2702,13 +2716,13 @@ void basic()
 			    s=gSEC-s;
 			    if (s<0)  {s=s+60; m=m-1;}
 			    m=gMIN-m;
-			    rprintf("Elapsed Time ");
+			    rprintfProgStr(PSTR("Elapsed Time "));
 		        outdigit(m,2);
 		        rprintfChar(':');
 		        outdigit(s,2);
 		        rprintfChar('-');
 		        outdigit(ms,3);
-		        rprintf("\r\n");
+		        rprintfCRLF();
 		    }
 			break;
 		case 'R': // run
@@ -2739,9 +2753,11 @@ void basic()
 			break;
 		case 'l': // list 
 			basic_list();
-
+			break;
+		case 'L': // list 
+			basic_list();
 			listdump();
-
+			showvars();
 			break;
 		case 'c': // clear 
 			listinit();
@@ -2753,7 +2769,7 @@ void basic()
 			standup(nos);
 			break;
 		case 'S': // stand
-			rprintf("ok\r\n");
+			rprintfProgStr(PSTR("ok\r\n"));
 			setdh(1);
 			standup(nos);
 			break;
@@ -2761,18 +2777,18 @@ void basic()
 			sample_sound(1); // sound meter on
 			break;
 		case 'O': // 
-			rprintf("PSD off\r\n");
+			rprintfProgStr(PSTR("PSD off\r\n"));
 			PSD_off();
 			break;
 		case 'X': // charge
-			rprintf("testing charge\r\n");
+			rprintfProgStr(PSTR("testing charge\r\n"));
 			chargemode();
 			break;
 		case 'C': // zero &clear 
 			basic_zero();
 			break;
 		case 'V': // version
-			rprintfStr("v=$Revision$\r\n");
+			rprintfProgStr(PSTR("v=$Revision$\r\n"));
 			break;
 		case 'd': // dump narrow
 			dump(8);
@@ -2790,16 +2806,16 @@ void basic()
 			break;
 		case '~':
 			dbg=1-dbg;
-			if (dbg) rprintf("DEBUG ON\n");
+			if (dbg) rprintfProgStr(PSTR("DEBUG ON\n"));
 			break;
 		case 'q': // query 
 			rprintf ("%d servos connected\r\n", readservos(0));
 			rprintf ("%d lines stored\r\n", findend());
-			rprintf ("Uptime: "); uptime(); rprintf ("\r\n");
+			rprintfProgStr(PSTR("Uptime: ")); uptime(); rprintfCRLF ();
 			break;
 		case '$':
 		case 23: //*+1 Demo mode
-			rprintf ("DEMO MODE\r\n");
+			rprintfProgStr (PSTR("DEMO MODE\r\n"));
 			while (1)
 			{
 				rprintf (">: ");
@@ -2808,7 +2824,7 @@ void basic()
 
 				if (ch == 7)
 				{
-					rprintf ("EXIT DEMO MODE\r\n");
+					rprintfProgStr (PSTR("EXIT DEMO MODE\r\n"));
 					break;
 				}
 
@@ -2834,7 +2850,7 @@ void basic()
 			break;
 #endif
 		default:
-			rprintfStr("\r\n");
+			rprintfCRLF();
 			break;
 		}
 	}

@@ -46,7 +46,7 @@ extern int dbg;
 
 static int  listmem	[LISTMEM];
 static char names	[MAXLIST];
-static char len	        [MAXLIST];
+static char len	    [MAXLIST];
 static int  lists	[MAXLIST];
 
 static int  nol=0;
@@ -70,6 +70,11 @@ void listdump()
 			rprintf (" %d", listmem[lists[i]+j]);
 		rprintf ("\n");
 	}
+
+	rprintf ("! [%3d]",nis);
+	for (j=0;j<nis; j++)
+		rprintf (" %d", scene[i]);
+	rprintf ("\n");
 }
 
 int listexist(char ln)
