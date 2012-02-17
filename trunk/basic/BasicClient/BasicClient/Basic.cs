@@ -980,10 +980,10 @@ namespace RobobuilderLib
 		        if ((KEY)line.token==KEY.DATA)
 		        {
                     int i2;
-                    int n = code[i];
-			        m +=  String.Format("%d", code[i+1]);
-			        for (i2=1; i2<n; i2++)
-				        m += String.Format(",%d", code[i+i2]);
+                    int n = code[i+1];
+			        m +=  String.Format("{0}", code[i+2]);
+			        for (i2=3; i2<n+2; i2++)
+				        m += String.Format(",{0}", code[i+i2]);
 		        }
 		        else
 		        if ((KEY)line.token==KEY.FOR)
