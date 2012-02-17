@@ -73,7 +73,7 @@ void listdump()
 
 	rprintf ("! [%3d]",nis);
 	for (j=0;j<nis; j++)
-		rprintf (" %d", scene[i]);
+		rprintf (" %d", scene[j]);
 	rprintf ("\n");
 }
 
@@ -262,7 +262,7 @@ void listset(char ln, int ind, long v, int insrtflg)
 //      INSERT I,V
 // current array ![I]=V
 {
-	int i, *array, sz, msz, l;
+	int i, *array, sz, msz, l=0;
 
 	if (ln=='!')
 	{
@@ -316,7 +316,7 @@ void listset(char ln, int ind, long v, int insrtflg)
 //      SELECT a,b
 void listdelete(char ln, int indx1, int indx2, int selflg)
 {
-	int i,n2,l;
+	int i,n2,l=0;
 	int *array;
 	int sz;
 	
@@ -480,7 +480,14 @@ void join(char ln1, char ln2)   // "@A . @B"
 	int *arrayA, szA;
 	int *arrayB, szB;
 	int i;
+	
+	arrayA=listarray(ln1);
+	szA   =listsize(ln1);
+	arrayB=listarray(ln2);
+	szB   =listsize(ln2);
 
+	if (arrayA==0 || arrayB==0) return; //error
+	
 	if (szA+szB<SCENESZ) 
 	{
 		int m=(szA>szB)?szA:szB;

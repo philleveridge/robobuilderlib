@@ -1298,7 +1298,7 @@ int execute(line_t line, int dbf)
 				}
 				if (st>=nis || st+nb>nis)
 				{
-					BasicErr=1;
+					BasicErr=5;
 					return 0;
 				}
 				break;
@@ -1317,7 +1317,7 @@ int execute(line_t line, int dbf)
 					pos[j] = scene[j+st];
 				else
 				{
-					BasicErr=1;
+					BasicErr=5;
 					return 0;
 				}
 
