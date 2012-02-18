@@ -185,23 +185,6 @@ namespace RobobuilderLib
             this.Close();
         }
 
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SaveFileDialog s = new SaveFileDialog();
-            if (s.ShowDialog() != DialogResult.OK)
-                return;
-            try
-            {
-                File.WriteAllText(s.FileName, input.Text);
-                fname.Text = s.FileName;
-            }
-            catch (Exception e1)
-            {
-                MessageBox.Show("can't save file - " + e1.Message);
-                fname.Text = "";
-            }
-        }
-
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog s = new OpenFileDialog();
@@ -410,19 +393,26 @@ namespace RobobuilderLib
 
         void Basic_frm_SizeChanged(object sender, System.EventArgs e)
         {
-            //throw new System.NotImplementedException();
-            /*
-            input.Width = ((Form)sender).Width-40;
-            output.Width = ((Form)sender).Width-40;
-            
-            output.Top = ((Form)sender).Height - output.Height-85;
-            fname.Top = output.Top + 115;
-            comPort.Top = output.Top + 115; ;
-            progressBar1.Top = output.Top + 115;
-            button1.Top = output.Top + 115; ;
+            tabControl1.Width = this.Width - 18;
+            tabControl1.Height = this.Height - 18;
 
-            input.Height = ((Form)sender).Height - 230;
-            */
+            input.Width = tabControl1.Width-16;
+            output.Width = tabControl1.Width-16;
+            term.Width = tabControl1.Width-16;
+
+            input.Height = tabControl1.Height - 100;
+            output.Height = tabControl1.Height - 80;
+            term.Height = tabControl1.Height - 100;
+
+            fname.Width = input.Width;
+            fname.Location = new Point (0, input.Height + 5);
+
+            progressBar1.Location = new Point(8, term.Height + 5);
+            comPort.Location = new Point(265, term.Height + 5);
+            label1.Location = new Point(390, term.Height + 5);
+            comselect.Location = new Point(599, term.Height + 5);
+            button1.Location = new Point(738, term.Height + 5);
+        
         }
 
         
@@ -476,6 +466,36 @@ namespace RobobuilderLib
         {
             comPort.Text = (string)comselect.Items[comselect.SelectedIndex];
             if (comPort.Text != "") s = new SerialPort(comPort.Text, 115200);
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                File.WriteAllText(fname.Text, input.Text);
+            }
+            catch (Exception e1)
+            {
+                MessageBox.Show("can't save file - " + e1.Message);
+                fname.Text = "";
+            }
+        }
+        
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog s = new SaveFileDialog();
+            if (s.ShowDialog() != DialogResult.OK)
+                return;
+            try
+            {
+                File.WriteAllText(s.FileName, input.Text);
+                fname.Text = s.FileName;
+            }
+            catch (Exception e1)
+            {
+                MessageBox.Show("can't save file - " + e1.Message);
+                fname.Text = "";
+            }
         }
 
 
