@@ -39,11 +39,12 @@ int Sqrt(long x)
    return (int)f;
 }
 
-extern void strcat(char *, char *);
-extern void strcpy(char *, char *);
-extern void strncpy(char *, char *, int);
-extern char * strstr(char *, char *);
-
+extern int strlen	(char *);
+extern void strcat	(char *, char *);
+extern void strcpy	(char *, char *);
+extern void strncpy	(char *, char *, int);
+extern char *strstr	(char *, char *);
+extern int rand();
 int dbg=0;
 
 int remote=0;
@@ -91,7 +92,7 @@ extern void SampleMotion	(unsigned char);
 extern void sound_init		();
 extern void SendToSoundIC	(BYTE cmd) ;
 
-
+extern void  blights(int n, int *vals) ; // from adc.c
 
 /***********************************/
 
@@ -396,10 +397,11 @@ void basic_load(int tf)
 	{
 		// for each line entered
 
-		if (BasicErr > 0 && BasicErr<6) {
-			rprintfStr ("Error - '" );
+		if (BasicErr > 0 && BasicErr<6) 
+		{
+			rprintfProgStr (PSTR("Error - '" ));
 			rprintfStr (error_msgs[BasicErr]);
-			rprintfStr ("'\r\n" );
+			rprintfProgStr (PSTR("'\r\n") );
 			rprintf ("Pos=%d [%c]\r\n", (cp-line), line[cp-line]);
 			BasicErr=0;
 		}
@@ -448,7 +450,7 @@ void basic_load(int tf)
 		else
 		{
 			//printf ("normal\n");
-			if ( (newline.token=token_match((char **)tokens, &cp, NOTOKENS))<0)           // sizeof(tokens)/))<0)
+			if ( (newline.token=token_match(tokens, &cp, NOTOKENS))<0)           // sizeof(tokens)/))<0)
 			{
 				BasicErr=2;
 				continue;
@@ -650,30 +652,6 @@ void basic_load(int tf)
 				newline.text=&line[0];
 			}
 			break;
-/*
-		case IF:
-			// We should check for THEN and ELSE
-			// and handle error
-			// replace THEN with ? and ELSE with :
-			// IF A THEN B ELSE C =>  GOTO (A)?B:C
-			{
-			char *p_then,*p_else;
-			newline.text=cp-1;
-			*(cp-1)='(';
-			p_then = strstr(cp, "THEN");
-			p_else = strstr(cp, "ELSE");
-			if (p_then != 0) 
-				strncpy(p_then, ")?  ",4);
-			else
-				BasicErr=3;
-				
-			if (p_else != 0) 
-				strncpy(p_else,":   ",4);
-			else
-				strcat(cp,":0");
-			}
-			break;
-*/
 		case IF:
 			// A THEN B ELSE C =>  A,B[,C]
 			{
@@ -807,18 +785,14 @@ void swap(int *x,int *y)
    *x = *y;
    *y = temp;
 }
- 
-int choose_pivot(int i,int j )
-{
-   return((i+j) /2);
-}
+
  
 void quicksort(int list[],int m,int n)
 {
    int key,i,j,k;
    if( m < n)
    {
-      k = choose_pivot(m,n);
+      k = (m+n)/2;
       swap(&list[m],&list[k]);
       key = list[m];
       i = m+1;
@@ -998,9 +972,9 @@ int execute(line_t line, int dbf)
 					variable[line.var] = n;		
 			}
 
-			if (dbg) {
-				rprintf("DBG: for %d-> %d\n", fp, forptr[fp]);
-			}
+			//if (dbg) {
+			//	rprintf("DBG: for %d-> %d\n", fp, forptr[fp]);
+			//}
 
 			fp++;
 		}
@@ -1014,9 +988,9 @@ int execute(line_t line, int dbf)
 			// increment var
 			variable[line.var] = variable[line.var] + (long)1;
 
-			if (dbg) {
-				rprintf("DBG: NEXT %d-> %d  %d %ld\n", fp-1, t_ptr, line.var, variable[line.var]);
-			}
+			//if (dbg) {
+			//	rprintf("DBG: NEXT %d-> %d  %d %ld\n", fp-1, t_ptr, line.var, variable[line.var]);
+			//}
 
 			// test against expr2 i.e var<=expr2
 			n=0;
@@ -1027,9 +1001,9 @@ int execute(line_t line, int dbf)
 				break; //need to handle error	
 			}
 
-			if (dbg) {
-				rprintf("DBG: VAR %c  %ld<= %ld\n", line.var+'A', variable[line.var], n);
-			}
+			//if (dbg) {
+			//	rprintf("DBG: VAR %c  %ld<= %ld\n", line.var+'A', variable[line.var], n);
+			//}
 			
 			if (variable[line.var] <= n) { 
 				// if true set ptr=stack; 
@@ -1191,14 +1165,7 @@ int execute(line_t line, int dbf)
 								BasicErr=3; break;
 							}
 						}
-						//if (w<=0)  w=nis;
-						//if (w>nis) w=nis;
-						//for (k=0; k<=(nis/w); k++)
-						//{
-						//	if (k*w<nis) rprintf ("%d", scene[(k*w)]);
-						//	for (n=1; (n<w) && ((k*w+n)<nis); n++) {rprintf (",%d",scene[(k*w)+n]);}
-						//	if (k*w<nis) rprintfCRLF();
-						//}
+
 						sz=listsize(arrayname);
 						if (w<=0)  w=sz;
 						if (w>sz) w=sz;
@@ -1402,23 +1369,6 @@ int execute(line_t line, int dbf)
 		break;
 	case DATA: 
 		list_eval((line.var==32)?'!' : ('A' + line.var), line.text, 1);
-		break;
-		//if (line.var==32)
-		//{
-		//	if (line.token==DATA) // DATA
-		//	{
-		//		int i=0;
-		//		nis=line.text[1];
-		//		for (i=0; i<nis; i++)
-		//			scene[i]=(unsigned char)line.text[i+2];
-		//	}
-		//	else
-		//		eval_list(line.text);
-		//}
-		//else
-		//{
-		//	variable[line.var] = (long)(lastline+8);
-		//}
 		break;		
 	case XACT:
 	case RUN:
@@ -1690,7 +1640,7 @@ int execute(line_t line, int dbf)
 		//      DELETE 5,7
 		//      DELETE 5,*
 		{
-			long i,n2;
+			long n2;
 			char an='!';
 			p=line.text;
 
@@ -2336,7 +2286,7 @@ int execute(line_t line, int dbf)
 		break;
 	case EXTEND:
 #ifdef AVR
-		rprintfStr("? Cmd not available\r\n");
+		rprintfProgStr(PSTR("? Cmd not available\r\n"));
 #else
 		extend(line.text);
 #endif
@@ -2351,7 +2301,7 @@ int execute(line_t line, int dbf)
 void basic_clear()
 {
 	// Set Init pointer to Zero
-	rprintfStr("Clear Program \r\n");
+	rprintfProgStr(PSTR("Clear Program \r\n"));
 	clearln();
 }
 
@@ -2388,7 +2338,7 @@ void dump(int sz)
 			asciis[8]='\0';
 			rprintfStr (asciis);
 		}
-		rprintfStr ("\r\n");	
+		rprintfCRLF ();	
 	}
 }
 
@@ -2409,7 +2359,7 @@ void dump_firmware()
 		}
 		asciis[8]='\0';
 		rprintfStr (asciis);
-		rprintfStr ("\r\n");	
+		rprintfCRLF ();	
 	}
 }
 
@@ -2452,7 +2402,7 @@ void basic_list()
 			if (line.var!=32)
 				rprintf ("%c = ", line.var+'A');
 			else 
-				rprintfStr ("! = ");
+				rprintfProgStr (PSTR("! = "));
 		}
 			
 		if (line.token==PUT)
@@ -2546,7 +2496,7 @@ void basic_list()
 			rprintfStr (line.text);
 
 
-		rprintf ("\r\n");
+		rprintfCRLF ();
 	}
 }
 

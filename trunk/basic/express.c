@@ -68,9 +68,6 @@ int preci(char s)
 	return mp[(p-o)];
 }
 
-	
-char *t = "%c = %ld  ";
-
 void showvars()
 {
 	int i,j=0;
@@ -159,8 +156,8 @@ unsigned char eval_expr(char **str, long *res)
 
 
 	if (dbg) {
-		dumpstack(); // debug
 		rprintf("Eval =%s\n", *str); 
+		dumpstack(); // debug
 	}
 	
 	while (**str != '\0' && !done)
@@ -245,7 +242,7 @@ unsigned char eval_expr(char **str, long *res)
 				return NUMBER;
 			}
 			n1=0;
-dumpstack(); // debug
+
 			break;
 		case '"':
 			return STRING;
@@ -320,17 +317,6 @@ dumpstack(); // debug
 				}
 				arrayname = **str;
 
-				//i = variable[i];
-				//readtext(i, tmpBuff);				
-				//if (tmpBuff[0]==0xFF) // DATA
-				//{
-				//	nis=tmpBuff[1];
-				//	for (i=0; i<nis; i++)
-				//		scene[i]=(unsigned char)tmpBuff[i+2];
-				//}
-				//else
-				//	eval_list(tmpBuff);
-				//
 				(*str)++;
 			}
 			if (**str == '[')
@@ -338,9 +324,6 @@ dumpstack(); // debug
 				(*str)++;
 				n1=0;
 				eval_expr(str, &n1);
-				//if (n1>=nis) n1=(long)(nis-1);
-				//if (n1<0)    n1=(long)0;
-				//n1 = (long)scene[(int)n1];
 
 				n1 = (long)listread(arrayname, (int)n1);
 				(*str)++;
