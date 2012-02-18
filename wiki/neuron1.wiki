@@ -1,0 +1,67 @@
+#summary 3 neuron network
+
+= Introduction =
+
+3 neuron network
+
+= Details =
+
+<code language="vb">
+'simple 3 neuron network - to solve XOR problem
+'
+'  I1 --  N1
+'      X     > N3 - O1
+'  I2 --  N2
+'
+  LET f=0
+  LET g=1
+  LET t=3
+  PRINT $rnd(18,-5,5) 'create 2 parent random weighted networks 
+
+loop:
+  print "Generation ";g   
+  GEN 4,9,15,5,-30,30,2     'generate network
+
+  insert 0,0    'create cell for input 1
+  insert 0,0    'create cell for input 2
+  insert 0,0    'create cell for output 1
+
+  for k=0 to 3
+     gosub testfit
+     if s=4 then done
+  next k
+
+  delete 0,2          'remove input & outputs
+  sort #9,4,2         'select best two 
+
+  LET g=g+1           'increment generation counter
+  if $kir<0 then loop 'loop if no key or IR pressed
+
+done:
+   print "Found Network=";k
+   f=1                        'flag output
+   t=11                       'verbose mode 3
+   gosub testfit              're-run test
+   select 3+(9*k),(9*k+1)+2   'select winning network
+   print @!:9                 'and display
+   end
+
+testfit:
+  s=0
+  for i=0 to 3
+     a=i%2
+     b=(i/2)%2
+     set 0,a
+     set 1,b
+     network 2,1,t,2,0,1,k
+     c=@![2]
+     e=(a+b)%2
+     if f then
+       print "I1=";a;" I2=";b;" E=";e;" O=";c
+     endif
+     s=s+(e=c)
+  next i
+  insert $NE,s
+  print "Network ";k;" Score=";s
+  return
+</code>
