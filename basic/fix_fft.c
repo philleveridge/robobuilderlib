@@ -36,6 +36,11 @@
 
 /* MODS by l3v3rz for ATMEL 128*/
 
+#ifdef AVR
+#include <avr/eeprom.h> 
+#include <avr/pgmspace.h>
+#endif
+
 #ifndef AVR
 	//#define inline __forceinline
 	#define inline
@@ -46,7 +51,7 @@
 #define LOG2_N_WAVE 8       /* log2(N_WAVE) */
 #define BYTE unsigned char
 
-int SinTab[] = {
+int SinTab[] PROGMEM = {
 	    0,      
 	  804,  1608,  2410,  3212,  4011,  4808,  5602,  6393,
 	 7179,  7962,  8739,  9512, 10278, 11039, 11793, 12539,
@@ -59,24 +64,45 @@ int SinTab[] = {
 
 int Sin(BYTE d)
 {
-	if (d<64)  
-		return SinTab[d];
-	if (d<128) 
-		return SinTab[127-d];
-	if (d<192) 
-		return -SinTab[d-128];
-	return -SinTab[255-d];
+	BYTE t=d;
+	int r=0;
+	
+	if (d>=64 && d<128) 
+		t=127-d;
+	
+	if (d>=128 && d<192) 
+		t=d-128;
+
+	if (d>=192 ) 
+		t=255-d;
+	
+	r = pgm_read_word(&(SinTab[t]));	
+	
+
+	return (d<128)?r:-r;
 }
 
 int Cos(BYTE d)
 {
-	if (d<64)  
-		return SinTab[63-d];
-	if (d<128) 
-		return -SinTab[d-64];
-	if (d<192) 
-		return -SinTab[191-d];
-	return SinTab[d-192];
+	BYTE t=d;
+	int r=0;
+	
+	if (d<64) 
+		t=63-d;
+	
+	if (d>=64 && d<128) 
+		t=d-64;
+
+	if (d>=128 && d<192) 
+		t=191-d;
+		
+	if (d>=192) 
+		t=d-192;
+	
+	r = pgm_read_word(&(SinTab[t]));	
+	
+
+	return (d<64 || d>=192)?r:-r;
 }
 
 /*
