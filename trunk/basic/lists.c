@@ -304,8 +304,6 @@ void listset(char ln, int ind, long v, int insrtflg)
 		else if (sz<msz)
 			len[l]++;
 	}
-//
-
 	*(array+ind)=v;
 }
 

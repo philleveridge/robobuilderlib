@@ -500,7 +500,7 @@ tOBJ get(char *name)
 	if (strlen(name)==1 && isalpha(*name)) //backwards compat
 	{
 		r.type=INTGR;
-		r.number=variable[*name-'A'];
+		r.number=getvar(*name-'A');
 		return r;
 	}
 
@@ -524,11 +524,11 @@ int set(char *name, tOBJ r)
 	if (strlen(name)==1 && isalpha(*name)) //backwards compat
 	{
 		if (r.type==INTGR)
-			variable[*name-'A']=r.number;
+			setvar(*name-'A',r.number);
 		if (r.type==FLOAT)
-			variable[*name-'A']=(int)r.floatpoint;
+			setvar(*name-'A',(long)r.floatpoint);
 		if (r.type==EMPTY)
-			variable[*name-'A']=0;
+			setvar(*name-'A',0);
 		return 1;
 	}
 
