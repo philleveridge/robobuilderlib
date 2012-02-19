@@ -33,7 +33,7 @@
 
 static int  forptr[MAX_FOR_NEST];   			  	// nested for/next
 static char nxtptr[MAX_FOR_NEST][MAX_FOR_EXPR];   	// nested for/next
-static int fp; 
+static int  fp; 
 
 static int gosub[MAX_GOSUB_NEST];  					// nested gosubs
 static int gp;
@@ -51,7 +51,6 @@ int mtype=2;
 int cs=0;
 int lnc[20];         //line cache of pointers
 
-
 void init_cmdptr()
 {
 	gp=0;
@@ -59,7 +58,6 @@ void init_cmdptr()
 	cs=0;
 	BasicErr=0;
 }
-
 
 int findcache(int l)
 {
@@ -134,7 +132,7 @@ int cmd_for(line_t l)
 		strncpy(nxtptr[fp],to+4, MAX_FOR_EXPR);
 		*to='\0'; // null terminate expr1
 		if (eval_expr(&p, &n)==NUMBER)
-			variable[l.var] = n;		
+			setvar(l.var, n);		
 	}
 
 	fp++;
@@ -154,7 +152,7 @@ int cmd_next(line_t l)
 	t_ptr=forptr[fp-1];
 
 	// increment var
-	variable[l.var] = variable[l.var] + (long)1;
+	setvar(l.var, getvar(l.var) + (long)1);
 
 	// test against expr2 i.e var<=expr2
 	n=0;
@@ -165,7 +163,7 @@ int cmd_next(line_t l)
 		return -1;
 	}
 			
-	if (variable[l.var] <= n) 
+	if (getvar(l.var) <= n) 
 	{ 
 		// if true set ptr=stack; 
 		setline(t_ptr); 
@@ -178,15 +176,23 @@ int cmd_next(line_t l)
 	return 0;
 }
 
-
 int cmd_let(line_t l)
 {		
 	long n=0;
 	char *p=l.text;
-	if (eval_expr(&p, &n)==NUMBER)
-		variable[l.var] = n;
-	else
+	switch(eval_expr(&p, &n))
+	{
+	case NUMBER:
+		setvar(l.var,n);
+		break;
+	case ARRAY:
+		//LET A=@B set A to size of Array B
+		setvar(l.var,listsize(arrayname));
+		break;
+	default:
 		BasicErr=1;
+		break;
+	}
 	return 0;
 }
 
@@ -298,11 +304,13 @@ int cmd_goto(line_t l)
 	int t = gotoln(l.value);
 	if (t<0)
 	{
-		BasicErr=3; return 0xcc;	
+		BasicErr=3; 
+		return 0xcc;	
 	}		
 	setline(t);
-	//tmp=1;
+	return 0;
 }
+
 int cmd_put(line_t l)		
 {		
 	long n=0;
@@ -329,7 +337,6 @@ int cmd_if(line_t l)
 
 		if (n == 0)
 		{	
-			//false
 			//skip to next comma
 			while (*p!=0 && *p!=',') p++;
 			p++;
@@ -342,7 +349,6 @@ int cmd_if(line_t l)
 				BasicErr=5;
 			else
 				setline(t);
-			//tmp=1;
 		}
 	}
 	return 0;
@@ -356,7 +362,7 @@ int cmd_servo(line_t l)
 	char *p=l.text;
 	long v=l.var;
 	if (v>=0 && v<=31)
-		v=variable[v];
+		v=getvar(v);
 	else
 		v=v-32;
 
@@ -1011,7 +1017,7 @@ int cmd_step(line_t ln)
 			long sf, st, si=5, sp, sn, sw=75, cnt=0, sd=8;
 			long v=ln.var;
 			if (v>=0 && v<=31)
-				v=variable[v];
+				v=getvar(v);
 			else
 				v=v-32;
 			n=0;
@@ -1561,8 +1567,6 @@ int cmd_network(line_t ln)
 				if (sho) rprintf("Input=%d (%d x %d)\n",j,inp,scene[t]);
 			}
 		}
-
-
 		t++;
 		if (sho) rprintf("Th=-(%d)\n",scene[t]);
 
@@ -1585,9 +1589,8 @@ int cmd_network(line_t ln)
 	return 0;
 }
 
-extern BYTE EEMEM FIRMWARE        	[];  // leave blank - used by Robobuilder OS
-extern BYTE EEMEM BASIC_PROG_SPACE	[];  // this is where the tokenised code will be stored
-extern BYTE EEMEM PERSIST		    [];  // persistent data store
+extern BYTE EEMEM FIRMWARE[];  // used by Robobuilder OS
+extern BYTE EEMEM PERSIST [];  // persistent data store
 
 int cmd_poke(line_t ln)
 {
@@ -1678,9 +1681,7 @@ int (*cmdtab[])(line_t) = {
 
 int execute(line_t line, int dbf)
 {
-	//   Get token
 	//   Execute action
-	//	 Move to next line
 	int t= (*cmdtab[line.token])(line);
 	return (t==0)?1:t;
 }

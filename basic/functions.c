@@ -51,142 +51,350 @@ const unsigned char smap[40] = {
 	1,  2,  3,  4,  5,  6,  8,  10, 12, 15, 19, 24, 31, 38, 47, 57, 69, 82, 97, 112,
 	128,144,159,174,187,199,209,218,225,232,237,241,244,246,248,250,251,252,253,254};
 
+long  fn_dummy(long v)
+{
+	return 0;
+}
+
+long  fn_sqrt(long v)
+{
+	return Sqrt(v);
+}
+
+long  fn_sin(long v)
+{
+	return Sin(v%256);
+}
+
+long  fn_cos(long v)
+{
+	return Sin(v%256);
+}
+
+long  fn_abs(long v)
+{
+	return v<0?-v:v;
+}
+
+long  fn_cb2i(long v)
+{
+	cbyte(v);
+}
+
+long fn_grey(long v)
+{
+	// "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'. "
+	return " .:-=+*#%@"[v%10];
+}
+
+long fn_turtle(long v)
+{
+	char *p="^>V<";
+	char *t = strchr(p,(char)v);
+	if (t==(char *)0)
+		v= -1;
+	else
+		v= t-p;
+	return v;
+}
+
+long fn_ir2act(long v)
+{
+	return (long)map[(int)v];
+}
+
+long fn_norm(long v)
+{
+	int lc;
+	for (lc=0; lc<nis; lc++)
+	{
+		v += (scene[lc]*scene[lc]);
+	}
+	return Sqrt(v);
+}
+
+long fn_min(long v)
+{
+	int lc;
+	v=scene[0];
+	for (lc=0; lc<nis; lc++)
+	{
+		if (scene[lc]<(int)v) v=(long)scene[lc];
+	}
+	return v;
+}
+
+long fn_max(long v)
+{
+	// MAX(@A,[n]) 
+	int m=scene[(int)v];
+	int lc, k;
+	for (lc=0; lc<nis  && lc<SCENESZ; lc++)
+	{
+		if (scene[lc]>m) { m=scene[lc]; k=lc;}
+	}
+	return m;
+}
+
+long fn_imax(long v)
+{
+	// IMAX(@A,[n]) 
+	int m=scene[(int)v];
+	int lc, k;
+	for (lc=0; lc<nis  && lc<SCENESZ; lc++)
+	{
+		if (scene[lc]>m) { m=scene[lc]; k=lc;}
+	}
+	return k;
+}
+
+long fn_sum(long v)
+{
+	int lc; 
+	v=0;
+	for (lc=0; lc<nis; lc++)
+	{
+		v += (long)scene[lc];
+	}
+	return v;
+}
+
+long fn_servo(long v) 
+{
+	//$servo
+	if (v==32)
+		v=readservos(0);
+	else
+		v=wckPosRead(v);
+	return v;
+}
+
+long fn_gx(long v) 
+{
+	Acc_GetData();
+	return x_value;
+}
+
+long fn_gy(long v) 
+{
+	Acc_GetData();
+	return y_value;
+}	
+
+long fn_gz(long v) 
+{
+	Acc_GetData();
+	return z_value;
+}
+
+long fn_ne(long v) 
+{
+	return nis;
+}
+
+long fn_ns(long v) 
+{
+	return nos;
+}
+
+long fn_psd(long v) 
+{
+	Get_AD_PSD();
+	return gDistance;
+}
+
+long fn_volt(long v) 
+{
+	Get_VOLTAGE();
+	return gVOLTAGE;
+}
+
+long fn_ir(long v) 
+{
+	while ((v= irGetByte())<0) ; //wait for IR
+	return v;
+}
+
+long fn_kbd(long v) 
+{
+	while ((v= uartGetByte())<0) ; // wait for input
+	return v;
+}
+
+long fn_kir(long v) 
+{
+	v=uartGetByte();
+	if (v<0) v=irGetByte();
+	return v;
+}
+
+long fn_tick(long v) 
+{	
+	return gtick;
+}
+
+long fn_dsig(long v) 
+{	
+	return  v*(1-v);
+}
+
+long fn_sig(long v) 
+{	
+	if (v==2) 
+	{
+		long r=epop();
+		v=epop();
+		v=sigmoid(v,r);
+	}
+	return v;
+}
+
+long fn_mic(long v) 
+{
+	int lc;
+	for (lc=0; lc<SDATASZ; lc++) 
+	{
+		v += sData[lc];  // sum the buffer
+		sData[lc]=0;     // and clear
+	}
+	MIC_SAMPLING=1; // on by default, but make sure
+	return v;
+}
+
+long fn_find(long v) 
+{
+	int lc;
+	if (v==2) 
+	{
+		int n;
+		epop(); // this will be ZERO
+		n=(int)epop();
+		for (lc=0; lc<nis; lc++)
+		{
+			if (scene[lc]==n)
+			{
+				v=(long)lc; break;
+			}
+			if (scene[lc]>n)
+			{
+				if (lc>0) v=(long)(lc-1); 
+				break;
+			}
+		}
+		if (lc==nis) v=(long)(nis-1); // no match
+	}
+	return v;
+}
+
+
+long fn_range(long v) 
+{
+	if (v==3) 
+	{
+		long a,b,c;
+		c=epop();
+		b=epop();
+		a=epop();
+		if (a<b) 
+			v=b;
+		else
+		if (a>c) 
+			v=c;
+		else 
+			v=a;
+	}
+	return v;
+}
+
+long fn_rom(long v) 
+{	// $ROM(x) or $ROM$(X) or $ROM@(x)
+	/*
+	if (**str=='$')
+    {
+		v = eeprom_read_byte((BYTE*)(PERSIST+v));
+	}
+    if (**str=='@')
+    {
+		nis =(int) v;
+		for (lc=0;lc<nis;lc++)
+			scene[lc] = eeprom_read_byte((BYTE*)(PERSIST+lc));
+	}
+	*/
+	return eeprom_read_byte((BYTE*)(FIRMWARE+v));
+}
+
+long fn_zeros(long v) 
+{
+	int lc;
+	for (lc=0; lc<(int)v && lc<SCENESZ; lc++)
+	{
+		scene[lc]=0;
+	}
+	nis=lc;
+	return 0;
+}
+
+long fn_stand(long v) 
+{
+	int lc;
+	if (v<1)  v=1;
+	if (v>18) v=18;
+	for (lc=0; lc<v; lc++)
+	{
+		if (v<=16)
+			scene[lc]=basic16[lc];
+		else
+			scene[lc]=basic18[lc];
+	}
+	nis=lc;
+	return 0;
+}
+
+long (*fnctab[])(long) = {
+	fn_volt,  //sVOLT 
+	fn_ir,    //sIR 
+	fn_kbd,   //sKBD 
+	fn_dummy, //sRND,   ***
+	fn_servo, //sSERVO 
+	fn_tick,  //sTICK, 
+	fn_dummy, //sPORT,  ***
+	fn_rom,   //sROM
+	fn_ns,    //sTYPE
+	fn_abs,   //sABS
+	fn_ir2act,//sIR2ACT
+	fn_kir,   //sKIR
+	fn_find,  //sFIND
+	fn_cb2i,  //sCVB2I
+	fn_ne,    //sNE
+	fn_ns,    //sNS
+	fn_max,   //sMAX
+	fn_sum,   //sSUM
+	fn_min,   //sMIN
+	fn_norm,  //sNORM
+	fn_sqrt,  //sSQRT
+	fn_sin,   //sSIN 
+	fn_cos,   //sCOS
+	fn_imax,  //sIMAX
+	fn_dummy, //sHAM,    ***
+	fn_range, //sRANGE 
+	fn_sig,   //sSIG 
+	fn_dsig,  //sDSIG
+	fn_stand, //sSTAND
+	fn_zeros, //sZEROS
+	fn_mic,   //sMIC 
+	fn_gx,    //sGX 
+	fn_gz,    //sGY 
+	fn_gz,    //sGZ 
+	fn_psd,   //sPSD
+	fn_grey,  //sGREY 
+	fn_turtle //sTURTLE
+};
+
 int get_special(char **str, long *res, int t)
 {
-	long v=*res;	
 	int lc;
-
+	long v=*res;
 	switch(t) {
-	case sSQRT: // $SQRT(x)
-		v = Sqrt(v);
-		break;
-	case sSIN: // $SIN(x)
-		v = Sin(v%256);
-		break;
-	case sABS: // $ABS(x)
-		v = v<0?-v:v;
-		break;
-	case sCOS: // $COS(x)
-		v = Cos(v%256);
-		break;
-	case sCVB2I: // $CVB2I(x)  255 -> -1
-		v = cbyte(v);
-		break;
-	case sGREY: 
-		// "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'. "
-		v =  " .:-=+*#%@"[v%10];
-		break;
-	case sTURTLE: 
-		{
-		char *p="^>V<";
-		char *t = strchr(p,(char)v);
-		if (t==(char *)0)
-			v= -1;
-		else
-			v= t-p;
-		}
-		break;
-	case sIR2ACT: //$IR2ACT(10) -> x
-		v=(long)map[(int)v];
-		break;
-	case sNORM:
-		for (lc=0; lc<nis; lc++)
-		{
-			v += (scene[lc]*scene[lc]);
-		}
-		v=Sqrt(v);
-		break;
-	case sMIN:
-		v=scene[0];
-		for (lc=0; lc<nis; lc++)
-		{
-			if (scene[lc]<(int)v) v=(long)scene[lc];
-		}
-		break;
-	case sSUM:
-		v=0;
-		for (lc=0; lc<nis; lc++)
-		{
-			v += (long)scene[lc];
-		}
-		break;
-	case sDSIG: // $DISG(x) -> x*(1-x)
-		v = v*(1-v);
-		break;
-	case sSERVO: // SERVO(nn)
-		//$servo
-		if (v==32)
-			v=readservos(0);
-		else
-			v=wckPosRead(v);
-		break;
-	case sMIC:
-		for (lc=0; lc<SDATASZ; lc++) 
-		{
-			v += sData[lc];  // sum the buffer
-			sData[lc]=0;     // and clear
-		}
-		MIC_SAMPLING=1; // on by default, but make sure
-		break;
-	case sSTAND: // $STAND(x)
-		if (v<1)  v=1;
-		if (v>18) v=18;
-		for (lc=0; lc<v; lc++)
-		{
-			if (v<=16)
-				scene[lc]=basic16[lc];
-			else
-				scene[lc]=basic18[lc];
-		}
-		nis=lc;
-		return ARRAY;
-	case sZEROS: // $ZEROS(x)
-		for (lc=0; lc<(int)v && lc<SCENESZ; lc++)
-		{
-			scene[lc]=0;
-		}
-		nis=lc;
-		return ARRAY;
-	case sGX:
-		Acc_GetData();
-		v=x_value;
-		break;	
-	case sGY:
-		Acc_GetData();
-		v=y_value;
-		break;		
-	case sGZ:
-		Acc_GetData();
-		v=z_value;
-		break;	
-	case sNE:
-		v=nis;
-		break;	
-	case sTYPE:
-	case sNS:
-		v=nos;
-		break;	
-	case sPSD:
-		Get_AD_PSD();
-		v = gDistance;
-		break;
-	case sVOLT:
-		Get_VOLTAGE();
-		v = gVOLTAGE;
-		break;
-	case sIR:
-		while ((v= irGetByte())<0) ; //wait for IR
-		break;
-	case sKBD:
-		while ((v= uartGetByte())<0) ; // wait for input
-		break;	
-	case sKIR:
-		v=uartGetByte();
-		if (v<0) v=irGetByte();
-		break;
-	case sTICK:
-		v=gtick;
-		break;
 	case sRND: 
 		if (v==3)
 		{
@@ -204,53 +412,11 @@ int get_special(char **str, long *res, int t)
 			return ARRAY;
 		}
 		else
-		   v=rand();
-		break;	
-	case sSIG: //$SIG(n,t)
-		if (v==2) 
 		{
-			long r=epop();
-			v=epop();
-			v=sigmoid(v,r);
+		   *res = rand();
+		   return NUMBER;
 		}
-		break;	
-	case sRANGE:
-		if (v==3) 
-		{
-			long a,b,c;
-			c=epop();
-			b=epop();
-			a=epop();
-			if (a<b) 
-				v=b;
-			else
-			if (a>c) 
-				v=c;
-			else 
-				v=a;
-		}
-		break;
-	case sFIND:
-		if (v==2) 
-		{
-			int n;
-			epop(); // this will be ZERO
-			n=(int)epop();
-			for (lc=0; lc<nis; lc++)
-			{
-				if (scene[lc]==n)
-				{
-					v=(long)lc; break;
-				}
-				if (scene[lc]>n)
-				{
-					if (lc>0) v=(long)(lc-1); 
-					break;
-				}
-			}
-			if (lc==nis) v=(long)(nis-1); // no match
-		}
-		break;		
+		break;			
 	case sPORT: // PORT:A:n
 		v=0;
 		if (**str==':') {
@@ -270,44 +436,13 @@ int get_special(char **str, long *res, int t)
 		}				
 		*res=get_bit(v, t);         //need to read port with PINA etc 
 		return NUMBER; 
-
-	case sROM: // $ROM(x) or $ROM$(X) or $ROM@(x)
-		v = eeprom_read_byte((BYTE*)(FIRMWARE+v));
-		break;
-/*              if (**str=='$')
-                {
-			v = eeprom_read_byte((BYTE*)(PERSIST+v));
-		}
-                if (**str=='@')
-                {
-			nis =(int) v;
-			for (lc=0;lc<nis;lc++)
-				scene[lc] = eeprom_read_byte((BYTE*)(PERSIST+lc));
-		}*/
-	case sMAX:
-	case sIMAX:
-		// MAX(@A,[n]) 
-		{
-		int m=scene[(int)v];
-		int k;
-		for (lc=0; lc<nis  && lc<SCENESZ; lc++)
-		{
-			if (scene[lc]>m) { m=scene[lc]; k=lc;}
-		}
-		v=(t==sMAX)?m:k;
-		}
-		break;	
-	case sHAM:
-		// calculate HAMMING distance between 2 arrays
-		// $HAM(n,@A,@B) - withdrawn
-		v=0;
-		break;
-
 	default:
-		return -1;
+		*res = (*fnctab[t])(v);
+		if (t==sZEROS || t==sSTAND)
+			return ARRAY;
+		else
+			return NUMBER;
 	}
-	*res=v;
-	return NUMBER;
 }
 
 

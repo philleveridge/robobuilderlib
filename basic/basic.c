@@ -99,22 +99,12 @@ void basic_start(int dbf);
 
 /***********************************/
 
-int   fix_fftr(int f[], int m, int inverse);
 void  lights(int n); 
 extern BYTE cpos[];
-extern WORD send_hex_str(char *bus_str, int n);
-extern WORD send_hex_array(int *p, int n);
 
-extern BYTE				sData[];
-extern int 				sDcnt;
 extern void				sample_sound(int);
 extern BYTE				nos;
-extern volatile BYTE	MIC_SAMPLING;
-extern volatile BYTE    MIC_LEVEL;
-extern volatile WORD    MIC_DLY;
-extern volatile BYTE    MIC_STOP;
-extern volatile BYTE    MIC_RATE;
-extern volatile BYTE    MIC_NOS;
+
 extern volatile WORD	gtick;
 
 const prog_char tokens[NOTOKENS][7] ={
@@ -799,7 +789,7 @@ void basic_start(int dbf)
 		
 		if (dbf && (line.token==LET || line.token==GET || line.token==FOR || line.token==SERVO || line.token==NEXT ))
 		{
-				rprintf ("%c = %ld\r\n", line.var+'A', variable[line.var]);
+				rprintf ("%c = %ld\r\n", line.var+'A', getvar(line.var));
 		}
 		if (tmp == 0) tmp=tc;
 	}

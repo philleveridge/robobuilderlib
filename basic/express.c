@@ -54,18 +54,30 @@ const  prog_char  specials[37][7] = {
 };
 
 
-long variable[26]; // only A-Z at moment
-
 extern void readtext(int ln, unsigned char *b);
-extern char *strchr(const char *, int);
+extern char *strchr(const char *, char);
 
 char arrayname;
 
-int preci(char s)
+
+/*************************************************************************************************************
+
+           Variable routines
+
+*************************************************************************************************************/
+
+static long variable[26]; // only A-Z at moment
+void setvar(char n, long v)
 {
-	char *p = strchr(o,s);
-	if (p==0) return -1;
-	return mp[(p-o)];
+	if (n>=0 && n<26)
+		variable[n]=v;
+}
+
+long getvar(char n)
+{
+	if (n>=0 && n<26)
+		return variable[n];
+	return 0;
 }
 
 void showvars()
@@ -85,6 +97,12 @@ void showvars()
 	rprintf ("%c = %ld  ", 'A'+i, variable[i]);
 	rprintfCRLF();
 }
+
+/*************************************************************************************************************
+
+           Operator and value Stack routines
+
+*************************************************************************************************************/
 
 static long stack[MAX_DEPTH]; 
 static char ops[MAX_DEPTH];	
@@ -124,6 +142,19 @@ long epop()
 		op=0;sp=0;
 		return 0;
 	}
+}
+
+/*************************************************************************************************************
+
+           Expression parser
+
+*************************************************************************************************************/
+
+int preci(char s)
+{
+	char *p = strchr(o,s);
+	if (p==0) return -1;
+	return mp[(p-o)];
 }
 
 unsigned char eval_expr(char **str, long *res)
@@ -219,8 +250,6 @@ unsigned char eval_expr(char **str, long *res)
 			if (c=='>' && **str=='=') {c='g'; (*str)++;}
 			if (c=='<' && **str=='=') {c='l'; (*str)++;}
 			if (c=='<' && **str=='>') {c='n'; (*str)++;}
-
-
 
 			if (op>top && (preci(c)<=preci(ops[op-1])))
 			{
@@ -456,6 +485,12 @@ unsigned char eval_expr(char **str, long *res)
 	sp=tsp; 
 	return NUMBER;
 }
+
+/*************************************************************************************************************
+
+           Math operations
+
+*************************************************************************************************************/
 
 long math(long n1, long n2, char op)
 {
