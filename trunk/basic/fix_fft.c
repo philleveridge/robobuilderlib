@@ -43,7 +43,10 @@
 
 #ifndef AVR
 	//#define inline __forceinline
-	#define inline
+#define inline
+#define PROGMEM
+#define pgm_read_word(a) *(a)
+
 #endif
 
 #define short int
