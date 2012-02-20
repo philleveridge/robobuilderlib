@@ -1,14 +1,24 @@
-#summary Simple Mini Basic interpreter
+#summary Integer Basic interpreter for embedded systems
 #labels Phase-Requirements
 = Introduction =
 
-This gives Robobuilder the ability to create simple actions in an elementary basic language. The software is beta release.
+This custom firmware for Robobuilder gives it the ability to create and store simple programs in an elementary BASIC language. The software is stable beta release.
 
-*_New version  firmware (v424)_* - http://robobuilderlib.googlecode.com/files/Basic424.hex
+  *_Latest version firmware (v424)_ http://robobuilderlib.googlecode.com/files/Basic424.hex
 
-* Features - improved stability and expression handling. Adds AND and OR
+  * Features - improved stability and expression handling. 
+  # Operator precedence. i.e PRINT 3*5+4*6 now prints 39 (not 87!) 
+  # AND, OR and MOD are supported i.e. PRINT (1=1) AND (2=2) prints 1 (true). The old | % & still work as well 
+  # Complex expressions now work such as (from dynamic gate demo) 
+    {{{ LET P=@B[Y]+@A[Y]*$SIN((X+@C[y])*16)/32768 }}}
+  # Expression use 32 bit integer arithmetic - previously it was 16 bit, this make the range much better for complex expression - like above
+  # There's a new variant of MOVE command MOVE A,B,C,D
+  # Adds improved list handling features
+  # Reduce memory footprint - better stability
+  # Versions for Linux and Windows now has floating point. 
 
-Next extract Basic.hex and upload on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
+  * Getting started
+Download Basic424.hex and upload on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
 
 If you're not using Windows, you can still download the custom firmware into your bot using the [ http://www.strout.net/info/robotics/utilities/avrbl-downloader/AVRBL Downloader tool]. Or there's a Java based tool available in the source tree.
 
