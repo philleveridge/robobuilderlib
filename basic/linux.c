@@ -367,6 +367,7 @@ void *monitor_proc(void *arg)
 	}
 
 }
+extern char device[];
 
 
 void main(int argc, char *argv[])
@@ -375,6 +376,8 @@ void main(int argc, char *argv[])
 	int sf=0;
 
 	PORTA=3;
+
+	strcpy(device,"/dev/ttyUSB0");
 
 	for (int i=1; i<argc; i++)
 	{
@@ -395,6 +398,14 @@ void main(int argc, char *argv[])
 
 		if (!strcmp(argv[i],"IR"))
 			irf=1;
+
+
+		if (!strcmp(argv[i],"COM") && i<argc-1)
+		{
+			// pick up portname
+			strcpy(device,argv[i+1]);
+			i++;
+		}
 	}
 
 	printf("Running Unix emulator ...\n");

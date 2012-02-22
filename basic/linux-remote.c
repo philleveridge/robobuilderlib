@@ -10,11 +10,11 @@ int fd = -1;
 
 struct termios oldtio,newtio;
 
-const char *device = "/dev/ttyUSB0";
-
 long Baud = B115200;
 
 int response[32];
+
+char device[128];
 
 void openport()
 {
@@ -103,7 +103,7 @@ static pthread_mutex_t cs_mutex = PTHREAD_MUTEX_INITIALIZER;
 void initsocket(int f)
 {
 	// set up I/O
-	DBO(printf ("LINUX: init i/o [%s]\n",((f==1)?"Fast":"Normal"));)
+	DBO(printf ("LINUX: init i/o [%s %s]\n",device, ((f==1)?"Fast":"Normal"));)
 
 	if (f==1)
 		Baud = B230400;
