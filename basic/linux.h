@@ -30,6 +30,11 @@ char _port[8];
 #define RUN_LED1_OFF
 
 #define rprintf			printf 
+#define PSTR(a)			a
+#define rprintfProgStr		printf
+#define strlen_P		strlen
+#define strcmp_P		strcmp	
+#define strncmp_P		strncmp	
 
 //from win.c
 extern void			eeprom_read_block (unsigned char *b, char *d, int l);
