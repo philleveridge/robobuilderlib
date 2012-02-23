@@ -725,11 +725,19 @@ void extend(char *x)
 	{
 		if (get_str_token("LOAD")==1)
 		{
-			matrixload(128);
+			if (*e != '\0')
+				v=eval_oxpr(e);
+			else
+				v.number=128;
+			matrixload(v.number);
 		}
 		if (!strcmp(tokbuff,"STOR"))
 		{
-			matrixstore(nis);
+			if (*e != '\0')
+				v=eval_oxpr(e);
+			else
+				v.number=nis;
+			matrixstore(v.number);
 		}
 		return;
 	}

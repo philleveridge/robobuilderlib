@@ -26,11 +26,8 @@
 #include "edit.h"
 #include "express.h"
 #include "functions.h"
+#include "lists.h"
 
-#define SCENESZ 128
-
-extern int				scene[];	  // generic array
-extern unsigned char	cpos[];
 extern int				nis;
 extern int				BasicErr;
 extern BYTE				sData[];
@@ -46,10 +43,13 @@ extern BYTE EEMEM		PERSIST				[];  // persistent data store
 const unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
 
 extern long epop(); //from express.c
+extern int  dbg;
 
 const unsigned char smap[40] = {
 	1,  2,  3,  4,  5,  6,  8,  10, 12, 15, 19, 24, 31, 38, 47, 57, 69, 82, 97, 112,
 	128,144,159,174,187,199,209,218,225,232,237,241,244,246,248,250,251,252,253,254};
+
+static int fn_type;
 
 long  fn_dummy(long v)
 {
@@ -78,7 +78,7 @@ long  fn_abs(long v)
 
 long  fn_cb2i(long v)
 {
-	cbyte(v);
+	return cbyte(v);
 }
 
 long fn_grey(long v)
@@ -140,7 +140,7 @@ long fn_imax(long v)
 {
 	// IMAX(@A,[n]) 
 	int m=scene[(int)v];
-	int lc, k;
+	int lc, k=0;
 	for (lc=0; lc<nis  && lc<SCENESZ; lc++)
 	{
 		if (scene[lc]>m) { m=scene[lc]; k=lc;}
@@ -286,7 +286,6 @@ long fn_find(long v)
 	return v;
 }
 
-
 long fn_range(long v) 
 {
 	if (v==3) 
@@ -306,8 +305,33 @@ long fn_range(long v)
 	return v;
 }
 
+long fn_ham(long v) 
+{
+	// calculate HAMMING distance between 2 arrays
+	// $HAM(@A,@B)
+	if (v==2)
+	{
+		int i;
+		char a,b;
+		a=(char)epop();
+		b=(char)epop();
+		if (listsize(a) != listsize(b))
+			return 0;
+		v=0;
+		for (i=0; i<listsize(a); i++)
+		{
+			int v1 = listread(a,i);
+			int v2 = listread(b,i);
+			v += (v1==v2)?0:1;
+			if (dbg) {rprintf("%d %d %d %ld\r\n",i,v1,v2,v);}
+		}
+	}
+	return v;
+}
+
 long fn_rom(long v) 
-{	// $ROM(x) or $ROM$(X) or $ROM@(x)
+{	//$ROM(x) or $ROM$(X) or $ROM@(x)
+	//need reformat  $ROM(x[,t]) t=0, t=1, t=2
 	/*
 	if (**str=='$')
     {
@@ -323,6 +347,44 @@ long fn_rom(long v)
 	return eeprom_read_byte((BYTE*)(FIRMWARE+v));
 }
 
+long fn_port(long v)
+{
+	//need reformat  $port(A,n) A=0-6 (A-G), n=0-7
+	if (v==2)
+	{
+		long a,n;
+		n=epop();
+		a=epop();
+		return get_bit((int)(a%7),(int)(n%8));         //need to read port with PINA etc 
+	}
+	return 0;			
+}
+
+long fn_rnd(long v) 
+{
+	int lc;
+	if (v==3)
+	{
+		long a=0,b=0,c=0;
+		c=epop();
+		b=epop();
+		a=epop();
+		if (b>c) swap(&b,&c);
+
+		for (lc=0; lc<a; lc++)
+		{
+			scene[lc]=(rand()%(c-b))+b;
+		}
+		nis=(int)a;
+		fn_type=ARRAY;
+		return 0;
+	}
+	else
+	{
+		return rand();
+	}
+}
+
 long fn_zeros(long v) 
 {
 	int lc;
@@ -331,6 +393,7 @@ long fn_zeros(long v)
 		scene[lc]=0;
 	}
 	nis=lc;
+	fn_type=ARRAY;
 	return 0;
 }
 
@@ -347,6 +410,7 @@ long fn_stand(long v)
 			scene[lc]=basic18[lc];
 	}
 	nis=lc;
+	fn_type=ARRAY;
 	return 0;
 }
 
@@ -354,10 +418,10 @@ long (*fnctab[])(long) = {
 	fn_volt,  //sVOLT 
 	fn_ir,    //sIR 
 	fn_kbd,   //sKBD 
-	fn_dummy, //sRND,   ***
+	fn_rnd,   //sRND
 	fn_servo, //sSERVO 
-	fn_tick,  //sTICK, 
-	fn_dummy, //sPORT,  ***
+	fn_tick,  //sTICK 
+	fn_port , //sPORT,  ***
 	fn_rom,   //sROM
 	fn_ns,    //sTYPE
 	fn_abs,   //sABS
@@ -375,7 +439,7 @@ long (*fnctab[])(long) = {
 	fn_sin,   //sSIN 
 	fn_cos,   //sCOS
 	fn_imax,  //sIMAX
-	fn_dummy, //sHAM,    ***
+	fn_ham,   //sHAM
 	fn_range, //sRANGE 
 	fn_sig,   //sSIG 
 	fn_dsig,  //sDSIG
@@ -392,32 +456,9 @@ long (*fnctab[])(long) = {
 
 int get_special(char **str, long *res, int t)
 {
-	int lc;
 	long v=*res;
-	switch(t) {
-	case sRND: 
-		if (v==3)
-		{
-			long a=0,b=0,c=0;
-			c=epop();
-			b=epop();
-			a=epop();
-			if (b>c) swap(&b,&c);
-
-			for (lc=0; lc<a; lc++)
-			{
-				scene[lc]=(rand()%(c-b))+b;
-			}
-			nis=(int)a;
-			return ARRAY;
-		}
-		else
-		{
-		   *res = rand();
-		   return NUMBER;
-		}
-		break;			
-	case sPORT: // PORT:A:n
+	if (t==sPORT)
+	{
 		v=0;
 		if (**str==':') {
 			(*str)++;
@@ -436,13 +477,10 @@ int get_special(char **str, long *res, int t)
 		}				
 		*res=get_bit(v, t);         //need to read port with PINA etc 
 		return NUMBER; 
-	default:
-		*res = (*fnctab[t])(v);
-		if (t==sZEROS || t==sSTAND)
-			return ARRAY;
-		else
-			return NUMBER;
 	}
+	fn_type=NUMBER;
+	*res = (*fnctab[t])(v);
+	return fn_type;
 }
 
 
@@ -455,19 +493,8 @@ int str_expr(char *str)
 	return str-p;
 }
 
-
-int put_special(int var, int n)
-{
-	if (var>= 30)
-	{
-		set_bit((var-30)/10, (var % 10), n);
-	}
-	return 0;
-}
-
 int sigmoid(int v, int t)
 {
-
 	switch (t)
 	{
 	case 0: return v; // no change
@@ -479,6 +506,15 @@ int sigmoid(int v, int t)
 		if(v>19)  v=19;
 		v=(smap[v+20]-127)/4; //commented out for now
 		return v;
+	}
+	return 0;
+}
+
+int put_special(int var, int n)
+{
+	if (var>= 30)
+	{
+		set_bit((var-30)/10, (var % 10), n);
 	}
 	return 0;
 }
@@ -521,8 +557,6 @@ int get_bit(int pn, int bn)
 	}
 	return n;
 }
-
-
 
 void set_bit(int p, int b, int n)
 {
