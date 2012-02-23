@@ -26,12 +26,11 @@
 #include "edit.h"
 #include "express.h"
 #include "functions.h"
+#include "lists.h"
 
-#define SCENESZ 128
 
-extern int				scene[];	  // generic array
 extern unsigned char	cpos[];
-extern int				nis;
+
 extern int				BasicErr;
 extern BYTE				sData[];
 extern int 				sDcnt;
@@ -41,8 +40,8 @@ extern volatile WORD	gtick;
 
 extern int dbg;
 
-#define MAXLIST 5
-#define LISTMEM 128
+int scene[SCENESZ];	  	// generic/current (!) array
+int nis=0;        		// number of item isn array
 
 static int  listmem	[LISTMEM];
 static char names	[MAXLIST];

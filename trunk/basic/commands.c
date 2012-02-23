@@ -24,12 +24,10 @@
 #include "functions.h"
 #include "lists.h"
 
-
 #define MAX_TOKEN 		8
 #define MAX_FOR_NEST	6
 #define MAX_GOSUB_NEST	5
 #define MAX_FOR_EXPR	20 
-#define SCENESZ 		128
 
 static int  forptr[MAX_FOR_NEST];   			  	// nested for/next
 static char nxtptr[MAX_FOR_NEST][MAX_FOR_EXPR];   	// nested for/next
@@ -41,12 +39,8 @@ static int gp;
 extern int BasicErr;
 extern int dbg;
 
-int scene[SCENESZ];	  	// generic/current (!) array
-int nis=0;        		// number of item isn array
-
 int speed=2;
 int mtype=2;
-
 
 int cs=0;
 int lnc[20];         //line cache of pointers
@@ -211,7 +205,6 @@ int cmd_print(line_t l)
 		switch (eval_expr(&p, &n))
 		{
 		case NUMBER:
-			//rprintfNum (10, 6, 1,' ', n);
 			rprintf ("%ld", n); //COMPLEX FORM
 			break;
 		case STRING:
@@ -290,7 +283,7 @@ int cmd_print(line_t l)
 extern int nos;
 int cmd_stand(line_t l)
 {
-	long n;
+	long n=nos;
 	char *p=l.text;
 	if (eval_expr(&p, &n)==NUMBER)
 		standup(n);

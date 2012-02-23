@@ -175,6 +175,20 @@ namespace RobobuilderLib
 
         /*------------------------------------- -------------------------------------*/
 
+        string ProcessString(string txt)
+        {
+            foreach (string n in constants.Keys)
+            {
+                txt = Regex.Replace(txt, n, constants[n].ToString(), RegexOptions.IgnoreCase);
+            }
+
+            foreach (string n in labels.Keys)
+            {
+                txt = Regex.Replace(txt, n, labels[n].ToString(), RegexOptions.IgnoreCase);
+            }
+            return txt;
+        }
+
         string GetWord(ref string w)
         {
             int i;
@@ -527,6 +541,8 @@ namespace RobobuilderLib
                 }
 
                 /*************/
+
+                z = ProcessString(z); //switch constants & labels
 
                 switch ((KEY)t)
                 {

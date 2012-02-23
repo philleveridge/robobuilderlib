@@ -24,14 +24,13 @@
 #include "functions.h"
 #include "lists.h"
 
-extern int				nis;
 extern int				BasicErr;
-extern int				scene[];	  // generic array
+
 extern unsigned char	cpos[];
 extern BYTE				sData[];
 extern int 				sDcnt;
 
-#define SCENESZ 128
+
 extern BYTE				nos;
 extern volatile BYTE	MIC_SAMPLING;
 extern volatile BYTE    MIC_NOS;
@@ -403,7 +402,7 @@ unsigned char eval_expr(char **str, long *res)
 					noargs=3;
 				}
 
-				if (i==sSIG || i==sFIND)
+				if (i==sSIG || i==sFIND || i==sHAM)
 				{
 					noargs=2;
 				}
@@ -413,11 +412,15 @@ unsigned char eval_expr(char **str, long *res)
 					n1=noargs;
 					while (noargs  > 0)
 					{
+						int ty;
 						tmp=0;
 						(*str)++;
-						eval_expr(str, &tmp);
-						epush(tmp);
-						
+						ty= eval_expr(str, &tmp);
+						if (ty==NUMBER)
+							epush(tmp);
+						else
+							epush(arrayname);
+
 						if (**str!=')' && **str!=',')
 						{
 							return -1;

@@ -72,7 +72,6 @@ int remote=0;
 
 #define MAX_LINE  		100 
 #define MAX_TOKEN 		8
-#define SCENESZ 		128
 
 extern int dbg;
 
@@ -971,11 +970,11 @@ void basic_list()
 			}
 
 			rprintfStr (cp);
-			rprintfStr (" THEN ");
+			rprintf (" THEN ");
 			rprintfStr (p_then+1);
 			if (!(*(p_else+1)=='0' && *(p_else+2)==0))
 			{
-				rprintfStr (" ELSE ");
+				rprintf (" ELSE ");
 				rprintfStr (p_else+1);
 			}
 		}
@@ -1093,30 +1092,11 @@ void binmode()
 }
 #endif
 
-void outdigit(int n,int c)
-{
-	char tb[6];
-	int i;
-	if (c>4) return;
-
-	for (i=0; i<c; i++)
-	{
-		tb[c-i-1]=(n%10)+'0';
-		n=n/10;
-	}
-	tb[c]='\0';
-	rprintfStr(tb);
-}
 
 void uptime()
 {
-        outdigit(gHOUR,2);
-        rprintfChar(':');
-        outdigit(gMIN,2);
-        rprintfChar(':');
-        outdigit(gSEC,2);
-        rprintfChar('-');
-        outdigit(gMSEC,3);
+
+	rprintf("%02d:%02d:%02d-%03d",gHOUR,gMIN,gSEC,gMSEC);
 }
 
 void testforreset()
@@ -1189,13 +1169,8 @@ void basic()
 			    s=gSEC-s;
 			    if (s<0)  {s=s+60; m=m-1;}
 			    m=gMIN-m;
-			    rprintfProgStr(PSTR("Elapsed Time "));
-		        outdigit(m,2);
-		        rprintfChar(':');
-		        outdigit(s,2);
-		        rprintfChar('-');
-		        outdigit(ms,3);
-		        rprintfCRLF();
+
+				rprintf("Elapsed Time %02d:%02d-%03d\n",m,s,ms);
 		    }
 			break;
 		case 'R': // run

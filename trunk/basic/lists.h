@@ -2,6 +2,13 @@
 #ifndef LISTS_H
 #define LISTS_H
 
+#define SCENESZ 128
+#define MAXLIST 5
+#define LISTMEM 128
+
+extern int				scene[];	  // generic array
+extern int				nis;
+
 extern char arrayname;
 extern int  listread   (char ln, int n);
 extern void listdelete (char ln, int indx1, int indx2, int selflg);
