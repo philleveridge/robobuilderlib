@@ -547,7 +547,6 @@ void basic_load(int tf)
 		case NETWORK:
 		case SELECT:
 		case EXTEND:
-		case ON:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -643,6 +642,25 @@ void basic_load(int tf)
 				}
 				else
 					strcat(cp,",0");
+			}
+			break;
+		case ON:
+			{
+				char *p;
+				newline.text=cp;
+				p=strstr(cp, " GOSUB");
+				if (p !=0)
+				{
+					*p++=',';
+
+					while(1) {
+					   *p=*(p+6);
+					   p++;
+					   if (*p==0) break;
+					}
+				}
+				else
+					BasicErr=3;
 			}
 			break;
 		case PLAY: 
@@ -962,7 +980,7 @@ void basic_list()
 
 		if (line.token==PRINT && line.var==2)
 			rprintf ("@ ");
-			
+		
 		if (line.token==IF)
 		{
 			// replace ? THEN,  : ELSE (unless :0)
@@ -999,7 +1017,25 @@ void basic_list()
 			}
 		}
 		else
-		if (line.token==NEXT) 
+		if (line.token==ON)
+		{
+			char *cp2, *p=0, *cp = line.text;
+			int l = strlen(cp);
+			cp2=cp+l;
+			while (cp2>cp)
+			{
+				if (*cp2==',')
+				{
+					p=cp2;
+					*p='\0';
+				}
+				cp2--;
+			}
+			rprintfStr (cp);
+			rprintf (" GOSUB ");
+			rprintfStr (p+1);
+		}
+		else if (line.token==NEXT) 
 		{
 			rprintf ("%c", line.var+'A');
 		}
