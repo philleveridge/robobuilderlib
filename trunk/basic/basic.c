@@ -117,7 +117,7 @@ const prog_char tokens[NOTOKENS][7] ={
 	"MTYPE", "LIGHTS", "SORT",   "FFT",
 	"SAMPLE","SCALE",  "DATA",
 	"SET", 	"INSERT", "DELETE",
-	"GEN",  "NETWOR", "SELECT", "!"
+	"GEN",  "NETWOR", "SELECT", "!", "ON",
 };
 
 extern const prog_char *specials[];
@@ -547,6 +547,7 @@ void basic_load(int tf)
 		case NETWORK:
 		case SELECT:
 		case EXTEND:
+		case ON:
 			newline.text=cp;
 			break;
 		case LIST:
@@ -718,7 +719,10 @@ void basic_run(int dbf)
 	basic_start(dbf);
 }
 
-
+extern int timer;
+extern int tline;
+extern void push_line(unsigned int n);
+extern int gotoln(int gl);
 
 void basic_start(int dbf)
 {
@@ -729,6 +733,9 @@ void basic_start(int dbf)
 
 	BYTE tmp=0;
 	line_t line;
+	gtick=0;
+	timer=0;
+	tline=0;
 
 	init_cmdptr();
 
@@ -741,6 +748,19 @@ void basic_start(int dbf)
 		{
 			rprintf("Runtime error %d on line %d\r\n", BasicErr, line.lineno);
 			return;
+		}
+
+		if (timer >0 && gtick>timer)
+		{
+			//printf("trig %d %d\n", timer, tline);
+			int t;
+			push_line(nxtline);
+
+			t=gotoln(tline);
+			if (t<0)
+				BasicErr=6; //invalid line number
+			setline(t);
+			gtick=0;
 		}
 
 		line = readln(buf);

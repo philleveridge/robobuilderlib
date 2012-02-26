@@ -76,6 +76,9 @@ extern int 	dbg;
 extern int	simflg;
 extern int	remote;
 
+extern volatile WORD	gtick;
+extern volatile WORD	mstimer;
+
 #define rprintfProgStr	printf
 #define PSTR(a)			a
 #define strcmp_P		strcmp
