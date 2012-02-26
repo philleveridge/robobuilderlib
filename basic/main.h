@@ -55,7 +55,7 @@ extern volatile WORD    gMSEC;
 extern volatile BYTE    gSEC;
 extern volatile BYTE    gMIN;
 extern volatile BYTE    gHOUR;
-extern volatile WORD	gTicks;
+extern volatile WORD	gtick;
 extern volatile WORD	gSEC_DCOUNT;
 extern volatile WORD	gMIN_DCOUNT;
 

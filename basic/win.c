@@ -3,6 +3,7 @@
 #include <direct.h>
 #include <conio.h>
 #include <math.h>
+#include <process.h>
 
 #define GetCurrentDir _getcwd
 
@@ -97,11 +98,6 @@ void PSD_off() {}
 extern char FIRMWARE[64];  
 
 extern unsigned char BASIC_PROG_SPACE[];
-
-volatile WORD    gMSEC;
-volatile BYTE    gSEC;
-volatile BYTE    gMIN;
-volatile BYTE    gHOUR;
 
 extern WORD psize; // points to next elemt
 
@@ -236,7 +232,65 @@ void initfirmware() {
 	binmode2();
 }
 
+
+volatile WORD	gtick;
+volatile WORD	mstimer;
+volatile WORD	gSEC_DCOUNT;
+volatile WORD	gMIN_DCOUNT;
+volatile WORD	gMSEC=0;
+volatile BYTE	gSEC=0;
+volatile BYTE	gMIN=0;
+volatile BYTE	gHOUR=0;
+
 int irf=0;
+
+/* Emulates the timer interupt */
+void monitor_proc(void *arg)
+{
+	while(1) // forever
+	{
+		Sleep(1);
+
+		// 1ms
+		gtick+=10;
+		if (mstimer>0) mstimer-=10;
+
+		gMSEC += 10;
+
+	    if(gMSEC>1000)
+	    {
+			// 1s
+	        gMSEC=0;
+
+	        if(gSEC_DCOUNT > 0)	gSEC_DCOUNT--;
+
+	        if(++gSEC>59)
+	        {
+				// 1m
+	            gSEC=0;
+				if(gMIN_DCOUNT > 0)	gMIN_DCOUNT--;
+
+	           if(++gMIN>59)
+	           {
+					// 1h
+	                gMIN=0;
+	                if(++gHOUR>23)
+	                    gHOUR=0;
+	            }
+	        }
+	    }
+
+	    if (gMSEC%100==0)
+	    {
+	    	// every 100ms
+
+	    	//if (irf==1)
+	    	//	readIR();// check robot status (IR etc)
+	    }
+
+	}
+}
+
 extern char device[];
 
 int main(int argc, char *argv[])
@@ -283,6 +337,7 @@ int main(int argc, char *argv[])
 	if (lf)
 		binmode();
 
+	 _beginthread( monitor_proc, 0, (void*)12 );
 	basic();
 }
 

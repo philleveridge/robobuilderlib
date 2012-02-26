@@ -495,10 +495,16 @@ int cmd_end(line_t l)
 		return 0xCC;
 }
 
+void push_line(unsigned int n)
+{
+	if (gp<MAX_GOSUB_NEST-1)
+		gosub[gp++]=n;
+}
+
 int cmd_gosub(line_t l)
 {	
 	int t;
-	gosub[gp++]=nxtline;
+	push_line(nxtline);
 	t=gotoln(l.value);
 	if (t<0)
 		return 0xCC;	// this needs an error message		
@@ -1181,6 +1187,45 @@ int cmd_sample(line_t ln)
 	return 0;
 }
 
+int timer=0;
+int tline=0;
+
+int cmd_on(line_t ln)
+{
+	char *p=ln.text;
+	long a,b;
+	int t;
+	// ON TIME x GOSUB y
+	if (strncmp(p,"TIME",4)!=0)
+	{
+			BasicErr=3;return 0;
+	}
+	p+=4;
+	if (eval_expr(&p, &a) != NUMBER)
+	{
+		BasicErr=1;
+		return 0;
+	}
+	if (*p++!=',')
+	{
+			BasicErr=3;return 0;
+	}
+	if (eval_expr(&p, &b) != NUMBER)
+	{
+		BasicErr=1;
+		return 0;
+	}
+
+	t=(int)b;
+
+	if (dbg) rprintf("Set timer %ld, %d\n", a,t);
+	timer=(int)a;
+	tline=t;
+	gtick=0;
+
+	return 0;
+}
+
 int cmd_scale(line_t ln)
 {
 	char *p=ln.text;
@@ -1669,7 +1714,8 @@ int (*cmdtab[])(line_t) = {
 	cmd_gen,   //GEN
 	cmd_network,//NETWOR
 	cmd_delsel,//SELECT
-	cmd_extend //!(EXPAND)
+	cmd_extend,//!(EXPAND)
+	cmd_on     //ON
 };
 
 int execute(line_t line, int dbf)
