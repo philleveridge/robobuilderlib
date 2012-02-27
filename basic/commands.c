@@ -381,6 +381,7 @@ int cmd_servo(line_t l)
 			wckPosSend(v, speed, n);
 		}
 	}
+	return 0;
 }
 
 int cmd_list(line_t l)
@@ -454,7 +455,7 @@ int cmd_wait(line_t l)
 				return 0;
 			}
 		}
-		delay_ms(n);
+		delay_ms((int)n);
 		return 0;
 }
 
@@ -1189,17 +1190,32 @@ int cmd_sample(line_t ln)
 
 int timer=0;
 int tline=0;
+int kline=0;
 
 int cmd_on(line_t ln)
 {
 	char *p=ln.text;
 	long a,b;
 	int t;
-	// ON TIME x GOSUB y
+
+	if (strncmp(p,"KEY,",4)==0)
+	{
+		// ON KEY GOSUB y
+		p+=4;
+		if (eval_expr(&p, &a) != NUMBER)
+		{
+			BasicErr=1;
+			return 0;
+		}
+		kline=(int)a;
+		return 0;
+	}
+
 	if (strncmp(p,"TIME",4)!=0)
 	{
 			BasicErr=3;return 0;
 	}
+	// ON TIME x GOSUB y
 	p+=4;
 	if (eval_expr(&p, &a) != NUMBER)
 	{

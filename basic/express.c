@@ -40,7 +40,7 @@ extern int dbg;
 const char *o 	= "+-*/><gl=n&%|:?";
 const int mp[]  = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
 
-const  prog_char  specials[37][7] = {
+const  prog_char  specials[38][7] = {
 
 		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
 		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
@@ -49,7 +49,7 @@ const  prog_char  specials[37][7] = {
 		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
 		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS",
 		"MIC",   "X",    "Y",    "Z",    "PSD", 
-		"GREY",  "TURTLE"
+		"GREY",  "TURTLE", "EVENT"
 };
 
 
