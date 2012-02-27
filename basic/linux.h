@@ -63,6 +63,7 @@ extern int x_value;
 extern int gVOLTAGE;
 extern int gDistance;
 
+extern volatile WORD	gtick;
 extern volatile WORD    gMSEC;
 extern volatile BYTE    gSEC;
 extern volatile BYTE    gMIN;
