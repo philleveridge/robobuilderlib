@@ -737,10 +737,12 @@ void basic_run(int dbf)
 	basic_start(dbf);
 }
 
-extern int timer;
-extern int tline;
+extern int  timer;
+extern int  tline;
+extern int  kline;
 extern void push_line(unsigned int n);
-extern int gotoln(int gl);
+extern int  gotoln(int gl);
+extern int  gevent;
 
 void basic_start(int dbf)
 {
@@ -751,9 +753,13 @@ void basic_start(int dbf)
 
 	BYTE tmp=0;
 	line_t line;
+	int key;
+	int irf=0;
+
 	gtick=0;
 	timer=0;
 	tline=0;
+	kline=0;
 
 	init_cmdptr();
 
@@ -768,7 +774,30 @@ void basic_start(int dbf)
 			return;
 		}
 
-		if (timer >0 && gtick>timer)
+		if ((key=uartGetByte()) == 27)  {
+			rprintf ("User Break on line %d\r\n", line.lineno); 
+			return;
+		}
+
+		if (irf==0 && kline>0 && key>=0)
+		{
+			int t;
+			//printf("trig %d %d\n", key, kline);
+			push_line(nxtline);
+
+			t=gotoln(kline);
+			if (t<0)
+			{
+				BasicErr=6; //invalid line number
+				return;
+			}
+			gevent=key;
+			setline(t);
+			irf=1;
+		}
+
+
+		if (irf==0 && timer >0 && gtick>timer)
 		{
 			//printf("trig %d %d\n", timer, tline);
 			int t;
@@ -776,9 +805,13 @@ void basic_start(int dbf)
 
 			t=gotoln(tline);
 			if (t<0)
+			{
 				BasicErr=6; //invalid line number
+				return;
+			}
 			setline(t);
 			gtick=0;
+			irf=1;
 		}
 
 		line = readln(buf);
@@ -813,13 +846,6 @@ void basic_start(int dbf)
 				showvars();
 			}
 		}
-		
-		if (uartGetByte() == 27)  {
-			rprintf ("User Break on line %d\r\n", line.lineno); 
-			return;
-		}
-
-		if (line.lineno==0) break;
 
 		/* execute code */
 		tmp = execute(line, dbf);
@@ -829,6 +855,8 @@ void basic_start(int dbf)
 				rprintf ("%c = %ld\r\n", line.var+'A', getvar(line.var));
 		}
 		if (tmp == 0) tmp=tc;
+
+		if (irf=1 && line.token==RETURN) irf=0; // clear it
 	}
 }
 
@@ -1151,7 +1179,6 @@ void binmode()
 
 void uptime()
 {
-
 	rprintf("%02d:%02d:%02d-%03d",gHOUR,gMIN,gSEC,gMSEC);
 }
 

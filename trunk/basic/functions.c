@@ -51,6 +51,8 @@ const unsigned char smap[40] = {
 
 static int fn_type;
 
+int gevent=0;
+
 long  fn_dummy(long v)
 {
 	return 0;
@@ -174,6 +176,11 @@ long fn_gx(long v)
 	Acc_GetData();
 	return x_value;
 }
+
+long fn_event(long v) 
+{
+	return gevent;
+}	
 
 long fn_gy(long v) 
 {
@@ -451,7 +458,8 @@ long (*fnctab[])(long) = {
 	fn_gz,    //sGZ 
 	fn_psd,   //sPSD
 	fn_grey,  //sGREY 
-	fn_turtle //sTURTLE
+	fn_turtle, //sTURTLE
+	fn_event   //sEVENT
 };
 
 int get_special(char **str, long *res, int t)

@@ -13,6 +13,14 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+            if (editfl)
+            {
+                if (System.Windows.Forms.MessageBox.Show("File changed but not saved?", "Save", System.Windows.Forms.MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.Cancel)
+                    return;
+            }
+
+            writeini(); //save - this should the registry really
+
             if (disposing && (components != null))
             {
                 components.Dispose();
@@ -221,11 +229,12 @@
             this.input.Name = "input";
             this.input.Size = new System.Drawing.Size(777, 367);
             this.input.TabIndex = 14;
-            this.input.Text = resources.GetString("input.Text");
+            this.input.Text = ""; // resources.GetString("input.Text");
             this.input.SelectionChanged += new System.EventHandler(this.input_SelectionChanged);
             this.input.MouseLeave += new System.EventHandler(this.input_MouseLeave);
             this.input.MouseHover += new System.EventHandler(this.input_MouseHover);
             this.input.MouseMove += new System.Windows.Forms.MouseEventHandler(this.input_MouseMove);
+            this.input.TextChanged += new System.EventHandler(input_TextChanged);
             // 
             // helptext
             // 
@@ -353,6 +362,11 @@
             this.ResumeLayout(false);
             this.PerformLayout();
 
+        }
+
+        void input_TextChanged(object sender, System.EventArgs e)
+        {
+            editfl = true;
         }
 
         #endregion

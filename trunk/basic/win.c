@@ -249,7 +249,7 @@ void monitor_proc(void *arg)
 {
 	while(1) // forever
 	{
-		Sleep(1);
+		Sleep(10);
 
 		// 1ms
 		gtick+=10;
@@ -257,7 +257,7 @@ void monitor_proc(void *arg)
 
 		gMSEC += 10;
 
-	    if(gMSEC>1000)
+	    if(gMSEC>940)
 	    {
 			// 1s
 	        gMSEC=0;

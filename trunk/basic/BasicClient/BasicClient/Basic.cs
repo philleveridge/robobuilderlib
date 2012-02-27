@@ -67,7 +67,7 @@ namespace RobobuilderLib
 	        "MTYPE", "LIGHTS", "SORT",   "FFT", 
             "SAMPLE","SCALE",  "DATA",
             "SET",   "INSERT", "DELETE",
-            "GEN",  "NETWORK", "SELECT", "!",
+            "GEN",  "NETWORK", "SELECT", "!", "ON",
             "ENDIF" // leave at end
         };
         
@@ -82,7 +82,7 @@ namespace RobobuilderLib
             MTYPE, LIGHTS, SORT,   FFT, 
             SAMPLE,SCALE,  DATA,
             SET, INSERT,   DELETE,
-            GEN, NETWORK,  SELECT, EXPAND,
+            GEN, NETWORK,  SELECT, EXPAND, ON,
             ENDIF
 	        };
 							
@@ -561,9 +561,6 @@ namespace RobobuilderLib
                         }
 
                         ln.text = upperIt(z);
-
-                        Console.WriteLine("Expr={0}",express(ln.text)); // check expression
-
                         break;
                     case KEY.SORT:
                     case KEY.PRINT:
@@ -699,6 +696,10 @@ namespace RobobuilderLib
                         t = GetVar(GetWord(ref z));
                         if (t < 0) errno = 3; else ln.var = (byte)t;
                         break;
+                    case KEY.ON:
+                        z = Regex.Replace(z.ToUpper(), "(.*) GOSUB (.*)", "$1,$2");
+                        ln.text = z;
+                        break;
                     case KEY.IF:
                         // IF A THEN B ELSE C =>  IF A,B,C
                         z = z.ToUpper();
@@ -721,13 +722,8 @@ namespace RobobuilderLib
                                 z = Regex.Replace(z, n, labels[n].ToString());
                             }
 
-                            //z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "($1 )?   $2 :   $3");
-                            //z = Regex.Replace(z, "(.*) THEN (.*)", "($1 )?    $2:0");
-
                             z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "$1,$2,$3");
                             z = Regex.Replace(z, "(.*) THEN (.*)", "$1,$2,0");
-
-
                         }
                         ln.text = z;
                         break;
@@ -862,32 +858,6 @@ namespace RobobuilderLib
             return s;
         }
 
-        public string express(string s)
-        {
-            // This will 'eventually' compile the expression to Intermediate code for speed
-            // Test Infix -> prefix
-            /*
-            LET A=5+5           ' -> 5 5 +
-            LET B=6-7+8         ' -> 6 7 - 8 +
-            LET C=(3+5)*7       ' -> 3 5 + 7 *
-            LET C=4*(3+5)       ' -> 4 3 5 + *
-            LET C=8*(3+5+2)     ' -> 8 3 5 + 2 + *
-            LET D=8*(2+5+1)+4   ' -> 8 2 5 + 1 + * 4 +
-            LET E=$SIN(5+2)     ' -> 5 2 + $SIN 
-             */
-
-            ReversePolishNotation x = new ReversePolishNotation();
-
-            String[] output = x.infixToRPN(s);
-
-            string r = "";
-
-            foreach (String token in output)
-                r += token + " ";
-
-            return r;
-        }
-
         public string Dump()
         {
             string m = "";
@@ -992,7 +962,12 @@ namespace RobobuilderLib
 		        {
 			        m +=  String.Format("{0}", (char)(line.var+'A'));
 		        }
-		        else
+                else
+                if ((KEY)line.token == KEY.ON)
+                {
+                    m += Regex.Replace(line.text, "(.*),(.*)", "$1 GOSUB $2");
+                }                  
+                else
 		        if ((KEY)line.token==KEY.DATA)
 		        {
                     int i2;
