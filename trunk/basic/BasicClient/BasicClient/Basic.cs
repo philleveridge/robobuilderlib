@@ -175,16 +175,47 @@ namespace RobobuilderLib
 
         /*------------------------------------- -------------------------------------*/
 
+        string ProcessString2(string txt)
+        {
+            string r="";
+            string t = "";
+            string s = ""; 
+            bool f = false;
+            for (int i = 0; i < txt.Length; i++)
+            {
+                if (txt[i] == '"')
+                {
+                    if (f)
+                    {
+                        r += s;
+                        s = "";
+                    }
+                    else
+                    {
+                        r += ProcessString(t);
+                        t = "";
+                    }
+                    f = !f;
+                }
+                if (!f)
+                    t += txt[i];
+                else
+                    s += txt[i];
+            }
+            r += ProcessString(t);
+            return r;
+        }
+
         string ProcessString(string txt)
         {
             foreach (string n in constants.Keys)
             {
-                txt = Regex.Replace(txt, n, constants[n].ToString(), RegexOptions.IgnoreCase);
+                txt = Regex.Replace(txt, "\\b" + n + "\\b", constants[n].ToString() , RegexOptions.IgnoreCase);
             }
 
             foreach (string n in labels.Keys)
             {
-                txt = Regex.Replace(txt, n, labels[n].ToString(), RegexOptions.IgnoreCase);
+                txt = Regex.Replace(txt, "\\b" + n + "\\b", labels[n].ToString(), RegexOptions.IgnoreCase);
             }
             return txt;
         }
@@ -444,12 +475,13 @@ namespace RobobuilderLib
             }
             //
 
+
             if (constants.Count > 0)
             {
                 precomp += "-----------\r\nConstant defined\r\n";
                 foreach (string n in constants.Keys)
                 {
-                    precomp = Regex.Replace(precomp, n, constants[n].ToString());
+                    //precomp = Regex.Replace(precomp, n, constants[n].ToString());
                     precomp += n + " " + constants[n] + "\r\n";
                 }
             }
@@ -459,7 +491,7 @@ namespace RobobuilderLib
                 precomp += "-----------\r\nLabels defined\r\n";
                 foreach (string n in labels.Keys)
                 {
-                    precomp = Regex.Replace(precomp, n, labels[n].ToString(), RegexOptions.IgnoreCase);
+                    //precomp = Regex.Replace(precomp, n, labels[n].ToString(), RegexOptions.IgnoreCase);
                     precomp += n + " " + labels[n] + "\r\n";
                 }
             }
@@ -542,7 +574,7 @@ namespace RobobuilderLib
 
                 /*************/
 
-                z = ProcessString(z); //switch constants & labels
+                z = ProcessString2(z); //switch constants & labels
 
                 switch ((KEY)t)
                 {
