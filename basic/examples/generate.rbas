@@ -22,30 +22,19 @@ Loop:
 
   FOR X=0 TO 15
     FOR Y=0 TO 15
-
-      'LET P = B[y] + (A[y]*$SIN((X + C[y])*16)/32)/1024
-
-      P=(X+@C[Y])*16
-      P=$SIN(P)/32
-      P=(@A[Y]*P)/1024
-      P=@B[Y]+P
-
-      if f then
-         SERVO y=p
-      else
-         PRINT P;":";
-      endif
-
+		LET P=@B[Y]+@A[Y]*$SIN((X+@C[y])*16)/32768
+		set y,p
     NEXT Y
-    PRINT
-    wait 10
+    PRINT @!
+	move 0,16,1,25	
+	wait 10		
   NEXT X
 
   r=$KIR
 
   if r=7 then final
 
-  if (r=6)|(r=8) then 
+  if (r=6) OR (r=8) then 
     k=r
     goto loop
   endif

@@ -1,0 +1,17 @@
+ON time 1000 GOSUB timer
+ON key GOSUB keys
+
+loop:
+   PRINT "A";
+   WAIT 50
+   GOTO loop
+
+timer:
+   'every sec print a !
+   PRINT "!"
+   RETURN
+
+keys:
+   'when a key is pressed
+   PRINT "E=";$event
+   RETURN

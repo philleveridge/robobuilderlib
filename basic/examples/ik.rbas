@@ -1,0 +1,57 @@
+'simple inverse kienmatics
+'
+L=100
+M=150 'mm
+P=0
+S=0
+X=160 'TX
+Y=100 'TY
+N=0
+
+PRINT "Target X=";x;" Y=";y
+
+Grad:
+N=N+1
+P=P+1
+GOSUB calcd
+T=R
+P=P-2
+GOSUB calcd
+T=T-R
+
+P=P+1
+S=S+1
+GOSUB calcd
+Q=R
+S=S-2
+GOSUB calcd
+Q=Q-R
+
+'PRINT "T=";T;" Q=";Q
+
+P=P-T
+S=S-Q+1
+
+GOSUB calcd
+
+PRINT P;",";S;",";R;",";T;",";Q;",";E;",";D
+
+IF (R>25) AND (N<15) THEN grad
+
+END
+
+
+' calc 
+' L, M length
+' P,S   angles
+calcd:
+  D=L*$SIN(p)/32768
+  D=D+M*$SIN(s)/32768
+  E=L*$COS(p)/32768
+  E=E+M*$COS(s)/32768
+  R=$SQRT((D-Y)*(D-Y)+(E-X)*(E-X))
+  RETURN
+
+
+
+

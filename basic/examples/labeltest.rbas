@@ -1,0 +1,24 @@
+const abcd 1234
+const ab   2345
+const abc  4567
+
+loop:
+    PRINT abcd,abc,ab
+loop2:
+    PRINT abc,ab,abcd,ab
+tloop:
+    PRINT ab,abcd
+
+    GOTO loop
+    GOTO tloop
+    GOTO loop2
+ 
+    IF 5 THEN loop
+    PRINT "loop",abc,"abc def",ab
+    PRINT "loop2"
+
+    IF ab=abcd THEN tloop
+
+
+
+

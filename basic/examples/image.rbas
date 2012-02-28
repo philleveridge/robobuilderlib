@@ -1,0 +1,15 @@
+Loop:
+    !MAT LOAD 100
+    GOSUB Show
+    WAIT 1000
+    GOTO Loop
+
+Show:
+    FOR I = 0 TO 9
+      FOR J = 0 TO 9
+        OUT $GREY(@I[J+I*10])
+        OUT 32
+      NEXT J
+      PRINT
+    NEXT I
+    return

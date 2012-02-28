@@ -1,4 +1,8 @@
-'Continuous forward walk
+'Continuous forward walk   
+  LIST m=7,-4,-2,-1,0,1,2,4
+  LIST r=7,-15,-10,-5,0,5,10,15
+  LIST o=$zeros(16)
+  OFFSET
 
   STAND 16
   PRINT "press any key start"
@@ -7,6 +11,10 @@
 
 check:
   IF $KIR<0 THEN check
+
+  g=$Z
+  ON TIME 1000 GOSUB timer
+  ON KEY GOSUB keytest
 
 Loop:
   PRINT "R";
@@ -48,28 +56,40 @@ Loop:
       PRINT "UPRIGHT"
    ENDIF
 
-   LET p=$PSD
+   GOTO Loop
 
-   IF p<20 THEN finish
 
-   LET k=$KIR
-   IF k < 0 THEN loop
+' some key check
+'
+keytest:
+  LET k=$event
 
-  ' Put some key check
-  '
+  IF k=7 or k=`q THEN finish
+
   IF k=6 THEN  'left arrow slow down
     A=A+2
     B=B-2
     PRINT "A=";a;" B=";b
-    GOTO loop
   ENDIF
 
   IF k=8 THEN  'right arrow slow down
     A=A-2
     B=B+2
     PRINT "A=";a;" B=";b
-    GOTO loop
   ENDIF
+  RETURN
+
+'check balance
+'
+timer:
+  z=g-$Z
+  d=$FIND(z,@R)
+  o=@m[d]
+  'PRINT "D=";d;" Z=";z;" O=";o
+  SET @o,10,o
+  SET @o,13,-o
+  OFFSET @o
+  RETURN
 
 finish:
   PRINT "Done = ";k
