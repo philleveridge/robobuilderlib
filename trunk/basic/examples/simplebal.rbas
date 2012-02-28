@@ -1,5 +1,6 @@
     STAND $NS
     list m=7,-4,-2,-1,0,1,2,4
+	list r=7,-15,-10,-5,0,5,10,15
     d=10
     f=1
   
@@ -16,7 +17,7 @@ check:  if $kir<0 then check
 loop:
 
    z=i-$z
-   d=$find(z, @{7,-15,-10,-5,0,5,10,15}
+   d=$find(z, @R)
    o=@m[d]
 
    gosub showz

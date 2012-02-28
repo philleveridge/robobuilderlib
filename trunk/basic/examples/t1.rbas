@@ -1,3 +1,4 @@
-list a=5,1,2,3,4,5
-print @a
+'list test
+LIST a=5,1,2,3,4,5
+PRINT @a
 

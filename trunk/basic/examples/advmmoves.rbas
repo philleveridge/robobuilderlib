@@ -1,72 +1,72 @@
 'record and play back
 const dely 500
 
-stand 16
-servo 13=@
-servo 14=@
-servo 15=@
+STAND $NS
+SERVO 13=@
+SERVO 14=@
+SERVO 15=@
 
 i=0
-gosub clearz
+GOSUB clearz
 
-print "ready - press Key or IR to record"
+PRINT "ready - press Key or IR to record"
 
-check: if $kir<0 then check
+check: IF $KIR<0 THEN check
 
 loop:
- A=$servo(13)
- B=$servo(14)
- C=$servo(15)
+ A=$SERVO(13)
+ B=$SERVO(14)
+ C=$SERVO(15)
  SERVO 10=254-a
  SERVO 11=254-b
  SERVO 12=254-c
  WAIT 100
 
- k=$kir
- if k<0 then loop
+ k=$KIR
+ IF k<0 THEN loop
 
- if k=7 then
-   gosub recordz
- endif
+ IF k=7 THEN
+   GOSUB recordz
+ ENDIF
 
- if k=8 then
-   gosub playz
- endif
+ IF k=8 THEN
+   GOSUB playz
+ ENDIF
 
- if k=6 then
-  gosub clearz
- endif
+ IF k=6 THEN
+  GOSUB clearz
+ ENDIF
 
- if k=1 then
-   stand 16
-   end
- endif
+ IF k=1 THEN
+   STAND 16
+   END
+ ENDIF
 
  GOTO loop
 
 recordz:
-  print "record moves"  
-  print i,a,b,c
-  insert i,a
+  PRINT "record moves"  
+  PRINT i,a,b,c
+  INSERT i,a
   i=i+1
-  insert i,b
+  INSERT i,b
   i=i+1
-  insert i,c
+  INSERT i,c
   i=i+1
-  return
+  RETURN
 
 playz:
-  print "Play moves = ";$NE
+  PRINT "Play moves = ";$NE
   i=0
 loop2:
   a=@![i]
   b=@![i+1]
   c=@![i+2]
-  print i,":",a,":",b,":",c
+  PRINT i,":",a,":",b,":",c
 
-  servo 13=a
-  servo 14=b
-  servo 15=c
+  SERVO 13=a
+  SERVO 14=b
+  SERVO 15=c
 
   SERVO 10=254-a
   SERVO 11=254-b
@@ -74,18 +74,18 @@ loop2:
 
   i=i+3
  
-  wait 500
-  if i<$NE then loop2
+  WAIT 500
+  IF i<$NE THEN loop2
 
-  servo 13=@
-  servo 14=@
-  servo 15=@
+  SERVO 13=@
+  SERVO 14=@
+  SERVO 15=@
 
-  return
+  RETURN
 
 clearz:
-  print "clear moves"
-  delete *
-  return
+  PRINT "clear moves"
+  DELETE *
+  RETURN
 
 

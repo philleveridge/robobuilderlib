@@ -1,0 +1,87 @@
+   const delay 20
+
+   'DATA v=143,179,198,83,105,106,68,46,167,140,77,70,152,165,181,98,120,124,99
+   'MOVE @v,10,1000            'load data into array
+
+   'MOVE $stand(16),10,1000            'load data into array
+
+   LIST !=$STAND(16)           'load data into array   
+   LET L=16   ' chromo length
+   LET G=4   ' off spring per gen
+   LET c=0
+   
+   GEN 2,L,0,0,0,0,0 'clone it
+   PRINT @!:16
+   
+loop:
+   c=c+1
+     
+   'generate .....
+   GEN G,L,5,2,0,254,10
+   
+   GOSUB show
+   GOSUB test
+   
+   'select
+   SORT #L,G,2
+   
+   GOTO loop
+   
+test:
+  k=0
+  m=-200
+  u=0
+  PRINT "Test Generation ";c
+  
+loop2:
+  IF k=0 THEN
+     PRINT "Parent:  0) ";
+  ELSE
+     PRINT "         ";k;") ";
+  ENDIF
+  '
+  MOVE k*L,L,1,25   'A,B,C,D
+  '
+  WAIT 500
+  GOSUB xztest ' wait for it to stabalise
+  PRINT "X=";X;" Z=";Z;
+  t=-(x*x+z*z)
+
+  f=$KIR
+  IF f<0 THEN
+     f=t
+  ENDIF
+  
+  INSERT $NE,f ' add fitness
+  
+  k=k+1
+  IF k<G THEN loop2
+
+  RETURN
+  
+show:
+   'show parent and each child created
+   FOR i=0 TO G
+      IF i=0 THEN
+         PRINT "Parent:  0) ";
+      ELSE
+         PRINT "         ";i;") ";
+      ENDIF
+      FOR e=0 TO l-1
+         PRINT @![l*i+e];":";
+      NEXT e
+      PRINT 
+   NEXT i
+   PRINT
+   RETURN
+
+xztest:
+   x=$X
+   z=$Z
+   WAIT 100
+   t=(x=$X) AND (z=$Z)
+   PRINT ".";
+   IF 1-t THEN xztest
+   RETURN
+   
+   

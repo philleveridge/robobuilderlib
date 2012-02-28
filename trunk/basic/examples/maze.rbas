@@ -2,163 +2,146 @@
 'Based on Robobuilder C tutorial
 
      const dely 1000
-     stand 16
-     print "Maze Program"
+     STAND 16
+     PRINT "Maze Program"
+	 
+     LIST A=6,`.,`^,`>,`V,`<,`*
 
-     let v=8    'matrix size v x v
-     let c=0    'initial state
-     let x=v/2  'current location x coord (mid of matrix)
-     let y=v/2  'current location y coord (mid of matrix)
+     LET v=8    'matrix size v x v
+     LET c=0    'initial state
+     LET x=v/2  'current location x coord (mid of matrix)
+     LET y=v/2  'current location y coord (mid of matrix)
      t=1        'point forward
 
-     gosub matrix
+     GOSUB matrix
 
 loop:
-     t=(t-1)%4
+     t=(t-1) MOD 4
      t=t+1
-     set (v*x)+y,t   
+     SET (v*x)+y,t   
 
-     gosub show
+     GOSUB show
 
-     let d=$psd
-     lights d-10
-     print "PSD= ";D
+     d=$PSD
+     LIGHTS d-10
+     PRINT "PSD= ";D
 
-     k=$kbd   
+     k=$KBD   
 
-     if k=`q then
-       print "done"
-       end
-     endif
+     IF k=`q THEN
+       PRINT "done"
+       END
+     ENDIF
 
-     if d < 20 then
-        gosub backz
-        goto loop
-     endif
+     IF d < 20 THEN
+        GOSUB backz
+        GOTO loop
+     ENDIF
      
-     if (c=0)&(d<30) then
-        gosub leftturn90
-        let t=t+3
-        let c=1
-        goto loop
-     endif
+     IF (c=0) AND (d<30) THEN
+        GOSUB leftturn90
+        LET t=t+3
+        LET c=1
+        GOTO loop
+     ENDIF
 
-     if (c=1)&(d<30) then
-        gosub leftturn180
-        let t=t+2
-        let c=2
-        goto loop
-     endif
+     IF (c=1) AND (d<30) THEN
+        GOSUB leftturn180
+        LET t=t+2
+        LET c=2
+        GOTO loop
+     ENDIF
      
-     if (c=1)&(d<30) then
-         gosub rightturn90
-         let t=t+1
-         let c=0
-         goto loop
-     endif
+     IF (c=1) AND (d<30) THEN
+         GOSUB rightturn90
+         LET t=t+1
+         LET c=0
+         GOTO loop
+     ENDIF
           
-     let c=0
+     LET c=0
 
-     gosub forwardz
+     GOSUB forwardz
 
-     t=(t-1)%4
-     set (v*x)+y,5   'empty space
+     t=(t-1) MOD 4
+     SET (v*x)+y,5   'empty space
 
-     if t=0 then
+     IF t=0 THEN
        y=y-1
-     endif
+     ENDIF
 
-     if t=1 then
+     IF t=1 THEN
        x=x+1
-     endif
+     ENDIF
 
-     if t=2 then
+     IF t=2 THEN
        y=y+1
-     endif
+     ENDIF
 
-     if t=3 then
+     IF t=3 THEN
        x=x-1
-     endif
+     ENDIF
 
      t=t+1
 
-     x=$range(x,0,v-1)
-     y=$range(y,0,v-1)
-     goto loop
+     x=$RANGE(x,0,v-1)
+     y=$RANGE(y,0,v-1)
+     GOTO loop
  
 backz:
-     print "BACKUP"
-     run 9     
-     wait 1000
-     return
+     PRINT "BACKUP"
+     RUN 9     
+     WAIT 1000
+     RETURN
 
 leftturn90:
-     print "LT90"
-     run 4
-     run 4
-     run 4
-     wait dely
-     return
+     PRINT "LT90"
+     RUN 4
+     RUN 4
+     RUN 4
+     WAIT dely
+     RETURN
   
 leftturn180:
-     print "180"
-     run 4
-     run 4
-     run 4
-     run 4
-     run 4
-     wait dely
-     return
+     PRINT "180"
+     RUN 4
+     RUN 4
+     RUN 4
+     RUN 4
+     RUN 4
+     WAIT dely
+     RETURN
      
 rightturn90:
-     print "RT90"
-     run 5
-     run 5
-     run 5
-     run 5
-     wait dely
-     return
+     PRINT "RT90"
+     RUN 5
+     RUN 5
+     RUN 5
+     RUN 5
+     WAIT dely
+     RETURN
 
 forwardz:
-     print "Forward"
-     run 8
-     run 8
-     run 8
-     wait dely
-     return
+     PRINT "Forward"
+     RUN 8
+     RUN 8
+     RUN 8
+     WAIT dely
+     RETURN
 
 show:
   FOR J=0 TO v-1
-    FOR I=0 TO v-1
-      m=@![(I*v)+J]
-      if m=0 then 
-        out `.
-      endif
-      if m=1 then 
-        out `^
-      endif
-      if m=2 then 
-        out `>
-      endif
-      if m=3 then 
-        out `v
-      endif
-      if m=4 then 
-        out `<
-      endif
-      if m=5 then 
-        out `*
-      endif
+    FOR I=0 TOz v-1
+      m=@![I*v+J]
+      OUT @A[m]
     NEXT I
     PRINT 
   NEXT J
-  print
-  return
+  PRINT
+  RETURN
 
 matrix:
     'create an empty matrix
-    delete *
-    for i=1 to v*v
-       insert 0,0
-    next i
-    return
+    DELETE *
+    LIST !=$zeros(v*v)
+	RETURN

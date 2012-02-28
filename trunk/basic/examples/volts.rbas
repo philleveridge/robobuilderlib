@@ -25,16 +25,13 @@ else
   p=5*p
 endif
 
- print v;" (";p;") %"
+print v;" (";p;") %"
 
 wait 1000
 goto loop
 
 clrscreen:
-   OUT 27 'esc
-   OUT 91 '[
-   OUT 50 '2
-   OUT 74 'J
-   return
+  OUT @{4, 27, `[, `2, `J} 'VT100 cls
+  return
 
 

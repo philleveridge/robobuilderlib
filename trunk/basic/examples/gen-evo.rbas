@@ -1,0 +1,83 @@
+
+  w=0 ' set to 1 to activate
+  
+  'Amplitude
+  DATA A=10,13,15,11,10,11,13,15,11,10,22,1,9,22,1,9
+  'Offset
+  DATA B=123,166,211,92,107,129,83,42,159,144,91,43,47,161,209,205
+      
+  DATA C=0,15,8,13,1,0,15,8,11,0,13,11,13,5,5,5
+  
+  LIST M=$zeros(16)
+
+  let l=16   ' chromo length
+  let o=l*2 ' offset (A & B values)
+  let g=4   ' off spring per gen
+   
+  list !=@C
+  GEN 2,L,0,0,0,0,0 'clone it
+  PRINT @!:16
+   
+mloop:
+   'generate children from parent
+
+   c=c+1    
+   'generate .....
+   GEN G,L,5,2,0,15,10
+    
+   'gosub show
+   'print "?"
+   'if $kbd=`q then done
+   
+   gosub cycle  'test each generation getting a fitness value
+
+   gosub show
+   
+   'select
+   SORT #L,G,2
+
+   goto mloop
+
+done:
+   stand 16
+   end
+   
+show:
+   print @C
+
+cycle:
+  k=0
+  m=0
+  u=0
+
+loop2:
+  print "Test Generation ";k
+  LET O=16*K
+
+  FOR X=0 TO 15
+    FOR Y=0 TO 15 ' Servo IDs (L-1)
+	
+	  LET P = @B[y] + @A[y]*$SIN((X + @![o+y])*16)/32768
+	  SET @M,Y,P
+
+    NEXT Y
+	
+	IF w THEN
+         MOVE @M,1,25
+    ELSE
+         PRINT @M
+    ENDIF
+	
+  NEXT X
+
+  print "fitness?"
+
+fitz:
+   f=$kir
+   if (f=`q)|(f=7) then done
+   print f
+   k=k+1 
+   INSERT $NE,f ' add fitness	
+   if k<G then loop2
+   return
+
