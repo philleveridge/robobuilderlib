@@ -273,22 +273,28 @@ long fn_find(long v)
 	int lc;
 	if (v==2) 
 	{
-		int n;
-		epop(); // this will be ZERO
-		n=(int)epop();
-		for (lc=0; lc<nis; lc++)
+		char un=(char)epop(); // this will be arrayname
+		int  n =(int)epop();
+		int  sz=listsize(un);
+
+		for (lc=0; lc<sz; lc++)
 		{
-			if (scene[lc]==n)
+			int e=listread(un,lc);
+			if (e==n)
 			{
-				v=(long)lc; break;
+				v=(long)lc; 
+				break;
 			}
-			if (scene[lc]>n)
+			if (e>n)
 			{
-				if (lc>0) v=(long)(lc-1); 
+				if (lc>0) 
+					v=(long)(lc-1); 
+				else
+					v=0;
 				break;
 			}
 		}
-		if (lc==nis) v=(long)(nis-1); // no match
+		if (lc==sz) v=(long)(sz-1); // no match
 	}
 	return v;
 }
