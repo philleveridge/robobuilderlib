@@ -82,8 +82,6 @@ void openport()
 		if (dbg) printf("Failed to set timeouts\n");
 		return;
 	}
-
-
 	fd=0;
 }
 
@@ -352,8 +350,6 @@ WORD send_hex_array(int *p, int n)
 		r = ((0xFF&b1)<<8) | (0xFF&b2);
 		return r;
 }
-
-
 
 /**************************************************************************************
 

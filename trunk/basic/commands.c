@@ -1688,6 +1688,12 @@ int cmd_extend(line_t ln)
 	return 0;
 }
 
+int cmd_ikin(line_t line)
+{
+	//inverse kienetics - TBD
+	return 0;
+}
+
 int (*cmdtab[])(line_t) = {
 	cmd_let,   //LET
 	cmd_for,   //FOR
