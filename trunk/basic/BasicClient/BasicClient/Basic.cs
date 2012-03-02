@@ -53,7 +53,7 @@ namespace RobobuilderLib
 		    "PORT", "ROM", "TYPE","ABS", "KIR",   "FIND",
             "CVB2I","NE",  "NS",  "MAX", "SUM",   "MIN",  
             "NORM", "SQRT","SIN", "COS", "IMAX",  "HAM", 
-		    "RANGE"
+		    "RANGE", "EVENT", "ZEROS"
         };
         
          public static  string[] tokens = new string[] {
@@ -132,12 +132,13 @@ namespace RobobuilderLib
             help.Add("FFT",     "FFT list[,scale]");
             help.Add("SAMPLE",  "SAMPLE a,b,c,d");
             help.Add("SCALE",   "SCALE list,n");
-            help.Add("SET",      "SET index,value");
-            help.Add("INSERT",   "INSERT index,value");
-            help.Add("DELETE",   "DELETE n");
-            help.Add("GEN", "GEN n");
+            help.Add("SET",     "SET index,value");
+            help.Add("INSERT",  "INSERT index,value");
+            help.Add("DELETE",  "DELETE n");
+            help.Add("GEN",     "GEN n");
             help.Add("NETWORK", "NETWORK a,b,c,d,e,f");
-            help.Add("SELECT", "SELECT n,[m|*]");
+            help.Add("SELECT",  "SELECT n,[m|*]");
+            help.Add("ON",      "ON [TIME x|KEY] GOSUB y");
 
             // special regs
             help.Add("$MIC",    "$MIC");
@@ -167,10 +168,12 @@ namespace RobobuilderLib
             help.Add("$SIN",    "$SIN(n) n is byte (0-255), result integer value, +/- 32,768");
             help.Add("$COS",    "$COS(n)");
             help.Add("$IMAX",   "$IMAX(list,n) - as $MAX but return index rather than vlue of item");
-            help.Add("$HAM",    "not in use");
+            help.Add("$HAM",    "$HAM(@A,@B)");
             help.Add("$RANGE",  "$RANGE(a,min,max) return a");
             help.Add("$SIG",    "$SIG(a) - Sigmoid function");
-            help.Add("$DSIG",   "$SIG(a) - Derivative Sigmoid function");
+            help.Add("$DSIG",   "$DSIG(a) - Derivative Sigmoid function");
+            help.Add("$ZEROS",  "$ZEROS(x) - array of x zeros"); 
+            help.Add("$EVENT",  "$EVENT - see ON");
         }
 
         /*------------------------------------- -------------------------------------*/
