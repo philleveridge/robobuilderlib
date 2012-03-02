@@ -31,22 +31,11 @@ $Revision$
 #include "ir.h"
 #include "accelerometer.h"
 
-//#define Sqrt sqrt
-
-int Sqrt(long x)
-{
-   double f=sqrt((double)x);
-   return (int)f;
-}
 
 extern int strlen	(char *);
-extern void strcat	(char *, char *);
-extern void strcpy	(char *, char *);
-extern void strncpy	(char *, char *, int);
 extern char *strstr	(char *, char *);
 extern int rand();
 int dbg=0;
-
 int remote=0;
 
 #endif
@@ -743,6 +732,7 @@ extern int  kline;
 extern void push_line(unsigned int n);
 extern int  gotoln(int gl);
 extern int  gevent;
+extern int  gkp;
 
 void basic_start(int dbf)
 {
@@ -750,11 +740,11 @@ void basic_start(int dbf)
 	//   load from memory
 	//   Execute action
 	// Loop
-
-	BYTE tmp=0;
+	char buf[MAX_LINE];
 	line_t line;
-	int key;
+	int key;	
 	int irf=0;
+	BYTE tmp=0;
 
 	gtick=0;
 	timer=0;
@@ -764,22 +754,21 @@ void basic_start(int dbf)
 	init_cmdptr();
 
 	while (tmp != 0xCC && nxtline < EEPROM_MEM_SZ )
-	{
-		int tc;
-		char buf[MAX_LINE];
-		
+	{	
 		if (BasicErr !=0)
 		{
 			rprintf("Runtime error %d on line %d\r\n", BasicErr, line.lineno);
 			return;
 		}
 
-		if ((gevent=uartGetByte()) == 27)  {
+ 		if ((key=uartGetByte()) == 27)  {
 			rprintf ("User Break on line %d\r\n", line.lineno); 
 			return;
 		}
 
-		if (irf==0 && kline>0 && gevent>=0)
+		if (key>=0) gkp=key;
+
+		if (irf==0 && kline>0 && key>=0)
 		{
 			int t;
 			//printf("trig %d %d\n", key, kline);
@@ -792,6 +781,7 @@ void basic_start(int dbf)
 				return;
 			}
 			setline(t);
+			gevent=key;
 			irf=1;
 		}
 
@@ -820,14 +810,15 @@ void basic_start(int dbf)
 			return;
 		}
 		
-		tc = nextchar();	// terminator character ?
-		
-		if (dbf) {
-			int kp;
+		if (dbf) 
+		{
 			rprintf ("TRACE :: %d - ", line.lineno); 
-			rprintfProgStr (tokens[line.token]);;
-			while ((kp=uartGetByte())<0) ; // wait for input
-			if (kp == 27)  
+			rprintfProgStr (tokens[line.token]);
+
+			if (key<0)
+			while ((key=uartGetByte())<0) ; // wait for input
+
+			if (key == 27)  
 			{
 				rprintfProgStr (PSTR(" ** User Break\r\n")); 
 				return;
@@ -835,25 +826,26 @@ void basic_start(int dbf)
 
 			rprintfCRLF();
 
-			if (kp == 'l')  
+			if (key == 'l')  
 			{
 				listdump();
 			}
-
-			if (kp == 'v')  
+			else
+			if (key == 'v')  
 			{
 				showvars();
 			}
 		}
 
 		/* execute code */
-		tmp = execute(line, dbf);
+
+ 		tmp = execute(line, dbf);
 		
 		if (dbf && (line.token==LET || line.token==GET || line.token==FOR || line.token==SERVO || line.token==NEXT ))
 		{
 				rprintf ("%c = %ld\r\n", line.var+'A', getvar(line.var));
 		}
-		if (tmp == 0) tmp=tc;
+		if (tmp == 0) tmp = nextchar();	// terminator character ?
 
 		if (irf=1 && line.token==RETURN) irf=0; // clear it
 	}

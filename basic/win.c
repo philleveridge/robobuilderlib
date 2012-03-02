@@ -66,7 +66,7 @@ int adc_mic()			{return 0;}
 /* priotf  */
 int uartGetByte() 							
 {
-	return _kbhit()?_getch():-1; 
+	return kbhit()?getch():-1; 
 }
 
 
@@ -242,7 +242,7 @@ volatile BYTE	gSEC=0;
 volatile BYTE	gMIN=0;
 volatile BYTE	gHOUR=0;
 
-int irf=0;
+int sirf=0;
 
 /* Emulates the timer interupt */
 void monitor_proc(void *arg)
@@ -284,7 +284,7 @@ void monitor_proc(void *arg)
 	    {
 	    	// every 100ms
 
-	    	//if (irf==1)
+	    	//if (sirf==1)
 	    	//	readIR();// check robot status (IR etc)
 	    }
 
@@ -317,7 +317,7 @@ int main(int argc, char *argv[])
 			sf=1;
 
 		if (!strcmp(argv[i],"IR"))
-			irf=1;
+			sirf=1;
 
 		if (!strcmp(argv[i],"COM") && i<argc-1)
 		{
