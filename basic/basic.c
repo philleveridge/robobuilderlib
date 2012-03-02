@@ -774,12 +774,12 @@ void basic_start(int dbf)
 			return;
 		}
 
-		if ((key=uartGetByte()) == 27)  {
+		if ((gevent=uartGetByte()) == 27)  {
 			rprintf ("User Break on line %d\r\n", line.lineno); 
 			return;
 		}
 
-		if (irf==0 && kline>0 && key>=0)
+		if (irf==0 && kline>0 && gevent>=0)
 		{
 			int t;
 			//printf("trig %d %d\n", key, kline);
@@ -791,7 +791,6 @@ void basic_start(int dbf)
 				BasicErr=6; //invalid line number
 				return;
 			}
-			gevent=key;
 			setline(t);
 			irf=1;
 		}

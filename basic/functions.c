@@ -230,7 +230,9 @@ long fn_kbd(long v)
 
 long fn_kir(long v) 
 {
-	v=uartGetByte();
+	//v=uartGetByte();
+	v=gevent;
+	if (v<0) v=uartGetByte();
 	if (v<0) v=irGetByte();
 	return v;
 }
