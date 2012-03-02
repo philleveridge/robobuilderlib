@@ -1740,9 +1740,9 @@ int (*cmdtab[])(line_t) = {
 	cmd_on     //ON
 };
 
-int execute(line_t line, int dbf)
+unsigned char execute(line_t line, int dbf)
 {
 	//   Execute action
-	int t= (*cmdtab[line.token])(line);
+	unsigned char t= (unsigned char)(*cmdtab[line.token])(line);
 	return (t==0)?1:t;
 }

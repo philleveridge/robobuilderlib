@@ -11,6 +11,17 @@
 #include "accelerometer.h"
 #include "wckmotion.h"
 #include "rprintf.h"
+
+//#define Sqrt sqrt
+
+int Sqrt(long x)
+{
+   double f=sqrt((double)x);
+   return (int)f;
+}
+
+extern int rand();
+
 #endif
 
 #ifdef WIN32
@@ -52,6 +63,7 @@ const unsigned char smap[40] = {
 static int fn_type;
 
 int gevent=0;
+int gkp=0;
 
 long  fn_dummy(long v)
 {
@@ -230,10 +242,12 @@ long fn_kbd(long v)
 
 long fn_kir(long v) 
 {
-	//v=uartGetByte();
-	v=gevent;
-	if (v<0) v=uartGetByte();
-	if (v<0) v=irGetByte();
+	v=(long)gkp;
+	gkp=-1;
+	if (v<0) 
+		v=(long)uartGetByte();
+	if (v<0) 
+		v=(long)irGetByte();
 	return v;
 }
 
