@@ -2,31 +2,30 @@
 #labels Phase-Requirements
 = Introduction =
 
-This custom firmware for Robobuilder gives it the ability to create and store simple programs in an elementary BASIC language. The software is stable beta release.
+This custom firmware for Robobuilder gives it the ability to create and store simple programs in an elementary BASIC language. The software is stable beta release. *_Always download latest version firmware _*
 
-  *_Latest version firmware (v424)_ http://robobuilderlib.googlecode.com/files/Basic424.hex
-
-  * Features - improved stability and expression handling. 
+  # Features - improved stability and expression handling. 
+  # Event handling with ON TIME x GOSUB y and ON KEY GOSUB y (see example 22)
   # Operator precedence. i.e PRINT 3*5+4*6 now prints 39 (not 87!) 
   # AND, OR and MOD are supported i.e. PRINT (1=1) AND (2=2) prints 1 (true). The old | % & still work as well 
   # Complex expressions now work such as (from dynamic gate demo) 
     {{{ LET P=@B[Y]+@A[Y]*$SIN((X+@C[y])*16)/32768 }}}
   # Expression use 32 bit integer arithmetic - previously it was 16 bit, this make the range much better for complex expression - like above
   # There's a new variant of MOVE command MOVE A,B,C,D
-  # Adds improved list handling features
+  # Adds improved list handling features. List are now separate from variable.
   # Reduce memory footprint - better stability
   # Versions for Linux and Windows now has floating point. 
 
   * Getting started
-Download Basic424.hex and upload on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
+Download latest firmware (.HEX) and upload on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
 
 If you're not using Windows, you can still download the custom firmware into your bot using the [ http://www.strout.net/info/robotics/utilities/avrbl-downloader/AVRBL Downloader tool]. Or there's a Java based tool available in the source tree.
 
 If you want just to try it out (and not load on to Robot) then there are  windows and Linux OS builds is available  (basic.exe). It input/outputs using console. Some Robot hardware functions are available if the robot is running DCMP firmware connected om serial port.
 
-So assuming you have downloaded the program (and installed the firmware) - reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html vt100 terminal emulator] on the serial port (i.e. COM1 at 115200). You should see the following:
+So assuming you have downloaded the program (and installed the firmware) - reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html VT100 terminal emulator] on the serial port (i.e. COM1 at 115200). You should see the following:
 {{{
-Basic v=$Revision: 424 $
+Basic v=$Revision: 452 $
 Commands: i r l c z q s V R F $
 
 16 servos connected
@@ -55,7 +54,7 @@ The start mode is command mode signified by ':'. On pressing I it enters input m
 Here is an example session :
 
 {{{
-Basic v=$Revision: 424 $
+Basic v=$Revision: 452 $
 Commands: i r l c z q s V R F $
 16 servos connected
 0 lines in memory
@@ -411,5 +410,17 @@ The LEDs can be access via the PORT as well. Red Power LED is on Port C bit 7. T
 40 put port:c:7=0
 50 wait 500
 60 GOTO 20
+
+22) ON event base routines
+This will output 'A' except every 1s will also output '!' or if a key pressed the value of the key.
+10 ON TIME 1000 GOSUB 60
+20 ON KEY GOSUB 80
+30 PRINT "A";
+40 WAIT 50
+50 GOTO 30
+60 PRINT "!"
+70 RETURN
+80 PRINT "E=";$EVENT
+90 RETURN
 
 }}}
