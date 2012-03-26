@@ -10,6 +10,19 @@ The firmware has 19 built-in motions to try out, including football kicks. Full 
 
 If you find bugs - please report them on the Google site.
 
+= New demos =
+See new wiki pages for latest demos (all require BasicIDE/JBasic)
+
+  * ArmsMoving
+  * Cwalk2
+  * sample
+  * neuron1
+  * matri
+  * Generate
+  * Kinematics
+  * Planner
+  * evo2
+
 = continuous forward walking =
 
 {{{
