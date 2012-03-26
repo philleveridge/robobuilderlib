@@ -9,7 +9,7 @@ http://robosavvy.com/forum/viewtopic.php?t=7854&postdays=0&postorder=asc&start=0
 servo 11 position is used to define servos 10 and 12 using an equation, likewise servo 14 controls 13 and 15.
 
 {{{
-X=S10
+X=S11
  S10 = 5E-05x3 - 0.0213x2 + 2.9618x - 46.011
  S12 = 8E-05x3 - 0.0339x2 + 4.7877x - 108.15 
 
