@@ -45,6 +45,8 @@ namespace RobobuilderLib
 	        "Illegal var",
 	        "Bad number",
 	        "Next without for",
+            "If but no Then",
+            "label not defined"
 	        };
 	
         public static string[] specials = new string[] { 
@@ -721,6 +723,10 @@ namespace RobobuilderLib
                         else
                         {
                             ln.value = GetNumber(tok);
+                            if (ln.value == 0)
+                            {
+                                errno = 7;
+                            }
                         }
                         break;
                     case KEY.END:
@@ -740,6 +746,12 @@ namespace RobobuilderLib
                         z = z.ToUpper();
 
                         // mutliline else
+
+                        if (!z.Contains("THEN"))
+                        {
+                            errno = 6;
+                            break;
+                        }
                         if (z.EndsWith("THEN"))
                         {
                             if (codeptr==0) // first line
@@ -755,6 +767,12 @@ namespace RobobuilderLib
                             foreach (string n in labels.Keys)
                             {
                                 z = Regex.Replace(z, n, labels[n].ToString());
+                            }
+
+                            if (!(Regex.IsMatch(z, ".* THEN [0-9]+") || Regex.IsMatch(z, ".* THEN [0-9]+ ELSE [0-9]+")))
+                            {
+                                errno = 4;
+                                break;
                             }
 
                             z = Regex.Replace(z, "(.*) THEN (.*) ELSE (.*)", "$1,$2,$3");
