@@ -1,4 +1,4 @@
-#Continuous walk with balance control
+#Summary Continuous walk with balance control
 
 = Introduction =
 
