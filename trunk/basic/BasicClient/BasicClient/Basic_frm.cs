@@ -327,6 +327,7 @@ namespace RobobuilderLib
             }
             else
             {
+                MessageBox.Show("Failed to compile - see output for error");
                 output.Text = "Error on line " + compiler.lineno + " : " + compiler.error_msgs[compiler.errno] + "\r\n";
                 output.Text += "Line ::      " + compiler.curline;              
 
