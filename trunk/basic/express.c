@@ -252,7 +252,7 @@ unsigned char eval_expr(char **str, long *res)
 
 			if (op>top && (preci(c)<=preci(ops[op-1])))
 			{
-				n1 = math(n1,stack[sp-1],ops[op-1]);
+				n1 = math(stack[sp-1],n1,ops[op-1]);
 				sp--;
 				op--;
 			}
