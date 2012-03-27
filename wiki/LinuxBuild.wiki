@@ -10,21 +10,25 @@ The is a linux build of the Basic interpreter. At start up it will test on seria
   * LOAD  - this will auto-load bindata.txt
   * FAST  - this attempts to connect at 232400B to DCMP 
   * IR    - this switches on polling the IR status - this puts a load on the comms hence it optional - default is off
+  * REMOTE - connect to robot running DCMP
+  * COM   - COM port to connect to i.e. /dev/ttyA
 
 = BASIC differences =
 
 Commands
   * Z - this will store the current program to local folder (bindata.txt)
   * z - this loads bindata.txt (rather than attempting file transfer)
+  * m - load array ! with data from data.txt
+  * M - store ! in to file data.txt
 
 = Example Session =
 
 {{{
-phil@phil-linux:~$ ./Basic
+phil@phil-linux:~$ ./Basic REMOTE COM /dev/ttyUSB0
 Running Unix emulator ...
 DCMP v=3.12
 Clear Program 
-Basic v=$Revision: 365 $
+Basic v=$Revision: 452 $
 Commands: i r l c z q s V R F $
 19 servos connected
 0 lines in memory
