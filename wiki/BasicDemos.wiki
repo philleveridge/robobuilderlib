@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Advanced Basic demos
 
 = Introduction =
 
@@ -14,16 +14,20 @@ If you find bugs - please report them on the Google site.
 See new wiki pages for latest demos (all require BasicIDE/JBasic)
 
   * ArmsMoving
-  * Cwalk2
-  * sample
-  * neuron1
-  * matri
-  * Generate
-  * Kinematics
-  * Planner
-  * evo2
+  * [Cwalk2]
+  * [sample]
+  * [neuron1]
+  * [matrix]
+  * [Generate]
+  * [Kinematics]
+  * [Planner]
+  * [evo2]
 
-= continuous forward walking =
+= Basic demos =
+
+== Continuous Walking ==
+
+See above for a more advanced version with auto-balance
 
 {{{
 5 STAND 16
@@ -64,8 +68,9 @@ To run type 'r'. in command mode ':' prompt or the red square on IR. The program
 
 Lots of mods to expand this are possible. The program could check for $PSD value or check, or see if its fallen over, by testing the accelerometer $X / $Y or $Z. You can vary the speed by changing the value 'A' -etc ...
 
+== Basic auto-balance ==
 
-= simple auto-balance =
+See above for how to use ON based events to add balance to other motions
 
 {{{
 10 STAND 16
@@ -86,7 +91,7 @@ Lots of mods to expand this are possible. The program could check for $PSD value
 
 Line 10 causes the robot takes up Basic pose. Line 30 make it wait until keyboard or IR input. Line 40 set up list of offset values. Lines 50 maps the output of the z axis of the accelerometer ($z) to a range using the $find function. Line 60 then translates that into a displacement to apply to the servo. In lines 90 and 100 it updates the current position of the servo $servo(x) with the offset o. Line 120 cause the program to loop until either keyboard or IR remote is pressed ($kir) is received. If -1 it means no input.
 
-=mirror moves=
+== Mirror moves ==
 
 Run the program and then move the right arm - and watch the left arm follow!
 
@@ -111,7 +116,7 @@ Run the program and then move the right arm - and watch the left arm follow!
 
 The program first lines 10-30 puts servos 13,14,15 into passive mode, this makes them free to move. These servos form the right arm of the robot. It then loops reading their current position on line 60-80. Its then moves the left arm by corresponding amount. Because the left arm servos are reverse they move in the opposite direction, hence the 254-a. 
 
-=dynamic distance sensor=
+== Dynamic distance sensor ==
 
 The arms dynamically move as the distance sensor detects your presence !! 
 
@@ -130,7 +135,9 @@ The arms dynamically move as the distance sensor detects your presence !!
 ==How it works==
 The value of the PSD sensor (always between 10 and 50) is used to set the position of servo 10 and 13 (the shoulders). These will move in unison based on the value. If nothing in range PSD will return 50, so servo 13 is set at 200 and servo 10=50, whilst at closet approach PSD will be 10 and Servo 13=240 and servo 10=10.
 
-=generating a walking gait=
+== Generating a walking gait ==
+
+A more advanced example [Generate] can be seen above.
 
 In one of the examples above I show continuous walking by sending out a sequence of predefined servo moves. But its possible to generate a walking gate mathematically using sine waves. The position of each servo can be defined as
 
@@ -185,7 +192,7 @@ So putting this all together the following code will generate a continuous walki
 Note lines 5-15 use the DATA statement instead of LIST. This is to improve speed as DATA values are evaluated but must simple values between 0 and 255, so reading is faster.
 The lines 30 calculates the SIN wave value for each servo in turn. The calculation is sent to the servo in line 55. The program is fast enough to run a smooth walking gate. It will continue to run until it detects IR or keyboard press (or you turn it off!)
 
-=modify RBC Serial Number=
+== Modify RBC Serial Number ==
 
 Some times the firmware can get corrupted and the serial number is lost. When this happens the standard firmware won't download programs from the internet as they won't match the serial number. So to inspect the firmware you need to read the Flash memory using the $ROM() function. Type 'i' and enter the following program:
 
@@ -208,7 +215,7 @@ Note the "Back-quote" which converts the from Ascii character to numeric value. 
 
 *Use this with CAUTION !!!!!*
 
-=Please Note=
+=== Please Not ===
 _Basic programs are stored in flash - it will overwrite any action or motion scripts you have created. If / when you revert to standard firmware you will need to reload them.
 
 It is possible (hopefully unlikely) that if the firmware goes wildly wrong it could overwrite your serial number and/or zero positions - these are recoverable but with some effort (see above)_
