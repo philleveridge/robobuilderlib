@@ -16,7 +16,7 @@ This custom firmware for Robobuilder gives it the ability to create and store si
   # Reduce memory footprint - better stability
   # Versions for Linux and Windows now has floating point. 
 
-  * Getting started
+= Getting started =
 Download latest firmware (.HEX) and upload on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
 
 If you're not using Windows, you can still download the custom firmware into your bot using the [ http://www.strout.net/info/robotics/utilities/avrbl-downloader/AVRBL Downloader tool]. Or there's a Java based tool available in the source tree.
@@ -51,7 +51,7 @@ For more details and programming guide see the PDF manual.
 
 The start mode is command mode signified by ':'. On pressing I it enters input mode and  you get a '>' prompt, In input mode any valid program code with a line number is stored in flash - and will be there after you turn the robot off. With no line number the command will be immediately executed. 
 
-Here is an example session :
+== Example session ==
 
 {{{
 Basic v=$Revision: 452 $
@@ -89,11 +89,7 @@ If the program ever gets into a recurring loop (either accidentally or deliberat
 
 Notice how each time you enter input mode its adds to the current program. If you want to start over then press 'c.  To run the program press 'r' (and then Esc!)
 
-_See examples below of programs that have been tested. _
-
-For advanced demos see BasicDemos http://code.google.com/p/robobuilderlib/wiki/BasicDemos
-
-== Details ==
+= Language Specification =
 
 {{{
 Language Spec:
@@ -218,10 +214,13 @@ SYNTAX:
 18)kick left front turn
 }}}
 
-= Examples  =
+= Examples =
 
 These are available from examples sub- folder
 http://code.google.com/p/robobuilderlib/source/browse/#svn/trunk/examples
+For more examples programs:
+
+For advanced demos see BasicDemos http://code.google.com/p/robobuilderlib/wiki/BasicDemos
 
 ===1) simple loop===
 {{{
