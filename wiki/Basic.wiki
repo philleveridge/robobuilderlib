@@ -141,7 +141,33 @@ SYNTAX:
 [Line No] NETWORK No input,No outputs,flag,no lay 1,no lay 2, no lay3
 }}}
 
-||Special register access ($)||Description||
+== Example syntax ==
+
+||Command||Description||
+||SERVO ID=POS  ||set servo id to position POS / @ / ~||
+||LIST v=n,1,2,..n   ||Set V to a list of n elements ||
+||MOVE @P,c,d    ||sends a Scene of servos position in array P,c steps in total of d ms (i.e. @A,10,1000 each step is 100ms||
+||MOVE a,b,c,d    ||sends a Scene of servos position in @![a,a+b] c steps d ms so each step d/c >25ms||
+||POKE 10,A     ||Put A into Byte 10||
+||PUT PORT:A:8 = 3 ||set DDR of Port A = 3 (PIN0,PIN1 readable)||
+||PUT PORT:A:2 = 1 ||set Port A bit 2 =1 (assuming writeable)||
+||WAIT 200       ||Wait for a an amount of time in ms i.e. 200ms||
+||STAND 16      ||set servos to basic posture (for 16 or 18 servo bots)||
+||OFFSET        ||Defines a numeric offset array to be applied to MOVE and PLAY commands||
+||RUN 0         ||Call Built in action using code i.e. RUN 0, would punch left See built in motion list below||
+||I2CO 51,@{3,1,2,3}||will send 3 bytes to I2C address 51 ||
+||I2CI 52,5,@{2,1,1}||will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address.||
+||SPEED 2||Speed torque setting on Move 0-4 (0 maximum, 4 minimum) ||
+||MTYPE 3||Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear ||
+||STEP 5=30,50,5||STEP servo 5 from position 30 to position 50 in increments of 5 checking progress and stopping if obstruction||
+||SORT #a,b,c||specialised sort for use with GEN- tbc||
+||GEN 8,6,0,0,0,5,2||GENerate array,||
+||NETWORK  2,1,4,2,0,1||creates a 3 neuron network (2 input 1 output) ||
+
+== Functions and Special variables ==
+Functions an variables can be used in an expression, for example LET A=$X would set A to the current value of X accelerometer. The value of $X changes in real time.
+
+||Specials ($)||Description||
 ||$X, $Y, $Z   ||accelerometer values||
 ||$IR          ||wait for IR remote and get button pressed LET A=$IR||
 ||$KBD         ||wait for keyboard press||
@@ -171,27 +197,9 @@ SYNTAX:
 ||$ZEROS(x)||return an array of zeros  ||
 
 
-||Command||Description||
-||SERVO ID=POS  ||set servo id to position POS / @ / ~||
-||LIST v=n,1,2,..n   ||Set V to a list of n elements ||
-||MOVE @P,c,d    ||sends a Scene of servos position in array P,c steps in total of d ms (i.e. @A,10,1000 each step is 100ms||
-||MOVE a,b,c,d    ||sends a Scene of servos position in @![a,a+b] c steps d ms so each step d/c >25ms||
-||POKE 10,A     ||Put A into Byte 10||
-||PUT PORT:A:8 = 3 ||set DDR of Port A = 3 (PIN0,PIN1 readable)||
-||PUT PORT:A:2 = 1 ||set Port A bit 2 =1 (assuming writeable)||
-||WAIT 200       ||Wait for a an amount of time in ms i.e. 200ms||
-||STAND 16      ||set servos to basic posture (for 16 or 18 servo bots)||
-||OFFSET        ||Defines a numeric offset array to be applied to MOVE and PLAY commands||
-||RUN 0         ||Call Built in action using code i.e. RUN 0, would punch left See built in motion list below||
-||I2CO 51,@{3,1,2,3}||will send 3 bytes to I2C address 51 ||
-||I2CI 52,5,@{2,1,1}||will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address.||
-||SPEED 2||Speed torque setting on Move 0-4 (0 maximum, 4 minimum) ||
-||MTYPE 3||Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear ||
-||STEP 5=30,50,5||STEP servo 5 from position 30 to position 50 in increments of 5 checking progress and stopping if obstruction||
-||SORT #a,b,c||specialised sort for use with GEN- tbc||
-||GEN 8,6,0,0,0,5,2||GENerate array,||
-||NETWORK  2,1,4,2,0,1||creates a 3 neuron network (2 input 1 output) ||
-*Built in motions:*
+== Built in motions ==
+The following motions can be access by the RUN command - see above
+
 {{{
 0) PunchLeft
 1) PunchRight
@@ -212,265 +220,4 @@ SYNTAX:
 16)sitdown
 17)hi
 18)kick left front turn
-}}}
-
-= Examples =
-
-These are available from examples sub- folder
-http://code.google.com/p/robobuilderlib/source/browse/#svn/trunk/examples
-For more examples programs:
-
-For advanced demos see BasicDemos http://code.google.com/p/robobuilderlib/wiki/BasicDemos
-
-===1) simple loop===
-{{{
-10 LET A=1
-20 PRINT A
-30 LET A=A+1
-35 WAIT 500
-40 IF A<10 THEN 20 
-50 END
-}}}
-
-===2) read from console and IR port===
-{{{
-10 LET A=$KBD
-20 PRINT A
-30 LET A=$IR
-40 PRINT A
-50 GOTO 10
-}}}
-
-===3) For Loops===
-{{{
-10 FOR A=1 to 5
-20 PRINT A
-30 NEXT A
-}}}
-
-===4) compound PRINT===
-{{{
-10 LET A=(5+3)*(2+1)
-20 PRINT "The answer is ";A
-30 END
-}}}
-
-===5) read and set servo===
-This reads current position of servo 12 and then moves and extra 5
-{{{
-10 let a=$servo(12)
-20 print "Pos=";a
-30 servo 12=a+5
-}}}
-
-===6) read accelerometer values===
-{{{
-10 print $TICK;" X=";$X;" Y=";$Y;" Z=";$Z
-20 wait 500
-30 goto 10
-}}}
-
-===7) Read button pressed ===
-{{{
-10 let A=$IR
-20 print "Received=";A
-}}}
-
-===8) More  complex===
-Press a button on IR and do action (like standard firmware)
-{{{
-10 STAND 16
-20 RUN $MAPIR($IR)
-30 GOTO 20
-}}}
-
-===9) Simple LISTS===
-{{{
-10 print "List test"
-20 list a=5,4,3,2,1,5
-30 print @a[1]
-40 print @a
-}}}
-Output:
-3
-4,3,2,1,5
-Note: lists are number from zero. First element (5) is the length of the list
-
-===10) OUT - show PSD sensor output as a bar===
-{{{
-10 out `-,$psd
-20 out `*
-30 print
-40 goto 10
-}}}
-Output:
-----------*
-
-Note use of Backquote now which converts to Ascii value '-' 45, '*' 42
-
-===11) ROM  and OUT - displays serial number===
-{{{
-10 FOR I=1 to 13
-20 OUT $ROM(I)
-30 NEXT I
-40 PRINT 
-}}}
-
-===12) Setting Servo to Passive Mode===
-{{{
-10 SERVO 12=@
-20 Print "Servo 12 = "; $SERVO(12)
-30 wait 500
-40 goto 20
-}}}
-
-===12a) Changing Red/Blue IO port values===
-{{{
-10 LET A=0
-20 SERVO 12=~A
-25 WAIT 50
-30 LET A=A+1
-40 GOTO 20
-}}}
-Output:
-Servo 12 will flash red/blue light (assuming its a transparent servo!)
-IO ports. ~0, ~1, ~2, ~3
-
-===13) Gosub and Return===
-{{{
-10 print "Hello";
-20 gosub 50
-30 print " back";
-40 end
-50 print " Here";
-60 return
-}}}
-Output:
-Hello Here back
-
-===14) Take up basic pose ===
-{{{
-10 MOVE @{16,125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},10,1000
-}}}
-
-Its simpler to use STAND 16 - but this show use of the MOVE command with a literal/inline LIST. 
-
-_Note: There is one subtle difference with STAND in that its not affected by the OFFSET command where as MOVE is_
-
-===15) Index through a list===
-{{{
-10 list a=5,65,66,67,68,69
-20 for i=0 to 4
-30 out @a[i]
-40 next i
-50 print
-}}}
-output:
-ABCDE
-
-===15.1 Modify entries in a list===
-{{{
-10 PRINT @{5,1,2,3,4,5}
-20 SET 3,7
-30 PRINT @!
-40 INSERT 3,8
-50 PRINT @!
-60 DELETE 3
-70 PRINT @!
-}}}
-output:
-1,2,3,4,5
-1,2,3,7,7
-1,2,3,8,7,5
-1,2,3,7,5
-
-
-===16) Generate random numbers===
-Also use % to get modulo of $rnd - so example return 10 numbers between 0 and 5
-{{{
-10 for i=1 to 10
-20 print $rnd MOD 6
-30 next i
-}}}
-output:
-5
-5
-0
-etc ..
-
-===17) I2C comm example(s)===
-This examples reads values from the optional accelerometer (address 112). The bytes are available from current array @![n]. Note use of $CVB2I() - converts the read bytes values to integers i.e. 255 -> -1. 
-{{{
-10 FOR I=1 to 10
-20 I2CO 112,@{1,2}
-30 I2CI 113,6
-40 PRINT "X=";$CVB2I(@![1]);" Y=";$CVB2I(@![3]);" Z=";$CVB2I(@![5])
-50 WAIT 250
-60 NEXT I
-}}}
-output:
-X=5 Y=-2 Z=6
-X=5 Y=-2 Z=7
-...
-
-===18) Lights proximity detector===
-{{{
-10 LET P=$PSD
-20 LIGHTS P-10
-30 GOTO 10
-}}}
-output:
-The lights on the back of the Robot (Run,Pwr, Err) will act as a bargraph showing how close an object is to PSD sensor 
-
-===19) Close gripper===
-{{{
-10 STEP 18=70,120,5
-}}}
-output:
-Assuming a gripper is connected to Servo 18 this function will slowly close the gripper until it either is fully closed or its movement is stopped by an object in it grasp.
-
-Grippers available from Ipswich Robotics : 
-
-<a href="http://www.shapeways.com/model/55863/gripper_left.html">
-<img src="http://www.shapeways.com/openfilens/55863/photos/photo6622.jpg" width="200" height="150">
-
-[http://www.shapeways.com/model/55863/gripper_left.html Left gripper] or 
-[http://www.shapeways.com/model/55864/gripper___right.html Right gripper]
-
-===20) Reading PF1 and PF2===
-
-The buttons on the back of the RBC are normally logic high and go low when pressed. The are access via bits 0 &1 on PORTA
-{{{
-10 print "Press PF1 or PF2 to start"
-20 if ($port:a:0=1) AND ($port:a:1=2) then 20
-30 print "Done"
-}}}
-
-_Note also supports alternative use of the & for logic AND._
-
-===21) Switch LEDS on and OFF===
-
-The LEDs can be access via the PORT as well. Red Power LED is on Port C bit 7. This LED is on when bit is zero and off when bit is 1. So the following will flash the light
-{{{
-10 LIGHTS 0
-20 put port:c:7=1
-30 wait 500
-40 put port:c:7=0
-50 wait 500
-60 GOTO 20
-}}}
-
-===22) ON event base routines===
-
-This will output 'A' except every 1s will also output '!' or if a key pressed the value of the key.
-{{{
-10 ON TIME 1000 GOSUB 60
-20 ON KEY GOSUB 80
-30 PRINT "A";
-40 WAIT 50
-50 GOTO 30
-60 PRINT "!"
-70 RETURN
-80 PRINT "E=";$EVENT
-90 RETURN
 }}}
