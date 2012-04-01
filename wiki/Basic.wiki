@@ -5,13 +5,13 @@
 This custom firmware for Robobuilder gives it the ability to create and store simple programs in an elementary BASIC language. The software is stable beta release. *_Always download latest version firmware _*
   # For example programs see [SimpleDemos]and [BasicDemos]
   # Features - improved stability and expression handling. 
-  # Event handling with ON TIME x GOSUB y and ON KEY GOSUB y (see example 22)
+  # Event handling with ON TIME x GOSUB y and ON KEY GOSUB y (see example 22 - [SimpleDemos#22])
   # Operator precedence. i.e PRINT 3*5+4*6 now prints 39 (not 87!) 
   # AND, OR and MOD are supported i.e. PRINT (1=1) AND (2=2) prints 1 (true). The old | % & still work as well 
   # Complex expressions now work such as (from dynamic gate demo) 
     {{{ LET P=@B[Y]+@A[Y]*$SIN((X+@C[y])*16)/32768 }}}
   # Expression use 32 bit integer arithmetic - previously it was 16 bit, this make the range much better for complex expression - like above
-  # There's a new variant of MOVE command MOVE A,B,C,D
+  # There's a new variant of MOVE command MOVE A,B,C,D - see below
   # Adds improved list handling features. List are now separate from variable.
   # Reduce memory footprint - better stability
   # Versions for Linux and Windows now has floating point. 
