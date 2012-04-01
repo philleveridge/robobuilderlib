@@ -10,7 +10,7 @@ The firmware has 19 built-in motions to try out, including football kicks. Full 
 
 If you find bugs - please report them on the Google site.
 
-= New demos =
+= latest demos =
 See new wiki pages for latest demos (all require BasicIDE/JBasic)
 
   * ArmsMoving
@@ -23,7 +23,10 @@ See new wiki pages for latest demos (all require BasicIDE/JBasic)
   * [Planner]
   * [evo2]
 
-= Basic demos =
+
+= Advanced demos =
+
+  * [Continuous_Walking]
 
 == Continuous Walking ==
 
