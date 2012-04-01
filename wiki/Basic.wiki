@@ -3,7 +3,7 @@
 = Introduction =
 
 This custom firmware for Robobuilder gives it the ability to create and store simple programs in an elementary BASIC language. The software is stable beta release. *_Always download latest version firmware _*
-
+  # For example programs see [SimpleDemos]and [BasicDemos]
   # Features - improved stability and expression handling. 
   # Event handling with ON TIME x GOSUB y and ON KEY GOSUB y (see example 22)
   # Operator precedence. i.e PRINT 3*5+4*6 now prints 39 (not 87!) 
