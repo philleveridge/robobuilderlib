@@ -26,7 +26,7 @@ See new wiki pages for latest demos (all require BasicIDE/JBasic)
 
 = Advanced demos =
 
-  * [Continuous_Walking]
+  * [#Continuous_Walking]
 
 == Continuous Walking ==
 
