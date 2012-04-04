@@ -1,0 +1,20 @@
+'test error
+'three errors
+
+'nowhere:
+'nowhere2:
+
+'IF a<5 THEN 120
+IF a<5 GOTO 120
+
+GOSUB nowhere
+
+IF a<10 THEN nowhere2
+
+
+
+
+
+
+
+

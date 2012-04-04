@@ -1,0 +1,45 @@
+'arms
+  STAND 16
+' S10 = 5E-05x3 - 0.0213x2 + 2.9618x - 46.011
+' S12 = 8E-05x3 - 0.0339x2 + 4.7877x - 108.15 
+  PRINT "Servo 11,10,12"
+  x=50
+loop:
+  GOSUB leftarm
+  'PRINT x;",";y;",";z
+  WAIT 100
+  x=x+2
+  IF x<190 THEN loop
+
+' S13 = 5E-05x3 - 0.0176x2 + 2.0147x + 87.278 
+' S13 = 8E-05x3 - 0.0272x2 + 3.0598x + 24.756 
+STAND 16
+
+PRINT "Servo 14,13,15"
+  x=190
+loop2:
+  GOSUB rightarm
+  'PRINT x;",";y;",";z
+  WAIT 100
+  x=x-2
+  IF x>50 THEN loop2
+
+  STAND 16
+  END
+
+leftarm:
+  y = (x*x*x/20000) - (x*x/47) + 3 * x - 46
+  z = (x*x*x/12500) - (x*x/29) + 5 * x - 108
+  SERVO 11=x
+  SERVO 10=y
+  SERVO 12=z
+  RETURN
+
+rightarm:
+  y = (x*x*x/20000) - (x*x/57) + 2 * x + 87 
+  z = (x*x*x/12500) - (x*x/37) + 3 * x + 25
+  SERVO 14=x
+  SERVO 13=y
+  SERVO 15=z
+  RETURN
+

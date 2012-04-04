@@ -1,0 +1,4 @@
+10 LIST A = 4,4,8,12,16
+20 FOR I = 1 TO 20
+30 PRINT "i=";I;" F=";$FIND(I,@A)
+40 NEXT I
