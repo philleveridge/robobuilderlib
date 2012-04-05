@@ -8,10 +8,9 @@ const sfwd   8
 const sback  9
 
     stand 16
-
 loop:
-	servo 4=~          'set ankle passive
-	servo 9=~          'left and right
+	servo 4=@          'set ankle passive
+	servo 9=@          'left and right
 	if $servo(4) > (108 + 3) then
 		run sleft
 		wait 1000
@@ -22,8 +21,8 @@ loop:
 		wait 1000
 	endif
 
-	servo 3=~          'set heal passive
-	servo 8=~          'left and right
+	servo 3=@          'set heal passive
+	servo 8=@          'left and right
 	if ($servo(3) > (77 + 5)) OR ($servo(8) < (174 - 5)) then
 		run sfwd
 		wait 1000
@@ -33,5 +32,7 @@ loop:
 		run sback
 		wait 1000
 	endif
+	
+	stand 16
 
     if $kir<0 then loop
