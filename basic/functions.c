@@ -82,7 +82,7 @@ long  fn_sin(long v)
 
 long  fn_cos(long v)
 {
-	return Sin(v%256);
+	return Cos(v%256);
 }
 
 long  fn_abs(long v)
