@@ -117,7 +117,7 @@ int *listarray(char ln)
 	if (n<0) 
 		return (int *)0;
 	else
-		return &listmem[n];
+		return &listmem[lists[n]];
 }
 
 
@@ -487,13 +487,13 @@ void join(char ln1, char ln2)   // "@A . @B"
 	
 	if (szA+szB<SCENESZ) 
 	{
-		int m=(szA>szB)?szA:szB;
-		for (i=m-1;i>=0; i--)
+		for (i=0;i<szA; i++)
 		{
-			if (i<szA)
-				scene[i+szA]     = arrayA[i];
-			if (i<szB)
-				scene[i+szA+szB] = arrayB[i];
+			scene[i] = arrayA[i];
+		}
+		for (i=0;i<szB; i++)
+		{
+			scene[i+szA] = arrayB[i];
 		}
 		nis=szA+szB;
 	}
@@ -501,21 +501,30 @@ void join(char ln1, char ln2)   // "@A . @B"
 
 void add_sub(char ln1, char ln2, char op)   // "@A +/- @B"
 {
-	//add - sub arrays
-	//int *arrayA, szA;
-	//int *arrayB, szB;
+	int *arrayA, szA;
+	int *arrayB, szB;
+	int i;
+	
+	arrayA=listarray(ln1);
+	szA   =listsize(ln1);
+	arrayB=listarray(ln2);
+	szB   =listsize(ln2);
 
-	/*
-	int i,tnis;
-
-	int m=(nis>tnis)?nis:tnis;
-	for (i=0;i<m; i++)
+	if (arrayA==0 || arrayB==0) return; //error
+	
+	for (i=0;i<szA; i++)
 	{
-		if (op == '+') 
-			scene[i] = ((i<tnis)?tempB[i]:0) + ((i<nis)?scene[i]:0); 
-		else 
-			scene[i] = ((i<tnis)?tempB[i]:0) - ((i<nis)?scene[i]:0); 
+		if (i>=szB)
+		{
+			scene[i] = arrayA[i];
+		}
+		else
+		{
+		if (op=='+')
+			scene[i] = arrayA[i] + arrayB[i];
+		else
+			scene[i] = arrayA[i] - arrayB[i];
+		}
 	}
-	nis=m;
-	*/
+	nis=szA;
 }

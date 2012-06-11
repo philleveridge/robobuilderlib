@@ -357,8 +357,17 @@ unsigned char eval_expr(char **str, long *res)
 				(*str)++;
 				break;
 			}
-			if (**str == '+' || **str == '-' || **str == '.')
+			if ((**str == '+' || **str == '-') && *(*str+1)=='@')
 			{
+				add_sub(arrayname, *(*str+2), **str) ;
+				arrayname='!';
+				(*str)+=3;
+			}
+			if (**str == '.' && *(*str+1)=='@')
+			{
+				join(arrayname, *(*str+2));
+				arrayname='!';
+				(*str)+=3;
 			}
 
 			return ARRAY;
