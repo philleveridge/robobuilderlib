@@ -1469,13 +1469,14 @@ int cmd_network(line_t ln)
 	// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
 	// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
 	char *p=ln.text;
-	int  i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t;
+	int  i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t,rinp;
 	long t2;
 
 #ifdef WIN32
 	int l1o[20];
 	int l2o[20];
 	int l3o[20];
+	int rly[200];
 #endif
 
 	for (i=0; i<7; i++)
@@ -1498,13 +1499,15 @@ int cmd_network(line_t ln)
 	noo=param[1];
 	flg=param[2];
 	sho=0;
+	rinp=0;
 	nl1=param[3];
 	nl2=param[4];
 	nl3=param[5];
 	ofset=param[6];
 
-	sho = (flg&8); // show output
-	flg = flg & 7; // 0, 1, 2, 3  or 4 (sigmoid mode)
+	rinp = (flg&16); // randomised inputs
+	sho = (flg&8);   // show output
+	flg = flg & 7;   // 0, 1, 2, 3  or 4 (sigmoid mode)
 
 	if (noi<=0 || noo<=0)
 	{
@@ -1557,15 +1560,34 @@ int cmd_network(line_t ln)
 
 	t=noi+noo+ofset-1; // index through weights and threshold
 
+	if (rinp)
+	{
+		int c=0;
+		for (c=0;c<noi;c++) rly[c]=c;
+		//for (c=0;c<noi;c++)
+		//{
+		//	int rv=rand()%noi;
+		//	swap(&scene[c],&scene[rv]);
+		//}
+	}
+
 	for (i=0; i<nl1; i++)
 	{
 		int s=0;
 		if (sho) rprintf("INPUT NEURON = %d\n", i+1);
-		for (j=0; j<noi; j++)
+		for (j=0; j<(rinp!=0)?(noi/nl1):noi; j++)
 		{
 			t=t+1;
-			s += scene[j]*scene[t];
-			if (sho) rprintf("Input=%d (%d x %d)\n",j,scene[j],scene[t]);
+			if (rinp)
+			{
+				s += scene[j]*scene[t];
+				if (sho) rprintf("R Input=%d (%d x %d)\n",j,scene[j],scene[t]);
+			}
+			else
+			{
+				s += scene[j]*scene[t];
+				if (sho) rprintf("Input=%d (%d x %d)\n",j,scene[j],scene[t]);
+			}
 		}
 		t++;
 		if (sho) rprintf("Th=-(%d)\n",scene[t]);

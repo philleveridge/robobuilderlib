@@ -40,7 +40,7 @@ extern int dbg;
 const char *o 	= "+-*/><gl=n&%|:?";
 const int mp[]  = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
 
-const  prog_char  specials[38][7] = {
+const  prog_char  specials[40][7] = {
 
 		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
 		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
@@ -48,8 +48,8 @@ const  prog_char  specials[38][7] = {
 		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
 		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
 		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS",
-		"MIC",   "X",    "Y",    "Z",    "PSD", 
-		"GREY",  "TURTLE", "EVENT"
+		"MIC",   "X",    "Y",     "Z",    "PSD", 
+		"GREY",  "TURTLE", "EVENT", "MAP","SHUF"
 };
 
 
@@ -395,7 +395,7 @@ unsigned char eval_expr(char **str, long *res)
 					i == sZEROS || i == sABS   || i == sCOS   || i == sCVB2I ||
 					i == sSIN   || i == sNORM  || i == sSUM   || i == sSERVO ||
 					i == sROM   || i == sMIN   || i == sMAX   || i == sIMAX  ||
-					i == sGREY  || i == sTURTLE )
+					i == sGREY  || i == sTURTLE || i== sSHUF)
 				{
 					noargs=1;
 				}
@@ -411,7 +411,7 @@ unsigned char eval_expr(char **str, long *res)
 					noargs=3;
 				}
 
-				if (i==sSIG || i==sFIND || i==sHAM)
+				if (i==sSIG || i==sFIND || i==sHAM || i==sMAP)
 				{
 					noargs=2;
 				}

@@ -414,6 +414,48 @@ long fn_rnd(long v)
 	}
 }
 
+long fn_map(long v) 
+{
+	// $MAP(@A,@B)
+	if (v==2)
+	{
+		int i;
+		char a,b;
+		b=(char)epop();
+		a=(char)epop();
+		if (listsize(a) != listsize(b))
+			return 0;
+		v=0;
+		for (i=0; i<listsize(a); i++)
+		{
+			int v1 = listread(a,listread(b,i));
+			scene[i] = v1;
+			if (dbg) {rprintf("MAP %d %d\r\n",i,v1);}
+		}
+		nis=(int)i;
+		fn_type=ARRAY;
+		return 0;
+	}
+	return v;
+}
+
+long fn_shuf(long v) //$SHUF(4) ->1,2,3,4
+{
+	int lc;
+	if (v>=SCENESZ) v=SCENESZ-1;
+	for (lc=0; lc<(int)v; lc++)
+	{
+		scene[lc]=lc;
+	}
+	for (lc=0; lc<(int)v; lc++)
+	{
+		swap(&scene[lc],&scene[rand()%v]);
+	}
+	nis=lc;
+	fn_type=ARRAY;
+	return 0;
+}
+
 long fn_zeros(long v) 
 {
 	int lc;
@@ -480,8 +522,10 @@ long (*fnctab[])(long) = {
 	fn_gz,    //sGZ 
 	fn_psd,   //sPSD
 	fn_grey,  //sGREY 
-	fn_turtle, //sTURTLE
-	fn_event   //sEVENT
+	fn_turtle,//sTURTLE
+	fn_event, //sEVENT
+	fn_map,   //sMAP
+	fn_shuf    //sSHUF
 };
 
 int get_special(char **str, long *res, int t)
