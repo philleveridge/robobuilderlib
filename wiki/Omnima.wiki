@@ -6,11 +6,10 @@ basic built for Linux. See Linux wiki for details. Can connect of serial to DCMP
 
 = Installation =
 
-opkg install http://robobuilderlib.googlecode.com/files/rbasic_452.2-1_ramips.ipk
+opkg install http://robobuilderlib.googlecode.com/files/rbasic_452.7-1_ramips.ipk
 
 = Run =
 
 {{{
 rbasic REMOTE COM /dev/ttyS1
 }}}
-
