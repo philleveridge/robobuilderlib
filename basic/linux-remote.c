@@ -8,6 +8,8 @@
 
 int fd = -1;
 
+extern int 	dbg;
+
 struct termios oldtio,newtio;
 
 long Baud = B115200;
@@ -18,24 +20,35 @@ char device[128];
 
 void openport()
 {
-	fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
+    int r;
+	fd = open(device, O_RDWR | O_NOCTTY | O_NONBLOCK); //| O_NDELAY);
 	if(fd == -1) {
 	  printf( "failed to open port\n" );
 	}
 
-    tcgetattr(fd,&oldtio); /* save current serial port settings */
-    bzero(&newtio, sizeof(newtio)); /* clear struct for new port settings */
+    tcgetattr(fd,&oldtio); // save current serial port settings 
+    bzero(&newtio, sizeof(newtio)); // clear struct for new port settings 
 
-    newtio.c_cflag = Baud | CS8  | CLOCAL ; //| CREAD;
-    newtio.c_oflag = 0;
-    newtio.c_lflag = 0;
-    newtio.c_iflag = IGNPAR;
+    //s  = os.execute("stty -F /dev/ttyS1 115200 cs8 raw -cstopb -parity -icanon min 1 time 1 
+ 
+//       raw    same  as	-ignbrk	 -brkint -ignpar -parmrk -inpck -istrip -inlcr
+//	      -igncr -icrnl  -ixon  -ixoff   -iuclc   -ixany  -imaxbel	-opost
+//	      -isig -icanon -xcase min 1 time 0
 
-    newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-    newtio.c_cc[VMIN]     = 0;   /* blocking read until 5 chars received */
+
+    newtio.c_cflag = Baud | CS8  | CLOCAL | CREAD ;
+    newtio.c_oflag = ~OPOST;
+    newtio.c_lflag =  ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+    newtio.c_iflag =  ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+
+    newtio.c_cc[VTIME]    = 5;   // inter-character timer unused 
+    newtio.c_cc[VMIN]     = 0;   // blocking read until 5 chars received 
 
     tcflush(fd, TCIFLUSH);
-    tcsetattr(fd,TCSANOW,&newtio);
+    r=tcsetattr(fd,TCSANOW,&newtio);
+    if (dbg) printf( "Set returned : %d\n",r );
+    if (r!=0) fd=-1;
+
 }
 
 void writebyte(int b)
@@ -48,6 +61,8 @@ void writebyte(int b)
 
 	buf[0] = b;
 	write(fd, buf, 1);
+	
+	if (dbg) { printf ("[%02x]\n", buf[0]); }
 }
 
 int readbyte()
@@ -58,20 +73,27 @@ int readbyte()
 	  return -1;
 	}
 
-	int cnt=0;
+	int b,cnt=0;
 
 	while (1)
 	{
-		int b = read(fd, buf, 1);
-		if (b>0)
-			return buf[0];
+		b = read(fd, buf, 1);
 
-		if (b<0)
-			return -1;
+		if (b>=0)
+		{
+			if (dbg) printf (")%02x( ", buf[0]);
+			return buf[0];
+		}
+
+		//if (b<0 && errno!=EAGAIN)
+		//	break;
 
 		if (cnt++>10000) // timeout
-			return -1;
+			break;
 	}
+
+	if (dbg) printf("Timeout\n");
+	return -1;
 }
 
 void closeport()
