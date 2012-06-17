@@ -2,14 +2,16 @@
 
 = Introduction =
 
-basic built for Linux. See Linux wiki for details. Can connect of serial to DCMP firmware. 
+basic built for Linux. See Linux wiki for details. Can connect of serial to DCMP firmware. Default attempts to connect to RBC unit running DCMP firmware on /dev/ttyS1. 
 
 = Installation =
 
+{{{
 opkg install http://robobuilderlib.googlecode.com/files/rbasic_452.7-1_ramips.ipk
+}}}
 
 = Run =
 
 {{{
-rbasic REMOTE COM /dev/ttyS1
+rbasic
 }}}
