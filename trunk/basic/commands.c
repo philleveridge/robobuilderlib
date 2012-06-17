@@ -1469,14 +1469,13 @@ int cmd_network(line_t ln)
 	// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
 	// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
 	char *p=ln.text;
-	int  i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t,rinp;
+	int  i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t,rinp,comp;
 	long t2;
 
 #ifdef WIN32
 	int l1o[20];
 	int l2o[20];
 	int l3o[20];
-	int rly[200];
 #endif
 
 	for (i=0; i<7; i++)
@@ -1500,14 +1499,16 @@ int cmd_network(line_t ln)
 	flg=param[2];
 	sho=0;
 	rinp=0;
+	comp=0;
 	nl1=param[3];
 	nl2=param[4];
 	nl3=param[5];
 	ofset=param[6];
 
+	comp = (flg&32); // comparator inputs
 	rinp = (flg&16); // randomised inputs
-	sho = (flg&8);   // show output
-	flg = flg & 7;   // 0, 1, 2, 3  or 4 (sigmoid mode)
+	sho  = (flg&8);   // show output
+	flg  = flg & 7;   // 0, 1, 2, 3  or 4 (sigmoid mode)
 
 	if (noi<=0 || noo<=0)
 	{
@@ -1560,41 +1561,34 @@ int cmd_network(line_t ln)
 
 	t=noi+noo+ofset-1; // index through weights and threshold
 
-	if (rinp)
-	{
-		int c=0;
-		for (c=0;c<noi;c++) rly[c]=c;
-		//for (c=0;c<noi;c++)
-		//{
-		//	int rv=rand()%noi;
-		//	swap(&scene[c],&scene[rv]);
-		//}
-	}
-
+	int cpn = (rinp!=0)?(noi/nl1):noi;
+	if (sho) rprintf("Conn Per INPUT NEURON = %d\n", cpn);
 	for (i=0; i<nl1; i++)
 	{
 		int s=0;
 		if (sho) rprintf("INPUT NEURON = %d\n", i+1);
-		for (j=0; j<(rinp!=0)?(noi/nl1):noi; j++)
+		for (j=0; j<cpn; j++)
 		{
 			t=t+1;
-			if (rinp)
-			{
-				s += scene[j]*scene[t];
-				if (sho) rprintf("R Input=%d (%d x %d)\n",j,scene[j],scene[t]);
-			}
+			if (comp)
+				s += abs(scene[j]-scene[t]);
 			else
-			{
 				s += scene[j]*scene[t];
-				if (sho) rprintf("Input=%d (%d x %d)\n",j,scene[j],scene[t]);
-			}
+			if (sho) rprintf("Input=%d (%d x %d)\n",j,scene[j],scene[t]);
 		}
 		t++;
-		if (sho) rprintf("Th=-(%d)\n",scene[t]);
-
-		s -= scene[t];
-		l1o[i]=sigmoid(s,flg);
-		if (sho) rprintf("O=%d\n", l1o[i]);
+		if (comp)
+		{
+			if (sho) rprintf("%d<=(%d)\n",s,scene[t]);
+			l1o[i]=(s<=scene[t])?1:0;
+		}
+		else
+		{
+			if (sho) rprintf("%d-(%d)\n",s,scene[t]);
+			s -= scene[t];
+			l1o[i]=sigmoid(s,flg);
+		}
+		if (sho) rprintf("O%d=%d\n", i+1,l1o[i]);
 	}
 
 	for (i=0; i<nl2; i++)
@@ -1613,7 +1607,7 @@ int cmd_network(line_t ln)
 		s -= scene[t];
 
 		l2o[i]=sigmoid(s,flg);
-		if (sho) rprintf("O=%d\n", l2o[i]);
+		if (sho) rprintf("OH=%d\n", l2o[i]);
 	}
 
 	for (i=0; i<nl3; i++)
@@ -1649,7 +1643,7 @@ int cmd_network(line_t ln)
 		s -= scene[t];
 
 		l3o[i]=sigmoid(s,flg);
-		if (sho) rprintf("O=%d\n", l3o[i]);
+		if (sho) rprintf("OO=%d\n", l3o[i]);
 
 	}
 
@@ -1660,7 +1654,7 @@ int cmd_network(line_t ln)
 		else
 			scene[noi+i]=l3o[i];
 
-		if (sho) rprintf("O=%d\n", scene[noi+i]);
+		if (sho) rprintf("FO%d=%d\n", i+1,scene[noi+i]);
 	}
 	return 0;
 }

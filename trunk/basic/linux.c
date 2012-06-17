@@ -16,6 +16,7 @@ void basic();
 int 	dbg=0;
 int		simflg=0;
 int		remote=0;
+int oldf;
 
 #define	DBO(x) {if (dbg) {x}}
 
@@ -36,6 +37,7 @@ int uartGetByte() {
 /* interrupt handler on ctrl-C */
 void sigcatch() {
   ioctl(0,TCSETAF,&savetty); /* restore the original terminal */
+  fcntl(STDIN_FILENO, F_SETFL, oldf);  
   printf("Exit - you typed control - C\n");
   exit(1);
 }
@@ -60,9 +62,8 @@ void initIO()
     printf("cannot put tty into raw mode \n");
     exit(1);
   }
-
-  fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);       // make the reads non-blocking
-
+  oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+  fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
 }
 
 //int  PP_mtype=4;
@@ -377,8 +378,12 @@ void main(int argc, char *argv[])
 
 	PORTA=3;
 
-	strcpy(device,"/dev/ttyUSB0");
-
+#ifdef OMNIMA
+	strcpy(device,"/dev/ttyS1");  //Omnima default
+#else
+	strcpy(device,"/dev/ttyUSB0");  //Omnima default
+#endif
+        remote=1;   
 	for (int i=1; i<argc; i++)
 	{
 		if (!strcmp(argv[i],"DEBUG"))
@@ -408,9 +413,13 @@ void main(int argc, char *argv[])
 		}
 	}
 
-	printf("Running Unix emulator ...\n");
+#ifdef OMNIMA
+	printf("Basic on RAMIPS ...\n");
+#else
+	printf("Unix Basic ...\n");
+#endif
 	initsocket(sf);
-	initIO();
+	initIO();        
 	initfirmware();
 	basic_zero();
 	if (lf)
