@@ -739,9 +739,30 @@ void extend(char *x)
 				v.number=nis;
 			matrixstore(v.number);
 		}
+
 		return;
 	}
 
+	e=x;
+	if (get_str_token("IMAG")==1)
+	{
+		if (get_str_token("LOAD")==1)
+		{
+			if (*e != '\0')
+				v=eval_oxpr(e);
+			else
+				v.number=8;
+			loadimage("test.jpg", "test.txt", v.number);
+		}
+		if (!strcmp(tokbuff,"FILTER"))
+		{
+			filterimage("test.jpg", "test.txt", v.number,0,0,0,255,255,255);
+		}
+
+		return;
+	}
+
+/*
 	e=x;
 	if (get_str_token("IF")==1)
 	{
@@ -763,7 +784,7 @@ void extend(char *x)
 				return;
 			}
 	}
-
+*/
 	rprintfStr("No match ?\n");
 }
 
