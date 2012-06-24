@@ -17,8 +17,8 @@ COMMON = -mmcu=$(MCU)
 
 ## Compile options common for all C compilation units.
 #CFLAGS = $(COMMON) -D AVR
-CFLAGS = -D LINUX -D PARSE
-CFLAGS += -g -Wall -gdwarf-2  -std=gnu99 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
+CFLAGS = -D LINUX -D PARSE -D IMAGE
+CFLAGS += -g -Wall  -std=gnu99 # -gdwarf-2 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 CFLAGS += -MD -MP -MT $(*F).o -MF dep/$(@F).d 
 
 ## Assembly specific flags
@@ -41,8 +41,8 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 ## Objects that must be built in order to link
 
-OBJECTS = basic.o edit.o fix_fft.o linux.o linux-remote.o express.o  functions.o  oexpress.o  lists.o commands.o #sock-linux.o
-LIBS = -lpthread -lm
+OBJECTS = basic.o edit.o fix_fft.o linux.o linux-remote.o express.o  functions.o  oexpress.o  lists.o commands.o jpeg.o  #sock-linux.o
+LIBS = -lpthread -lm -ljpeg
 
 
 ## Objects explicitly added by the user
