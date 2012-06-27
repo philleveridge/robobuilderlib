@@ -14,7 +14,7 @@
 
 #include "express.h"
 #include "functions.h"
-
+#include "lists.h"
 //
 // The new expression parser
 // work in progress
@@ -30,7 +30,7 @@
 #define isalpha(c)  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_')
 
 
-#define MAXSTACK 10
+#define MAXSTACK 50
 
 char varname[256];
 tOBJ varobj[50];
@@ -752,16 +752,48 @@ void extend(char *x)
 				v=eval_oxpr(e);
 			else
 				v.number=8;
-			loadimage("test.jpg", "test.txt", v.number);
+			loadimage("test.jpg", v.number, &scene[0]);
+			nis=v.number*v.number;
 		}
-		if (!strcmp(tokbuff,"FILTER"))
+		if (!strcmp(tokbuff,"FILT"))
 		{
-			filterimage("test.jpg", "test.txt", v.number,0,0,0,255,255,255);
+			//!IMAGE FILTER 4;1;10;10;100;100;100
+
+			int args[6];
+			int sz;
+
+			v=eval_oxpr(e);
+			sz=v.number;
+			if (*e++ != ';')
+				return;
+
+			for (int i=0; i<6; i++)
+			{
+				v=eval_oxpr(e);
+				args[i]=v.number;
+				if (*e == ';' || (i==5 && *e=='\0'))
+				{
+					e++;
+				}
+				else
+				{
+        				rprintfStr("incorrect number args (6)\n"); 
+					return;
+				}
+			}			
+			filterimage("test.jpg",&scene[0],sz,args[0],args[1],args[2],args[3],args[4],args[5]);
+			nis=sz*sz;
 		}
 
 		return;
 	}
 
+
+	e=x;
+	if (get_str_token("EXIT")==1)
+	{
+		sigcatch();
+	}
 /*
 	e=x;
 	if (get_str_token("IF")==1)

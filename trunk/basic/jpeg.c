@@ -42,6 +42,9 @@ int loadJpg(const char* Name, int sf)
     fprintf(stderr, "can't open %s\n", Name);
     return 0;
   }
+
+if (dbg) printf ("file opened\n");
+
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_decompress(&cinfo);
   jpeg_stdio_src(&cinfo, infile);
@@ -66,6 +69,8 @@ int loadJpg(const char* Name, int sf)
   while (cinfo.output_scanline < cinfo.output_height) 
   {
     (void) jpeg_read_scanlines(&cinfo, pJpegBuffer, 1);
+
+
     
     for (int x=0;x<width;x++) {
        a = 0; // alpha value is not supported on jpg
@@ -85,6 +90,8 @@ int loadJpg(const char* Name, int sf)
 
      int i=(sf*x)/width;
      int j=(sf*y)/height;
+
+     if (dbg) printf ("%d \n",j*sf + i);
 
      if (fs==0)
 	frame[j*sf + i] += (r + b + g)/3;  // straight grey scale
@@ -156,18 +163,27 @@ void output_cells(char * fn, int sz, int k)
 	fclose(fp);
 }
 
-
+void scale_array(int sz, int k)
+{
+	for (int i=0; i<sz; i++)
+	{
+		for (int j=0; j<sz; j++)
+		{
+		     frame[j+i*sz] = frame[j+i*sz]/k;
+		}
+	}
+}
 
 //ie loadimage("test.jpeg", "test.txt", 16)
-int loadimage(char *ifile, char *ofile, int x)
+void loadimage(char *ifile, int x, int *f)
 {
-	int f[x*x];
-	if (dbg) printf ("JPEG converter (input %s -> output %s)\n", ifile, ofile);
+	if (dbg) printf ("JPEG converter (input %s , %d)\n", ifile, x);
 
 	for (int k=0; k<x*x; k++) f[k]=0;
         frame =&f[0];
 	loadJpg(ifile,x);
-	printf ("[%d,%d,%d]\n",Height, Width,Depth);
+
+	if (dbg) printf ("[%d,%d,%d]\n",Height, Width,Depth);
 
 	int num=Height*Width/(x*x);
 
@@ -178,15 +194,16 @@ int loadimage(char *ifile, char *ofile, int x)
 		if (f[i]>mx) mx=f[i];
 		if (f[i]<mn) mn=f[i];
 	}
-	printf ("[%d,%d, %d]\n",mn, mx, num);
+	if (dbg) {
+		printf ("[%d,%d, %d]\n",mn, mx, num);
+		output_grey1(mx, x);
+	}
 
-	output_grey1(mx, x);
-
-	output_cells(ofile, x, num);
+	scale_array(x, num);
 }
 
 //ie filterimage("test.jpeg", "test.txt", 16, 0, 0, 0, 255, 255, 255)
-int filterimage(char *ifile, char *ofile, int x, int a, int b, int c, int d, int e, int f)
+void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f)
 {
 	fs=1;
 	n.minR = a;
@@ -195,10 +212,12 @@ int filterimage(char *ifile, char *ofile, int x, int a, int b, int c, int d, int
 	n.maxR = d;
 	n.maxG = e;
 	n.maxB = f;
-	printf ("Min [%d,%d,%d]\n",n.minR, n.minG, n.minB);
-	printf ("Max [%d,%d,%d]\n",n.maxR, n.maxG, n.maxB);
+	if (dbg)  {
+		printf ("Min [%d,%d,%d]\n",n.minR, n.minG, n.minB);
+		printf ("Max [%d,%d,%d]\n",n.maxR, n.maxG, n.maxB);
+	}
 
-	loadimage(ifile, ofile, x);
+	loadimage(ifile, x, data);
 }
 
 
