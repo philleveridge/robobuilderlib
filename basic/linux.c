@@ -373,7 +373,7 @@ extern char device[];
 
 void main(int argc, char *argv[])
 {
-	int lf=0;
+	int lf,rf=0;
 	int sf=0;
 
 	PORTA=3;
@@ -397,6 +397,9 @@ void main(int argc, char *argv[])
 
 		if (!strcmp(argv[i],"LOAD"))
 			lf=1;
+
+		if (!strcmp(argv[i],"RUN"))
+			rf=1;
 
 		if (!strcmp(argv[i],"FAST"))
 			sf=1;
@@ -422,16 +425,21 @@ void main(int argc, char *argv[])
 	initIO();        
 	initfirmware();
 	basic_zero();
-	if (lf)
+	if (lf || rf)
 		binmode();
 
 	pthread_t pth;	// this is our thread identifier
 
 	pthread_create(&pth,NULL,monitor_proc,"TIMER0");
 
-	basic();
+	if (rf) 
+		basic_run(0);
+	else
+		basic();
 
 	pthread_join(pth,NULL);
+	
+	sigcatch() ;
 }
 
 
