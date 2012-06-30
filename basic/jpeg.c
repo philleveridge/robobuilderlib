@@ -25,7 +25,7 @@ Filter n;
 int fs=0; //filter
 
 
-int loadJpg(const char* Name, int sf)
+int loadJpg(char* Name, int sf)
 {
   unsigned char a,r,g,b;
   int width, height;
@@ -40,10 +40,8 @@ int loadJpg(const char* Name, int sf)
   if ((infile = fopen(Name, "rb")) == NULL) 
   {
     fprintf(stderr, "can't open %s\n", Name);
-    return 0;
+    return 1;
   }
-
-if (dbg) printf ("file opened\n");
 
   cinfo.err = jpeg_std_error(&jerr);
   jpeg_create_decompress(&cinfo);
@@ -58,7 +56,7 @@ if (dbg) printf ("file opened\n");
 
   if (!pDummy){
     printf("NO MEM FOR JPEG CONVERT!\n");
-    return 0;
+    return 1;
   }
   row_stride = width * cinfo.output_components ;
   pJpegBuffer = (*cinfo.mem->alloc_sarray)
@@ -91,7 +89,7 @@ if (dbg) printf ("file opened\n");
      int i=(sf*x)/width;
      int j=(sf*y)/height;
 
-     if (dbg) printf ("%d \n",j*sf + i);
+     //if (dbg) printf ("%d ",j*sf + i);
 
      if (fs==0)
 	frame[j*sf + i] += (r + b + g)/3;  // straight grey scale
@@ -115,6 +113,7 @@ if (dbg) printf ("file opened\n");
   Height = height;
   Width  = width;
   Depth  = 32;
+  return 0;
 }
 
 void output_grey2(int mx, int sz)
@@ -174,14 +173,17 @@ void scale_array(int sz, int k)
 	}
 }
 
-//ie loadimage("test.jpeg", "test.txt", 16)
-void loadimage(char *ifile, int x, int *f)
+//ie loadimage("test.jpeg", 16, data)
+void loadimage(char *ifile, int sz, int *f)
 {
-	if (dbg) printf ("JPEG converter (input %s , %d)\n", ifile, x);
+	int x=sz;
+	if (dbg) printf ("JPEG converter input %s [%d]\n", ifile, sz);
 
 	for (int k=0; k<x*x; k++) f[k]=0;
         frame =&f[0];
-	loadJpg(ifile,x);
+
+	if (loadJpg(ifile,x)!=0)
+		return;
 
 	if (dbg) printf ("[%d,%d,%d]\n",Height, Width,Depth);
 

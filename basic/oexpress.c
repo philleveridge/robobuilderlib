@@ -20,6 +20,12 @@
 // work in progress
 //
 
+extern void sigcatch();
+extern int  matrixload(int n);
+extern int  matrixstore(int n);
+extern void loadimage(char *ifile, int x, int *f);
+extern void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f);
+
 #define iswhite(c)   (c == ' ' || c == '\t')
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
 #define isnumber(c)  (c >= '0' && c <= '9')
@@ -752,8 +758,9 @@ void extend(char *x)
 				v=eval_oxpr(e);
 			else
 				v.number=8;
-			loadimage("test.jpg", v.number, &scene[0]);
+			loadimage("test.jpg", (int)(v.number), &scene[0]);
 			nis=v.number*v.number;
+
 		}
 		if (!strcmp(tokbuff,"FILT"))
 		{
