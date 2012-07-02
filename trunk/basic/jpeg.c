@@ -22,12 +22,14 @@ int maxB;
 extern int dbg;
 
 Filter n;
-int fs=0; //filter
+
+unsigned char pDummy[640*480*3]; // max size
+unsigned char * pTest;
 
 
 int loadJpg(char* Name, int sf)
 {
-  unsigned char a,r,g,b;
+  unsigned char r,g,b;
   int width, height;
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
@@ -51,13 +53,8 @@ int loadJpg(char* Name, int sf)
   width = cinfo.output_width;
   height = cinfo.output_height;
 
-  unsigned char pDummy[width*height*4];
-  unsigned char * pTest=pDummy;
+  pTest=pDummy;
 
-  if (!pDummy){
-    printf("NO MEM FOR JPEG CONVERT!\n");
-    return 1;
-  }
   row_stride = width * cinfo.output_components ;
   pJpegBuffer = (*cinfo.mem->alloc_sarray)
     ((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
@@ -67,11 +64,9 @@ int loadJpg(char* Name, int sf)
   while (cinfo.output_scanline < cinfo.output_height) 
   {
     (void) jpeg_read_scanlines(&cinfo, pJpegBuffer, 1);
-
-
     
     for (int x=0;x<width;x++) {
-       a = 0; // alpha value is not supported on jpg
+
        r = pJpegBuffer[0][cinfo.output_components*x];
        if (cinfo.output_components>2)
        {
@@ -84,23 +79,6 @@ int loadJpg(char* Name, int sf)
      *(pTest++) = b;
      *(pTest++) = g;
      *(pTest++) = r;
-     *(pTest++) = a;
-/*
-     int i=(sf*x)/width;
-     int j=(sf*y)/height;
-
-     //if (dbg) printf ("%d ",j*sf + i);
-
-     if (fs==0)
-	frame[j*sf + i] += (r + b + g)/3;  // straight grey scale
-     else
-     {
-        if ((r>=n.minR && r<=n.maxR) && (g>=n.minG && g<=n.maxG) && (b>=n.minB && b<=n.maxB))
-	   frame[j*sf + i] += (r + b + g)/3;  
-     }
-
-     //printf ("[%d,%d] = [%d,%d,%d,%d]  (%d) (%d)\n", x,y,r,g,b,a, j*sf + i, frame[j*sf + i]);
-*/
     }
      y++;
   }
@@ -109,7 +87,7 @@ int loadJpg(char* Name, int sf)
   (void) jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
 
-  BMap   = (int*)pTest; 
+  //BMap   = (int*)pTest; 
   Height = height;
   Width  = width;
   Depth  = 32;
@@ -118,21 +96,22 @@ int loadJpg(char* Name, int sf)
 
 int simplefilter(int mode, int sf)
 {
-     int *img = BMap;
+     unsigned char *img = pDummy;
 	
      if (dbg) printf ("[%d,%d,%d]\n",Height, Width,Depth);
 
-     for (int x=0; x<Width; x++)
+     for (int y=0; y<Height; y++)
      {
-        for (int y=0; y<Height; y++)
-	{
+	 int j=(sf*y)/Height;
+	 for (int x=0; x<Width; x++)
+	 {
 	     int i=(sf*x)/Width;
-	     int j=(sf*y)/Height;
-	     int r=*img++;
-	     int g=*img++;
-	     int b=*img++;
+
+	     unsigned char b=*img++;
+	     unsigned char g=*img++;
+	     unsigned char r=*img++;
 	
-	     switch (mode==0) {
+	     switch (mode) {
 		case 0:
 			frame[j*sf + i] += (r + b + g)/3;  // straight grey scale
 			break;
@@ -143,7 +122,8 @@ int simplefilter(int mode, int sf)
 		case 2:
 			break;
 	     }
-	     //printf ("[%d,%d] = [%d,%d,%d,%d]  (%d) (%d)\n", x,y,r,g,b,a, j*sf + i, frame[j*sf + i]);
+
+	     if (dbg==2) printf ("[%d,%d] = [%d,%d,%d]  (%d)=%d\n", x,y,r,g,b, j*sf + i,frame[j*sf + i] );
 	}
      }
      return 0;
@@ -206,41 +186,43 @@ void scale_array(int sz, int k)
 	}
 }
 
+void initframe(int x, int *f)
+{
+	for (int k=0; k<x*x; k++) f[k]=0;
+        frame =&f[0];
+}
+
 //ie loadimage("test.jpeg", 16, data)
 void loadimage(char *ifile, int sz, int *f)
 {
 	int x=sz;
 	if (dbg) printf ("JPEG converter input %s [%d]\n", ifile, sz);
 
-	for (int k=0; k<x*x; k++) f[k]=0;
-        frame =&f[0];
+	initframe(x,f);
 
 	if (loadJpg(ifile,x)!=0)
 		return;
 
-	simplefilter(0,x);
+	simplefilter(0,x); // grey scale no filtering
 
-	int num=Height*Width/(x*x);
-
-        int mx=0;
-        int mn=100000;
-        for (int i=0;i<x*x; i++) 
-	{
-		if (f[i]>mx) mx=f[i];
-		if (f[i]<mn) mn=f[i];
-	}
 	if (dbg) {
-		printf ("[%d,%d, %d]\n",mn, mx, num);
+		int mx=0;
+		int mn=100000;
+		for (int i=0;i<x*x; i++) 
+		{
+			if (f[i]>mx) mx=f[i];
+			if (f[i]<mn) mn=f[i];
+		}
+		printf ("[%d %d, %d]\n",mx,mn,Height*Width/(x*x));
 		output_grey1(mx, x);
 	}
 
-	scale_array(x, num);
+	scale_array(x, Height*Width/(x*x));
 }
 
-//ie filterimage("test.jpeg", "test.txt", 16, 0, 0, 0, 255, 255, 255)
+//ie filterimage("test.jpeg", scene, 16, 0, 0, 0, 255, 255, 255)
 void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f)
 {
-	fs=1;
 	n.minR = a;
 	n.minG = b;
 	n.minB = c;
@@ -252,7 +234,20 @@ void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int 
 		printf ("Max [%d,%d,%d]\n",n.maxR, n.maxG, n.maxB);
 	}
 
-	loadimage(ifile, x, data);
+	initframe(x,data);
+
+	if (loadJpg(ifile,x)!=0)
+		return;
+
+	simplefilter(1,x);   // 1 colour filter
+
+        int mx=0;
+        for (int i=0;i<x*x; i++) 
+	{
+		if (data[i]>mx) mx=data[i];
+	}
+	output_grey1(mx, x);
+	scale_array(x, Height*Width/(x*x));
 }
 
 
