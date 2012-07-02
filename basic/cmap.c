@@ -14,7 +14,7 @@ extern int dbg;
 
 int mapThresh (int *tmap, int a1, int a2, int cn)
 {
-	int v=1<<cn;
+	int v=1<<(cn-1);
 
 	for (int i=a1; i<a2; i++)
 	{
@@ -25,19 +25,20 @@ int mapThresh (int *tmap, int a1, int a2, int cn)
 
 int colourmap[3][256];
 
-int initmap()
+
+void clrmap()
 {
 	for (int i=0; i<256; i++) {colourmap[0][i]=0;colourmap[1][i]=0;colourmap[2][i]=0;}
-	// 
-	mapThresh(colourmap[0], 20, 50, 1);
-	mapThresh(colourmap[1], 50,150, 1);
-	mapThresh(colourmap[2], 10, 70, 1);
+}
 
-	mapThresh(colourmap[0], 70, 90, 2);
-	mapThresh(colourmap[1], 60, 80, 2);
-	mapThresh(colourmap[2],  0, 40, 2);
-
-	return 0;
+void add_thresh(int n, int minR, int maxR, int minG, int maxG, int minB, int maxB)
+{
+	if (n>=0 && n<8 && minR<maxR && minG<maxG && minB <maxB)
+	{
+		mapThresh(colourmap[0], minR, maxR, n);
+		mapThresh(colourmap[1], minG, maxG, n);
+		mapThresh(colourmap[2], minB, maxB, n);
+	}
 }
 
 int testmap(int r,int g, int b)
@@ -85,13 +86,16 @@ typedef struct color_class_state {
   int num;           // number of regions of this color
   int min_area;      // minimum area for a meaningful region
   RGB color;         // example color (such as used in test output)
-  char *name;        // color's meaningful name (e.g. orange ball, goal)
+  char name[7];        // color's meaningful name (e.g. orange ball, goal)
 } ColourState ;
 
 #define NULL (void*)0
 
-Run    rle[50];
-Region reg[10];
+Run    		rle[50];
+Region 		reg[10];
+ColourState 	color[10];
+
+int num_runs, num_regions, max_runs=10, max_regions=10, max_area, num_colors=1;
 
 void show_run(int n)
 {
@@ -113,8 +117,71 @@ void show_reg(int n)
 	}	
 }
 
-void ThresholdImage() //cmap,img,tmap)
+void show_colors(int n)
 {
+  ColourState *c=color;
+
+  for(int i=0; i<n; i++)
+  {
+	printf ("%d) %s : n=%d [%d %d %d]\n", i, c->name, c->num, c->color.red, c->color.green, c->color.blue);
+	Region *p=c->list;
+	if (p != NULL) printf ("   x1=%d,y1=%d,x2=%d,y2=%d\n",p->x1,p->y1,p->x2,p->y2);	
+  }		
+}
+
+void clear_colors()
+{
+printf ("Clr colors\n");
+	num_colors=0;
+}
+
+void add_color(char *s, int num, int r, int g, int b, int min)
+{
+printf ("Add color %s\n",s);
+	ColourState *c=&color[num_colors++];
+	c->num=num;
+	c->min_area=min;
+	strncpy(c->name,s,6);
+	*(c->name+6)='\0';
+        c->color.red=r; c->color.green=g; c->color.blue=b;
+	c->list=NULL;
+}
+
+/**************
+
+
+***************/
+
+extern unsigned char BMap[];
+extern int Height;
+extern int Width;
+extern int Depth;
+extern int *frame;
+
+void ThresholdImage(int sz, int *frame) 
+{
+     unsigned char *img = &BMap[0];
+
+     if (dbg) printf("threshold img [%d,%d,%d]\n" ,Height, Width,Depth);
+
+     for (int c=0; c<sz*sz; c++) frame[c]=0;
+
+     for (int y=0; y<Height; y++)
+     {
+	 int j=(sz*y)/Height;
+	 for (int x=0; x<Width; x++)
+	 {
+	     int i=(sz*x)/Width;
+
+	     unsigned char b=*(img++);
+	     unsigned char g=*(img++);
+	     unsigned char r=*(img++);
+
+	     int v = testmap(r, g, b);
+	     frame[j*sz + i] |= v;
+	}
+     }
+     if (dbg) printf ("done\n");
 }
 
 int EncodeRuns(int height, int width, int max_runs) //rmap,cmap,img.width,img.height,max_runs);
@@ -125,7 +192,7 @@ int EncodeRuns(int height, int width, int max_runs) //rmap,cmap,img.width,img.he
   Run r;
 
 
-  if (dbg) printf("encode runs\n");
+  if (dbg) printf("encode runs [%d,%d]\n",height,width);
 
   int m, save, *row, *map;
 
@@ -163,7 +230,7 @@ int EncodeRuns(int height, int width, int max_runs) //rmap,cmap,img.width,img.he
 	r.parent = j;
 	rle[j++] = r;
 
-        //if (dbg) printf("run (%d,%d):%d %d\n",r.x,r.y,r.width,r.color);
+        if (dbg) printf("run (%d,%d):%d %d\n",r.x,r.y,r.width,r.color);
 
 	if(j >= max_runs){
           row[width] = save;
@@ -372,8 +439,6 @@ int SeparateRegions(ColourState *color, int colors, int num) //color,num_colors,
 #define CMV_RADIX (1 << CMV_RBITS)
 #define CMV_RMASK (CMV_RADIX-1)
 
-
-
 Region *SortRegionListByArea(Region *list,int passes)
 // Sorts a list of regions by their area field.
 // Uses a linked list based radix sort to process the list.
@@ -437,15 +502,32 @@ void SortRegions(ColourState *color,int colors,int max_area)
   }
 }
 
-
-int processFrame()
+void showImage(int n)
 {
-  int num_runs, num_regions, max_runs=10, max_regions=10, max_area, num_colors=1;
-  ColourState color[10];
+	switch (n) {
+	case 0: printf ("[runs=%d, reg=%d, cols=%d]\n", num_runs, num_regions, num_colors);
+		break;
+	case 1: show_run(num_runs); 
+		break;
+	case 2: show_reg(num_regions); 
+		break;
+	case 3: show_colors(num_colors); 
+		break;
+	case 4: output_frame(4);
+		break;
+	}
+}
 
-  ThresholdImage(); //cmap,img,tmap);
+int processFrame(int sz, int *data)
+{
+  int x=sz;
+  frame=data;
 
-  num_runs = EncodeRuns(4,4,max_runs); //rmap,cmap,img.width,img.height,max_runs);
+  ThresholdImage(x, data); 
+
+  output_frame(x);
+
+  num_runs = EncodeRuns(x,x,max_runs); 
 
   if(num_runs == max_runs){
     printf("WARNING! Exceeded maximum number of runs in EncodeRuns.\n");
@@ -453,16 +535,16 @@ int processFrame()
 
   if (dbg) show_run(num_runs);
 
-  ConnectComponents(num_runs); //rmap,num_runs);
+  ConnectComponents(num_runs); 
 
   if (dbg) show_run(num_runs);
 
-  num_regions = ExtractRegions(max_regions, num_runs); //reg,max_regions,rmap,num_runs);
+  num_regions = ExtractRegions(max_regions, num_runs); 
 
   if (dbg) show_reg(num_regions);
 
   for(int i=0; i<num_colors; i++){
-    color[i].list = (Region *)0;
+    color[i].list = NULL;
     color[i].num  = 0;
   }
 
@@ -471,8 +553,10 @@ int processFrame()
     return(1);
   }
 
-  max_area = SeparateRegions(color, num_colors,num_regions); //color,num_colors,reg,num_regions);
-  SortRegions(color, num_colors, max_area); //color,num_colors,max_area);
+  max_area = SeparateRegions(color, num_colors,num_regions); 
+  SortRegions(color, num_colors, max_area); 
+
+  if (dbg) show_colors(num_colors); 
 
   return(0);
 }
