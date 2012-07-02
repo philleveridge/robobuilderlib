@@ -2,11 +2,9 @@
 #include <string.h>
 #include <jpeglib.h>
 
-int *BMap;
 int Height;
 int Width;
 int Depth;
-
 int *frame;
 
 typedef struct filter {
@@ -23,17 +21,18 @@ extern int dbg;
 
 Filter n;
 
-unsigned char pDummy[640*480*3]; // max size
+unsigned char BMap[640*480*3]; // max size
 unsigned char * pTest;
 
 
-int loadJpg(char* Name, int sf)
+int loadJpg(char* Name)
 {
   unsigned char r,g,b;
   int width, height;
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
 
+  if (dbg) printf("read img\n");
   
 
   FILE * infile;        	/* source file */
@@ -53,7 +52,7 @@ int loadJpg(char* Name, int sf)
   width = cinfo.output_width;
   height = cinfo.output_height;
 
-  pTest=pDummy;
+  pTest=BMap;
 
   row_stride = width * cinfo.output_components ;
   pJpegBuffer = (*cinfo.mem->alloc_sarray)
@@ -87,7 +86,6 @@ int loadJpg(char* Name, int sf)
   (void) jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
 
-  //BMap   = (int*)pTest; 
   Height = height;
   Width  = width;
   Depth  = 32;
@@ -96,7 +94,7 @@ int loadJpg(char* Name, int sf)
 
 int simplefilter(int mode, int sf)
 {
-     unsigned char *img = pDummy;
+     unsigned char *img = BMap;
 	
      if (dbg) printf ("[%d,%d,%d]\n",Height, Width,Depth);
 
@@ -159,6 +157,18 @@ void output_grey1(int mx, int sz)
 	}
 }
 
+void output_frame(int sz)
+{
+	for (int i=0; i<sz; i++)
+	{
+		for (int j=0; j<sz; j++)
+		{
+		     printf ("%3d ", frame[j+i*sz]);
+		}
+		printf ("\n");
+	}
+}
+
 void output_cells(char * fn, int sz, int k)
 {
 	FILE *fp = fopen(fn,"w");
@@ -200,7 +210,7 @@ void loadimage(char *ifile, int sz, int *f)
 
 	initframe(x,f);
 
-	if (loadJpg(ifile,x)!=0)
+	if (loadJpg(ifile)!=0)
 		return;
 
 	simplefilter(0,x); // grey scale no filtering
@@ -236,7 +246,7 @@ void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int 
 
 	initframe(x,data);
 
-	if (loadJpg(ifile,x)!=0)
+	if (loadJpg(ifile)!=0)
 		return;
 
 	simplefilter(1,x);   // 1 colour filter

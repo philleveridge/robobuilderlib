@@ -761,12 +761,12 @@ void extend(char *x)
 				v.number=8;
 			loadimage("test.jpg", (int)(v.number), &scene[0]);
 			nis=v.number*v.number;
-
+			return;
 		}
+
 		if (!strcmp(tokbuff,"FILT"))
 		{
 			//!IMAGE FILTER 4;1;10;10;100;100;100
-
 			int args[6];
 			int sz;
 
@@ -791,16 +791,43 @@ void extend(char *x)
 			}			
 			filterimage("test.jpg",&scene[0],sz,args[0],args[1],args[2],args[3],args[4],args[5]);
 			nis=sz*sz;
-		}
-		if (!strcmp(tokbuff,"TEST"))
-		{
-			processFrame();
-		}
-		if (!strcmp(tokbuff,"DEBUG"))
-		{
-			dbg=1-dbg;
+			return;
 		}
 
+		if (!strcmp(tokbuff,"RAW"))
+		{
+			loadJpg("test.jpg");
+			return;
+		}
+
+		if (!strcmp(tokbuff,"PROC"))
+		{
+			v=eval_oxpr(e);
+			//
+			clear_colors();
+			clrmap();
+			// 
+			add_thresh(1, 120, 175, 40, 70, 30, 40);
+			add_color("orange", 1, 20,30,60,2);
+			//
+			processFrame(v.number, &scene[0]);
+			return;
+		}
+
+		if (!strcmp(tokbuff,"SHOW"))
+		{
+			v=eval_oxpr(e);
+			showImage(v.number);
+			return;
+		}
+
+		if (!strcmp(tokbuff,"DEBU"))
+		{
+			dbg=1-dbg;
+			return;
+		}
+
+		rprintfStr("No such option?\n");
 		return;
 	}
 
