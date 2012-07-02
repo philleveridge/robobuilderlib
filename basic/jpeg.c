@@ -85,7 +85,7 @@ int loadJpg(char* Name, int sf)
      *(pTest++) = g;
      *(pTest++) = r;
      *(pTest++) = a;
-
+/*
      int i=(sf*x)/width;
      int j=(sf*y)/height;
 
@@ -96,11 +96,11 @@ int loadJpg(char* Name, int sf)
      else
      {
         if ((r>=n.minR && r<=n.maxR) && (g>=n.minG && g<=n.maxG) && (b>=n.minB && b<=n.maxB))
-	   frame[j*sf + i] += (r + b + g)/3;  // straight grey scale
+	   frame[j*sf + i] += (r + b + g)/3;  
      }
 
      //printf ("[%d,%d] = [%d,%d,%d,%d]  (%d) (%d)\n", x,y,r,g,b,a, j*sf + i, frame[j*sf + i]);
-
+*/
     }
      y++;
   }
@@ -114,6 +114,39 @@ int loadJpg(char* Name, int sf)
   Width  = width;
   Depth  = 32;
   return 0;
+}
+
+int simplefilter(int mode, int sf)
+{
+     int *img = BMap;
+	
+     if (dbg) printf ("[%d,%d,%d]\n",Height, Width,Depth);
+
+     for (int x=0; x<Width; x++)
+     {
+        for (int y=0; y<Height; y++)
+	{
+	     int i=(sf*x)/Width;
+	     int j=(sf*y)/Height;
+	     int r=*img++;
+	     int g=*img++;
+	     int b=*img++;
+	
+	     switch (mode==0) {
+		case 0:
+			frame[j*sf + i] += (r + b + g)/3;  // straight grey scale
+			break;
+		case 1:
+			if ((r>=n.minR && r<=n.maxR) && (g>=n.minG && g<=n.maxG) && (b>=n.minB && b<=n.maxB))
+			   frame[j*sf + i] += (r + b + g)/3;  
+			break;
+		case 2:
+			break;
+	     }
+	     //printf ("[%d,%d] = [%d,%d,%d,%d]  (%d) (%d)\n", x,y,r,g,b,a, j*sf + i, frame[j*sf + i]);
+	}
+     }
+     return 0;
 }
 
 void output_grey2(int mx, int sz)
@@ -185,7 +218,7 @@ void loadimage(char *ifile, int sz, int *f)
 	if (loadJpg(ifile,x)!=0)
 		return;
 
-	if (dbg) printf ("[%d,%d,%d]\n",Height, Width,Depth);
+	simplefilter(0,x);
 
 	int num=Height*Width/(x*x);
 
