@@ -25,6 +25,7 @@ extern int  matrixload(int n);
 extern int  matrixstore(int n);
 extern void loadimage(char *ifile, int x, int *f);
 extern void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f);
+extern int dbg;
 
 #define iswhite(c)   (c == ' ' || c == '\t')
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
@@ -791,39 +792,24 @@ void extend(char *x)
 			filterimage("test.jpg",&scene[0],sz,args[0],args[1],args[2],args[3],args[4],args[5]);
 			nis=sz*sz;
 		}
+		if (!strcmp(tokbuff,"TEST"))
+		{
+			processFrame();
+		}
+		if (!strcmp(tokbuff,"DEBUG"))
+		{
+			dbg=1-dbg;
+		}
 
 		return;
 	}
-
 
 	e=x;
 	if (get_str_token("EXIT")==1)
 	{
 		sigcatch();
 	}
-/*
-	e=x;
-	if (get_str_token("IF")==1)
-	{
-			int n,t;
-			v=eval_oxpr(e);
-			if (get_str_token("THEN")==1)
-			{
-				n=get_integer();
-				if (v.type==NUMI && v.number==0 && get_str_token("ELSE")==1)
-				{
-					n=get_integer();
-				}
-				t = gotoln(n);
-				if (t<0)
-					BasicErr=5;
-				else
-					setline(t);
 
-				return;
-			}
-	}
-*/
 	rprintfStr("No match ?\n");
 }
 
