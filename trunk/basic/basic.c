@@ -1335,6 +1335,9 @@ void basic()
 			rprintf ("%d lines stored\r\n", findend());
 			rprintfProgStr(PSTR("Uptime: ")); uptime(); rprintfCRLF ();
 			break;
+		case 'p': // passive 
+			passiveservos(nos);
+			break;
 		case '$':
 		case 23: //*+1 Demo mode
 			rprintfProgStr (PSTR("DEMO MODE\r\n"));

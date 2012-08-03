@@ -721,6 +721,7 @@ BYTE readservos(int n)
 	{
 		int p = getservo(i);
 		if (p<0 || p>255) break;	
+		cpos[i]=p;
 	}	
 	nos=i;
 	return i;
