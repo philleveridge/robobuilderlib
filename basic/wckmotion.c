@@ -700,6 +700,7 @@ const BYTE basicdh[] = { 143, 179, 198, 83, 105, 106, 68, 46, 167, 140, 77, 70, 
  
 int getservo(int id)
 {
+/*
 	wckSendOperCommand(0xa0|id, 0);
 	int b1 = wckGetByte(TIME_OUT2);
 	int b2 = wckGetByte(TIME_OUT2);
@@ -708,6 +709,8 @@ int getservo(int id)
 		return -1;
 	else
 		return b2;
+*/
+	return wckPosRead(id&0xFF);
 }
 
 BYTE readservos(int n)
@@ -717,10 +720,21 @@ BYTE readservos(int n)
 	for (i=0; i<n; i++)
 	{
 		int p = getservo(i);
-		if (p<0 || p>255) break;
-		cpos[i]=p;	
+		if (p<0 || p>255) break;	
 	}	
 	nos=i;
+	return i;
+}
+
+BYTE passiveservos(int n)
+{
+	BYTE i;
+        if (n==0) n=31;
+	for (i=0; i<n; i++)
+	{
+		int p = wckSetPassive(i);
+		if (p<0 || p>255) break;
+	}	
 	return i;
 }
 
