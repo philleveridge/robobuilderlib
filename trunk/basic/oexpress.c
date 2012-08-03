@@ -26,6 +26,8 @@ extern int  matrixstore(int n);
 extern void loadimage(char *ifile, int x, int *f);
 extern void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f);
 extern int dbg;
+extern void output_grey1(int sz);
+extern int *frame;
 
 #define iswhite(c)   (c == ' ' || c == '\t')
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
@@ -800,15 +802,93 @@ void extend(char *x)
 			return;
 		}
 
+		if (!strcmp(tokbuff,"THRE"))
+		{
+			//!IMAGE THRE 0
+			//!IMAGE THRE 1;10;10;100;100;100
+			int args[6];
+			int n;
+
+
+			if (*e++ == '\0')
+			{
+        			rprintfStr("clr thresholds\n"); 
+				clrmap();
+			}
+			else
+			{
+				v=eval_oxpr(e);
+				n=v.number;
+				for (int i=0; i<6; i++)
+				{
+					v=eval_oxpr(e);
+					args[i]=v.number;
+					if (*e == ';' || (i==5 && *e=='\0'))
+					{
+						e++;
+					}
+					else
+					{
+						rprintfStr("incorrect number args (6)\n"); 
+						return;
+					}
+				}
+				//add_thresh(1, 120, 175, 40, 70, 30, 40);
+				//!IMAGE THRE 1;120; 175; 40; 70; 30; 40
+				add_thresh(n, args[0],args[1],args[2],args[3],args[4],args[5]);
+			}
+			return;
+		}
+
+		if (!strcmp(tokbuff,"COLO"))
+		{
+			int args[6];
+			int n;
+			char color[10];
+
+			if (*e++ == '\0')
+			{
+				clear_colors();
+			}
+			else
+			{
+				int tk = get_token();
+
+
+				if (tk !=ALPHA || *e++ != ';')
+				{
+					rprintfStr("need colour name\n");
+					return; 
+				}
+				strncpy(color,tokbuff,10);
+
+				for (int i=0; i<5; i++)
+				{
+					v=eval_oxpr(e);
+					args[i]=v.number;
+					if (*e == ';' || (i==4 && *e=='\0'))
+					{
+						e++;
+					}
+					else
+					{
+						rprintfStr("incorrect number args (5)\n"); 
+						return;
+					}
+				}
+				//add_color("orange", 1, 20,30,60,2);
+				//!IMAGE COLO 1;20;30;60;2
+				add_color(color, args[0],args[1],args[2],args[3],args[4]);
+			}
+			return;
+		}
+
 		if (!strcmp(tokbuff,"PROC"))
 		{
-			v=eval_oxpr(e);
-			//
-			clear_colors();
-			clrmap();
-			// 
-			add_thresh(1, 120, 175, 40, 70, 30, 40);
-			add_color("orange", 1, 20,30,60,2);
+			if (*e != '\0')
+				v=eval_oxpr(e);
+			else
+				v.number=4;
 			//
 			processFrame(v.number, &scene[0]);
 			return;
@@ -816,8 +896,27 @@ void extend(char *x)
 
 		if (!strcmp(tokbuff,"SHOW"))
 		{
-			v=eval_oxpr(e);
-			showImage(v.number);
+			frame=&scene[0];
+
+			if (*e != '\0')
+				v=eval_oxpr(e);
+			else
+				v.number=1;
+
+			int sz=sqrt(nis);
+
+			switch (v.number) {
+			case 0: 
+			case 1: 
+			case 2:
+			case 3:
+			case 4:
+				showImage(v.number); break;
+			case 5:
+				output_grey1(sz); break;
+			case 6:
+				output_frame(sz); break;
+			}
 			return;
 		}
 

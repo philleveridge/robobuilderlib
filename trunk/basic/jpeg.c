@@ -127,10 +127,15 @@ int simplefilter(int mode, int sf)
      return 0;
 }
 
-void output_grey2(int mx, int sz)
+void output_grey2(int sz)
 {
 	char *g2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
         int l=strlen(g2);
+        int mx=0;
+        for (int i=0;i<sz*sz; i++) 
+	{
+		if (frame[i]>mx) mx=frame[i];
+	}
 
 	for (int i=0; i<sz; i++)
 	{
@@ -142,16 +147,21 @@ void output_grey2(int mx, int sz)
 	}
 }
 
-void output_grey1(int mx, int sz)
+void output_grey1(int sz)
 {
 	char *g1 =  " .:-=+*#%@";
         int l=strlen(g1);
+        int mx=0;
+        for (int i=0;i<sz*sz; i++) 
+	{
+		if (frame[i]>mx) mx=frame[i];
+	}
 
 	for (int i=0; i<sz; i++)
 	{
 		for (int j=0; j<sz; j++)
 		{
-		     printf ("%c ", g1[l-(l*frame[j+i*sz])/mx]);
+		     printf ("%c ", g1[l-1-(l*frame[j+i*sz])/mx]);
 		}
 		printf ("\n");
 	}
@@ -185,8 +195,10 @@ void output_cells(char * fn, int sz, int k)
 	fclose(fp);
 }
 
-void scale_array(int sz, int k)
+void scale_array(int sz)
 {
+	int k= Height*Width/(sz*sz);
+
 	for (int i=0; i<sz; i++)
 	{
 		for (int j=0; j<sz; j++)
@@ -216,18 +228,10 @@ void loadimage(char *ifile, int sz, int *f)
 	simplefilter(0,x); // grey scale no filtering
 
 	if (dbg) {
-		int mx=0;
-		int mn=100000;
-		for (int i=0;i<x*x; i++) 
-		{
-			if (f[i]>mx) mx=f[i];
-			if (f[i]<mn) mn=f[i];
-		}
-		printf ("[%d %d, %d]\n",mx,mn,Height*Width/(x*x));
-		output_grey1(mx, x);
+		output_grey1(x);
 	}
 
-	scale_array(x, Height*Width/(x*x));
+	scale_array(x);
 }
 
 //ie filterimage("test.jpeg", scene, 16, 0, 0, 0, 255, 255, 255)
@@ -251,13 +255,11 @@ void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int 
 
 	simplefilter(1,x);   // 1 colour filter
 
-        int mx=0;
-        for (int i=0;i<x*x; i++) 
-	{
-		if (data[i]>mx) mx=data[i];
+	if (dbg) {
+		output_grey1(x);
 	}
-	output_grey1(mx, x);
-	scale_array(x, Height*Width/(x*x));
+
+	scale_array(x);
 }
 
 

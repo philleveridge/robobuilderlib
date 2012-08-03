@@ -86,7 +86,7 @@ typedef struct color_class_state {
   int num;           // number of regions of this color
   int min_area;      // minimum area for a meaningful region
   RGB color;         // example color (such as used in test output)
-  char name[7];        // color's meaningful name (e.g. orange ball, goal)
+  char name[10];        // color's meaningful name (e.g. orange ball, goal)
 } ColourState ;
 
 #define NULL (void*)0
@@ -121,9 +121,9 @@ void show_colors(int n)
 {
   ColourState *c=color;
 
-  for(int i=0; i<n; i++)
+  for(int i=0; i<num_colors; i++)
   {
-	printf ("%d) %s : n=%d [%d %d %d]\n", i, c->name, c->num, c->color.red, c->color.green, c->color.blue);
+	printf ("%d) %s : n=%d [%d %d %d] Area>=%d\n", i, c->name, c->num, c->color.red, c->color.green, c->color.blue, c->min_area);
 	Region *p=c->list;
 	if (p != NULL) printf ("   x1=%d,y1=%d,x2=%d,y2=%d\n",p->x1,p->y1,p->x2,p->y2);	
   }		
