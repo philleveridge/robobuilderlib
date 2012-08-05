@@ -30,6 +30,8 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 #LDFLAGS = $(COMMON)
 LDFLAGS +=  -Wl,-Map=RBASIC.map 
 
+REV = $(shell svnversion -n .)
+
 
 ## Intel Hex file production flags
 HEX_FLASH_FLAGS = -R .eeprom
@@ -59,7 +61,8 @@ all: $(TARGET)
 	
 ##Link
 $(TARGET): $(OBJECTS)
-	 $(CC) $(LDFLAGS) $(OBJECTS) $(LINKONLYOBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)
+	echo "Revision = " $(REV)	
+	$(CC) $(LDFLAGS) $(OBJECTS) $(LINKONLYOBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)
 
 
 ## Clean target

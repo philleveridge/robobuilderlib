@@ -95,7 +95,7 @@ Run    		rle[50];
 Region 		reg[10];
 ColourState 	color[10];
 
-int num_runs, num_regions, max_runs=10, max_regions=10, max_area, num_colors=1;
+int num_runs, num_regions, max_runs=10, max_regions=10, max_area, num_colors=0;
 
 void show_run(int n)
 {
@@ -119,7 +119,7 @@ void show_reg(int n)
 
 void show_colors(int n)
 {
-  ColourState *c=color;
+  ColourState *c=&color[0];
 
   for(int i=0; i<num_colors; i++)
   {
@@ -137,7 +137,7 @@ printf ("Clr colors\n");
 
 void add_color(char *s, int num, int r, int g, int b, int min)
 {
-printf ("Add color %s\n",s);
+printf ("Add color %s [%d], %d,%d,%d >%d\n",s,num,r,g,b,min);
 	ColourState *c=&color[num_colors++];
 	c->num=num;
 	c->min_area=min;

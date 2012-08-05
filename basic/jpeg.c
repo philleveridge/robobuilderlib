@@ -156,7 +156,16 @@ void output_grey1(int sz)
 	{
 		if (frame[i]>mx) mx=frame[i];
 	}
-
+/*
+	for (int i=0; i<sz; i++)
+	{
+		for (int j=0; j<sz; j++)
+		{
+		     printf ("%d ", (l*frame[j+i*sz])/mx);
+		}
+		printf ("\n");
+	}
+*/
 	for (int i=0; i<sz; i++)
 	{
 		for (int j=0; j<sz; j++)
@@ -215,7 +224,7 @@ void initframe(int x, int *f)
 }
 
 //ie loadimage("test.jpeg", 16, data)
-void loadimage(char *ifile, int sz, int *f)
+int loadimage(char *ifile, int sz, int *f)
 {
 	int x=sz;
 	if (dbg) printf ("JPEG converter input %s [%d]\n", ifile, sz);
@@ -223,7 +232,7 @@ void loadimage(char *ifile, int sz, int *f)
 	initframe(x,f);
 
 	if (loadJpg(ifile)!=0)
-		return;
+		return -1;
 
 	simplefilter(0,x); // grey scale no filtering
 
@@ -232,10 +241,11 @@ void loadimage(char *ifile, int sz, int *f)
 	}
 
 	scale_array(x);
+	return 0;
 }
 
 //ie filterimage("test.jpeg", scene, 16, 0, 0, 0, 255, 255, 255)
-void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f)
+int filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f)
 {
 	n.minR = a;
 	n.minG = b;
@@ -251,7 +261,7 @@ void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int 
 	initframe(x,data);
 
 	if (loadJpg(ifile)!=0)
-		return;
+		return -1;
 
 	simplefilter(1,x);   // 1 colour filter
 
@@ -260,6 +270,7 @@ void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int 
 	}
 
 	scale_array(x);
+	return 0;
 }
 
 
