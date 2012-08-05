@@ -23,8 +23,8 @@
 extern void sigcatch();
 extern int  matrixload(int n);
 extern int  matrixstore(int n);
-extern void loadimage(char *ifile, int x, int *f);
-extern void filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f);
+extern int loadimage(char *ifile, int x, int *f);
+extern int filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f);
 extern int dbg;
 extern void output_grey1(int sz);
 extern int *frame;
@@ -49,6 +49,7 @@ int nov=0;
 char exprbuff[64];
 char *e;
 char tokbuff[5];
+char tmpstr[32];
 int  tb;
 
 int    tnum;
@@ -205,6 +206,19 @@ int get_token()
         return DELI;
     }
 
+    if (*e == '"')
+    {
+        char *p=tmpstr;
+        e++;
+        while (*e != '"')
+    	{
+		*p++=*e++;
+	}
+        e++;
+	*p='\0';
+	return STRNG;
+    }
+
 	if (isnumdot(*e))
 	{
 		int r=NUMI;
@@ -322,6 +336,11 @@ tOBJ eval_oxpr(char *s)
 		{
 		case ALPHA:
 			r = get(tokbuff);
+			push(r);
+			break;
+		case STRNG:
+			r.type=STR;
+			r.string = newstring(tmpstr);
 			push(r);
 			break;
 		case NUMI:
@@ -495,6 +514,12 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.type=EMPTY; //error
 			break;
 		}
+	}
+
+	if (o1.type==STR || o2.type==STR)
+	{
+		r.type=STR;
+		r.string = newstring(strcat(o1.string,o2.string));
 	}
 	return r;
 }
@@ -696,6 +721,10 @@ void extend(char *x)
 		
 	v.type=EMPTY;
 
+	tOBJ file;
+	file.type=STR;
+	file.string="test.jpg";  //default
+
 	e=x;
 	if (get_str_token("LET")==1)
 	{
@@ -757,12 +786,34 @@ void extend(char *x)
 	{
 		if (get_str_token("LOAD")==1)
 		{
+			int sz = 8;
 			if (*e != '\0')
 				v=eval_oxpr(e);
+			if (v.type==INTGR && v.number && v.number<12)
+			{
+				sz=v.number;
+			}
 			else
-				v.number=8;
-			loadimage("test.jpg", (int)(v.number), &scene[0]);
-			nis=v.number*v.number;
+			{
+        			rprintfStr("error = expect int size 1-12\n"); 
+				return;
+			}	
+			if (*e == ';')
+			{
+				e++;
+				file=eval_oxpr(e);
+
+				if (file.type!=STR)
+				{
+					rprintfStr("error = 2nd arg should be string file name\n"); 
+					return;
+				}
+			}
+
+			if (loadimage(file.string, sz, &scene[0])==0)
+				nis=sz*sz;
+			else
+				nis=0;
 			return;
 		}
 
@@ -791,14 +842,26 @@ void extend(char *x)
 					return;
 				}
 			}			
-			filterimage("test.jpg",&scene[0],sz,args[0],args[1],args[2],args[3],args[4],args[5]);
-			nis=sz*sz;
+			if (filterimage(file.string,&scene[0],sz,args[0],args[1],args[2],args[3],args[4],args[5])==0)
+				nis=sz*sz;
+			else
+				nis=0;
 			return;
 		}
 
 		if (!strcmp(tokbuff,"RAW"))
 		{
-			loadJpg("test.jpg");
+			if (*e != '\0')
+				file=eval_oxpr(e);
+
+			if (file.type!=STR)
+			{
+				rprintfStr("error = expecting string\n"); 
+				return;
+			}
+
+			loadJpg(file.string);
+			e++;
 			return;
 		}
 
@@ -854,13 +917,12 @@ void extend(char *x)
 			{
 				int tk = get_token();
 
-
-				if (tk !=ALPHA || *e++ != ';')
+				if (tk !=STRNG || *e++ != ';')
 				{
 					rprintfStr("need colour name\n");
 					return; 
 				}
-				strncpy(color,tokbuff,10);
+				strncpy(color,tmpstr,10);
 
 				for (int i=0; i<5; i++)
 				{
