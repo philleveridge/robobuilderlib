@@ -1,0 +1,33 @@
+#makefile
+
+PROJECT=BASIC
+TARGET=rbasic
+INCLUDES=-include /usr/include/errno.h
+LDFLAGS=
+
+CFLAGS =  -D LINUX -D PARSE -D OMNIMA -D IMAGE
+CFLAGS += -g -Wall -gdwarf-2 -std=gnu99 -funsigned-char  # -funsigned-bitfields -fpack-struct -fshort-enums
+
+
+OBJECTS = edit.o fix_fft.o  linux.o  lists.o express.o functions.o oexpress.o commands.o linux-remote.o basic.o jpeg.o cmap.o
+LIBS = -lpthread -lm -ljpeg
+
+
+
+all: $(TARGET)
+
+%.o: %.c
+	$(CC) $(INCLUDES) $(CFLAGS) -c $<
+
+$(TARGET): $(OBJECTS)
+	 $(CC) $(LDFLAGS) $(OBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)
+
+
+#openwrt package makefile
+world: compile
+
+compile: $(OBJECTS)
+	 $(CC) $(LDFLAGS) $(OBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)
+
+clean:
+	rm -f *.o 
