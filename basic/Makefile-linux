@@ -30,7 +30,7 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 #LDFLAGS = $(COMMON)
 LDFLAGS +=  -Wl,-Map=RBASIC.map 
 
-REV = $(shell svnversion -n .)
+REV = $(shell svnversion -n . | cut -d: -f2)
 
 
 ## Intel Hex file production flags
@@ -62,8 +62,8 @@ all: $(TARGET)
 ##Link
 $(TARGET): $(OBJECTS)
 	echo "Revision = " $(REV)	
-	$(CC) $(LDFLAGS) $(OBJECTS) $(LINKONLYOBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)
-
+	$(CC) $(LDFLAGS) $(OBJECTS) $(LINKONLYOBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)-$(REV)
+	$(shell ln -s $(TARGET)-$(REV) Basic)
 
 ## Clean target
 clean:

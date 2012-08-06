@@ -1191,12 +1191,29 @@ int cmd_sample(line_t ln)
 int timer=0;
 int tline=0;
 int kline=0;
+int imline=0;
 
 int cmd_on(line_t ln)
 {
 	char *p=ln.text;
 	long a,b;
 	int t;
+
+#ifdef IMAGE
+	if (strncmp(p,"IMAGE,",6)==0)
+	{
+		// ON IMAGE GOSUB y
+		p+=6;
+		if (eval_expr(&p, &a) != NUMBER)
+		{
+			BasicErr=1;
+			return 0;
+		}
+		imline=(int)a;
+  		rprintf("Set image handler %ld\n", a);
+		return 0;
+	}
+#endif
 
 	if (strncmp(p,"KEY,",4)==0)
 	{

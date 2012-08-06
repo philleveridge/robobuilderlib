@@ -17,6 +17,7 @@ int 	dbg=0;
 int		simflg=0;
 int		remote=0;
 int oldf;
+int imready=0;
 
 #define	DBO(x) {if (dbg) {x}}
 
@@ -35,7 +36,8 @@ int uartGetByte() {
 
 
 /* interrupt handler on ctrl-C */
-void sigcatch() {
+void sigcatch() 
+{
   ioctl(0,TCSETAF,&savetty); /* restore the original terminal */
   fcntl(STDIN_FILENO, F_SETFL, oldf);  
   printf("Exit - you typed control - C\n");
@@ -346,7 +348,7 @@ void *monitor_proc(void *arg)
 	        {
 				// 1m
 	            gSEC=0;
-				if(gMIN_DCOUNT > 0)	gMIN_DCOUNT--;
+			if(gMIN_DCOUNT > 0)	gMIN_DCOUNT--;
 
 	           if(++gMIN>59)
 	           {
@@ -368,8 +370,18 @@ void *monitor_proc(void *arg)
 	}
 
 }
-extern char device[];
 
+
+#ifdef IMAGE
+/* interrupt handler on SIG USR1 */
+void imageready() 
+{  
+  //printf("Image ready to read\n");
+  imready=1;
+}
+#endif
+
+extern char device[];
 
 void main(int argc, char *argv[])
 {
@@ -381,7 +393,7 @@ void main(int argc, char *argv[])
 #ifdef OMNIMA
 	strcpy(device,"/dev/ttyS1");  //Omnima default
 #else
-	strcpy(device,"/dev/ttyUSB0");  //Omnima default
+	strcpy(device,"/dev/ttyUSB0");  //Linux Desktop default
 #endif
         remote=1;   
 	for (int i=1; i<argc; i++)
@@ -425,6 +437,15 @@ void main(int argc, char *argv[])
 	initIO();        
 	initfirmware();
 	basic_zero();
+
+#ifdef IMAGE
+	signal(SIGUSR1, imageready);
+	int n=getpid();
+	FILE *pid=fopen("PID","w");
+	fprintf(pid,"%d",n);
+	fclose(pid);
+#endif
+
 	if (lf || rf)
 		binmode();
 
