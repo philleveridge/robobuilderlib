@@ -62,7 +62,7 @@ loop2:
 
     NEXT Y
 	
-	IF w THEN
+    IF w THEN
          MOVE @M,1,25
     ELSE
          PRINT @M

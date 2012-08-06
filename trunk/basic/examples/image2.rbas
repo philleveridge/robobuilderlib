@@ -1,0 +1,44 @@
+    LET X=4
+    LIST M=17,+1,+1,-1,-1,+1,+1,-1,-1,+1,+1,-1,-1,+1,+1,-1,-1,0
+    LIST N=17,-1,-1,+1,+1,-1,-1,+1,+1,-1,-1,+1,+1,-1,-1,+1,+1,0
+
+    LIST N=2,0,0
+LOOP:
+    !MAT LOAD X*X 'Grab filtered image
+    GOSUB SHOW
+    WAIT 1000 
+    GOSUB DONET
+    GOTO LOOP
+
+SHOW:
+    FOR I = 0 TO X-1
+      FOR J = 0 TO X-1
+        OUT $GREY(@I[J+I*X])
+        OUT 32
+      NEXT J
+      PRINT
+    NEXT I
+
+    RETURN
+
+DONET:
+    LIST !=@!.@O 'add output
+    LIST !=@!.@M 'Add N1 weights & threshhold 
+    LIST !=@!.@N 'Add N2 eights & threshhold 
+
+    NETWORK 16,2,11,2,0,0
+
+    P=$SERVO(20)
+    if @![16]=1 then
+       print "nuron 1 fired"
+       P=P+2
+    endif 
+
+    if @![17]=1 then
+       print "nuron 2 fired"
+       P=P-2
+    endif 
+
+    SERVO 20=P
+    RETURN
+
