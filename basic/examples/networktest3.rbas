@@ -1,0 +1,46 @@
+'training
+
+print "1st image"
+!mat load 4
+
+list w=@!      'load first data set
+insert @w,4,0  'add threshhold
+
+
+print "2nd image"
+wait 2000
+!mat load 4    'load next data set
+list t=@!
+
+for i=0 to 3
+   a=(@w[i]+@t[i])/2
+   d=$abs(@w[i]-@t[i])/2
+   print i;",";@w[i];",";@t[i];",";a;",";d
+   set  @w,i,a
+next i
+
+
+loop:
+
+print @w
+
+print "recog"
+wait 1000
+!mat load 4  'loadnext image
+
+insert 4,0
+list !=@!.@w
+
+print @!
+
+network 4,1,32+16+8+3,1,0,0 'recognise
+if @![4]=1 then
+   Print "match"
+else
+   print "no match"
+endif
+
+goto loop
+
+
+ 

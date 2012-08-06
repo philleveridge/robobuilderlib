@@ -2,22 +2,12 @@
     LIST M=12,0,0,1,-1,1,-1,0,-1,1,-1,1,0
 
 LOOP:
-    !MAT LOAD X*X
-    GOSUB SHOW
+    !IMAGE LOAD 2
+    !IMAGE SHOW 6
     GOSUB DONET
     WAIT 1000
     GOTO LOOP
 
-SHOW:
-    FOR I = 0 TO X-1
-      FOR J = 0 TO X-1
-        OUT $GREY(@I[J+I*X])
-        OUT 32
-      NEXT J
-      PRINT
-    NEXT I
-
-    RETURN
 
 DONET:
     LIST !=@!.@M 'Add weights & threshhold
