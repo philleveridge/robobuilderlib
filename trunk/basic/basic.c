@@ -729,6 +729,12 @@ void basic_run(int dbf)
 extern int  timer;
 extern int  tline;
 extern int  kline;
+
+#ifdef IMAGE
+extern int  imready;
+extern int  imline;
+#endif
+
 extern void push_line(unsigned int n);
 extern int  gotoln(int gl);
 extern int  gevent;
@@ -750,6 +756,7 @@ void basic_start(int dbf)
 	timer=0;
 	tline=0;
 	kline=0;
+	imline=0;
 
 	init_cmdptr();
 
@@ -785,6 +792,25 @@ void basic_start(int dbf)
 			irf=1;
 		}
 
+#ifdef IMAGE
+
+		if (imline>0 && imready==1)
+		{
+			int t;
+			//printf("image trig %d\n", imline);
+			push_line(nxtline);
+
+			t=gotoln(imline);
+			if (t<0)
+			{
+				BasicErr=6; //invalid line number
+				return;
+			}
+			setline(t);
+
+			imready=0;
+		}
+#endif
 
 		if (irf==0 && timer >0 && gtick>timer)
 		{
