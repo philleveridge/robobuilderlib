@@ -25,6 +25,7 @@ extern int  matrixload(int n);
 extern int  matrixstore(int n);
 extern int loadimage(char *ifile, int x, int *f);
 extern int filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f);
+extern void get_color_region(int);
 extern int dbg;
 extern void output_grey1(int sz);
 extern int *frame;
@@ -711,6 +712,7 @@ extern int   nis;
 extern int   gotoln(int gl);
 extern void  setline(WORD p);
 extern int   BasicErr;
+extern int   imready;
 
 void extend(char *x)
 {
@@ -784,6 +786,7 @@ void extend(char *x)
 	e=x;
 	if (get_str_token("IMAG")==1)
 	{
+
 		if (get_str_token("LOAD")==1)
 		{
 			int sz = 8;
@@ -816,6 +819,14 @@ void extend(char *x)
 				nis=0;
 			return;
 		}
+
+		if (!strcmp(tokbuff,"WAIT"))
+		{
+			while (imready==0) ; // wait for signal
+			imready=0;
+			return;
+		}
+
 
 		if (!strcmp(tokbuff,"FILT"))
 		{
@@ -882,6 +893,7 @@ void extend(char *x)
 			{
 				v=eval_oxpr(e);
 				n=v.number;
+				e++;
 				for (int i=0; i<6; i++)
 				{
 					v=eval_oxpr(e);
@@ -897,7 +909,7 @@ void extend(char *x)
 					}
 				}
 				//add_thresh(1, 120, 175, 40, 70, 30, 40);
-				//!IMAGE THRE 1;120; 175; 40; 70; 30; 40
+				//!IMAGE THRE CID;120; 175; 40; 70; 30; 40
 				add_thresh(n, args[0],args[1],args[2],args[3],args[4],args[5]);
 			}
 			return;
@@ -924,11 +936,11 @@ void extend(char *x)
 				}
 				strncpy(color,tmpstr,10);
 
-				for (int i=0; i<5; i++)
+				for (int i=0; i<4; i++)
 				{
 					v=eval_oxpr(e);
 					args[i]=v.number;
-					if (*e == ';' || (i==4 && *e=='\0'))
+					if (*e == ';' || (i==3 && *e=='\0'))
 					{
 						e++;
 					}
@@ -938,9 +950,11 @@ void extend(char *x)
 						return;
 					}
 				}
-				//add_color("orange", 1, 20,30,60,2);
-				//!IMAGE COLO 1;20;30;60;2
-				add_color(color, args[0],args[1],args[2],args[3],args[4]);
+				//add_color("orange", 20,30,60,2);
+				//!IMAGE COLO "orange";20;30;60;2
+				v.number =add_color(color, args[0],args[1],args[2],args[3]);
+				v.type   =INTGR; 
+				set("CID", v);
 			}
 			return;
 		}
@@ -953,6 +967,18 @@ void extend(char *x)
 				v.number=4;
 			//
 			processFrame(v.number, &scene[0]);
+			nis=v.number*v.number;
+			return;
+		}
+
+		if (!strcmp(tokbuff,"REG"))
+		{
+			if (*e != '\0')
+				v=eval_oxpr(e);
+			else
+				v.number=1;
+
+			get_color_region(v.number);
 			return;
 		}
 

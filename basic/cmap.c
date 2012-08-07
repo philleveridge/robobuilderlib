@@ -26,13 +26,26 @@ int mapThresh (int *tmap, int a1, int a2, int cn)
 int colourmap[3][256];
 
 
+void showmap()
+{
+	for (int i=0; i<256; i++) {
+		printf ("%d (%04x %04x %04x)\n", i, colourmap[0][i], colourmap[1][i], colourmap[2][i]);
+	}
+}
+
 void clrmap()
 {
-	for (int i=0; i<256; i++) {colourmap[0][i]=0;colourmap[1][i]=0;colourmap[2][i]=0;}
+	for (int i=0; i<256; i++) {
+		colourmap[0][i]=0;
+		colourmap[1][i]=0;
+		colourmap[2][i]=0;
+	}
 }
 
 void add_thresh(int n, int minR, int maxR, int minG, int maxG, int minB, int maxB)
 {
+printf ("Add threshold [%d], (%d,%d) (%d,%d) (%d,%d)\n", n, minR,  maxR,  minG, maxG,  minB,  maxB);
+
 	if (n>=0 && n<8 && minR<maxR && minG<maxG && minB <maxB)
 	{
 		mapThresh(colourmap[0], minR, maxR, n);
@@ -95,7 +108,7 @@ Run    		rle[50];
 Region 		reg[10];
 ColourState 	color[10];
 
-int num_runs, num_regions, max_runs=10, max_regions=10, max_area, num_colors=0;
+int num_runs, num_regions, max_runs=50, max_regions=10, max_area, num_colors=0;
 
 void show_run(int n)
 {
@@ -112,7 +125,12 @@ void show_reg(int n)
 	Region *p=&reg[0];
 	for (int i=0;i<n;i++)
 	{
-		printf ("%d) x1=%d,y1=%d,x2=%d,y2=%d\n", i, p->x1,p->y1,p->x2,p->y2);
+		printf ("%d) [%d] x1=%d,y1=%d,x2=%d,y2=%d a=%d (%f,%f)\n", 
+			i, 
+			p->color, 
+			p->x1,p->y1,p->x2,p->y2,
+			p->area,
+			p->cen_x, p->cen_y);
 		p++;
 	}	
 }
@@ -123,10 +141,38 @@ void show_colors(int n)
 
   for(int i=0; i<num_colors; i++)
   {
-	printf ("%d) %s : n=%d [%d %d %d] Area>=%d\n", i, c->name, c->num, c->color.red, c->color.green, c->color.blue, c->min_area);
+	printf ("%s : n=%d [%d %d %d] Area>=%d\n", c->name, c->num, c->color.red, c->color.green, c->color.blue, c->min_area);
 	Region *p=c->list;
-	if (p != NULL) printf ("   x1=%d,y1=%d,x2=%d,y2=%d\n",p->x1,p->y1,p->x2,p->y2);	
+	while (p != NULL) 
+	{
+		printf ("   x1=%d,y1=%d,x2=%d,y2=%d\n",p->x1,p->y1,p->x2,p->y2);
+		p=p->next;
+	}	
   }		
+}
+
+void get_color_region(int n)
+{	
+	if (n<=0 && n>num_colors)
+	{
+		return;
+	}
+
+  	ColourState *c=&color[n-1];
+
+	int t=0;
+
+	//printf ("%s : n=%d [%d %d %d] Area>=%d\n", c->name, c->num, c->color.red, c->color.green, c->color.blue, c->min_area);
+	Region *p=c->list;
+	while (p != NULL) 
+	{
+		scene[t++]=p->x1;
+		scene[t++]=p->y1;
+		scene[t++]=p->x2;
+		scene[t++]=p->y2;
+		p=p->next;
+	}
+	nis=t;		
 }
 
 void clear_colors()
@@ -135,16 +181,27 @@ printf ("Clr colors\n");
 	num_colors=0;
 }
 
-void add_color(char *s, int num, int r, int g, int b, int min)
+int add_color(char *s, int r, int g, int b, int min)
 {
-printf ("Add color %s [%d], %d,%d,%d >%d\n",s,num,r,g,b,min);
+	printf ("Add color %s %d,%d,%d >%d\n",s,r,g,b,min);
+	int i;
+	for (i=0;i<num_colors;i++)
+	{
+		if (strcmp(s,color[i].name)==0)
+		{
+			printf ("Colour already exists - try Clr colors\n");
+			return;
+		}
+	}
+
 	ColourState *c=&color[num_colors++];
-	c->num=num;
 	c->min_area=min;
 	strncpy(c->name,s,6);
 	*(c->name+6)='\0';
         c->color.red=r; c->color.green=g; c->color.blue=b;
+	c->num=0;
 	c->list=NULL;
+	return num_colors;
 }
 
 /**************
@@ -181,7 +238,6 @@ void ThresholdImage(int sz, int *frame)
 	     frame[j*sz + i] |= v;
 	}
      }
-     if (dbg) printf ("done\n");
 }
 
 int EncodeRuns(int height, int width, int max_runs) //rmap,cmap,img.width,img.height,max_runs);
@@ -421,7 +477,7 @@ int SeparateRegions(ColourState *color, int colors, int num) //color,num_colors,
   max_area = 0;
   for(i=0; i<num; i++){
     p = &reg[i];
-    c = p->color;
+    c = p->color-1;
     area = p->area;
 
     if(area >= color[c].min_area){
@@ -513,7 +569,7 @@ void showImage(int n)
 		break;
 	case 3: show_colors(num_colors); 
 		break;
-	case 4: output_frame(4);
+	case 4: showmap();
 		break;
 	}
 }
@@ -525,7 +581,7 @@ int processFrame(int sz, int *data)
 
   ThresholdImage(x, data); 
 
-  output_frame(x);
+  if (dbg) output_frame(x);
 
   num_runs = EncodeRuns(x,x,max_runs); 
 
@@ -553,8 +609,8 @@ int processFrame(int sz, int *data)
     return(1);
   }
 
-  max_area = SeparateRegions(color, num_colors,num_regions); 
-  SortRegions(color, num_colors, max_area); 
+  max_area = SeparateRegions(&color[0], num_colors,num_regions); 
+  SortRegions(&color[0], num_colors, max_area); 
 
   if (dbg) show_colors(num_colors); 
 
