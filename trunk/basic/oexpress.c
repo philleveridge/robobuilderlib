@@ -21,12 +21,12 @@
 //
 
 extern void sigcatch();
-extern int  matrixload(int n);
-extern int  matrixstore(int n);
-extern int loadimage(char *ifile, int x, int *f);
-extern int filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f);
+extern int  matrixload(int n, char *s);
+extern int  matrixstore(int n, char *s);
+extern int  loadimage(char *ifile, int x, int *f);
+extern int  filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f);
 extern void get_color_region(int);
-extern int dbg;
+extern int  dbg;
 extern void output_grey1(int sz);
 extern int *frame;
 
@@ -705,27 +705,118 @@ int get_opr_token(unsigned char op)
 	return 0;
 }
 
-static int  intf=1;
+/**************************************************************************/
 
 extern int   nis;
-
 extern int   gotoln(int gl);
 extern void  setline(WORD p);
 extern int   BasicErr;
 extern int   imready;
+extern int   gkp;
+
+static int  intf=1;
+
+void record(int mode)
+{
+	//scene[0]=time
+	//scene[1]=nof servos
+	//scene[2]..scene[2+nof-1] = servoids
+
+	int i;
+	int t=scene[0];
+	int n=scene[1];
+
+	if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
+
+	for (i=2; i<2+n; i++)
+	{
+		if (dbg) printf ("Passive %d\n",scene[i]); 
+		if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+		// set passive
+	}
+
+	int p=2+n;
+
+	while (1)
+	{
+		for (i=2; i<2+n; i++)
+		{
+			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+			// record
+			scene[p++] = wckPosRead(scene[i]); //read values
+		}
+
+		//wait for key press
+		int key;
+		while ((key=uartGetByte())<0) ;
+
+		if (key==27)
+		{
+			printf ("Done\n");
+			nis=p;
+			return;
+		}
+	}
+}
+
+void playback(int mode)
+{
+	int i;
+	int t=scene[0];
+	int n=scene[1];
+
+	if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
+
+	int p=2+n;
+
+	while (1)
+	{
+		for (i=2; i<2+n; i++)
+		{
+			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+			// wckMove(scene[i],scene[p++])
+			if (dbg) printf ("Move %d = %d\n",scene[i],scene[p++]); 
+			wckPosSend(scene[i], 4, scene[p++]);
+		}
+
+		//wait for time t;
+		if (dbg) 
+			printf ("Wait %d\n",scene[0]); 
+		delay_ms(scene[0]);
+
+		if (p>=nis)
+		{
+			printf ("Done\n");
+			return;
+		}	
+	}
+}
 
 void extend(char *x)
 {
-	tOBJ v;
-	if (intf) {
-		intf=0; v.type=FLOAT; v.floatpoint=3.1415926; set("PI", v);
-	}
-		
-	v.type=EMPTY;
+	tOBJ v,file;
+	int val;
 
-	tOBJ file;
-	file.type=STR;
-	file.string="test.jpg";  //default
+	if (intf) { // set up defaults
+		intf=0; 
+		v.type=FLOAT; v.floatpoint=3.1415926;  set("PI", v);
+		v.type=STR;   v.string    ="data.txt"; set("DFN", v);
+		v.type=STR;   v.string    ="test.jpg"; set("IFN", v);
+	}
+
+	e=x;
+	if (get_str_token("REC")==1)
+	{
+		record(1);
+		return;
+	}
+
+	e=x;
+	if (get_str_token("PLY")==1)
+	{
+		playback(1);
+		return;
+	}
 
 	e=x;
 	if (get_str_token("LET")==1)
@@ -769,7 +860,9 @@ void extend(char *x)
 				v=eval_oxpr(e);
 			else
 				v.number=128;
-			matrixload(v.number);
+			val=v.number;
+			v=get("DFN");
+			matrixload(val, v.string);
 		}
 		if (!strcmp(tokbuff,"STOR"))
 		{
@@ -777,7 +870,10 @@ void extend(char *x)
 				v=eval_oxpr(e);
 			else
 				v.number=nis;
-			matrixstore(v.number);
+
+			val=v.number;
+			v=get("DFN");
+			matrixstore(val, v.string);
 		}
 
 		return;
@@ -800,7 +896,8 @@ void extend(char *x)
 			{
         			rprintfStr("error = expect int size 1-12\n"); 
 				return;
-			}	
+			}
+			file = get("IFN");	
 			if (*e == ';')
 			{
 				e++;
@@ -822,8 +919,11 @@ void extend(char *x)
 
 		if (!strcmp(tokbuff,"WAIT"))
 		{
-			while (imready==0) ; // wait for signal
+			int key;
+			while (imready==0 && (key=uartGetByte())<0 ) 
+				; // wait for signal
 			imready=0;
+			if (key>=0) gkp=key;
 			return;
 		}
 
@@ -862,6 +962,7 @@ void extend(char *x)
 
 		if (!strcmp(tokbuff,"RAW"))
 		{
+			file = get("IFN");
 			if (*e != '\0')
 				file=eval_oxpr(e);
 
