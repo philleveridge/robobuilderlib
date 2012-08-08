@@ -166,10 +166,13 @@ void get_color_region(int n)
 	Region *p=c->list;
 	while (p != NULL) 
 	{
+		scene[t++]=p->area;
 		scene[t++]=p->x1;
 		scene[t++]=p->y1;
 		scene[t++]=p->x2;
 		scene[t++]=p->y2;
+		scene[t++]=(int)(0.5+p->cen_x);
+		scene[t++]=(int)(0.5+p->cen_y);
 		p=p->next;
 	}
 	nis=t;		

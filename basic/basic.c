@@ -1391,13 +1391,10 @@ void basic()
 			rprintf ("stored\r\n");
 			break;
 		case 'm': // matrix 
-			matrixload(128);
+			matrixload(128,"data.txt");
 			break;
 		case 'M': // matrix 
-			matrixstore(nis);
-			break;
-		case 't': // test
-			testeval();
+			matrixstore(nis,"data.txt");
 			break;
 #endif
 		default:

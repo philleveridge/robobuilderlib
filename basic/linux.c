@@ -207,48 +207,48 @@ extern uint16_t psize; // points to next elemt
 extern int scene[];
 extern int nis;
 
-int matrixload(int n)
+int matrixload(int n, char *s)
 {
-       FILE *fp;
-	   int i,t;
-	   if ((fp = fopen("data.txt", "r")) == 0)
-	   {
-			printf ("? can't find file - data.txt\n");
-			return -1;
-	   }
-	   for (i=0;i<n;i++)
-	   {
-		   if (fscanf(fp,"%d", &t)<0)
-			   break;
-		   scene[i]=t;
+       	FILE *fp;
+	int i,t;
+	if ((fp = fopen(s, "r")) == 0)
+	{
+		printf ("? can't find file - %s\n",s);
+		return -1;
+	}
+	for (i=0;i<n;i++)
+	{
+	   if (fscanf(fp,"%d", &t)<0)
+		   break;
+	   scene[i]=t;
+	}
 
-		//printf("%d ", scene[i]); //debug
-	   }
-
-	   printf ("Loaded (%d) - data.txt\n", i);	
-	   nis=i;
-
-	   fclose(fp);
-		return 0;
+	printf ("Loaded (%d) - %s\n", i,s);	
+	nis=i;
+	fclose(fp);
+	return 0;
 }
 
-int matrixstore(int n)
+int matrixstore(int n, char *s)
 {
-       FILE *fp;
-	   int i,t;
+       	FILE *fp;
+	int i,t;
 
-	   if ((fp = fopen("data.txt", "w")) == 0)
-			return -1;
+	if ((fp = fopen(s, "w")) == 0)
+	{
+		printf ("? can't write to file - %s\n",s);
+		return -1;
+	}
 
-	   for (i=0;i<n;i++)
-	   {
-		   fprintf(fp,"%d ", scene[i]);
-	   }
+	for (i=0;i<n;i++)
+	{
+	   fprintf(fp,"%d ", scene[i]);
+	}
 
-	   fclose(fp);
+	fclose(fp);
 
-	   printf ("Stored (%d) - data.txt\n", n);	
-	   return 0;
+	printf ("Stored (%d) - %s\n", n, s);	
+	return 0;
 }
 
 void binstore()
@@ -418,6 +418,9 @@ void main(int argc, char *argv[])
 
 		if (!strcmp(argv[i],"IR"))
 			irf=1;
+
+		if (!strcmp(argv[i],"HANDS"))
+			setdh(1);
 
 
 		if (!strcmp(argv[i],"COM") && i<argc-1)
