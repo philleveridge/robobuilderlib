@@ -2,12 +2,14 @@
 
 = Introduction =
 
-Basic built for Openwrt. See Linux wiki for details. Can connect of serial to DCMP firmware. Default attempts to connect to RBC unit running DCMP firmware on /dev/ttyS1. 
+Basic built for Openwrt. See Linux wiki for details. Can connect via serial to DCMP firmware. Default attempts to connect to RBC unit running DCMP firmware on /dev/ttyS1. 
+
+So ExtendedCommands for details on Linux/Omnima only extensions.
 
 = Installation =
 
 {{{
-opkg install http://robobuilderlib.googlecode.com/files/rbasic_452.7-1_ramips.ipk
+opkg install http://robobuilderlib.googlecode.com/files/rbasic_500M-1_ramips.ipk
 }}}
 
 = Run =
