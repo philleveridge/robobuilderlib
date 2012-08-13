@@ -1,0 +1,112 @@
+#summary Extended command set fo Linux/Omnima Versions
+
+= Introduction =
+
+A set of commands only available in Linux (including Omnima) version to provide feature around IMAGE handling and processing and Matrix operations.
+
+Functionality available from Build 500.
+
+= Details =
+
+new functions available:
+
+  * PLY	play moves from @!
+  * REC	record to @!  [0]=time, [1]=nos, [2]...[2+nos]=servo ida
+
+  * LET           enable floating point operations
+  * PRINT
+{{{
+!PRINT "Hello world"
+!PRINT "Hello " + "world" 
+!PRINT 1.23*4.56
+}}}
+
+  * MAT LOAD  n   reads from DFN - default = data.txt
+  * MAT STOR  n   writes to DFN - default =  data.txt
+  * MAT CONV  M1;M2  
+  * MAT HIST  mode;M
+  * MAT PRIN  M
+  * MAT DEF   M;w;h
+
+  * WAIT IMAGE 'wait for image ready signal (USR1)
+  * WAIT PLY   'waits until play has complete
+
+  * IMAGE LOAD n  loads  and greyscales test.jpg to @! [nxn]
+{{{
+!IMAGE LOAD 7;"test1.jpg"
+!IMAGE SHOW 6
+}}}
+
+  * IMAGE FILT n;a;b;c;d;e;f  loads and applies filter to test.jpg to @! //
+{{{
+!IMAGE FILT 7;1;10;10;100;100;100     
+!IMAGE SHOW 6
+}}}
+
+  * IMAGE RAW     reads IFN (test.jpg) => frame buffer   
+  * IMAGE PROC    n  
+  * IMAGE SHOW    n                                         
+{{{
+'0=info,  1=run,  2=reg, 3=cols,                            
+'4=frame, 5=grey  6=num
+!image show 3 
+}}}
+
+  * IMAGE COLOR   name; r; g; b; n 
+{{{
+!IMAGE COLO "orange"; 20; 30; 60; 2               // sets variable CID to value of colour ID
+}}}
+
+  * IMAGE THRES   id; minr; maxr; ming; maxg; minb; maxb    // id for colour
+{{{
+!IMAGE THRES  CID; 120; 175; 40; 70; 30; 40
+}}}
+
+  * IMAGE REG cid  region info sent to @!  ( area, x1,y1,x2,y2,cx,cy - for each region of color 'cid' )
+
+  * IMAGE DEBU    sets debug level
+
+==Misc Examples==
+
+Example defining a simple matrix
+Note: the Matrix values are stored in LIST of the same name. Its up to the programmer to ensure list size matches the matrix size.
+{{{
+> !MAT DEF Z;4;5
+Create matrix 'Z' 4x5
+> LIST Z=20,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0
+> !MAT PRIN Z
+matrix 'Z' 4x5
+  1   2   3   4 
+  5   6   7   8 
+  9   0   1   2 
+  3   4   5   6 
+  7   8   9   0 
+> 
+}}}
+
+Matrix examples
+{{{
+!MAT DEF A;8;8
+LIST A=$RND(64,0,255)
+LIST B=9,1,0,-1,1,0,-1,1,0,-1
+!MAT PRIN A
+!MAT CONV A;B
+PRINT @!:8
+!MAT HIST 1;B
+}}}
+
+Example of defining a colour filter
+and processing an image for that colour
+{{{
+30 !IMAGE COLO "orange";20;30;60;2
+35 !IMAGE THRE CID;120; 175; 40; 70; 30; 40
+38 !WAIT IMAGE
+45 !IMAGE RAW
+50 !IMAGE PROC 10
+60 !IMAGE SHOW 6
+70 !IMAGE SHOW 3
+75 !IMAGE REG 1
+76 PRINT @!:4
+77 END
+80 goto 38
+}}}
