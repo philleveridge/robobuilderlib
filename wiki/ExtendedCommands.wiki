@@ -5,6 +5,7 @@
 A set of commands only available in Linux (including Omnima) version to provide feature around IMAGE handling and processing and Matrix operations.
 
 Functionality available from Build 500.
+see here for more ImageDemos example codes
 
 = Details =
 
