@@ -87,7 +87,7 @@ void wckReInit()			{}
 void send_bus_str()			{} // support for PIC based Cylon head
 
 BYTE cpos[32];
-int nos;
+BYTE nos;
 
 
 void Sleep(long ms)

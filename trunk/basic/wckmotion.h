@@ -27,8 +27,8 @@ void wckWriteIO		(char ServoID, char Position) ;
 char wckPowerDown	(void);
 /*------------------  ----------------*/  
 
-const BYTE basic18[18];
-const BYTE basic16[16];
+extern const BYTE basic18[];
+extern const BYTE basic16[];
 extern int offset[16];
 
 enum { AccelDecel=0, Accel, Decel, Linear };

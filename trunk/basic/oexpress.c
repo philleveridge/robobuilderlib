@@ -739,16 +739,18 @@ void record(int mode)
 
 	while (1)
 	{
+		//wait for key press
+		int key;
+		printf ("Press any key to record or 'esc' to finish\n");
+
+		while ((key=uartGetByte())<0) ;
+
 		for (i=2; i<2+n; i++)
 		{
 			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
 			// record
 			scene[p++] = wckPosRead(scene[i]); //read values
 		}
-
-		//wait for key press
-		int key;
-		while ((key=uartGetByte())<0) ;
 
 		if (key==27)
 		{
@@ -759,6 +761,10 @@ void record(int mode)
 	}
 }
 
+int pbrunning=0;
+int pbstep=0;
+int pbtime=0;
+
 void playback(int mode)
 {
 	int i;
@@ -767,7 +773,33 @@ void playback(int mode)
 
 	if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
 
-	int p=2+n;
+	if (mode==3)
+	{
+		pbrunning=0; // pause
+		return;
+	}
+
+	if (mode==4)
+	{
+		pbrunning=1; // re-start
+		return;
+	}
+
+	if (mode==5)
+	{
+		pbrunning=1; // reset
+		pbstep=0;	
+		return;
+	}
+
+	//mode 1 & 2 - set up
+
+	pbstep=2+n;
+	pbrunning=1; // start running
+	pbtime=scene[0];
+
+	if (mode==2)  
+		return;  // asynch mode
 
 	while (1)
 	{
@@ -775,20 +807,151 @@ void playback(int mode)
 		{
 			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
 			// wckMove(scene[i],scene[p++])
-			if (dbg) printf ("Move %d = %d\n",scene[i],scene[p++]); 
-			wckPosSend(scene[i], 4, scene[p++]);
+			if (dbg) printf ("Move %d = %d\n",scene[i],scene[pbstep]); 
+			wckPosSend(scene[i], 4, scene[pbstep++]);
 		}
 
 		//wait for time t;
 		if (dbg) 
 			printf ("Wait %d\n",scene[0]); 
-		delay_ms(scene[0]);
+		delay_ms(pbtime);
 
-		if (p>=nis)
+		if (pbstep >=nis)
 		{
 			printf ("Done\n");
 			return;
 		}	
+	}
+}
+
+extern volatile WORD	gtick;
+
+void pb2()
+{
+	int i=0;
+	int n=scene[1];
+
+	for (i=2; i<2+n; i++)
+	{
+		if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+		// wckMove(scene[i],scene[p++])
+		if (dbg) printf ("Move %d = %d\n",scene[i],scene[pbstep]); 
+		wckPosSend(scene[i], 4, scene[pbstep++]);
+	}
+
+	if (pbstep >=nis)
+	{
+		printf ("Done\n");
+		pbrunning=0;
+		pbtime=0;
+		return;
+	}
+	pbtime=gtick + scene[0];
+}
+
+typedef struct mat {
+	int h; 
+	int w;
+	char name;
+} Matrix;
+
+Matrix mstore[MAXLIST];
+
+void convolve(char ln1, char ln2)   // "@A * @B"
+{
+	int *arrayA, szA;
+	int *arrayB, szB;
+	
+	arrayA=listarray(ln1);
+	szA   =listsize(ln1);
+	arrayB=listarray(ln2);
+	szB   =listsize(ln2);
+
+	int h=mstore[ln1-'A'].h;
+	int w=mstore[ln1-'A'].w;
+
+	if (arrayA==0 || arrayB==0) 
+		return; //error
+	if (szA<9 || szB !=9 || szA != h*w) 
+		return; //bad array size
+
+	int mx,my;
+
+	for (my=0;my<h; my++)
+	{
+		for (mx=0;mx<w; mx++)
+		{
+			int p=0;
+			if (mx<w-1) 
+				p += arrayA[my*w+mx+1]*arrayB[5];
+			p += arrayA[my*w+mx+0]*arrayB[4];
+			if (mx>0)   
+				p += arrayA[my*w+mx-1]*arrayB[3];
+
+			if (my>0) {
+				if (mx<w-1) 
+					p += arrayA[my*w+mx+1-w]*arrayB[2];
+				p += arrayA[my*w+mx+0-w]*arrayB[1];
+				if (mx>0)   
+					p += arrayA[my*w+mx-1-w]*arrayB[0];
+			}
+
+			if (my<h-1) {
+				if (mx<w-1) 
+					p += arrayA[my*w+mx+1+w]*arrayB[9];
+				p += arrayA[my*w+mx+0+w]*arrayB[8];
+				if (mx>0)   
+					p += arrayA[my*w+mx-1+w]*arrayB[7];
+			}
+
+			if (mx==0 || mx==w-1 || my==0 || my==h-1)
+				scene[my*w+mx]=0;
+			else
+				scene[my*w+mx]=abs(p);
+		}
+	}	
+	nis=h*w;	
+}
+
+void histogram(char ln1, int mode)   // "@A 
+{
+	int *arrayA, szA;
+	arrayA=listarray(ln1);
+	szA   =listsize(ln1);
+
+	int h=mstore[ln1-'A'].h;
+	int w=mstore[ln1-'A'].w;
+
+	if (arrayA==0 || szA<=0 || h*w != szA) 
+		return; //bad array size
+
+	int mx,my;
+
+	if (mode==1)
+	{
+		for (my=0;my<h; my++)
+		{
+			int p=0;
+			for (mx=0;mx<w; mx++)
+			{
+				p += arrayA[my*w+mx];	
+			}				
+			scene[my]=p;
+		}
+		nis=h;
+	}
+	else
+	{
+		for (mx=0;mx<w; mx++)
+		{
+			int p=0;
+			for (my=0;my<h; my++)
+			{
+				p += arrayA[my*w+mx];	
+			}				
+			scene[mx]=p;
+		}
+		nis=w;
 	}
 }
 
@@ -814,7 +977,11 @@ void extend(char *x)
 	e=x;
 	if (get_str_token("PLY")==1)
 	{
-		playback(1);
+		if (*e != '\0')
+			v=eval_oxpr(e);
+		else
+			v.number=1;
+		playback(v.number);
 		return;
 	}
 
@@ -852,6 +1019,27 @@ void extend(char *x)
 	}
 
 	e=x;
+	if (get_str_token("WAIT")==1)
+	{
+		int key;
+		if (get_str_token("IMAG")==1)
+		{
+			while (imready==0 && (key=uartGetByte())<0 ) 
+				; // wait for signal
+			imready=0;
+			if (key>=0) gkp=key;
+		}
+		if (!strcmp(tokbuff,"PLAY"))
+		{
+			while (pbrunning==0 && (key=uartGetByte())<0 ) 
+				; // wait for signal
+			pbrunning=0;
+			if (key>=0) gkp=key;
+		}
+		return;
+	}
+
+	e=x;
 	if (get_str_token("MAT")==1)
 	{
 		if (get_str_token("LOAD")==1)
@@ -876,6 +1064,104 @@ void extend(char *x)
 			matrixstore(val, v.string);
 		}
 
+		if (!strcmp(tokbuff,"PRIN"))
+		{
+			char m;
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{
+					m=tokbuff[0];
+					printf ("matrix '%c' %dx%d\n", mstore[m-'A'].name, mstore[m-'A'].w, mstore[m-'A'].h);
+					int i,j,h=mstore[m-'A'].h,w=mstore[m-'A'].w;
+					for (j=0; j<h;j++)
+					{
+						for (i=0; i<w; i++)
+						{
+							printf ("%3d ", listread(m, j*w+i));
+						}
+						printf ("\n");
+					}
+					return;
+				}
+			}
+			printf ("MAT PRINT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
+
+		if (!strcmp(tokbuff,"DEF"))
+		{
+			// !MAT DEF A;1;2
+			char m; int w; int h;
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{					
+					m=tokbuff[0];
+					if (*e++ == ';')
+					{
+						v=eval_oxpr(e);	
+						w=v.number;
+						if (*e++ == ';')
+						{
+							v=eval_oxpr(e);	
+							h=v.number;
+							printf ("Create matrix '%c' %dx%d\n", m,w,h);
+							listcreate(m, w*h, 2);
+							mstore[m-'A'].w=w;
+							mstore[m-'A'].h=h;
+							mstore[m-'A'].name=m;
+							return;
+						}
+					}
+				}
+			}
+			printf ("MAT DEF - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
+
+		if (!strcmp(tokbuff,"CONV"))
+		{
+			// !MAT CON A;B
+			char ma,mb;
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{
+					ma=tokbuff[0];
+					if (*e++ == ';')
+					{				
+						if (get_str_token(0))
+						{
+							mb=tokbuff[0];
+							convolve(ma, mb) ;
+							return;
+						}
+					}
+				}
+			}
+			printf ("MAT CONV - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
+
+		if (!strcmp(tokbuff,"HIST"))
+		{
+			// !MAT HIST 1;A
+			
+			int m=1; char ma='A';
+			if (*e != '\0')
+			{
+				v=eval_oxpr(e);	
+				m=v.number;
+				if (*e++ == ';')
+				{				
+					if (get_str_token(0))
+					{
+						ma=tokbuff[0];
+						histogram(ma, m);
+						return;
+					}
+				}
+			}
+			printf ("MAT HIST - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
 		return;
 	}
 
@@ -888,13 +1174,13 @@ void extend(char *x)
 			int sz = 8;
 			if (*e != '\0')
 				v=eval_oxpr(e);
-			if (v.type==INTGR && v.number && v.number<12)
+			if (v.type==INTGR &&  v.number< sqrt(SCENESZ))
 			{
 				sz=v.number;
 			}
 			else
 			{
-        			rprintfStr("error = expect int size 1-12\n"); 
+        			rprintfStr("error = expect int size 1-%d\n", sqrt(SCENESZ)); 
 				return;
 			}
 			file = get("IFN");	
@@ -914,16 +1200,6 @@ void extend(char *x)
 				nis=sz*sz;
 			else
 				nis=0;
-			return;
-		}
-
-		if (!strcmp(tokbuff,"WAIT"))
-		{
-			int key;
-			while (imready==0 && (key=uartGetByte())<0 ) 
-				; // wait for signal
-			imready=0;
-			if (key>=0) gkp=key;
 			return;
 		}
 

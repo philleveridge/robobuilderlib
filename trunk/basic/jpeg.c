@@ -156,16 +156,7 @@ void output_grey1(int sz)
 	{
 		if (frame[i]>mx) mx=frame[i];
 	}
-/*
-	for (int i=0; i<sz; i++)
-	{
-		for (int j=0; j<sz; j++)
-		{
-		     printf ("%d ", (l*frame[j+i*sz])/mx);
-		}
-		printf ("\n");
-	}
-*/
+
 	for (int i=0; i<sz; i++)
 	{
 		for (int j=0; j<sz; j++)

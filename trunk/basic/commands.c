@@ -762,7 +762,7 @@ int cmd_delsel(line_t ln)
 	{
 		BasicErr=3; return 0;
 	}
-	if (n<0 || n>=128)
+	if (n<0 || n>=SCENESZ)
 	{
 		BasicErr=3; return 0;
 	}
@@ -816,7 +816,7 @@ int cmd_inset(line_t ln)
 		return 0;
 	}
 	ind=n;
-	if (*p++ != ',' || n<0 || n>=128)
+	if (*p++ != ',' || n<0 || n>=SCENESZ)
 	{
 		BasicErr=3; 	
 		return 0;
@@ -1150,7 +1150,7 @@ int cmd_sample(line_t ln)
 				{
 					p++;
 					eval_expr(&p, &n);
-					if (n>0 && n<=128)
+					if (n>0 && n<=SCENESZ)
 						MIC_NOS = n;
 				}
 			}
