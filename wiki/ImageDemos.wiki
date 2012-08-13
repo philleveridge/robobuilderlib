@@ -1,0 +1,82 @@
+#summary Image processing demos
+
+= Introduction =
+
+A few simple demos
+
+This demo loads an image as 2x2 array and then control a servo (20) which control the left / right position of the webcam.
+
+= Details =
+
+<code language="vb">
+    'Find brightest light
+    LIST M=12,0,0,1,-1,1,-1,0,-1,1,-1,1,0
+LOOP:
+    !IMAGE LOAD 2   '2x2 matrix 
+    !IMAGE SHOW 6   'show values
+    GOSUB DONET     'Process network
+    WAIT 1000      
+    GOTO LOOP
+DONET:
+    LIST !=@!.@M    'Add weights & threshhold
+    NETWORK 4,2,11,2,0,0
+
+    P=$SERVO(20)
+    if @![4]=1 then
+       print "nuron 1 fired"   'turn left
+       P=P-2
+    endif 
+
+    if @![5]=1 then
+       print "nuron 2 fired"   'turn right
+       P=P+2
+    endif 
+    SERVO 20=P
+    RETURN</code>
+
+Rather than looping you can control loading the image using ON IMAGE extension
+
+<code language="vb">
+' Demo of basic Image process
+   Print "Load image and turn head servo (20) to brightest source"
+   LIST M=12,0,0,1,-1,1,-1,0,-1,1,-1,1,0
+   ON IMAGE GOSUB ImProc
+Loop:
+   WAIT 50
+   Goto Loop
+ImProc:
+   PRINT "load image"
+   t=$tick
+   !IMAGE LOAD 2        'load 2x2 image (grey scale)
+   !IMAGE SHOW 6        'show values
+   LIST !=@!.@M         'Add weights & threshhold
+   NETWORK 4,2,3,2,0,0  'Do network
+   P=$SERVO(20)
+   IF @![4]=1 THEN
+       print "nuron 1 fired"
+       P=P-2
+   ENDIF 
+   IF @![5]=1 THEN
+      print "nuron 2 fired"
+      P=P+2
+   ENDIF 
+   SERVO 20=P
+   PRINT "t=";$tick-t
+   RETURN</code>
+
+Alternatively you can loop and wait for an IMAGE event.
+In this example a colour filter is applied using code based on CMVision2.0 library. This will filter the image and detect regions of same colour
+
+<code language="vb">
+  'set up filter
+  !IMAGE COLO "orange";20;30;60;2
+  !IMAGE THRE CID;120; 175; 40; 70; 30; 40
+Loop:
+  !WAIT IMAGE          'wait for image available
+  !IMAGE RAW           'load
+  !IMAGE PROC 10       'process as 10x10 image
+  !IMAGE SHOW 6        'show process output
+  !IMAGE REG 1         'return region in @! for colour id 1
+  if $ne=0 then loop   'if no region found $NE will be zero
+  PRINT @!:8           'show region info 
+  goto Loop</code>
