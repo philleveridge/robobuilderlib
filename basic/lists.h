@@ -2,9 +2,16 @@
 #ifndef LISTS_H
 #define LISTS_H
 
+#ifdef IMAGE
+//BBigger for image processing support
+#define SCENESZ 4096
+#define MAXLIST 26
+#define LISTMEM 32768
+#else
 #define SCENESZ 128
 #define MAXLIST 5
 #define LISTMEM 128
+#endif
 
 extern int				scene[];	  // generic array
 extern int				nis;

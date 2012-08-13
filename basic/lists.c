@@ -45,7 +45,7 @@ int nis=0;        		// number of item isn array
 
 static int  listmem	[LISTMEM];
 static char names	[MAXLIST];
-static char len	    [MAXLIST];
+static int  len	    	[MAXLIST];
 static int  lists	[MAXLIST];
 
 static int  nol=0;
@@ -161,7 +161,7 @@ int listcreate(char ln, int size, int type)
 {
 	int t=listexist(ln);
 
-	if (dbg) {rprintf("Create %c\n", ln); }
+	if (dbg) {rprintf("Create %c %d\n", ln, size); }
 
 
 	if (t>=0 && len[t]==size)
@@ -171,6 +171,8 @@ int listcreate(char ln, int size, int type)
 
 	if (nol==(MAXLIST-1))
 		return -1;
+
+	if (dbg) {rprintf("Create -- %d %d\n", eol+size, LISTMEM); }
 
 	if (eol + size < LISTMEM)
 	{
@@ -220,7 +222,9 @@ int listreadc(char ln)
 
 void listwritei(int ind, int n, int v)
 {
-	if (ind == -1 && n>=0 && n<=128)
+//if (dbg) {rprintf("List write %d %d %d\n", ind, n, v); }
+
+	if (ind == -1 && n>=0 && n<=SCENESZ)
 		scene[n]=v;
 	if (ind >=0 && n>=0 && n<len[ind] )
 		listmem[lists[ind]+n]=v;
@@ -266,7 +270,7 @@ void listset(char ln, int ind, long v, int insrtflg)
 	if (ln=='!')
 	{
 		sz=nis;
-		msz=128;
+		msz=SCENESZ;
 		array=scene;
 	}
 	else
@@ -385,7 +389,7 @@ int list_eval(char ln, char *p, int ty)
 	long n;
 	char *t=p;
 
-	if (dbg) {rprintf("Eval %c\n", ln); }
+	if (dbg) {rprintf("Eval %c %d %s\n", ln, ty, p); }
 
 	if (ty==1) 		// DATA
 	{
@@ -403,6 +407,7 @@ int list_eval(char ln, char *p, int ty)
 
 	if (r==ARRAY)
 	{
+
 		//copy
 		int l;
 		if (ln==arrayname)
@@ -428,8 +433,11 @@ int list_eval(char ln, char *p, int ty)
 		else
 			ind = listcreate(ln,sz,1);
 
+
+if (dbg) {rprintf("Eval Array %c %d %d %d\n", arrayname,sz, ind, l); }
+
 		for (i=0;i<sz;i++)
-		{
+		{			
 			listwritei(ind,i,listreadi(l,i));
 		}
 		return t-p;
@@ -528,3 +536,10 @@ void add_sub(char ln1, char ln2, char op)   // "@A +/- @B"
 	}
 	nis=szA;
 }
+
+
+
+
+
+
+

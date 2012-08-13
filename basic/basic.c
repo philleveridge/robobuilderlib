@@ -733,6 +733,13 @@ extern int  kline;
 #ifdef IMAGE
 extern int  imready;
 extern int  imline;
+
+extern int pbrunning;
+extern int pbstep;
+extern int pbtime;
+
+extern void pb2();
+
 #endif
 
 extern void push_line(unsigned int n);
@@ -793,6 +800,10 @@ void basic_start(int dbf)
 		}
 
 #ifdef IMAGE
+		if (pbrunning==1  && gtick>pbtime)
+		{
+			pb2();
+		}
 
 		if (imline>0 && imready==1)
 		{
