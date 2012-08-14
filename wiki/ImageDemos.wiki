@@ -16,7 +16,7 @@ This calls a file test.sh every 1s (1000ms)
 The name of the image file is passed as $1 and then test.jpg simply renames it, places it in correct directory and then signal basic using USR1 to tell it the image is ready.
 
 {{{
-# assume /root/test.jpg is soft linked to /www/test.jpg
+# called by mjpg_streamer
 mv -f $1 test.jpg
 cp  test.jpg /www/test.jpg
 cp  test.jpg /root/test.jpg
