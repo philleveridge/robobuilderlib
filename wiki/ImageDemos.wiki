@@ -2,12 +2,35 @@
 
 = Introduction =
 
-A few simple demos
+Image processing assumes a webcam is streaming jpeg images to a file called "test.jpg" using a streamer such as mjpg_streamer.
+
+In the /etc/init.d/mjpg_streamer I have added line
+
+{{{
+service_start /usr/bin/mjpg_streamer --input "input_uvc.so \
+                --device $device --fps $fps --resolution $resolution" \
+                --output "output_file.so -d 1000 -c /root/test.sh -f /tmp"
+}}}
+
+This calls a file test.sh every 1s (1000ms)
+The name of the image file is passed as $1 and then test.jpg simply renames it, places it in correct directory and then signal basic using USR1 to tell it the image is ready.
+
+{{{
+# assume /root/test.jpg is soft linked to /www/test.jpg
+mv -f $1 test.jpg
+cp  test.jpg /www/test.jpg
+cp  test.jpg /root/test.jpg
+
+#signal BASIC that image ready
+kill -s USR1 $(cat /root/PID)
+}}}
+The PID file is created when rbasic runs and contain the process ID to simplify the signal generation
+
+=A few simple demos=
 
 This demo loads an image as 2x2 array and then control a servo (20) which control the left / right position of the webcam.
 
-= Details =
-
+===Demo 1 - Track bright object===
 <code language="vb">
     'Find brightest light
     LIST M=12,0,0,1,-1,1,-1,0,-1,1,-1,1,0
@@ -20,20 +43,19 @@ LOOP:
 DONET:
     LIST !=@!.@M    'Add weights & threshhold
     NETWORK 4,2,11,2,0,0
-
     P=$SERVO(20)
-    if @![4]=1 then
+    IF @![4]=1 then
        print "nuron 1 fired"   'turn left
        P=P-2
-    endif 
-
-    if @![5]=1 then
+    ENDIF 
+    IF @![5]=1 then
        print "nuron 2 fired"   'turn right
        P=P+2
-    endif 
+    ENDIF 
     SERVO 20=P
     RETURN</code>
 
+===Demo 2 - Use the IMAGE signal to trigger process===
 Rather than looping you can control loading the image using ON IMAGE extension
 
 <code language="vb">
@@ -41,9 +63,11 @@ Rather than looping you can control loading the image using ON IMAGE extension
    Print "Load image and turn head servo (20) to brightest source"
    LIST M=12,0,0,1,-1,1,-1,0,-1,1,-1,1,0
    ON IMAGE GOSUB ImProc
+
 Loop:
    WAIT 50
-   Goto Loop
+   GOTO Loop
+
 ImProc:
    PRINT "load image"
    t=$tick
@@ -64,6 +88,7 @@ ImProc:
    PRINT "t=";$tick-t
    RETURN</code>
 
+===Demo 3 - Filter processing in a Loop with a WAIT ===
 Alternatively you can loop and wait for an IMAGE event.
 In this example a colour filter is applied using code based on CMVision2.0 library. This will filter the image and detect regions of same colour
 
