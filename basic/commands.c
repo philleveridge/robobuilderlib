@@ -5,6 +5,9 @@
 #endif
 
 #ifdef LINUX
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
 #include "linux.h"
 #endif
 
@@ -897,9 +900,9 @@ int cmd_sort(line_t ln)
 
 		if (sho)
 		{
-			rprintf("length    = %d\n", lgn);
-			rprintf("N of Gen  = %d\n", nog);
-			rprintf("N to Save = %d\n", nts);
+			rprintf("length    = %ld\n", lgn);
+			rprintf("N of Gen  = %ld\n", nog);
+			rprintf("N to Save = %ld\n", nts);
 			if (nts<1 || nts>nog)
 			{
 				BasicErr=3; return 0;
@@ -1282,7 +1285,6 @@ int cmd_scale(line_t ln)
 		for (i=0; i<nis; i++)
 		{
 			if (scene[i]>s) s=scene[i];
-			scene[i+nis]=0; // zero imag
 		}
 		s=n/s;
 		for (i=0; i<nis; i++)
