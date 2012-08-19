@@ -4,8 +4,8 @@
 
 A set of commands only available in Linux (including Omnima) version to provide feature around IMAGE handling and processing and Matrix operations.
 
-Functionality available from Build 500.
-see here for more ImageDemos example codes
+Functionality available from Build 511.
+see here for more ImageDemos example codes. And advanced demo GestureRecognition
 
 = Details =
 
@@ -14,21 +14,21 @@ new functions available:
 ==Record and Play==
 
   * PLY	mode  play moves from @!
-    mode 1 - Play all Moves return when finished
-    mode 2 - Play all modes asynchronously i.e. returns immediately but continues playing until complete
-    mode 3 - Pause play (use with mode 2)
-    mode 4 - Restart for current move (use after a pause)
-    mode 5 - restart from begining
-    mode 10+n - play 1 move from n-10.  i.e. 10 will play 0th (first move)
+      * mode 1 - Play all Moves return when finished
+      * mode 2 - Play all modes asynchronously i.e. returns immediately but continues playing until complete
+      * mode 3 - Pause play (use with mode 2)
+      * mode 4 - Restart for current move (use after a pause)
+      * mode 5 - restart from begining
+      * mode 10+n - play 1 move from n-10.  i.e. 10 will play 0th (first move)
 
   * REC	mode 
-    mode 1
-    record to @! Array must be initialise [0]=time, [1]=nos, [2]...[2+nos]=servo ids
+      * mode 1  - record to @! Array must be initialise 
+        [0]=time, [1]=nos, [2]...[2+nos]=servo ids
+      * mode 16 - record to @! But initialise for 16 consecutive servos
 
 ==Typed variables==
 
-  * LET    enhanced assignment
-    Variables can have names and type i.e
+  * LET    enhanced assignment, variables can have names and type i.e
 {{{
 !LET DFN="mydata.txt"
 !LET PI=3.1415
