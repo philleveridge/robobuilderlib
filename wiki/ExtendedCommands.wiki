@@ -11,38 +11,73 @@ see here for more ImageDemos example codes
 
 new functions available:
 
-  * PLY	play moves from @!
-  * REC	record to @!  [0]=time, [1]=nos, [2]...[2+nos]=servo ida
+==Record and Play==
 
-  * LET           enable floating point operations
+  * PLY	mode  play moves from @!
+    mode 1 - Play all Moves return when finished
+    mode 2 - Play all modes asynchronously i.e. returns immediately but continues playing until complete
+    mode 3 - Pause play (use with mode 2)
+    mode 4 - Restart for current move (use after a pause)
+    mode 5 - restart from begining
+    mode 10+n - play 1 move from n-10.  i.e. 10 will play 0th (first move)
+
+  * REC	mode 
+    mode 1
+    record to @! Array must be initialise [0]=time, [1]=nos, [2]...[2+nos]=servo ids
+
+==Typed variables==
+
+  * LET    enhanced assignment
+    Variables can have names and type i.e
+{{{
+!LET DFN="mydata.txt"
+!LET PI=3.1415
+}}}
+  
   * PRINT
 {{{
 !PRINT "Hello world"
 !PRINT "Hello " + "world" 
 !PRINT 1.23*4.56
+!PRINT DFN
 }}}
 
-  * MAT LOAD  n   reads from DFN - default = data.txt
-  * MAT STOR  n   writes to DFN - default =  data.txt
-  * MAT CONV  M1;M2  
-  * MAT HIST  mode;M
-  * MAT PRIN  M
-  * MAT DEF   M;w;h
+==Simple Matrices==
+Matrix values are stored in LIST of the same name. Its up to the programmer to ensure list size matches the matrix size. So a 3x2 matrix should be represented by a list of 6 elements. The matrix command will check and throw an error if size doesn't match.
 
+  * MAT DEF   M;w;h           Define a matrix size
+  * MAT ZERO  M;x1;y1;x2;y2   Zero matrix elements (or parts there off)
+  * MAT LOAD  n               reads from DFN - default = data.txt
+  * MAT STOR  n               writes to DFN - default =  data.txt
+  * MAT CONV  M1;M2           Convolves a Matrix A with 3x3 Matrix B
+  * MAT HIST  mode;M          Returns in @! a histogram of matrix M
+  * MAT PRIN  M               Simple Print
+
+==Wait on Events==
+Additional WAIT functions to wait for an event rather than a time period
   * WAIT IMAGE 'wait for image ready signal (USR1)
   * WAIT PLY   'waits until play has complete
 
-  * IMAGE LOAD n  loads  and greyscales test.jpg to @! [nxn]
+==Image Processing==
+
+===Simple Processing===
+Load and process a jpeg file. The filename is set in variable IFN and default is "test.jpg"
+
+  * IMAGE LOAD n  loads  and greyscales IFN to @! [nxn]
 {{{
 !IMAGE LOAD 7;"test1.jpg"
 !IMAGE SHOW 6
 }}}
 
-  * IMAGE FILT n;a;b;c;d;e;f  loads and applies filter to test.jpg to @! //
+  * IMAGE FILT n;a;b;c;d;e;f  loads and applies filter to IFN to @!
 {{{
 !IMAGE FILT 7;1;10;10;100;100;100     
 !IMAGE SHOW 6
 }}}
+
+
+===Advanced Processing===
+Loosely Based on a subset of CMVision library  converted to C.
 
   * IMAGE RAW     reads IFN (test.jpg) => frame buffer   
   * IMAGE PROC    n  
@@ -65,12 +100,10 @@ new functions available:
 
   * IMAGE REG cid  region info sent to @!  ( area, x1,y1,x2,y2,cx,cy - for each region of color 'cid' )
 
-  * IMAGE DEBU    sets debug level
-
 ==Misc Examples==
 
 Example defining a simple matrix
-Note: the Matrix values are stored in LIST of the same name. Its up to the programmer to ensure list size matches the matrix size.
+
 {{{
 > !MAT DEF Z;4;5
 Create matrix 'Z' 4x5
@@ -82,7 +115,18 @@ matrix 'Z' 4x5
   9   0   1   2 
   3   4   5   6 
   7   8   9   0 
-> 
+> !MAT DEF A;3;2
+Create matrix 'A' 3x2
+> LIST A=6,1,2,3,4,5,6
+> !MAT PRINT A
+matrix 'A' 3x2
+  1   2   3 
+  4   5   6 
+> !MAT ZERO A;1;0;2;1
+> !MAT PRINT A
+matrix 'A' 3x2
+  1   0   0 
+  4   0   0 
 }}}
 
 Matrix examples
@@ -107,7 +151,8 @@ and processing an image for that colour
 60 !IMAGE SHOW 6
 70 !IMAGE SHOW 3
 75 !IMAGE REG 1
-76 PRINT @!:4
-77 END
-80 goto 38
+78 PRINT "Area=";@![0]
+80 PRINT "Box=";@![1];",";@![2];" to ";@![3];",";@![4]
+85 PRINT "Center=";@![5];",";@![6]
+90 GOTO 38
 }}}
