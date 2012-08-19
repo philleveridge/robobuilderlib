@@ -579,12 +579,24 @@ void showImage(int n)
 
 int processFrame(int sz, int *data)
 {
-  int x=sz;
+  int x=0;
+
   frame=data;
 
-  ThresholdImage(x, data); 
-
-  if (dbg) output_frame(x);
+  if (sz==0)
+  {
+      if (nis>0 ) x=sqrt(nis);
+      if (x>0 && x*x != nis) {
+        printf("Error! Current array must be square.\n");
+        return(1);
+      }
+  }
+  else
+  {
+      x=sz;
+      ThresholdImage(x, data); 
+      if (dbg) output_frame(x);
+  }
 
   num_runs = EncodeRuns(x,x,max_runs); 
 
@@ -614,8 +626,6 @@ int processFrame(int sz, int *data)
 
   max_area = SeparateRegions(&color[0], num_colors,num_regions); 
   SortRegions(&color[0], num_colors, max_area); 
-
-  if (dbg) show_colors(num_colors); 
 
   return(0);
 }

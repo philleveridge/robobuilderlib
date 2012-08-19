@@ -31,6 +31,8 @@ extern int rand();
 #endif
 
 #ifdef LINUX
+#include <stdio.h>
+#include <string.h>
 #include "linux.h"
 #endif
 
@@ -39,17 +41,17 @@ extern int rand();
 #include "functions.h"
 #include "lists.h"
 
-extern int				nis;
-extern int				BasicErr;
-extern BYTE				sData[];
-extern int 				sDcnt;
-extern BYTE				nos;
+extern int		nis;
+extern int		BasicErr;
+extern BYTE		sData[];
+extern int 		sDcnt;
+extern BYTE		nos;
 extern volatile BYTE	MIC_SAMPLING;
 extern volatile WORD	gtick;
 
-extern BYTE EEMEM		FIRMWARE        	[];  // leave blank - used by Robobuilder OS
-extern BYTE EEMEM		BASIC_PROG_SPACE	[];  // this is where the tokenised code will be stored
-extern BYTE EEMEM		PERSIST				[];  // persistent data store
+extern BYTE EEMEM	FIRMWARE        	[];  // leave blank - used by Robobuilder OS
+extern BYTE EEMEM	BASIC_PROG_SPACE	[];  // this is where the tokenised code will be stored
+extern BYTE EEMEM	PERSIST			[];  // persistent data store
 
 const unsigned char map[] = {0, 7, 6, 4, 8, 5, 2, 17, 3, 0, 9, 1, 10, 11, 12, 13, 14, 15, 16, 18, 19};
 
@@ -64,6 +66,21 @@ static int fn_type;
 
 int gevent=0;
 int gkp=0;
+
+#ifdef IMAGE
+extern int imready;
+extern int pbrunning;
+
+long fn_imready(long v) 
+{
+	return imready;
+}
+
+long fn_plyrunning(long v) 
+{
+	return pbrunning;
+}
+#endif
 
 long  fn_dummy(long v)
 {
@@ -525,7 +542,11 @@ long (*fnctab[])(long) = {
 	fn_turtle,//sTURTLE
 	fn_event, //sEVENT
 	fn_map,   //sMAP
-	fn_shuf    //sSHUF
+	fn_shuf   //sSHUF
+#ifdef IMAGE
+	,fn_imready     //sIMR
+	,fn_plyrunning  //sPLY
+#endif
 };
 
 int get_special(char **str, long *res, int t)

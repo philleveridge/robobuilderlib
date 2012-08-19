@@ -9,7 +9,7 @@
 #define EEPROM_MEM_SZ 	3072 // 3K
 
 typedef struct basic_line {
-    int           lineno;
+    	int           lineno;
 	unsigned int  next;
 	unsigned char token;
 	unsigned char var;
@@ -33,14 +33,18 @@ enum {
 
 
 enum { 	sVOLT=0, sIR, 
-		sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
-		sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
-		sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
-		sSIN, sCOS, sIMAX, sHAM, sRANGE, sSIG, sDSIG,
-		sSTAND, sZEROS,
-		sMIC, sGX, sGY, sGZ, sPSD, 
-		sGREY, sTURTLE, sEVENT, sMAP, sSHUF,
-		NOSPECS
+	sKBD, sRND, sSERVO, sTICK, sPORT, sROM, 
+	sTYPE, sABS, sIR2ACT, sKIR, sFIND, sCVB2I, 
+	sNE, sNS, sMAX, sSUM, sMIN, sNORM, sSQRT, 
+	sSIN, sCOS, sIMAX, sHAM, sRANGE, sSIG, sDSIG,
+	sSTAND, sZEROS,
+	sMIC, sGX, sGY, sGZ, sPSD, 
+	sGREY, sTURTLE, sEVENT, sMAP, sSHUF,
+#ifdef IMAGE
+	sIMR,
+	sPLY,
+#endif
+	NOSPECS
 	};
 
 

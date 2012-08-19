@@ -6,6 +6,8 @@
 #endif
 
 #ifdef LINUX
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include "linux.h"
 
@@ -722,11 +724,23 @@ void record(int mode)
 	//scene[1]=nof servos
 	//scene[2]..scene[2+nof-1] = servoids
 
-	int i;
-	int t=scene[0];
-	int n=scene[1];
+	int i,n;
 
-	if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
+	if (mode>=16)
+	{
+		n=mode;
+		scene[0]=500;
+		scene[1]=n;	
+		for (i=0; i<n; i++)
+		{
+			scene[2+i]=i;
+		}			
+	}
+	else
+	{
+		n=scene[1];
+		if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
+	}
 
 	for (i=2; i<2+n; i++)
 	{
@@ -737,20 +751,14 @@ void record(int mode)
 
 	int p=2+n;
 
+	printf ("Press any key to record or 'esc' to finish\n");
+
 	while (1)
 	{
 		//wait for key press
 		int key;
-		printf ("Press any key to record or 'esc' to finish\n");
 
 		while ((key=uartGetByte())<0) ;
-
-		for (i=2; i<2+n; i++)
-		{
-			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
-			// record
-			scene[p++] = wckPosRead(scene[i]); //read values
-		}
 
 		if (key==27)
 		{
@@ -758,6 +766,18 @@ void record(int mode)
 			nis=p;
 			return;
 		}
+
+		printf("%d: ", 1+(p-n-2)/n);
+
+		for (i=2; i<2+n; i++)
+		{
+			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+			// record
+			scene[p] = wckPosRead(scene[i]); //read values
+			printf("%d ", scene[p]);
+			p++;
+		}
+		printf("\n");
 	}
 }
 
@@ -792,10 +812,17 @@ void playback(int mode)
 		return;
 	}
 
-	//mode 1 & 2 - set up
-
-	pbstep=2+n;
-	pbrunning=1; // start running
+	if (mode>=10)
+	{
+		pbrunning=1;           // run from
+		pbstep=2+(mode-9)*n;	 // step 
+	}
+	else
+	{
+		//mode 1 & 2 - set up
+		pbstep=2+n;
+		pbrunning=1; // start running
+	}
 	pbtime=scene[0];
 
 	if (mode==2)  
@@ -816,9 +843,10 @@ void playback(int mode)
 			printf ("Wait %d\n",scene[0]); 
 		delay_ms(pbtime);
 
-		if (pbstep >=nis)
+		if (mode >= 10 || pbstep >=nis)
 		{
 			printf ("Done\n");
+			pbrunning=0;
 			return;
 		}	
 	}
@@ -856,6 +884,29 @@ typedef struct mat {
 } Matrix;
 
 Matrix mstore[MAXLIST];
+
+void matzero(char ln1, int a, int b, int c, int d)   // "@A * @B"
+{
+	int *arrayA, szA, i, j;
+	arrayA=listarray(ln1);
+	szA   =listsize(ln1);
+	int h=mstore[ln1-'A'].h;
+	int w=mstore[ln1-'A'].w;
+
+	if (arrayA==0 || szA==0 || a<0 || b<0 || c>=w || d>=h) 
+	{
+		printf ("Bad parameter zero @%c[%d,%d - %d,%d]\n",ln1,a,b,c,d);
+		return; //bad array size
+	}
+
+	for (i=a; i<=c; i++)
+	{
+		for (j=b; j<=d; j++)
+		{
+			arrayA[j*w+i]=0;
+		}
+	}			
+}
 
 void convolve(char ln1, char ln2)   // "@A * @B"
 {
@@ -970,7 +1021,12 @@ void extend(char *x)
 	e=x;
 	if (get_str_token("REC")==1)
 	{
-		record(1);
+		if (*e != '\0')
+
+			v=eval_oxpr(e);
+		else
+			v.number=1;
+		record(v.number);
 		return;
 	}
 
@@ -1161,6 +1217,34 @@ void extend(char *x)
 				}
 			}
 			printf ("MAT HIST - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
+
+		if (!strcmp(tokbuff,"ZERO"))
+		{
+			// !MAT ZERO A;1;1;2;2
+			
+			int a[4],i;
+			char ma='A';
+			if (*e != '\0')
+			{			
+				if (get_str_token(0))
+				{
+					ma=tokbuff[0];
+
+					for (i=0; i<4; i++)
+					{
+						if (i<3 && *e != ';')
+							return;
+						e++;
+						v=eval_oxpr(e);
+						a[i]=v.number;
+					}
+					matzero(ma,a[0],a[1],a[2],a[3]);
+					return;
+				}
+	
+			}
+			printf ("MAT ZERO - syntax error @ '%c'\n", *e=='\0'?'?':*e);
 		}
 		return;
 	}

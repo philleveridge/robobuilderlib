@@ -50,6 +50,10 @@ const  prog_char  specials[40][7] = {
 		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS",
 		"MIC",   "X",    "Y",     "Z",    "PSD", 
 		"GREY",  "TURTLE", "EVENT", "MAP","SHUF"
+#ifdef IMAGE
+	,"IMR"    //sIMR
+	,"PLY"  //sPLY
+#endif
 };
 
 

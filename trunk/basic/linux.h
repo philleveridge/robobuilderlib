@@ -1,4 +1,4 @@
-//windows mods
+//Linux mods
 
 #define uint16_t unsigned int
 #define uint8_t  unsigned char
@@ -36,7 +36,6 @@ char _port[8];
 #define strcmp_P		strcmp	
 #define strncmp_P		strncmp	
 
-//from win.c
 extern void			eeprom_read_block (unsigned char *b, char *d, int l);
 extern uint16_t 	eeprom_read_word  (unsigned char *p);
 extern uint8_t		eeprom_read_byte  (unsigned char *p);

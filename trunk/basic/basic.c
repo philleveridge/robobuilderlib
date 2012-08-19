@@ -739,7 +739,6 @@ extern int pbstep;
 extern int pbtime;
 
 extern void pb2();
-
 #endif
 
 extern void push_line(unsigned int n);
@@ -763,8 +762,9 @@ void basic_start(int dbf)
 	timer=0;
 	tline=0;
 	kline=0;
+#ifdef IMAGE
 	imline=0;
-
+#endif
 	init_cmdptr();
 
 	while (tmp != 0xCC && nxtline < EEPROM_MEM_SZ )
@@ -775,8 +775,10 @@ void basic_start(int dbf)
 			return;
 		}
 
- 		if ((key=uartGetByte()) == 27)  {
+
+ 		if (gkp==27 || (key=uartGetByte()) == 27)  {
 			rprintf ("User Break on line %d\r\n", line.lineno); 
+			gkp=0;
 			return;
 		}
 
@@ -1239,7 +1241,7 @@ COMMAND LINE
 
 void basic()
 {
-	int ch;
+	int ch,i;
 
 	rprintfProgStr(PSTR("Basic v=$Revision$\r\nCommands: i r l c z q s V R F $\r\n"));
 
@@ -1367,10 +1369,16 @@ void basic()
 			dbg=1-dbg;
 			if (dbg) rprintfProgStr(PSTR("DEBUG ON\n"));
 			break;
+		case 'Q':
 		case 'q': // query 
 			rprintf ("%d servos connected\r\n", readservos(0));
 			rprintf ("%d lines stored\r\n", findend());
 			rprintfProgStr(PSTR("Uptime: ")); uptime(); rprintfCRLF ();
+			if (ch=='Q' && nos>=0) {
+				rprintf("%d", cpos[0]); 
+				for (i=1; i<nis; i++) rprintf(", %d",cpos[i]); 
+				rprintfCRLF();
+			}
 			break;
 		case 'p': // passive 
 			passiveservos(nos);
