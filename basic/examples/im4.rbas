@@ -1,0 +1,13 @@
+5 ! IMAGE COLO "orange";20;30;60;2
+8 ! IMAGE THRE CID;120; 175; 40; 70; 30; 40
+11 ! WAIT IMAGE
+14 ! IMAGE RAW
+17 ! IMAGE PROC 10
+20 ! IMAGE SHOW 6
+23 ! IMAGE REG 1
+26 IF $NE=0 THEN 11
+29 PRINT "Area=";@![0]
+32 PRINT "Box=";@![1];",";@![2];" to ";@![3];",";@![4]
+35 PRINT "Center=";@![5];",";@![6]
+38 GOTO 11
+

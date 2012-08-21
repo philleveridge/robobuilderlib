@@ -1,0 +1,32 @@
+'Run Program 
+'Add color orange 20,30,60 >2
+'Add threshold [1], (120,175) (40,70) (30,40)
+'  0   0   0   0   0   0   0   0   0   0 
+'  0   0   0   0   1   0   0   0   0   0 
+'  0   0   0   0   0   0   0   0   0   0 
+'  0   0   0   0   0   0   0   0   0   0 
+'  0   0   0   0   1   1   1   0   0   0 
+'  0   0   0   0   1   1   1   0   0   0 
+'  0   0   0   1   1   1   1   0   0   0 
+'  0   0   0   0   1   0   0   0   0   0 
+'  0   0   0   0   0   0   0   0   0   0 
+'  0   0   0   0   0   0   0   0   0   0 
+'3,4,6,7
+
+  !IMAGE COLO "orange";20;30;60;2
+  !IMAGE THRE CID;120; 175; 40; 70; 30; 40
+Loop:
+  !WAIT IMAGE
+  !IMAGE RAW
+  !IMAGE PROC 10
+  !IMAGE SHOW 6
+  !IMAGE REG 1
+  if $ne=0 then loop
+  PRint "Area=";@![0]
+  PRint "Box=";@![1];",";@![2];" to ";@![3];",";@![4]
+  PRint "Center=";@![5];",";@![6]
+ goto Loop
+
+
+
+
