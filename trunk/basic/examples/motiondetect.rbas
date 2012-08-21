@@ -1,0 +1,21 @@
+'motion detector
+'
+   !wait image
+   !image load 10
+   LIST A=@!            'initialise prev image
+loop:
+   !wait image
+   !image load 10       'load next image
+   LIST B=@! 
+   S=$abs($sum(@B-@A))  'compare with prev & next images
+   print S
+   if s>60 then done    'if difference > threshold done
+   LIST A=@B            'else prev = next
+   goto loop            'go round again
+
+done:
+   print "Movement detected"
+   end
+
+
+

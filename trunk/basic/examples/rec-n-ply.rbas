@@ -1,0 +1,14 @@
+
+' Demo of record with asynchronous PLY mode
+
+3 LIST !=5,500,3,10,11,12
+4 !REC
+5 PRINT @!
+10 !PLY 2
+20 PRINT N
+30 LET N = N+1
+40 GOTO 20
+
+!LET DFN="wag.txt"
+!MAT STORE 
+

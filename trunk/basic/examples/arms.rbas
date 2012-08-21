@@ -1,5 +1,5 @@
 'arms
-  STAND 16
+  STAND $NS
 ' S10 = 5E-05x3 - 0.0213x2 + 2.9618x - 46.011
 ' S12 = 8E-05x3 - 0.0339x2 + 4.7877x - 108.15 
   PRINT "Servo 11,10,12"
@@ -13,7 +13,7 @@ loop:
 
 ' S13 = 5E-05x3 - 0.0176x2 + 2.0147x + 87.278 
 ' S13 = 8E-05x3 - 0.0272x2 + 3.0598x + 24.756 
-STAND 16
+STAND $NS
 
 PRINT "Servo 14,13,15"
   x=190
@@ -24,7 +24,7 @@ loop2:
   x=x-2
   IF x>50 THEN loop2
 
-  STAND 16
+  STAND $NS
   END
 
 leftarm:

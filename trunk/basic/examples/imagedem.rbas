@@ -1,0 +1,11 @@
+!IMAGE LOAD 32
+!IMAGE SHOW 6
+LIST A=@!
+print @A:32
+
+!IMAGE LOAD 32
+LIST B=@!
+LIST !=@B-@A
+print @!
+
+!IMAGE SHOW 5
