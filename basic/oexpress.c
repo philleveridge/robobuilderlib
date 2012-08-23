@@ -724,7 +724,7 @@ void record(int mode)
 	//scene[1]=nof servos
 	//scene[2]..scene[2+nof-1] = servoids
 
-	int i,n;
+	int i,n,p;
 
 	if (mode>=16)
 	{
@@ -749,7 +749,7 @@ void record(int mode)
 		// set passive
 	}
 
-	int p=2+n;
+	p=2+n;
 
 	printf ("Press any key to record or 'esc' to finish\n");
 
@@ -888,10 +888,12 @@ Matrix mstore[MAXLIST];
 void matzero(char ln1, int a, int b, int c, int d)   // "@A * @B"
 {
 	int *arrayA, szA, i, j;
-	arrayA=listarray(ln1);
-	szA   =listsize(ln1);
+
 	int h=mstore[ln1-'A'].h;
 	int w=mstore[ln1-'A'].w;
+
+	arrayA=listarray(ln1);
+	szA   =listsize(ln1);
 
 	if (arrayA==0 || szA==0 || a<0 || b<0 || c>=w || d>=h) 
 	{
@@ -912,21 +914,23 @@ void convolve(char ln1, char ln2)   // "@A * @B"
 {
 	int *arrayA, szA;
 	int *arrayB, szB;
-	
+	int h=mstore[ln1-'A'].h;
+	int w=mstore[ln1-'A'].w;
+	int mx,my;
+
 	arrayA=listarray(ln1);
 	szA   =listsize(ln1);
 	arrayB=listarray(ln2);
 	szB   =listsize(ln2);
 
-	int h=mstore[ln1-'A'].h;
-	int w=mstore[ln1-'A'].w;
+
 
 	if (arrayA==0 || arrayB==0) 
 		return; //error
 	if (szA<9 || szB !=9 || szA != h*w) 
 		return; //bad array size
 
-	int mx,my;
+
 
 	for (my=0;my<h; my++)
 	{
@@ -967,16 +971,16 @@ void convolve(char ln1, char ln2)   // "@A * @B"
 void histogram(char ln1, int mode)   // "@A 
 {
 	int *arrayA, szA;
-	arrayA=listarray(ln1);
-	szA   =listsize(ln1);
 
 	int h=mstore[ln1-'A'].h;
 	int w=mstore[ln1-'A'].w;
+	int mx,my;
 
 	if (arrayA==0 || szA<=0 || h*w != szA) 
 		return; //bad array size
 
-	int mx,my;
+	arrayA=listarray(ln1);
+	szA   =listsize(ln1);
 
 	if (mode==1)
 	{
@@ -1077,7 +1081,9 @@ void extend(char *x)
 	e=x;
 	if (get_str_token("WAIT")==1)
 	{
+
 		int key;
+#ifdef IMAGE
 		if (get_str_token("IMAG")==1)
 		{
 			while (imready==0 && (key=uartGetByte())<0 ) 
@@ -1085,6 +1091,7 @@ void extend(char *x)
 			imready=0;
 			if (key>=0) gkp=key;
 		}
+#endif
 		if (!strcmp(tokbuff,"PLAY"))
 		{
 			while (pbrunning==0 && (key=uartGetByte())<0 ) 
@@ -1127,9 +1134,11 @@ void extend(char *x)
 			{
 				if (get_str_token(0))
 				{
+					int i,j,h,w;
 					m=tokbuff[0];
 					printf ("matrix '%c' %dx%d\n", mstore[m-'A'].name, mstore[m-'A'].w, mstore[m-'A'].h);
-					int i,j,h=mstore[m-'A'].h,w=mstore[m-'A'].w;
+					h=mstore[m-'A'].h;
+					w=mstore[m-'A'].w;
 					for (j=0; j<h;j++)
 					{
 						for (i=0; i<w; i++)
@@ -1249,6 +1258,8 @@ void extend(char *x)
 		return;
 	}
 
+#ifdef IMAGE
+
 	e=x;
 	if (get_str_token("IMAG")==1)
 	{
@@ -1292,14 +1303,14 @@ void extend(char *x)
 		{
 			//!IMAGE FILTER 4;1;10;10;100;100;100
 			int args[6];
-			int sz;
+			int sz,i;
 
 			v=eval_oxpr(e);
 			sz=v.number;
 			if (*e++ != ';')
 				return;
 
-			for (int i=0; i<6; i++)
+			for (i=0; i<6; i++)
 			{
 				v=eval_oxpr(e);
 				args[i]=v.number;
@@ -1352,10 +1363,11 @@ void extend(char *x)
 			}
 			else
 			{
+				int i;
 				v=eval_oxpr(e);
 				n=v.number;
 				e++;
-				for (int i=0; i<6; i++)
+				for (i=0; i<6; i++)
 				{
 					v=eval_oxpr(e);
 					args[i]=v.number;
@@ -1388,6 +1400,7 @@ void extend(char *x)
 			}
 			else
 			{
+				int i;
 				int tk = get_token();
 
 				if (tk !=STRNG || *e++ != ';')
@@ -1397,7 +1410,7 @@ void extend(char *x)
 				}
 				strncpy(color,tmpstr,10);
 
-				for (int i=0; i<4; i++)
+				for (i=0; i<4; i++)
 				{
 					v=eval_oxpr(e);
 					args[i]=v.number;
@@ -1444,15 +1457,14 @@ void extend(char *x)
 		}
 
 		if (!strcmp(tokbuff,"SHOW"))
-		{
+		{	
+			int sz=sqrt(nis);
 			frame=&scene[0];
 
 			if (*e != '\0')
 				v=eval_oxpr(e);
 			else
 				v.number=1;
-
-			int sz=sqrt(nis);
 
 			switch (v.number) {
 			case 0: 
@@ -1478,12 +1490,15 @@ void extend(char *x)
 		rprintfStr("No such option?\n");
 		return;
 	}
+#endif
 
+#ifdef LINUX
 	e=x;
 	if (get_str_token("EXIT")==1)
 	{
 		sigcatch();
 	}
+#endif
 
 	rprintfStr("No match ?\n");
 }

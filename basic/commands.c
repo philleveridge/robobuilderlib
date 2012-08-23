@@ -1488,7 +1488,7 @@ int cmd_network(line_t ln)
 	// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
 	// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
 	char *p=ln.text;
-	int  i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t,rinp,comp;
+	int  i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t,rinp,comp,cpn;
 	long t2;
 
 #ifdef WIN32
@@ -1580,7 +1580,7 @@ int cmd_network(line_t ln)
 
 	t=noi+noo+ofset-1; // index through weights and threshold
 
-	int cpn = (rinp!=0)?(noi/nl1):noi;
+	cpn = (rinp!=0)?(noi/nl1):noi;
 	if (sho) rprintf("Conn Per INPUT NEURON = %d\n", cpn);
 	for (i=0; i<nl1; i++)
 	{

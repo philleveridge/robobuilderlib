@@ -535,6 +535,18 @@ extern int z_value,y_value,x_value,gDistance;
 		return i;
 	}
 
+	int passiveservos(int n)
+	{
+		BYTE i;
+	    if (n==0) n=30;
+		for (i=0; i<n; i++)
+		{
+			int p = wckPassive(i);
+			if (p<0 || p>255) break;
+		}
+		return i;
+	}
+
 	enum { AccelDecel=0, Accel, Decel, Linear };
 
 	int PP_mtype=Linear;

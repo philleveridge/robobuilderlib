@@ -319,7 +319,7 @@ namespace RobobuilderLib
             syntaxcheck();
             if (compiler.Compile(input.Text))
             {
-                MessageBox.Show(String.Format("Complete - ready to download [{0} Bytes = {1}% Used]", compiler.Download().Length / 2, (50*compiler.Download().Length / Basic.MAX_PROG_SPACE)), "Compiler");
+                MessageBox.Show(String.Format("Complete - ready to download [{0} Bytes = {1}% Used]", compiler.Download().Length / 2, (50*compiler.Download().Length / compiler.MAX_PROG_SPACE)), "Compiler");
                 output.Text = compiler.precomp + "\r\n";
                 output.Text += compiler.Dump();
                 readyDownload = true;
@@ -525,6 +525,19 @@ namespace RobobuilderLib
             {
                 MessageBox.Show("can't save file - " + e1.Message);
                 fname.Text = "";
+            }
+        }
+
+        private void extendToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            extendToolStripMenuItem.Checked = !extendToolStripMenuItem.Checked;
+            if (extendToolStripMenuItem.Checked)
+            {
+                compiler.MAX_PROG_SPACE=3072;
+            }
+            else
+            {
+                compiler.MAX_PROG_SPACE = 64000;
             }
         }
 

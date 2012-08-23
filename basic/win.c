@@ -122,13 +122,13 @@ void binstore()
 extern int scene[];
 extern int nis;
 
-int matrixload(int n)
+int matrixload(int n, char *s)
 {
        FILE *fp;
 	   int i,t;
-	   if ((fp = fopen("data.txt", "r")) == 0)
+	   if ((fp = fopen(s, "r")) == 0)
 	   {
-			printf ("? can't find file - data.txt\n");
+			printf ("? can't find file - %s\n",s);
 			return -1;
 	   }
 	   for (i=0;i<n;i++)
@@ -140,19 +140,19 @@ int matrixload(int n)
 		//printf("%d ", scene[i]); //debug
 	   }
 
-	   printf ("Loaded (%d) - data.txt\n", i);	
+	   printf ("Loaded (%d) - %s\n", i,s);	
 	   nis=i;
 
 	   fclose(fp);
 		return 0;
 }
 
-int matrixstore(int n)
+int matrixstore(int n, char *s)
 {
        FILE *fp;
 	   int i,t;
 
-	   if ((fp = fopen("data.txt", "w")) == 0)
+	   if ((fp = fopen(s, "w")) == 0)
 			return -1;
 
 	   for (i=0;i<n;i++)
@@ -162,7 +162,7 @@ int matrixstore(int n)
 
 	   fclose(fp);
 
-	   printf ("Stored (%d) - data.txt\n", n);	
+	   printf ("Stored (%d) - %s\n", n,s);	
 	   return 0;
 }
 
@@ -295,7 +295,7 @@ extern char device[];
 
 int main(int argc, char *argv[])
 {
-	int i, lf=0, sf=0;
+	int i, lf=0, sf=0, rf=0;
 	remote=1;
 	strcpy(device,"COM3");
 
@@ -319,6 +319,12 @@ int main(int argc, char *argv[])
 		if (!strcmp(argv[i],"IR"))
 			sirf=1;
 
+		if (!strcmp(argv[i],"RUN"))
+			rf=1;
+
+		if (!strcmp(argv[i],"HANDS"))
+			setdh(1);
+
 		if (!strcmp(argv[i],"COM") && i<argc-1)
 		{
 			// pick up portname
@@ -338,7 +344,11 @@ int main(int argc, char *argv[])
 		binmode();
 
 	 _beginthread( monitor_proc, 0, (void*)12 );
-	basic();
+
+	if (rf) 
+		basic_run(0);
+	else
+		basic();
 }
 
 
