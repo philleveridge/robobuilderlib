@@ -20,8 +20,8 @@ namespace RobobuilderLib
 {
     class Basic
     {
-        public const int MAX_PROG_SPACE = 3072;
-        public const int REQ_FIRMWARE = 370;
+        public const int REQ_FIRMWARE = 370; 
+        public int MAX_PROG_SPACE = 3072;
 
         public Hashtable labels    = new Hashtable();
         public Hashtable constants = new Hashtable();
@@ -626,6 +626,7 @@ namespace RobobuilderLib
                     case KEY.NETWORK:
                     case KEY.SELECT:
                     case KEY.EXPAND:
+                    case KEY.SCALE:
                         ln.text = upperIt(z);
                         break;
                     case KEY.LIST:
