@@ -135,6 +135,21 @@ void epush(long n)
 	}
 }
 
+long eswap(long n, int i)
+{
+	if (i>=0 && sp-i>=0)
+	{
+		long t = stack[sp-i-1];
+		stack[sp-i-1] = n;
+		return t;
+	}
+	else
+	{
+		rprintfProgStr(PSTR("eval stack error\n"));
+		op=0;sp=0;
+	}
+}
+
 long epop()
 {
 	if (sp>0)

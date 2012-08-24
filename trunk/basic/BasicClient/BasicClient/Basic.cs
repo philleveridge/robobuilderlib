@@ -133,7 +133,7 @@ namespace RobobuilderLib
             help.Add("SORT",    "SORT list");
             help.Add("FFT",     "FFT list[,scale]");
             help.Add("SAMPLE",  "SAMPLE a,b,c,d");
-            help.Add("SCALE",   "SCALE list,n");
+            help.Add("SCALE",   "SCALE list,n[,m1,m2]");
             help.Add("SET",     "SET index,value");
             help.Add("INSERT",  "INSERT index,value");
             help.Add("DELETE",  "DELETE n");
@@ -312,6 +312,18 @@ namespace RobobuilderLib
             return -1;
         }
 
+        string DoFunctions(string w)
+        {
+            // Function NAME (parmas)
+            // local arg
+            // EndFunction
+            // Call NAME (args)
+            w = Regex.Replace(w, "Local ([A-Za-z]+)(.*)Endfunction", "List !=^0 \n List !=:$1\n$sList !=#$1Endfunction", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            w = Regex.Replace(w, @"Function ([A-Za-z]+) ([A-Za-z]+)(.*)EndFunction", "$1: LIST !=:$2\n$3\nLIST !=#$2 \n Return \n", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            w = Regex.Replace(w, "Call (.*) (.*)", "List !=^$2 \n Gosub $1\n");
+            return w;
+        }
+
         int IsToken(string w)
         {
             if (w.Length == 0) return -1;
@@ -412,7 +424,7 @@ namespace RobobuilderLib
                         }
                         z = z.Trim();
                         tok = GetWord(ref z);
-                    }catch (Exception e)
+                    }catch
                     {
                         continue;
                     }
@@ -520,6 +532,8 @@ namespace RobobuilderLib
             ln.token = 0;
             ln.lineno = lineno;
             labels.Clear();
+
+            prog = DoFunctions(prog);
 
             string[] lines = prog.Split('\n');
 
@@ -970,10 +984,15 @@ namespace RobobuilderLib
 	
 		        m +=  String.Format("{0} ", line.lineno); 
 		        m +=  (tokens[line.token]);
-		        m +=  (" "); 
-		
-		        if ((KEY)line.token==KEY.LET || (KEY)line.token==KEY.GET || (KEY)line.token==KEY.FOR || (KEY)line.token==KEY.LIST || (KEY)line.token==KEY.DATA)
-			        m +=  String.Format("{0} = ", (char)('A' + line.var));
+		        m +=  (" ");
+
+                if ((KEY)line.token == KEY.LET || (KEY)line.token == KEY.GET || (KEY)line.token == KEY.FOR || (KEY)line.token == KEY.LIST || (KEY)line.token == KEY.DATA)
+                {
+                    if (line.var != 32)
+                        m += String.Format("{0} = ", (char)('A' + line.var));
+                    else
+                        m += "! = ";
+                }
 			
 		        if ((KEY)line.token==KEY.PUT)
 		        {

@@ -389,6 +389,47 @@ int cmd_servo(line_t l)
 
 int cmd_list(line_t l)
 {
+		//stack assign
+		if (l.text[0]==':')
+		{
+			char *p=l.text+1;
+			int i=strlen(p);
+			while (*p != '\0' && i>0)
+			{
+				setvar(*p-'A',  eswap( getvar(*p-'A'),--i));
+				p++;
+			}
+			return;
+		}
+		//stack un-assign
+		if (l.text[0]=='#')
+		{
+			char *p;
+			p=l.text+strlen(l.text+1);
+			while (p > l.text )
+			{
+				setvar(*p-'A',epop());
+				p--;
+			}
+			return;
+		}
+		//stack values
+		if (l.text[0]=='^')
+		{
+			char *p=l.text+1;
+			long n=0;
+			while (1)
+			{
+				if (eval_expr(&p, &n)!=ARRAY)
+				{
+					epush(n);
+				}
+				if (*p!=',') break;
+				p++;
+			}
+			return;
+		}
+
 		//new lists
 		list_eval((l.var==32)?'!' : ('A' + l.var), l.text, 0);
 		return 0;
@@ -510,6 +551,23 @@ int cmd_gosub(line_t l)
 	int t;
 	push_line(nxtline);
 	t=gotoln(l.value);
+
+	if (l.text != 0 && l.text[0]==',')
+	{
+		char *p=l.text+1;
+		long n=0;
+		while (1)
+		{
+			if (eval_expr(&p, &n)!=ARRAY)
+			{
+				epush(n);
+			}
+			if (*p!=',') break;
+			p++;
+		}
+	}
+
+
 	if (t<0)
 		return 0xCC;	// this needs an error message		
 	setline(t);
