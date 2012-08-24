@@ -656,6 +656,7 @@ void basic_load(int tf)
 		case GOTO: 
 		case GOSUB:
 			newline.value = getNum(&cp);	// read line	
+			newline.text=cp;
 			break;
 		case END:
 		case RETURN:
