@@ -923,48 +923,87 @@ void convolve(char ln1, char ln2)   // "@A * @B"
 	arrayB=listarray(ln2);
 	szB   =listsize(ln2);
 
-
-
 	if (arrayA==0 || arrayB==0) 
 		return; //error
-	if (szA<9 || szB !=9 || szA != h*w) 
+	if (szA<szB|| szA != h*w) 
 		return; //bad array size
 
-
-
-	for (my=0;my<h; my++)
+	if (szB==9) // 3x3 kernel
 	{
-		for (mx=0;mx<w; mx++)
+		for (my=0;my<h; my++)
 		{
-			int p=0;
-			if (mx<w-1) 
-				p += arrayA[my*w+mx+1]*arrayB[5];
-			p += arrayA[my*w+mx+0]*arrayB[4];
-			if (mx>0)   
-				p += arrayA[my*w+mx-1]*arrayB[3];
-
-			if (my>0) {
+			for (mx=0;mx<w; mx++)
+			{
+				int p=0;
 				if (mx<w-1) 
-					p += arrayA[my*w+mx+1-w]*arrayB[2];
-				p += arrayA[my*w+mx+0-w]*arrayB[1];
+					p += arrayA[my*w+mx+1]*arrayB[5];
+				p += arrayA[my*w+mx+0]*arrayB[4];
 				if (mx>0)   
-					p += arrayA[my*w+mx-1-w]*arrayB[0];
-			}
+					p += arrayA[my*w+mx-1]*arrayB[3];
 
-			if (my<h-1) {
-				if (mx<w-1) 
-					p += arrayA[my*w+mx+1+w]*arrayB[9];
-				p += arrayA[my*w+mx+0+w]*arrayB[8];
-				if (mx>0)   
-					p += arrayA[my*w+mx-1+w]*arrayB[7];
-			}
+				if (my>0) {
+					if (mx<w-1) 
+						p += arrayA[my*w+mx+1-w]*arrayB[2];
+					p += arrayA[my*w+mx+0-w]*arrayB[1];
+					if (mx>0)   
+						p += arrayA[my*w+mx-1-w]*arrayB[0];
+				}
 
-			if (mx==0 || mx==w-1 || my==0 || my==h-1)
-				scene[my*w+mx]=0;
-			else
-				scene[my*w+mx]=abs(p);
+				if (my<h-1) {
+					if (mx<w-1) 
+						p += arrayA[my*w+mx+1+w]*arrayB[9];
+					p += arrayA[my*w+mx+0+w]*arrayB[8];
+					if (mx>0)   
+						p += arrayA[my*w+mx-1+w]*arrayB[7];
+				}
+
+				if (mx==0 || mx==w-1 || my==0 || my==h-1)
+					scene[my*w+mx]=0;
+				else
+					scene[my*w+mx]=abs(p);
+			}
 		}
-	}	
+	}
+	
+	if (szB==2 && mstore[ln2-'A'].w==2 ) // 2x1 
+	{
+		for (my=0;my<h; my++)
+		{
+			for (mx=0;mx<w; mx++)
+			{
+				if (mx<w-1) 
+					scene[my*w+mx]= abs(arrayA[my*w+mx]*arrayB[0] + arrayA[my*w+mx+1]*arrayB[1]);
+				else
+					scene[my*w+mx]= 0;
+			}
+		}
+	}
+
+	if (szB==2 && mstore[ln2-'A'].w==1 ) //  1x2 kernel
+	{
+		for (my=0;my<h; my++)
+		{
+			for (mx=0;mx<w; mx++)
+			{
+				if (my<h-1) 
+					scene[my*w+mx]= abs(arrayA[my*w+mx]*arrayB[0] + arrayA[(my+1)*w+mx]*arrayB[1]);
+				else
+					scene[my*w+mx]= 0;
+			}
+		}
+	}
+
+	if (szB==4) // 2x2 kernel
+	{
+		for (my=0;my<h; my++)
+		{
+			for (mx=0;mx<w; mx++)
+			{
+				int p=0;
+				scene[my*w+mx]=abs(p);  // tbd
+			}
+		}
+	}
 	nis=h*w;	
 }
 

@@ -1323,7 +1323,7 @@ int cmd_on(line_t ln)
 int cmd_scale(line_t ln)
 {
 	char *p=ln.text;
-	long n=0;	
+	long n=0,ct=0,cf=0;	
 	int i,s;
 
 	if (eval_expr(&p, &n) != ARRAY)
@@ -1337,6 +1337,27 @@ int cmd_scale(line_t ln)
 		p++;
 		eval_expr(&p, &n);
 	}
+
+	if (*p==',')  //threshold rather than scale
+	{
+		p++;
+		eval_expr(&p, &ct);
+		if (*p==',')
+		{
+			p++;
+			eval_expr(&p, &cf);
+		}
+
+                printf("DBG %d,%d,%d,%d\n", ct,cf,nis,n);
+			
+		for (i=0; i<nis; i++)
+		{
+			if (scene[i]>=n) scene[i]=ct; else scene[i]=cf;
+		}
+		return 0;
+	}
+
+
 	if (n>1)  //scale the array
 	{
 		s=scene[0];
