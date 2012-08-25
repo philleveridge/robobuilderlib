@@ -541,6 +541,29 @@ namespace RobobuilderLib
             }
         }
 
+        private void loadBinaryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // tbd
+            OpenFileDialog s = new OpenFileDialog();
+            if (s.ShowDialog() != DialogResult.OK)
+                return;
+            try
+            {
+                string bf = File.ReadAllText(s.FileName);
+                input.Text = compiler.LoadBin(bf);
+                output.Text = "";
+                fname.Text = "";
+                //download_btn.Enabled = true;
+            }
+            catch (Exception e1)
+            {
+                MessageBox.Show("can't open file - " + e1.Message);
+                output.Text = "";
+                //download_btn.Enabled = false;
+                fname.Text = "";
+            }
+        }
+
 
 
     }
