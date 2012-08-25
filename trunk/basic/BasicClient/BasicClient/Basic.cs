@@ -314,13 +314,24 @@ namespace RobobuilderLib
 
         string DoFunctions(string w)
         {
-            // Function NAME (parmas)
+            // Procedure NAME (parmas)
+            // local arg
+            // Endproc
+            // Function arg : NAME (parmas)
             // local arg
             // EndFunction
             // Call NAME (args)
             w = Regex.Replace(w, "Local ([A-Za-z]+)(.*)Endfunction", "List !=^0 \n List !=:$1\n$sList !=#$1Endfunction", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-            w = Regex.Replace(w, @"Function ([A-Za-z]+) ([A-Za-z]+)(.*)EndFunction", "$1: LIST !=:$2\n$3\nLIST !=#$2 \n Return \n", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-            w = Regex.Replace(w, "Call (.*) (.*)", "List !=^$2 \n Gosub $1\n");
+            w = Regex.Replace(w, "Local ([A-Za-z]+)(.*)Endproc", "List !=^0 \n List !=:$1\n$sList !=#$1Endfunction", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+            w = Regex.Replace(w, @"[Ff]unction ([A-Z])\s*:\s*([A-Za-z]+)\s*\(([A-Za-z]+)\)(.*)[Ee]nd[Ff]unction", "$2:\nLIST !=:$3\n$4\nLIST !=#$3\nLIST !=:$1\nReturn \n", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            w = Regex.Replace(w, @"Procedure ([A-Za-z]+)\s*\(([A-Za-z]+)\)(.*)Endproc", "$1: LIST !=:$2\n$3\nLIST !=#$2 \n Return \n", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+            w = Regex.Replace(w, @"Call\s+([A-Z])\s*=\s*(.*)\s*\((.*)\)", "List !=^0,$3 \n Gosub $2\nList !=#$1");
+            w = Regex.Replace(w, @"Call\s+(.*)\s*\((.*)\)", "List !=^$2 \n Gosub $1\n");
+
+            Console.WriteLine(w);
+
             return w;
         }
 
@@ -908,6 +919,18 @@ namespace RobobuilderLib
             return true;
         }
 
+        public string LoadBin(string s)
+        {
+            codeptr = 0;
+            while (s.Length > 1)
+            {
+                string b = s.Substring(0, 2);
+                code[codeptr++] = Convert.ToByte(b, 16);
+                s = s.Substring(2);
+            }
+            return basic_list();
+        }
+
         public string Download()
         {
             // transfer code --> robot
@@ -950,7 +973,7 @@ namespace RobobuilderLib
 	        char[] buf = new char[256];
             int i=0;
 
-	        m += ("List Program \r\n");
+	        m += ("'List Program \r\n");
 
 	        if (code[i]!= 0xAA ) {
 		        m += ("No program loaded\r\n");
