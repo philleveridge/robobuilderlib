@@ -30,11 +30,11 @@ WORD pll     =0; // previous last line
 WORD nxtline =0;
 
 //insert newline into BASIC_PROG_SPACE
-
+ 
 void insertln(line_t newline)
 {
 	BYTE l=0;
-	BYTE nxt=0;
+	WORD nxt=0;
 	int srt;
 
 	if (psize==0)
