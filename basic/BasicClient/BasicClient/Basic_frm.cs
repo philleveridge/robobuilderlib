@@ -586,6 +586,9 @@ namespace RobobuilderLib
             label7.Text = maxB.ToString();
             label8.Text = maxG.ToString();
             label9.Text = maxR.ToString();
+
+            label2.Text = String.Format("!IMAGE FILT N;{0};{1};{2};{3};{4};{5}",
+                minR, maxR, minG, maxG, minB, maxB);
         }
 
         void loadimage()
