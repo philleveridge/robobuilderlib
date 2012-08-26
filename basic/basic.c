@@ -1377,7 +1377,7 @@ void basic()
 			rprintfProgStr(PSTR("Uptime: ")); uptime(); rprintfCRLF ();
 			if (ch=='Q' && nos>=0) {
 				rprintf("%d", cpos[0]); 
-				for (i=1; i<nis; i++) rprintf(", %d",cpos[i]); 
+				for (i=1; i<nos; i++) rprintf(", %d",cpos[i]); 
 				rprintfCRLF();
 			}
 			break;
