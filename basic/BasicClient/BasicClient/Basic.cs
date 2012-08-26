@@ -321,19 +321,28 @@ namespace RobobuilderLib
             // local arg
             // EndFunction
             // Call NAME (args)
-            w = Regex.Replace(w, "Local ([A-Za-z]+)(.*)Endfunction", "List !=^0 \n List !=:$1\n$sList !=#$1Endfunction", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-            w = Regex.Replace(w, "Local ([A-Za-z]+)(.*)Endproc", "List !=^0 \n List !=:$1\n$sList !=#$1Endfunction", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            w = Regex.Replace(w, "'.*\n", "", RegexOptions.Multiline);
 
-            w = Regex.Replace(w, @"[Ff]unction ([A-Z])\s*:\s*([A-Za-z]+)\s*\(([A-Za-z]+)\)(.*)[Ee]nd[Ff]unction", 
+
+            w = Regex.Replace(w, "[Ll]ocal ([A-Za-z]+)(.*?)[Ee]nd[Ff]unction", 
+                    "List !=^0 \n List !=:$1\n$2List !=#$1Endfunction", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            
+            w = Regex.Replace(w, "[Ll]ocal ([A-Za-z]+)(.*?)[Ee]nd[Pp]roc", 
+                    "List !=^0 \n List !=:$1\n$2List !=#$1EndProc", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+            w = Regex.Replace(w, @"[Ff]unction ([A-Z])\s*:\s*([A-Za-z]+)\s*\(([A-Za-z]+)\)(.*?)[Ee]nd[Ff]unction", 
                     "$2:\nLIST !=:$1$3\n$4\nLIST !=#$3\nLIST !=:$1\nReturn \n", 
                     RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
-            w = Regex.Replace(w, @"Procedure ([A-Za-z]+)\s*\(([A-Za-z]+)\)(.*)Endproc", 
-                    "$1: LIST !=:$2\n$3\nLIST !=#$2 \n Return \n", 
+            w = Regex.Replace(w, @"[Pp]rocedure ([A-Za-z]+)\s*\(([A-Za-z]+)\)(.*?)[Ee]nd[Pp]roc", 
+                    "$1: LIST !=:$2\n$3\nLIST !=#$2\nReturn \n", 
                     RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
-            w = Regex.Replace(w, @"Call\s+([A-Z])\s*=\s*(.*)\s*\((.*)\)", "List !=^0,$3 \n Gosub $2\nList !=#$1");
-            w = Regex.Replace(w, @"Call\s+(.*)\s*\((.*)\)", "List !=^$2 \n Gosub $1\n");
+            w = Regex.Replace(w, @"[Cc]all\s+([A-Za-z])\s*=\s*(.*)\s*\((.*)\)", 
+                    "List !=^0,$3\nGosub $2\nList !=#$1", RegexOptions.Multiline);
+
+            w = Regex.Replace(w, @"[Cc]all\s+(.*)\s*\((.*)\)",
+                    "List !=^$2\nGosub $1\n", RegexOptions.Multiline);
 
             Console.WriteLine(w);
 
