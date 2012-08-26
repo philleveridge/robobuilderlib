@@ -324,8 +324,13 @@ namespace RobobuilderLib
             w = Regex.Replace(w, "Local ([A-Za-z]+)(.*)Endfunction", "List !=^0 \n List !=:$1\n$sList !=#$1Endfunction", RegexOptions.Singleline | RegexOptions.IgnoreCase);
             w = Regex.Replace(w, "Local ([A-Za-z]+)(.*)Endproc", "List !=^0 \n List !=:$1\n$sList !=#$1Endfunction", RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
-            w = Regex.Replace(w, @"[Ff]unction ([A-Z])\s*:\s*([A-Za-z]+)\s*\(([A-Za-z]+)\)(.*)[Ee]nd[Ff]unction", "$2:\nLIST !=:$3\n$4\nLIST !=#$3\nLIST !=:$1\nReturn \n", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-            w = Regex.Replace(w, @"Procedure ([A-Za-z]+)\s*\(([A-Za-z]+)\)(.*)Endproc", "$1: LIST !=:$2\n$3\nLIST !=#$2 \n Return \n", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            w = Regex.Replace(w, @"[Ff]unction ([A-Z])\s*:\s*([A-Za-z]+)\s*\(([A-Za-z]+)\)(.*)[Ee]nd[Ff]unction", 
+                    "$2:\nLIST !=:$1$3\n$4\nLIST !=#$3\nLIST !=:$1\nReturn \n", 
+                    RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+            w = Regex.Replace(w, @"Procedure ([A-Za-z]+)\s*\(([A-Za-z]+)\)(.*)Endproc", 
+                    "$1: LIST !=:$2\n$3\nLIST !=#$2 \n Return \n", 
+                    RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
             w = Regex.Replace(w, @"Call\s+([A-Z])\s*=\s*(.*)\s*\((.*)\)", "List !=^0,$3 \n Gosub $2\nList !=#$1");
             w = Regex.Replace(w, @"Call\s+(.*)\s*\((.*)\)", "List !=^$2 \n Gosub $1\n");

@@ -44,6 +44,7 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadBinaryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -66,12 +67,26 @@
             this.comselect = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.term = new System.Windows.Forms.TextBox();
-            this.loadBinaryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.filtercb = new System.Windows.Forms.CheckBox();
+            this.ldWeb = new System.Windows.Forms.Button();
+            this.ldFile = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // output
@@ -133,35 +148,42 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.loadToolStripMenuItem.Text = "Load";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
+            // 
+            // loadBinaryToolStripMenuItem
+            // 
+            this.loadBinaryToolStripMenuItem.Name = "loadBinaryToolStripMenuItem";
+            this.loadBinaryToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.loadBinaryToolStripMenuItem.Text = "Load Binary";
+            this.loadBinaryToolStripMenuItem.Click += new System.EventHandler(this.loadBinaryToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.saveAsToolStripMenuItem.Text = "Save As";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -272,6 +294,7 @@
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Location = new System.Drawing.Point(0, 27);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -350,12 +373,132 @@
             this.term.TabIndex = 0;
             this.term.Text = "Connect to robot";
             // 
-            // loadBinaryToolStripMenuItem
+            // tabPage4
             // 
-            this.loadBinaryToolStripMenuItem.Name = "loadBinaryToolStripMenuItem";
-            this.loadBinaryToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.loadBinaryToolStripMenuItem.Text = "Load Binary";
-            this.loadBinaryToolStripMenuItem.Click += new System.EventHandler(this.loadBinaryToolStripMenuItem_Click);
+            this.tabPage4.Controls.Add(this.label9);
+            this.tabPage4.Controls.Add(this.label8);
+            this.tabPage4.Controls.Add(this.label7);
+            this.tabPage4.Controls.Add(this.label6);
+            this.tabPage4.Controls.Add(this.label5);
+            this.tabPage4.Controls.Add(this.label4);
+            this.tabPage4.Controls.Add(this.textBox1);
+            this.tabPage4.Controls.Add(this.filtercb);
+            this.tabPage4.Controls.Add(this.ldWeb);
+            this.tabPage4.Controls.Add(this.ldFile);
+            this.tabPage4.Controls.Add(this.pictureBox1);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(780, 393);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Image";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(514, 163);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(260, 20);
+            this.textBox1.TabIndex = 4;
+            this.textBox1.Text = "http://robobuilderlib.googlecode.com/files/test-old.jpg";
+            // 
+            // filtercb
+            // 
+            this.filtercb.AutoSize = true;
+            this.filtercb.Location = new System.Drawing.Point(630, 123);
+            this.filtercb.Name = "filtercb";
+            this.filtercb.Size = new System.Drawing.Size(74, 17);
+            this.filtercb.TabIndex = 3;
+            this.filtercb.Text = "Apply filter";
+            this.filtercb.UseVisualStyleBackColor = true;
+            this.filtercb.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
+            // ldWeb
+            // 
+            this.ldWeb.Location = new System.Drawing.Point(711, 189);
+            this.ldWeb.Name = "ldWeb";
+            this.ldWeb.Size = new System.Drawing.Size(61, 25);
+            this.ldWeb.TabIndex = 2;
+            this.ldWeb.Text = "Load Web";
+            this.ldWeb.UseVisualStyleBackColor = true;
+            this.ldWeb.Click += new System.EventHandler(this.ldWeb_Click);
+            // 
+            // ldFile
+            // 
+            this.ldFile.Location = new System.Drawing.Point(524, 41);
+            this.ldFile.Name = "ldFile";
+            this.ldFile.Size = new System.Drawing.Size(61, 25);
+            this.ldFile.TabIndex = 1;
+            this.ldFile.Text = "Load file";
+            this.ldFile.UseVisualStyleBackColor = true;
+            this.ldFile.Click += new System.EventHandler(this.ldFile_Click);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(28, 25);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(467, 330);
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(628, 47);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(35, 13);
+            this.label4.TabIndex = 5;
+            this.label4.Text = "label2";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(628, 72);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(35, 13);
+            this.label5.TabIndex = 6;
+            this.label5.Text = "label2";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(628, 96);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(35, 13);
+            this.label6.TabIndex = 7;
+            this.label6.Text = "label2";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(669, 96);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(35, 13);
+            this.label9.TabIndex = 10;
+            this.label9.Text = "label2";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(669, 72);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(35, 13);
+            this.label8.TabIndex = 9;
+            this.label8.Text = "label2";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(669, 47);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(35, 13);
+            this.label7.TabIndex = 8;
+            this.label7.Text = "label2";
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
             // 
             // Basic_frm
             // 
@@ -378,6 +521,9 @@
             this.tabPage2.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -420,5 +566,18 @@
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem extendToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadBinaryToolStripMenuItem;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.CheckBox filtercb;
+        private System.Windows.Forms.Button ldWeb;
+        private System.Windows.Forms.Button ldFile;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
