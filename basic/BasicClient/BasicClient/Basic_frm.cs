@@ -686,6 +686,57 @@ namespace RobobuilderLib
             }
         }
 
+        private void imageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            imageToolStripMenuItem.Checked = !imageToolStripMenuItem.Checked;
+            if (imageToolStripMenuItem.Checked)
+                ;
+        }
+
+        private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
+        {
+            if (!checkBox1.Checked)
+            {
+                loadimage();
+                return;
+            }
+
+            try
+            {
+                long sz = Convert.ToInt64(textBox2.Text);
+                if (sz < 2)  { sz = 2; textBox2.Text = sz.ToString(); }
+                if (sz >100) { sz = 100; textBox2.Text = sz.ToString(); }
+
+                long[,] m = new long[sz, sz];
+
+                for (int i = 0; i < n.Height; i++)
+                {
+                    for (int j = 0; j < n.Width; j++)
+                    {
+                        long v = (n.GetPixel(j, i).R + n.GetPixel(j, i).G + n.GetPixel(j, i).B) / 3;
+                        m[sz*j/n.Width,sz*i/n.Height] += v;
+                    }
+                }
+
+                long mv = (n.Height * n.Width) / (sz * sz);
+
+                for (int i = 0; i < n.Height; i++)
+                {
+                    for (int j = 0; j < n.Width; j++)
+                    {
+                        long v=(m[sz*j/n.Width,sz*i/n.Height]/mv)%256;
+                        n.SetPixel(j, i, Color.FromArgb((int)v,(int)v,(int)v));
+                    }
+                }
+                pictureBox1.Image = n;
+                pictureBox1.Update();
+            }
+            catch (Exception e1)
+            {
+                Console.WriteLine("error - " + e1.Message);
+            }
+        }
+
 
 
     }
