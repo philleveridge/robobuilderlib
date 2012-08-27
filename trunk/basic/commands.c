@@ -2,6 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include "win.h"
+
+#define MAX_FOR_NEST	10
+#define MAX_GOSUB_NEST	50
+#define MAX_FOR_EXPR	60 
+
 #endif
 
 #ifdef LINUX
@@ -9,6 +14,11 @@
 #include <string.h>
 #include <math.h>
 #include "linux.h"
+
+#define MAX_FOR_NEST	10
+#define MAX_GOSUB_NEST	50
+#define MAX_FOR_EXPR	60 
+
 #endif
 
 #ifdef AVR
@@ -20,17 +30,21 @@
 #include "macro.h"
 #include "wckmotion.h"
 #include "rprintf.h"
+
+#define MAX_FOR_NEST	6
+#define MAX_GOSUB_NEST	5
+#define MAX_FOR_EXPR	20 
+
 #endif
+
+#define MAX_TOKEN 		8
 
 #include "edit.h"
 #include "express.h"
 #include "functions.h"
 #include "lists.h"
 
-#define MAX_TOKEN 		8
-#define MAX_FOR_NEST	6
-#define MAX_GOSUB_NEST	5
-#define MAX_FOR_EXPR	20 
+
 
 static int  forptr[MAX_FOR_NEST];   			  	// nested for/next
 static char nxtptr[MAX_FOR_NEST][MAX_FOR_EXPR];   	// nested for/next
