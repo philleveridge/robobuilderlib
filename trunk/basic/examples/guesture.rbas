@@ -6,39 +6,50 @@
 !MAT DEF C;32;32
 !MAT DEF T;32;32
 
-Print "Load Background"
-kloop:
-   if $kir<0 then kloop
-
-!IMAGE LOAD 32 ';"back.jpg"
-LIST B=@!
-!MAT PRINT B
-
-
-Print "Start"
-kloop2:
-   if $kir<0 then kloop2
+	PRINT "Load Background"
+	!WAIT IMAGE
+	!IMAGE LOAD 32 ';"back.jpg"
+	LIST B=@!
+backg:
+	PRINT ".";
+	LIST T=@B
+	!WAIT IMAGE
+	!IMAGE LOAD 32 ';"back.jpg"
+	LIST B=@!
+	S=$ABS($SUM(@B-@T))
+	PRINT s
+	IF s>50 THEN backg  'wait to little movement
+	!MAT PRINT B
 
 mainloop:
-        Print "Load Image"
-
+        PRINT "Load Image"
         !WAIT IMAGE
+	 !IMAGE LOAD 32 ';"object.jpg"
+	 LIST A=@!
+ml2:
+        PRINT s
+        LIST T=@A
+        !WAIT IMAGE
+        !IMAGE LOAD 32 ';"object.jpg"
+        LIST A=@!
+        S=$ABS($SUM(@A-@T))
+        IF s>50 THEN ml2
 
-	!IMAGE LOAD 32 ';"object.jpg"
 
-	LIST A=@!
 	!MAT PRINT A
 
-	LIST C=@B-@A
+       SCALE @B-@A,20,1,0
+       LIST c=@!
 
-	FOR i=0 to 32*32
-	  m=$abs(@c[i])
-	  if m>20 then
-	     set @c,i,1
-	  else
-	     set @c,i,0
-	  endif
-	next i
+	'LIST C=@B-@A
+	'FOR i=0 TO 32*32
+	'  m=$ABS(@c[i])
+	'  IF m>20 THEN
+	'     SET @c,i,1
+	'  ELSE
+	'     SET @c,i,0
+	'  ENDIF
+	'NEXT i
 
 	!MAT PRINT C
 	!MAT HIST 2;C  'HorixontalIntensity Histo
@@ -51,34 +62,34 @@ mainloop:
 	P=3  'threshold arm
 	Q=10 'threshol body
 
-	for I=0 to 31
-		if (@![i]>=P) and (L=0) then
+	FOR I=0 TO 31
+		IF (@![i]>=P) and (L=0) THEN
 		    L=i
-		endif
-		if (@![i]>=Q) and (m=0) then
+		ENDIF
+		IF (@![i]>=Q) and (m=0) THEN
 		    m=i
-		endif
-		if (@![i]<Q) and (M>0) and (s=0) then
+		ENDIF
+		IF (@![i]<Q) and (M>0) and (s=0) THEN
 		    S=i
-		endif
-		if (@![i]<P) and (S>0) and (r=0) then
+		ENDIF
+		IF (@![i]<P) and (S>0) and (r=0) THEN
 		    R=i
-		endif
-	next I
+		ENDIF
+	NEXT I
 
 	W=S-M
 	L=M-L
 	R=R-S
 	N=S
 
-	print "Torso Width=";W
-	print "L hand=     ";L
-	print "R hand=     ";R
+	PRINT "Torso Width=";W
+	PRINT "L hand=     ";L
+	PRINT "R hand=     ";R
 
 	'mask off right-hand side
 	LIST T=@C
 	!MAT ZERO T;M;0;31;31
-	print @T:32
+	PRINT @T:32
 	!MAT HIST 1;T  'Vertical Intensity Histo
 	PRINT @!
 
@@ -86,44 +97,44 @@ mainloop:
 	S=0
 	P=1 'threshold arm
 
-	for I=0 to 31
-		if (@![i]>=P) and (M=0) then
+	FOR I=0 TO 31
+		IF (@![i]>=P) and (M=0) THEN
 		    M=i
-		endif
-		if (@![i]<P) and (s=0) and (m>0) then
+		ENDIF
+		IF (@![i]<P) and (s=0) and (m>0) THEN
 		    S=i
-		endif
-	next I
+		ENDIF
+	NEXT I
 
 	P=$MAX(@!)
 
-	print "Width=   ";S-M
-	print "Max=     ";P
+	PRINT "Width=   ";S-M
+	PRINT "Max=     ";P
 
 
 	'straight hand mean width/height > x
 
-	if (s-m)/p > 1 then
-	   print "left arm straight"
-	else
+	IF (s-m)/p > 1 THEN
+	   PRINT "left arm straight"
+	ELSE
 	  'diagnols
-	   p=$imax(@!);l
-	   print p
-	   if P<10 then
-	     print "left arm up"
-	   else
-	     print "left arm down"
-	   endif
-	endif 
+	   p=$IMAX(@!);l
+	   PRINT p
+	   IF P<10 THEN
+	     PRINT "left arm up"
+	   ELSE
+	     PRINT "left arm down"
+	   ENDIF
+	ENDIF 
 
 	'mask off right-hand side
 	LIST T=@C
 	!MAT ZERO T;0;0;N;31
-	print @T:32
+	PRINT @T:32
 	!MAT HIST 1;T  'Vertical Intensity Histo
 	PRINT @!
 
-        end ' goto mainloop
+        END ' goto mainloop
 
 
 
