@@ -1,0 +1,36 @@
+'demo of functions
+'
+'requires build 526
+'Demo
+'5! = 120
+'fib(7) = 13
+'End of program
+
+  PRINT "Demo"
+  Call M = fact(5)
+  PRINT "5! = ";m
+
+  Call M = fib(7)
+  PRINT "fib(7) = ";m
+  END
+
+function r : fact(n)
+  IF n=0 THEN
+    r=1
+  ELSE
+    Call R = fact(n-1)
+    r=r*n
+  ENDIF
+endfunction
+
+
+function r : fib(k)
+  local t
+  IF k>=2 THEN
+    Call r = fib(k-1)
+    Call t = fib(k-2)
+    r=r+t
+  ELSE
+    r=k
+  ENDIF
+endfunction

@@ -1,0 +1,35 @@
+'function test
+'
+'Run Program
+'A=7 B=1 C=2
+'C=8
+'A=5 B=6 C=8
+'A=2 B=8 C=8
+'C=10
+'A=5 B=6 C=0 M=10
+'End of program
+'Elapsed Time 00:00-000
+
+A=5
+B=6
+C=2
+Call foo (7,1)
+PRINT "Main: A=";A;" B=";B;" C=";C
+
+Call M = bar (2,8)
+PRINT "main: A=";A;" B=";B;" C=";C;" M=";M
+
+END
+
+Procedure foo (AB)
+   PRINT "Foo: A=";A;" B=";B;" C=";C
+   C=A+B
+   PRINT "Foo: C=";c
+EndProc
+
+Function C : bar (AB)
+   PRINT "Bar: A=";A;" B=";B;" C=";C
+   C=A+B
+   PRINT "Bar: C=";c
+EndFunction
+
