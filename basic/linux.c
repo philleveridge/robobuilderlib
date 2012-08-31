@@ -385,7 +385,7 @@ extern char device[];
 
 void main(int argc, char *argv[])
 {
-	int lf,rf=0;
+	int lf=0,rf=0,cf=0;
 	int sf=0;
 
 	PORTA=3;
@@ -422,6 +422,9 @@ void main(int argc, char *argv[])
 		if (!strcmp(argv[i],"HANDS"))
 			setdh(1);
 
+		if (!strcmp(argv[i],"COMPILE"))
+			cf=1;
+
 
 		if (!strcmp(argv[i],"COM") && i<argc-1)
 		{
@@ -436,10 +439,24 @@ void main(int argc, char *argv[])
 #else
 	printf("Unix Basic ...\n");
 #endif
+
+	if (cf)
+	{
+		printf ("Compiling ...");
+		basic_zero();	
+
+		basic_load(0);
+
+		binstore();
+		exit(0);
+	}
+
 	initsocket(sf);
 	initIO();        
 	initfirmware();
 	basic_zero();
+
+
 
 #ifdef IMAGE
 	signal(SIGUSR1, imageready);
