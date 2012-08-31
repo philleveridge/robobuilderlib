@@ -3,7 +3,12 @@
 
 enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 
-#define MAX_DEPTH  100
+#ifdef WIN | LINUX | IMAGE
+#define MAX_DEPTH  500
+#else
+#define MAX_DEPTH  25
+#endif
+
 
 extern unsigned char 	eval_expr(char **str, long *res);
 extern int		eval_list(char *p);
