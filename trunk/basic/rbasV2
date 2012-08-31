@@ -4,6 +4,7 @@ echo "Basic Pre-Processor V2 - $1"
 
 awk 'BEGIN {ln=10; prog=""; ifc=0;}
 {
+	gsub(/\015$/,"");
 	gsub(/['\''].*$/,"");
 	gsub(/^ +/,"");
 	gsub(/ +$/,"");
@@ -48,6 +49,9 @@ awk 'BEGIN {ln=10; prog=""; ifc=0; IGNORECASE=1;}
 
 	gsub(/^ +/,"");
 	gsub(/ +$/,"");
+
+
+	gsub(/\<network\>/,"networ");
 
 	if (/^const/)
 	{
