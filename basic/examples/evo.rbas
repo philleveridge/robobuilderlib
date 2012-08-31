@@ -28,9 +28,9 @@ loop:
    'print "?"
    'if $kbd=`q then done
    
-   gosub cycle  'test each generation getting a fitness value
-
+   gosub cycle   'test each generation getting a fitness value
    gosub show
+
    print "select best ";u
    print "fitness = ";m
    k=$range(u,0,g)             'select best & make parent

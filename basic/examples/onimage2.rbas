@@ -1,5 +1,8 @@
 ' Demo of basic Image process
    Print "Load image and turn head servo (20) to brightest source"
+
+   print $kbd
+
    LIST M=12,0,0,1,-1,1,-1,0,-1,1,-1,1,0
    ON IMAGE GOSUB ImProc
 
@@ -7,27 +10,32 @@ Loop:
    WAIT 50
    Goto Loop
 
-ImProc:
+ImProc:   Gosub Clrscrn
    PRINT "load image"
 
-   t=$tick
+   't=$tick
    !IMAGE LOAD 2
    !IMAGE SHOW 6
 
    LIST !=@!.@M 'Add weights & threshhold
+
    NETWORK 4,2,3,2,0,0
 
    P=$SERVO(20)
    if @![4]=1 then
-       print "nuron 1 fired"
+       print "nuron 1 fired <--"
        P=P-2
    endif 
 
    if @![5]=1 then
-      print "nuron 2 fired"
+      print "nuron 2 fired -->"
       P=P+2
    endif 
 
    SERVO 20=P
-    print "t=";$tick-t
+   'print "t=";$tick-t
    RETURN 
+
+Clrscrn:
+   out @{4,27,`[,`2,`J}
+   return
