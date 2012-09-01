@@ -4,6 +4,9 @@
 
 Image processing assumes a webcam is streaming jpeg images to a file called "test.jpg" using a streamer such as mjpg_streamer.
 
+<wiki:video url="http://www.youtube.com/v/WQdsdZTa1j8?version=3&amp;hl=en_GB&amp;rel=0"/>
+
+
 In the /etc/init.d/mjpg_streamer I have added line
 
 {{{
