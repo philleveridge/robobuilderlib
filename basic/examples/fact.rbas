@@ -11,7 +11,7 @@
   PRINT "5! = ";m
 
   Call M = fib(7)
-  PRINT "fib(7) = ";m
+  PRINT "Fib(7) = ";m
   END
 
 function r : fact(n)

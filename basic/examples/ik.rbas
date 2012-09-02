@@ -36,7 +36,10 @@ GOSUB calcd
 
 PRINT P;",";S;",";R;",";T;",";Q;",";E;",";D
 
-IF (R>25) AND (N<15) THEN grad
+IF (R>25) AND (N<15) THEN Grad
+
+Print "Angle P=";p;" Angle S=";s
+print "Distance to target=";R
 
 END
 

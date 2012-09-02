@@ -22,7 +22,7 @@ Loop:
   !IMAGE PROC 10
   !IMAGE SHOW 6
   !IMAGE REG 1
-  if $ne=0 then loop
+  if $ne=0 then Loop
   PRint "Area=";@![0]
   PRint "Box=";@![1];",";@![2];" to ";@![3];",";@![4]
   PRint "Center=";@![5];",";@![6]
