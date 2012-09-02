@@ -1,0 +1,52 @@
+'simple inverse kienmatics
+'
+L=100
+M=150 'mm
+P=0
+S=0
+X=160 'TX
+Y=100 'TY
+N=0
+
+PRINT "Target X=";x;" Y=";y
+
+Grad:
+   N=N+1
+
+   Call t = calcd(p+1,s)
+   Call r = calcd(p-1,s)
+   t=t-r
+
+   Call q = calcd(p,s+1)
+   Call r = calcd(p,s-1)
+   q=q-r
+
+   P=P-T
+   S=S-Q
+   Call r = calcd(p,s)
+
+   IF (R>25) AND (N<15) THEN Grad
+
+   Print "Angle P=";p;" Angle S=";s
+   print "Distance to target=";R
+   END
+
+
+' calc 
+' L, M length
+' P,S   angles
+
+function r : calcd(ps)
+  local d
+  local e
+  D=L*$SIN(p)/32768
+  D=D+M*$SIN(s)/32768
+  E=L*$COS(p)/32768
+  E=E+M*$COS(s)/32768
+  R=$SQRT((D-Y)*(D-Y)+(E-X)*(E-X))
+endfunction
+
+
+
+
+
