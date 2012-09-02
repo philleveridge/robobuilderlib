@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 echo "Basic Pre-Processor V2 - $1"
 
@@ -19,16 +19,24 @@ awk 'BEGIN {ln=10; prog=""; ifc=0;}
 	prog = prog $0 "\n";
 }
 END {
-	prog = gensub(/[Ll]ocal[ ]+([A-Za-z]+)([^eE]+)[Ee]nd[Ff]unction/,
-		"List !=^0 \nList !=:\\1\n\\2List !=#\\1endfunction", "G", prog);
+	IGNORECASE=1
+	prog = gensub(/\<endfunction\>/, "\003endfunction","G", prog);
+	prog = gensub(/\<endproc\>/, "\003endproc", "G", prog);
+	IGNORECASE=0
 
-	prog = gensub(/[Ll]ocal[ ]+([A-Za-z]+)([^eE]+)[Ee]nd[Pp]roc/,
-		"List !=^0 \nList !=:\\1\n\\2List !=#\\1endproc", "G", prog);
+        for (c=0; c<3; c++)
+	{
+		prog = gensub(/[Ll]ocal[ ]+([A-Za-z])([^\003]+)\003endfunction/,
+			"List !=^0 \nList !=:\\1\n\\2List !=#\\1\n\003endfunction", "G", prog);
 
-	prog = gensub(/[Ff]unction[ ]+([A-Za-z])[ ]+:[ ]+([A-Za-z0-9]+)[ ]*\(([^)]+)\)([^eE]+)[Ee]nd[Ff]unction/,
-		"\\2:\nLIST !=:\\1\\3\n\\4\nLIST !=#\\3\nLIST !=:\\1\nReturn \n", "G", prog);
+		prog = gensub(/[Ll]ocal[ ]+([A-Za-z])([^e]+)\003endproc/,
+			"List !=^0 \nList !=:\\1\n\\2List !=#\\1\n\003endproc", "G", prog);
+	}
 
-	prog = gensub(/[Pp]rocedure[ ]+([A-Za-z0-9]+)[ ]*\(([^)]+)\)([^eE]+)[Ee]nd[Pp]roc/,
+	prog = gensub(/[Ff]unction[ ]+([A-Za-z])[ ]+:[ ]+([A-Za-z0-9]+)[ ]*\(([^)]+)\)([^\003]+)\003endfunction/,
+		"\\2:\nLIST !=:\\1\\3\n\\4\nLIST !=#\\3\nLIST !=:\\1\nReturn\n", "G", prog);
+
+	prog = gensub(/[Pp]rocedure[ ]+([A-Za-z0-9]+)[ ]*\(([^)]+)\)([^\003]+)\003endproc/,
 		"\\1:\nLIST !=:\\2\n\\3List !=#\\2\nReturn \n", "G", prog);
 
 	print prog;
@@ -117,7 +125,10 @@ END {
 cat sym.txt
 cat bas.txt
 
+if [[ "$2" == "-C" ]]
+then
 ~/Desktop/R2/svn\ src/robobuilderlib/basic/Basic COMPILE <bas.txt
+fi
 
 
 echo "Done"

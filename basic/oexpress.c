@@ -1362,7 +1362,15 @@ void extend(char *x)
         				rprintfStr("incorrect number args (6)\n"); 
 					return;
 				}
-			}			
+			}
+
+			file = get("IFN");
+			if (file.type!=STR)
+			{
+				rprintfStr("error in string file name\n"); 
+				return;
+			}
+			
 			if (filterimage(file.string,&scene[0],sz,args[0],args[1],args[2],args[3],args[4],args[5])==0)
 				nis=sz*sz;
 			else
