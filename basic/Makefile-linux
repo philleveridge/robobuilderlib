@@ -63,7 +63,7 @@ all: $(TARGET)
 $(TARGET): $(OBJECTS)
 	echo "Revision = " $(REV)	
 	$(CC) $(LDFLAGS) $(OBJECTS) $(LINKONLYOBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)-$(REV)
-	$(shell ln -s $(TARGET)-$(REV) Basic)
+	$(shell rm Basic;ln -s $(TARGET)-$(REV) Basic)
 
 ## Clean target
 clean:

@@ -5,8 +5,8 @@
 
 LOOP:
     !WAIT IMAGE
-    !IMAGE FILT 4;120;40;30;175;70;40
-    '!IMAGE FILT 4;120;175;40;70;30;40
+    out @{4,27,`[,`2,`J}
+    !IMAGE FILT 4;120;175;40;70;30;40
     !IMAGE SHOW 6
     GOSUB DONET
     GOTO LOOP
@@ -17,7 +17,8 @@ DONET:
     LIST !=@!.@M 'Add N1 weights & threshhold 
     LIST !=@!.@N 'Add N2 eights & threshhold 
 
-    NETWORK 16,2,11,2,0,0
+    'NETWORK 16,2,11,2,0,0
+    NETWORK 16,2,3,2,0,0
 
     P=$SERVO(20)
     if @![16]=1 then
