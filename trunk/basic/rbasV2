@@ -2,6 +2,14 @@
 
 echo "Basic Pre-Processor V2 - $1"
 
+if [[ `uname -a | cut -d' ' -f2` == "OpenWrt" ]]
+then
+BASIC=rbasic
+else
+BASIC="/home/phil/Desktop/R2/svn src/robobuilderlib/basic/Basic"
+fi
+
+
 awk 'BEGIN {ln=10; prog=""; ifc=0;}
 {
 	gsub(/\015$/,"");
@@ -29,7 +37,7 @@ END {
 		prog = gensub(/[Ll]ocal[ ]+([A-Za-z])([^\003]+)\003endfunction/,
 			"List !=^0 \nList !=:\\1\n\\2List !=#\\1\n\003endfunction", "G", prog);
 
-		prog = gensub(/[Ll]ocal[ ]+([A-Za-z])([^e]+)\003endproc/,
+		prog = gensub(/[Ll]ocal[ ]+([A-Za-z])([^\003]+)\003endproc/,
 			"List !=^0 \nList !=:\\1\n\\2List !=#\\1\n\003endproc", "G", prog);
 	}
 
@@ -127,7 +135,7 @@ cat bas.txt
 
 if [[ "$2" == "-C" ]]
 then
-~/Desktop/R2/svn\ src/robobuilderlib/basic/Basic COMPILE <bas.txt
+"$BASIC" COMPILE <bas.txt
 fi
 
 

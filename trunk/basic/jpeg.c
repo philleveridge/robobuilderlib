@@ -239,14 +239,14 @@ int loadimage(char *ifile, int sz, int *f)
 int filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f)
 {
 	n.minR = a;
+	n.maxR = b;
 	n.minG = b;
-	n.minB = c;
-	n.maxR = d;
-	n.maxG = e;
+	n.maxG = d;
+	n.minB = e;
 	n.maxB = f;
+
 	if (dbg)  {
-		printf ("Min [%d,%d,%d]\n",n.minR, n.minG, n.minB);
-		printf ("Max [%d,%d,%d]\n",n.maxR, n.maxG, n.maxB);
+		printf ("R [%d-%d] G [%d-%d] B[%d-%d]\n",n.minR, n.maxR,n.minG,  n.maxG, n.minB, n.maxB);
 	}
 
 	initframe(x,data);
