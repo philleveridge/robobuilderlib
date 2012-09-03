@@ -52,6 +52,8 @@ int loadJpg(char* Name)
   width = cinfo.output_width;
   height = cinfo.output_height;
 
+  if (dbg) printf("read [%d,%d]\n",width,height);
+
   pTest=BMap;
 
   row_stride = width * cinfo.output_components ;
@@ -59,6 +61,8 @@ int loadJpg(char* Name)
     ((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
 
   int y=0;
+
+  if (dbg) printf("readscan\n");
 
   while (cinfo.output_scanline < cinfo.output_height) 
   {
@@ -83,8 +87,13 @@ int loadJpg(char* Name)
   }
 
   fclose(infile);
+
+  if (dbg) printf("read close\n");
+
   (void) jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
+
+  if (dbg) printf("read done\n");
 
   Height = height;
   Width  = width;
@@ -96,7 +105,7 @@ int simplefilter(int mode, int sf)
 {
      unsigned char *img = BMap;
 	
-     if (dbg) printf ("[%d,%d,%d]\n",Height, Width,Depth);
+     if (dbg) printf ("filter : %d [%d,%d,%d]\n",sf, Height, Width,Depth);
 
      for (int y=0; y<Height; y++)
      {
@@ -121,7 +130,7 @@ int simplefilter(int mode, int sf)
 			break;
 	     }
 
-	     if (dbg==2) printf ("[%d,%d] = [%d,%d,%d]  (%d)=%d\n", x,y,r,g,b, j*sf + i,frame[j*sf + i] );
+	     //if (dbg) printf ("[%d,%d] = [%d,%d,%d]  (%d)=%d\n", x,y,r,g,b, j*sf + i,frame[j*sf + i] );
 	}
      }
      return 0;
@@ -161,7 +170,10 @@ void output_grey1(int sz)
 	{
 		for (int j=0; j<sz; j++)
 		{
-		     printf ("%c ", g1[l-1-(l*frame[j+i*sz])/mx]);
+		     if (mx==0) 
+			printf("- ");
+		     else
+		     	printf ("%c ", g1[l-1-(l*frame[j+i*sz])/mx]);
 		}
 		printf ("\n");
 	}
@@ -197,7 +209,11 @@ void output_cells(char * fn, int sz, int k)
 
 void scale_array(int sz)
 {
+	if (dbg) printf ("Scale [%d]\n", sz);
+
 	int k= Height*Width/(sz*sz);
+
+	if (k==0) return;
 
 	for (int i=0; i<sz; i++)
 	{
@@ -210,8 +226,13 @@ void scale_array(int sz)
 
 void initframe(int x, int *f)
 {
-	for (int k=0; k<x*x; k++) f[k]=0;
+	if (dbg) printf ("Initframe [%d]\n", x);
+
         frame =&f[0];
+
+	for (int k=0; k<x*x; k++) 
+		f[k]=0;
+
 }
 
 //ie loadimage("test.jpeg", 16, data)
@@ -240,13 +261,13 @@ int filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e
 {
 	n.minR = a;
 	n.maxR = b;
-	n.minG = b;
+	n.minG = c;
 	n.maxG = d;
 	n.minB = e;
 	n.maxB = f;
 
 	if (dbg)  {
-		printf ("R [%d-%d] G [%d-%d] B[%d-%d]\n",n.minR, n.maxR,n.minG,  n.maxG, n.minB, n.maxB);
+		printf ("R [%d-%d] G [%d-%d] B[%d-%d]\n",n.minR, n.maxR, n.minG, n.maxG, n.minB, n.maxB);
 	}
 
 	initframe(x,data);
@@ -256,11 +277,8 @@ int filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e
 
 	simplefilter(1,x);   // 1 colour filter
 
-	if (dbg) {
-		output_grey1(x);
-	}
-
 	scale_array(x);
+
 	return 0;
 }
 
