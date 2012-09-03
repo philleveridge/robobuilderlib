@@ -604,7 +604,7 @@ namespace RobobuilderLib
                 n = new Bitmap(textBox1.Text);
             }
             pictureBox1.Image = n;
-            clear();
+            //clear();
         }
 
         void filter()
@@ -670,6 +670,7 @@ namespace RobobuilderLib
             {
                 textBox1.Text = openFileDialog1.FileName;
                 loadimage();
+                clear();
             }
         }
 
@@ -680,6 +681,7 @@ namespace RobobuilderLib
                 WebClient webClient = new WebClient();
                 webClient.DownloadFile(textBox1.Text, "temp.jpg");
                 loadimage();
+                clear();
             }
             catch
             {

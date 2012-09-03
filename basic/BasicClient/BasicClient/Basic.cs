@@ -321,7 +321,7 @@ namespace RobobuilderLib
             // local arg
             // EndFunction
             // Call NAME (args)
-            w = Regex.Replace(w, "'.*\n", "", RegexOptions.Multiline);
+            w = Regex.Replace(w, "'.*\n", "\n", RegexOptions.Multiline);
 
 
             w = Regex.Replace(w, "[Ll]ocal ([A-Za-z]+)(.*?)[Ee]nd[Ff]unction", 
