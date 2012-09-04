@@ -12,9 +12,20 @@ This custom firmware for Robobuilder gives it the ability to create and store si
     {{{ LET P=@B[Y]+@A[Y]*$SIN((X+@C[y])*16)/32768 }}}
   # Expression use 32 bit integer arithmetic - previously it was 16 bit, this make the range much better for complex expression - like above
   # There's a new variant of MOVE command MOVE A,B,C,D - see below
-  # Adds improved list handling features. List are now separate from variable.
+  # Command mode extensions
+    # p option - set all servos passive 
+    # Q option - queries all servo values and displays result 
+  # New options on SCALE command to enable threshold 
+  # List handling features. List are  separate from variable.
+     # New List functions $SHUF and $MAP 
+     # New List operators '+' '-' and '.' 
+     # New options on LIST to support stacks and hence Procedure and Functions
   # Reduce memory footprint - better stability
   # Versions for Linux and Windows now has floating point. 
+  # New extended commands: covering image processing ExtendedCommands 
+  # Bug fixes
+     #  fix to expression handler and Cos function
+     #  fix to edit lines 
 
 = Getting started =
 Download latest firmware (.HEX) and upload on to the RBC module using the [http://robobuilderlib.googlecode.com/files/rbctool.jpg RBCUpgrade] tool as per Robobuilder [http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf manual pg 70].
@@ -25,7 +36,7 @@ If you want just to try it out (and not load on to Robot) then there are  window
 
 So assuming you have downloaded the program (and installed the firmware) - reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html VT100 terminal emulator] on the serial port (i.e. COM1 at 115200). You should see the following:
 {{{
-Basic v=$Revision: 452 $
+Basic v=$Revision: 538 $
 Commands: i r l c z q s V R F $
 
 16 servos connected
@@ -40,7 +51,8 @@ At the prompt type one of the following
   * l - list current program
   * c - clear memory
   * z - download (requires client - see below)
-  * q - check servos connected
+  * p - sets passive (input mode) on the servos
+  * q - check servos connected (Q- will output values)
   * V - print version / build
   * s - stand
   * $ - enter demo mode
@@ -54,7 +66,7 @@ The start mode is command mode signified by ':'. On pressing I it enters input m
 == Example session ==
 
 {{{
-Basic v=$Revision: 452 $
+Basic v=$Revision: 538 $
 Commands: i r l c z q s V R F $
 16 servos connected
 0 lines in memory
