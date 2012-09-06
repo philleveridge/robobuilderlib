@@ -11,7 +11,9 @@ The is a linux build of the Basic interpreter. At start up it will test on seria
   * FAST  - this attempts to connect at 232400B to DCMP 
   * IR    - this switches on polling the IR status - this puts a load on the comms hence it optional - default is off
   * REMOTE - connect to robot running DCMP
-  * COM   - COM port to connect to i.e. /dev/ttyA
+  * COM     - COM port to connect to i.e. /dev/ttyA
+  * COMPILE - put basic in input mode and read from stdio. Last line of input should be a '.'
+  * RUN     - Load bindata.txt and run immediately
 
 = BASIC differences =
 
@@ -20,6 +22,8 @@ Commands
   * z - this loads bindata.txt (rather than attempting file transfer)
   * m - load array ! with data from data.txt
   * M - store ! in to file data.txt
+
+A range of ExtendedCommands - (commands that start with !) are also available. 
 
 = Example Session =
 
