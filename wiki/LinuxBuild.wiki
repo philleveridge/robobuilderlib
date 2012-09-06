@@ -42,12 +42,60 @@ Enter Program '.' to Finish
 > 20 LET A=A+1
 > 30 NEXT I
 > 
-
 3 lines entered, [45/3072] Bytes
 : r
 Run Program 
 Elapsed Time 00:04-020
 : 
 }}}
+Another clear difference is the speed! 4s for 2M operation, or 2uS per instruction. 
 
-Another clear difference is the speed! 4s for 2M operation, oe 2uS per instruction. 
+Example using *COMPILE* option takes program from "echo" and pipes it into Basic where its compiled and stored as a bindata.txt file
+
+{{{
+$ echo -e '10 print "hello"\n20 !exit\n.' | ./Basic COMPILE
+Unix Basic ...
+Compiling ...Clear Program 
+Enter Program '.' to Finish
+> 10 PRINT "hello"
+> 20 !EXIT
+> 
+2 lines entered, [32/3072] Bytes
+}}}
+
+Assuming we have bindata.txt in current directory then we can *RUN* it automatically on startup. Note use of !Exit to return to Unix
+{{{
+$ ./Basic RUN
+Unix Basic ...
+failed to open port
+Clear Program 
+Loaded - bindata.txt
+Run Program 
+hello
+Exit - you typed control - C
+}}}
+If you don't want exit to Unix you use "End" as per normal.
+
+Example running Basic and loading using 'z' option and then 'r' to run
+{{{
+$ Basic
+Unix Basic ...
+failed to open port
+Clear Program 
+Basic v=$Revision: 523 $
+Commands: i r l c z q s V R F $
+31 servos connected
+0 lines in memory
+: z
+Clear Program 
+Loaded - bindata.txt
+2 lines loaded
+: l
+List Program 
+10 PRINT "hello"
+20 ! EXIT
+: r
+Run Program 
+hello
+Exit - you typed control - C
+}}}
