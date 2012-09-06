@@ -4,7 +4,8 @@
 
 Image processing assumes a webcam is streaming jpeg images to a file called "test.jpg" using a streamer such as mjpg_streamer.
 
-<wiki:video url="http://www.youtube.com/v/WQdsdZTa1j8?version=3&amp;hl=en_GB&amp;rel=0"/>
+
+
 
 
 In the /etc/init.d/mjpg_streamer I have added line
@@ -34,6 +35,9 @@ The PID file is created when rbasic runs and contain the process ID to simplify 
 This demo loads an image as 2x2 array and then control a servo (20) which control the left / right position of the webcam.
 
 ===Demo 1 - Track bright object===
+
+<wiki:video url="http://www.youtube.com/v/WQdsdZTa1j8?version=3&amp;hl=en_GB&amp;rel=0"/>
+
 <code language="vb">
     'Find brightest light
     LIST M=12,0,0,1,-1,1,-1,0,-1,1,-1,1,0
@@ -92,8 +96,12 @@ ImProc:
    RETURN</code>
 
 ===Demo 3 - Filter processing in a Loop with a WAIT ===
-Alternatively you can loop and wait for an IMAGE event.
-In this example a colour filter is applied using code based on CMVision2.0 library. This will filter the image and detect regions of same colour
+
+<wiki:video url="http://www.youtube.com/v/YgzakRelVaM?version=3&amp;hl=en_GB&amp;rel=0"/>
+
+The above uses the IMAGE FILT command with WAIT IMAGE
+
+Alternatively use e a colour filter is applied using code based on CMVision2.0 library. This will filter the image and detect regions of same colour
 
 <code language="vb">
   'set up filter
