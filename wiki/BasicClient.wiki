@@ -114,4 +114,24 @@ forward:
 When a program is compiled a file bindata.txt is created - and this file can then be loaded into basic.exe using 'z' option. It will also be automatically loaded into basic when it starts.
 
 == Details ==
+
+http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-07%2020:14:15.png
+
 http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-07%2019:58:13.png
+
+"output" window after program has compiled
+
+http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-07%2020:11:30.png
+
+"image window" after selecting a jpf asnd using "load web" vutton
+
+http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-07%2020:12:25.png
+
+"Filtered image"
+
+http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-07%2020:12:54.png
+
+"downscaling to 32x32 of filtered image
+
+http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-07%2020:13:19.png
+
