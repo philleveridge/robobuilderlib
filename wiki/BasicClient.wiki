@@ -12,14 +12,19 @@ The windows is then an interactive console on to the robot. Press z (to put robo
 
 == Key advantages of client ==
 
-  * enable programs to be stored on PC and transfered to robot when required
+  * enable programs to be stored on PC
+  * download  and transferred to basic firmware on robot 
   * auto generates line numbers (int increments of 5)
   * allows comments to be added (using ' )
   * allows labels
   * provides context sensitive colour coding
   * allows multi-line if/then/else/endif statements
   * allows const definition
-  * has a RBC simulator mode for programs in conjunction with basic.exe
+  * Simple functions and procedures
+  * Create image filter maps
+  * Load binary files and reverse compile
+  * basic VT100 terminal with com port selection
+  * will check firmware version running on robot
 
 == examples programs ==
 
@@ -104,28 +109,9 @@ forward:
     
 }}}
 
-== working with basic.exe ==
+== working with RBasic.exe ==
 
 When a program is compiled a file bindata.txt is created - and this file can then be loaded into basic.exe using 'z' option. It will also be automatically loaded into basic when it starts.
 
-== using simulator ==
-
-The simulator enable basic programs to to be tested before being downloaded to RBC. The simulator can
-  * Show output of any servo id 0-24
-  * Show the IO State of any servo
-  * Allow any servo value to be changed in realtime
-  * Read/Modify the X, Y and Z values of accelerometer
-  * Read/Modify the PSD
-  * Allow IR remote values to be set 
-
-To use the simulator with basic.exe do the follwoing:
-  # Start simulator from menu
-  # Press listen button to start server
-  # Start basic.exe - it will show "Sim Mode" if able to connect
-
 == Details ==
-
-|| <img src="http://robobuilderlib.googlecode.com/files/bc.jpg" width="500">|| Screen layout ||
-|| <img src="http://robobuilderlib.googlecode.com/files/bc2.jpg" width="50%"> || New menu options||
-|| <img src="http://robobuilderlib.googlecode.com/files/bc3.jpg" width="50%"> || Simulator panel ||
-|| <img src="http://robobuilderlib.googlecode.com/files/bc5.jpg" width="40%"><img src="http://robobuilderlib.googlecode.com/files/bc4.jpg" width="40%"> || Basic.exe running with sim||
+http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-07%2019:58:13.png
