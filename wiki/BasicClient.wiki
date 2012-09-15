@@ -28,86 +28,11 @@ The windows is then an interactive console on to the robot. Press z (to put robo
 
 == examples programs ==
 
-{{{
-'Example maze program
-'Based on Robobuilder C tutorial
-     stand 16
-     print "Maze Program"
-     let c=0
-loop:
-     let d=$psd
-     lights d-10
+Here's an example using example : accelm.rbas
 
-     if d < 12 then
-        gosub back
-        goto loop
-     endif
-     
-     if (c = 0) & (d < 30) then
-        gosub leftturn90
-        let c=1
-        goto loop
-     endif
+http://robobuilderlib.googlecode.com/svn/trunk/basic/examples/accelm.rbas
 
-     if (c = 1) & (d < 30) then
-        gosub leftturn180
-        let c=2
-        goto loop
-     endif
-     
-     if (c = 1) & (d < 30) then
-         gosub rightturn90
-         let c=0
-         goto loop
-     endif
-          
-     let c=0
-     gosub forward
-     goto loop
- 
-back:
-     print ":"
-     run 9     
-     wait 1000
-     return
-
-leftturn90:
-     print "<-"
-     run 4
-     run 4
-     run 4
-     wait 1000
-     return
-  
-leftturn180:
-     print "V"
-     run 4
-     run 4
-     run 4
-     run 4
-     run 4
-     wait 1000
-     return
-     
-rightturn90:
-     print "->"
-     run 5
-     run 5
-     run 5
-     run 5
-     wait 1000
-     return
-
-forward:
-     print "^"
-     run 8
-     run 8
-     run 8
-     wait 1000
-     return
-     
-    
-}}}
+<wiki:video url="http://www.youtube.com/watch?v=HC4jCt9zaSU"/>
 
 == working with RBasic.exe ==
 
@@ -134,4 +59,3 @@ http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20fr
 "downscaling to 32x32 of filtered image
 
 http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-07%2020:13:19.png
-
