@@ -26,7 +26,7 @@ The windows is then an interactive console on to the robot. Press z (to put robo
   * basic VT100 terminal with com port selection
   * will check firmware version running on robot
 
-== examples programs ==
+== Examples program ==
 
 Here's an example using example : accelm.rbas
 
@@ -47,6 +47,10 @@ http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20fr
 "output" window after program has compiled
 
 http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-07%2020:11:30.png
+
+VT100 window - connected to Robobuilder
+
+http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-15%2022:16:19.png
 
 "image window" after selecting a jpf asnd using "load web" vutton
 
