@@ -6,7 +6,6 @@ using System.IO.Ports;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Net;
-using System.IO;
 
 namespace RobobuilderLib
 {
@@ -29,7 +28,18 @@ namespace RobobuilderLib
 
         bool bm = false;
 
+        bool fmono = false;
+
         bool editfl = false;
+
+        public static bool IsLinux
+        {
+            get
+            {
+                int p = (int)Environment.OSVersion.Platform;
+                return (p == 4) || (p == 6) || (p == 128);
+            }
+        }
 
 
         public Basic_frm()
@@ -47,8 +57,11 @@ namespace RobobuilderLib
                     if (l.StartsWith("BIN=") && l.Substring(4)!="")    bdn = l.Substring(4);
                     if (l.StartsWith("COM="))   cprt = l.Substring(4);
                     if (l.StartsWith("FILE="))  fn = l.Substring(5);
+                    if (l.StartsWith("MONO=")) fmono = (l.Substring(5, 1).ToUpper() == "Y") ? true : false;
                 }
             }
+
+            if (IsLinux && fmono == false) fmono = true; //overide user setting only if actually on linux
 
             if (!File.Exists(bfn))
             {
@@ -95,10 +108,13 @@ namespace RobobuilderLib
                 version = version.Substring(11, 4);
 
             this.Text += version;
+            if (fmono) this.Text += "[Mono]";
             input.Select();
 
             syntaxcheck(); //!
             editfl = false;
+
+            clear();
         }
 
         void writeini()
@@ -108,6 +124,7 @@ namespace RobobuilderLib
             s += "COM=" + comPort.Text + "\n";
             s += "BIN=" + bdn + "\n";
             s += "BASIC=" + bfn + "\n";
+            s += "MONO=" + (fmono?"Y":"N") + "\n";
 
             File.WriteAllText("BC.ini", s);
         }
@@ -116,12 +133,43 @@ namespace RobobuilderLib
         {
             if (bm) return;
 
-            rx = e.KeyChar.ToString();
-            if (s.IsOpen)
+            if (s != null && s.IsOpen)
             {
-                s.Write(rx);
+                s.Write(e.KeyChar.ToString());
             }
         }
+
+        private void runBtn_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write("r");
+            }
+        }
+
+        private void listBtn_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write("l");
+            }
+
+        }
+
+        private void stopBtn_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write(Char.ToString((char)27));
+            }
+        }
+
 
         private void processCompletedOrCanceled(object sender, EventArgs e)
         {
@@ -132,11 +180,15 @@ namespace RobobuilderLib
         {
             try
             {
-                if (s.IsOpen)
+                if (s!=null && s.IsOpen)
                 {
                     s.Close();
                     button1.BackColor = System.Drawing.Color.Red;
                     s.DataReceived -= new SerialDataReceivedEventHandler(s_DataReceived);
+
+                    runBtn.Visible = false;
+                    listBtn.Visible = false;
+                    stopBtn.Visible = false;
                 }
                 else
                 {
@@ -155,16 +207,70 @@ namespace RobobuilderLib
                     if (Convert.ToInt32(v.Substring(11, 3)) < Basic.REQ_FIRMWARE) 
                         throw new Exception("BASIC firmware v" + Basic.REQ_FIRMWARE + " or better needed?");
 
-                    s.DataReceived += new SerialDataReceivedEventHandler(s_DataReceived);
+                    if (!fmono) 
+                        s.DataReceived += new SerialDataReceivedEventHandler(s_DataReceived);
 
                     button1.BackColor = System.Drawing.Color.Green;
+                    term.Text = "";
                     term.Select();
+
+                    runBtn.Visible = true;
+                    listBtn.Visible = true;
+                    stopBtn.Visible = true;
+
+                    if (fmono)
+                    {
+                        readData();
+
+                        if (s.IsOpen)
+                        {
+                            s.Close();
+                            button1.BackColor = System.Drawing.Color.Red;
+                            runBtn.Visible = false;
+                            listBtn.Visible = false;
+                            stopBtn.Visible = false;
+                        }
+
+                        return;
+                    }
                 }
             }
             catch
             {
                 MessageBox.Show("Error - can't connect to serial port - " + comPort.Text, "Error", MessageBoxButtons.OK);
             }
+        }
+
+        void readData()
+        {
+            // mono read routine - doesn't handle serial events
+            s.ReadTimeout = 100;
+            int b;
+
+            while (s.IsOpen)
+            {
+                try
+                {
+                    if ((b = s.ReadByte()) > 0)
+                    {
+                        rx = "";
+                        while (b>0 && b != 255)
+                        {
+                            //Console.WriteLine("{0} - {1}", b, rx);
+                            rx += Char.ToString((char)b);
+                            b = s.ReadByte();
+
+                        }
+                    }
+                }
+                catch
+                {
+                }
+                Application.DoEvents();
+                DisplayText(null, null);
+                rx = "";
+            }
+
         }
 
         void p_OutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -175,9 +281,8 @@ namespace RobobuilderLib
 
         private void DisplayText(object sender, EventArgs e)
         {
-            if (rx != null)
+            if (rx != null && rx != "")
             {
-                //need to handle VT100 secquences
                 if (rx == "\b")
                 {
                     term.Text = term.Text.Substring(0, term.Text.Length - 1);
@@ -185,7 +290,16 @@ namespace RobobuilderLib
                 }
                 else
                     term.AppendText(rx);
+
+                rx = term.Text;
+
+                if (rx.IndexOf(Char.ToString((char)27) + "[2J") >= 0)
+                {
+                    rx = rx.Substring(rx.LastIndexOf(Char.ToString((char)27) + "[2J") + 4);
+                    term.Text = rx;
+                }
             }
+            rx = "";
         }
 
         void s_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -435,11 +549,15 @@ namespace RobobuilderLib
             fname.Width = input.Width;
             fname.Location = new Point (0, input.Height + 5);
 
-            progressBar1.Location = new Point(8, term.Height + 5);
-            comPort.Location = new Point(265, term.Height + 5);
-            label1.Location = new Point(390, term.Height + 5);
-            comselect.Location = new Point(599, term.Height + 5);
-            button1.Location = new Point(738, term.Height + 5);
+            progressBar1.Location = new Point(progressBar1.Location.X, term.Height + 5);
+            comPort.Location = new Point(comPort.Location.X, term.Height + 5);
+            label1.Location = new Point(label1.Location.X, term.Height + 5);
+            comselect.Location = new Point(comselect.Location.X, term.Height + 5);
+            button1.Location = new Point(button1.Location.X, term.Height + 5);
+
+            runBtn.Location = new Point(runBtn.Location.X, term.Height + 5);
+            stopBtn.Location = new Point(stopBtn.Location.X, term.Height + 5);
+            listBtn.Location = new Point(listBtn.Location.X, term.Height + 5);
         
         }
 
@@ -609,6 +727,8 @@ namespace RobobuilderLib
 
         void filter()
         {
+            if (n == null) return;
+
             for (int i = 0; i < n.Height; i++)
             {
                 for (int j = 0; j < n.Width; j++)
@@ -729,15 +849,55 @@ namespace RobobuilderLib
                         long v=(m[sz*j/n.Width,sz*i/n.Height]/mv)%256;
                         n.SetPixel(j, i, Color.FromArgb((int)v,(int)v,(int)v));
                     }
+
+                    pictureBox1.Image = n;
+                    pictureBox1.Update();
+
                 }
-                pictureBox1.Image = n;
-                pictureBox1.Update();
+
             }
             catch (Exception e1)
             {
                 Console.WriteLine("error - " + e1.Message);
             }
         }
+
+        void normalise()
+        {
+            if (n == null) return;
+
+            for (int i = 0; i < n.Height; i++)
+            {
+                for (int j = 0; j < n.Width; j++)
+                {
+                    long v = (n.GetPixel(j, i).R + n.GetPixel(j, i).G + n.GetPixel(j, i).B);
+                    if (v>0) 
+                        n.SetPixel(j, i, Color.FromArgb(
+                            (768*n.GetPixel(j, i).R/(int)v)%256, 
+                            (768*n.GetPixel(j, i).G/(int)v)%256, 
+                            (768*n.GetPixel(j, i).B/(int)v)%256));
+                }
+                pictureBox1.Image = n;
+                pictureBox1.Update();
+
+            }
+
+
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox2.Checked)
+            {
+                normalise();
+            }
+            else
+            {
+                loadimage();
+            }
+
+        }
+
 
 
 
