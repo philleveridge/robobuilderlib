@@ -1015,11 +1015,18 @@ void histogram(char ln1, int mode)   // "@A
 	int w=mstore[ln1-'A'].w;
 	int mx,my;
 
-	if (arrayA==0 || szA<=0 || h*w != szA) 
-		return; //bad array size
-
 	arrayA=listarray(ln1);
 	szA   =listsize(ln1);
+
+	if (arrayA==0 || szA<=0 || h*w != szA) 
+	{
+		printf ("error in HIST\n");
+		return; //bad array size
+	}
+
+
+
+//printf ("mode = %d, size=%d, mat=%c\n", mode, szA, ln1);
 
 	if (mode==1)
 	{
