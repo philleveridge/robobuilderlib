@@ -32,7 +32,7 @@ Here's an example using example : accelm.rbas
 
 http://robobuilderlib.googlecode.com/svn/trunk/basic/examples/accelm.rbas
 
-<wiki:video url="http://www.youtube.com/watch?v=HC4jCt9zaSU"/>
+<wiki:video url="http://www.youtube.com/watch?v=jGPBwTbgT6o"/>
 
 == working with RBasic.exe ==
 
