@@ -1,34 +1,35 @@
     LET X=4
     LIST M=17,+1,+1,-1,-1,+1,+1,-1,-1,+1,+1,-1,-1,+1,+1,-1,-1,0
     LIST N=17,-1,-1,+1,+1,-1,-1,+1,+1,-1,-1,+1,+1,-1,-1,+1,+1,0
-    LIST N=2,0,0
+    LIST O=2,0,0
 
 LOOP:
     !WAIT IMAGE
     out @{4,27,`[,`2,`J}
-    !IMAGE FILT 4;120;175;40;70;30;40
+    '!IMAGE FILT 4;120;175;40;70;30;40
+    '!IMAGE FILT 4;255;255;58;94;47;100
+    !IMAGE FILT 4;215;255;77;128;40;71
+
     !IMAGE SHOW 6
     GOSUB DONET
     GOTO LOOP
 
 
 DONET:
-    LIST !=@!.@O 'add output
-    LIST !=@!.@M 'Add N1 weights & threshhold 
-    LIST !=@!.@N 'Add N2 eights & threshhold 
-
-    'NETWORK 16,2,11,2,0,0
+    LIST !=@!.@O     'add output
+    LIST !=@!.@M     'Add N1 weights & threshhold 
+    LIST !=@!.@N     'Add N2 eights & threshhold 
     NETWORK 16,2,3,2,0,0
 
     P=$SERVO(20)
     if @![16]=1 then
        print "nuron 1 fired"
-       P=P+2
+       P=P-2
     endif 
 
     if @![17]=1 then
        print "nuron 2 fired"
-       P=P-2
+       P=P+2
     endif 
 
     SERVO 20=P

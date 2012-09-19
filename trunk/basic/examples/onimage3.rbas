@@ -17,7 +17,7 @@
   !IMAGE THRE CID;120; 175; 40; 70; 30; 40
 Loop:
   !WAIT IMAGE
-  gosub Clrscr
+  out @{4,27,`[,`2,`J
   !IMAGE RAW
   !IMAGE PROC 10
   !IMAGE SHOW 6
@@ -28,9 +28,6 @@ Loop:
   PRint "Center=";@![5];",";@![6]
   goto Loop
 
-Clrscr:
-  out @{4,27,`[,`2,`J}
-  return
 
 
 

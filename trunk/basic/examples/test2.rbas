@@ -1,0 +1,81 @@
+
+loop:
+
+print "enter start 0-6?"
+let k=$kbd
+
+if k=48 then
+        gosub initarm
+        gosub movearm
+endif
+
+
+if k=49 then
+	gosub rarmup
+endif
+
+if k=50 then
+	gosub rarmout
+endif
+
+if k=51 then
+	gosub rarmdown
+endif
+
+if k=52 then
+	gosub larmup
+endif
+
+if k=53 then
+	gosub larmout
+endif
+
+if k=54 then
+	gosub larmdown
+endif
+
+gosub movearm
+goto loop
+
+
+initarm:
+   'LIST v=16,141,86,248,41,103,103,161,0,206,144, 103,117,38, 155,156,183
+    LIST v=16,141,86,248,41,103,103,161,0,206,144, 93, 95, 65,155,156,183
+    return
+
+movearm:
+   print @v
+   move @v,10,1000
+   return
+
+
+larmdown:
+   set @v,11,95   '-1
+   set @v,12,109  '+45
+   return
+
+larmout:
+   set @v,11,142   '+47
+   set @v,12,109   '+45
+   return
+
+larmup:
+   set @v,11,195   '+100
+   set @v,12,93    '+28
+   return
+
+rarmdown:
+   set @v,14,157   '1
+   set @v,15,138   '-45
+   return
+
+rarmout:
+   set @v,14,110   '-47
+   set @v,15,138   '-45
+   return
+
+rarmup:
+   set @v,14,56    '-100
+   set @v,15,155   '-28
+   return
+

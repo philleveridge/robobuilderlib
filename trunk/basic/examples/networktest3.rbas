@@ -1,15 +1,16 @@
 'training
 
 print "1st image"
-!mat load 4
+!image load 4
 
 list w=@!      'load first data set
 insert @w,4,0  'add threshhold
 
 
 print "2nd image"
-wait 2000
-!mat load 4    'load next data set
+
+!wait image
+!image load 4
 list t=@!
 
 for i=0 to 3
@@ -18,15 +19,13 @@ for i=0 to 3
    print i;",";@w[i];",";@t[i];",";a;",";d
    set  @w,i,a
 next i
-
+print @w
 
 loop:
 
-print @w
-
 print "recog"
-wait 1000
-!mat load 4  'loadnext image
+!wait image
+!image load 4
 
 insert 4,0
 list !=@!.@w

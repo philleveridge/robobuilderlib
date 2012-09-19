@@ -1,59 +1,44 @@
-'
-' Based on : http://www.codeproject.com/Articles/26280/Hands-Gesture-Recognition
-'
-!MAT DEF B;32;32
-!MAT DEF A;32;32
-!MAT DEF C;32;32
-!MAT DEF T;32;32
+	'-----------------------------------------------------
+	' Gesture recognition
+	'-----------------------------------------------------
 
-	PRINT "Load Background"
-	!WAIT IMAGE
-	!IMAGE LOAD 32 ';"back.jpg"
-	LIST B=@!
-backg:
-	PRINT ".";
-	LIST T=@B
-	!WAIT IMAGE
-	!IMAGE LOAD 32 ';"back.jpg"
-	LIST B=@!
-	S=$ABS($SUM(@B-@T))
-	PRINT s
-	IF s>50 THEN backg  'wait to little movement
-	!MAT PRINT B
+	'define some matrices
+	!MAT DEF B;32;32   'image being processed
+	!MAT DEF A;32;32   'temp image for load
+	!MAT DEF C;32;32   'background
+	!MAT DEF T;32;32   'temp image for masking
+	z=32
+
+' 	test code
+'	!IMAGE LOAD 32;"back.jpg"
+'	LIST C=@!
+'	!IMAGE LOAD 32;"object.jpg"
+'	LIST B=@!
+'	goto processimg
+
+	print "Get static background image"
+	f=0
+	gosub camgrab
+
+	list c=@b
+	'print "Background"
+	'!mat print c
 
 mainloop:
-        PRINT "Load Image"
-        !WAIT IMAGE
-	 !IMAGE LOAD 32 ';"object.jpg"
-	 LIST A=@!
-ml2:
-        PRINT s
-        LIST T=@A
-        !WAIT IMAGE
-        !IMAGE LOAD 32 ';"object.jpg"
-        LIST A=@!
-        S=$ABS($SUM(@A-@T))
-        IF s>50 THEN ml2
+	'get 
+	f=1
+	gosub camgrab
 
+	'print "Image "
+	'!mat print b
 
-	!MAT PRINT A
+processimg:
+	SCALE @c-@b,20,1,0
+	LIST b=@!
+	print @B:32
 
-       SCALE @B-@A,20,1,0
-       LIST c=@!
-
-	'LIST C=@B-@A
-	'FOR i=0 TO 32*32
-	'  m=$ABS(@c[i])
-	'  IF m>20 THEN
-	'     SET @c,i,1
-	'  ELSE
-	'     SET @c,i,0
-	'  ENDIF
-	'NEXT i
-
-	!MAT PRINT C
-	!MAT HIST 2;C  'HorixontalIntensity Histo
-	PRINT @!
+	!MAT HIST 2;b  'HorixontalIntensity Histo
+	'PRINT @!
 
 	L=0
 	M=0
@@ -86,12 +71,17 @@ ml2:
 	PRINT "L hand=     ";L
 	PRINT "R hand=     ";R
 
-	'mask off right-hand side
-	LIST T=@C
-	!MAT ZERO T;M;0;31;31
-	PRINT @T:32
-	!MAT HIST 1;T  'Vertical Intensity Histo
-	PRINT @!
+        gosub initarm
+
+	'-----------------------------------------------------
+	' find left hand position
+	'-----------------------------------------------------
+
+	LIST T=@b
+	!MAT ZERO T;M;0;31;31    'mask off right-hand side
+	'PRINT @T:32
+	!MAT HIST 1;T            'Vertical Intensity Histo
+	'PRINT @!
 
 	M=0
 	S=0
@@ -108,35 +98,149 @@ ml2:
 
 	P=$MAX(@!)
 
-	PRINT "Width=   ";S-M
-	PRINT "Max=     ";P
+        if p=0 then
+           print "nothing detected"
+           goto rhs
+        endif
 
+	PRINT "Width=   ";S-M
+	PRINT "Max=     ";
 
 	'straight hand mean width/height > x
 
 	IF (s-m)/p > 1 THEN
-	   PRINT "left arm straight"
+		PRINT "left arm straight"
+		gosub larmout
 	ELSE
-	  'diagnols
-	   p=$IMAX(@!);l
-	   PRINT p
-	   IF P<10 THEN
-	     PRINT "left arm up"
-	   ELSE
-	     PRINT "left arm down"
-	   ENDIF
+		'diagonal arms 
+		p=$IMAX(@!);l
+		PRINT p
+		IF P<10 THEN
+			PRINT "left arm up"
+			gosub larmup
+		ELSE
+			PRINT "left arm down"
+			gosub larmdown
+		ENDIF
 	ENDIF 
 
-	'mask off right-hand side
-	LIST T=@C
-	!MAT ZERO T;0;0;N;31
-	PRINT @T:32
+	'-----------------------------------------------------
+	' find right arm position
+	'-----------------------------------------------------
+rhs:
+	LIST T=@B
+	!MAT ZERO T;0;0;N;31   	' mask off left-hand side
+	'PRINT @T:32
 	!MAT HIST 1;T  'Vertical Intensity Histo
-	PRINT @!
+	'PRINT @!
 
-        END ' goto mainloop
+	M=0
+	S=0
+	P=1 'threshold arm
 
+	FOR I=0 TO 31
+		IF (@![i]>=P) and (M=0) THEN
+		    M=i
+		ENDIF
+		IF (@![i]<P) and (s=0) and (m>0) THEN
+		    S=i
+		ENDIF
+	NEXT I
 
+	P=$MAX(@!)
 
+        if p=0 then
+           print "nothing detected"
+           goto mvarm
+        endif
 
+	PRINT "Width=   ";S-M
+	PRINT "Max=     ";
+
+	IF (s-m)/p > 1 THEN
+		PRINT "right arm straight"
+		gosub rarmout
+	ELSE
+		'diagonal arms 
+		p=$IMAX(@!);l
+		PRINT p
+		IF P<10 THEN
+			PRINT "right arm up"
+			gosub rarmup
+		ELSE
+			PRINT "right arm down"
+			gosub rarmdown
+		ENDIF
+	ENDIF 
+
+mvarm:
+        gosub movearm
+	goto mainloop
+
+end
+
+'-----------------------------------------------------
+' load webcam (jpg) image
+'-----------------------------------------------------
+' F=0 return when image is static i.e. amount of change lt threshold
+' F=1 return when image differs i.e. gt than threshold
+'-----------------------------------------------------
+
+camgrab:
+   !wait image
+   !image load z
+   LIST A=@!            'initialise prev image
+loop:
+   !wait image
+   !image load z      'load next image
+   LIST B=@! 
+   S=$abs($sum(@B-@A))  'compare with prev & next images
+   print S
+   if ((f=1) and (s>60)) or  ( (f=0) and (s<60)) then done    'if difference > threshold done
+   LIST A=@B            'else prev = next
+   goto loop            'go round again
+done:
+   return
+
+'-----------------------------------------------------
+'arm movements - based on 'dance hands' configuration
+'-----------------------------------------------------
+initarm:
+    LIST v=16,141,86,248,41,103,103,161,0,206,144, 93, 95, 65,155,156,183
+    return
+
+movearm:
+   print @v
+   move @v,10,1000
+   return
+
+larmdown:
+   set @v,11,95   '-1
+   set @v,12,109  '+45
+   return
+
+larmout:
+   set @v,11,142   '+47
+   set @v,12,109   '+45
+   return
+
+larmup:
+   set @v,11,195   '+100
+   set @v,12,93    '+28
+   return
+
+rarmdown:
+   set @v,14,157   '1
+   set @v,15,138   '-45
+   return
+
+rarmout:
+   set @v,14,110   '-47
+   set @v,15,138   '-45
+   return
+
+rarmup:
+   set @v,14,56    '-100
+   set @v,15,155   '-28
+   return
 
