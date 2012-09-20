@@ -207,6 +207,8 @@ Functions an variables can be used in an expression, for example LET A=$X would 
 ||$DSIG(x)||SIGMOID derivative i.e.returns x*(1-x)  ||
 ||$STAND(x)||return an array of positions related to stand  ||
 ||$ZEROS(x)||return an array of zeros  ||
+||$SHUF(x)||create a list of shuffled numbers from 1-X ||
+||$MAP(@x,@y)||Map array X using array Y ||
 
 
 == Built in motions ==
