@@ -24,6 +24,22 @@ Filter n;
 unsigned char BMap[640*480*3]; // max size
 unsigned char * pTest;
 
+void takelock()
+{
+	while (mkdir("/tmp/x.lock")<0)
+	{
+		if (dbg) printf ("wait for Lock \n");
+	}
+}
+
+
+void rellock()
+{
+	if (rmdir("/tmp/x.lock")<0)
+	{
+		printf ("Lock rm failed\n");
+	}
+}
 
 int loadJpg(char* Name)
 {
@@ -38,6 +54,9 @@ int loadJpg(char* Name)
   FILE * infile;        	/* source file */
   JSAMPARRAY pJpegBuffer;       /* Output row buffer */
   int row_stride;       	/* physical row width in output buffer */
+
+  takelock(); //stops file changing while reading
+
   if ((infile = fopen(Name, "rb")) == NULL) 
   {
     fprintf(stderr, "can't open %s\n", Name);
@@ -87,6 +106,8 @@ int loadJpg(char* Name)
   }
 
   fclose(infile);
+
+  rellock();
 
   if (dbg) printf("read close\n");
 
