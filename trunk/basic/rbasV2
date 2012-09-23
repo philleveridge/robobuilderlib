@@ -63,8 +63,8 @@ awk 'BEGIN {ln=10; prog=""; ifc=0; IGNORECASE=1;}
 		gsub(/^[A-Za-z0-9]+:/,"");	
 	}
 
-	gsub(/^ +/,"");
-	gsub(/ +$/,"");
+	gsub(/^[ \t]+/,"");
+	gsub(/[ \t]+$/,"");
 
 
 	gsub(/\<network\>/,"networ");
@@ -102,7 +102,7 @@ awk 'BEGIN {ln=10; prog=""; ifc=0; IGNORECASE=1;}
 
 	if ($0=="") next; #{prog = prog "\n"; next;}
 
-	if (/^[A-Za-z][ ]*=/)
+	if (/^[A-Za-z][ \t]*=/)
 	{
 	 	$0 = "LET " $0;
 	}

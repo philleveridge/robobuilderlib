@@ -3,18 +3,24 @@
 	'-----------------------------------------------------
 
 	'define some matrices
-	!MAT DEF B;32;32   'image being processed
-	!MAT DEF A;32;32   'temp image for load
-	!MAT DEF C;32;32   'background
-	!MAT DEF T;32;32   'temp image for masking
 	z=32
 
+	!MAT DEF B;z;z  'image being processed
+	!MAT DEF A;z;z   'temp image for load
+	!MAT DEF C;z;z   'background
+	!MAT DEF T;z;z  'temp image for masking
+
+
 ' 	test code
-'	!IMAGE LOAD 32;"back.jpg"
-'	LIST C=@!
-'	!IMAGE LOAD 32;"object.jpg"
-'	LIST B=@!
-'	goto processimg
+if t=1 then
+	!IMAGE LOAD z;"back.jpg"
+	LIST C=@!
+	!IMAGE LOAD z;"object.jpg"
+	LIST B=@!
+
+	a=`p
+        goto processimg
+endif
 
 	print "Get static background image"
 	f=0
@@ -24,21 +30,33 @@
 	'print "Background"
 	'!mat print c
 
+	'-----------------------------------------------------
+	' main loop
+	'-----------------------------------------------------
+
 mainloop:
-	'get 
+        print "ready?"
+        a=$kbd
+
 	f=1
 	gosub camgrab
 
-	'print "Image "
-	'!mat print b
-
 processimg:
-	SCALE @c-@b,20,1,0
-	LIST b=@!
-	print @B:32
 
-	!MAT HIST 2;b  'HorixontalIntensity Histo
-	'PRINT @!
+	SCALE @c-@b,15,1,0
+	LIST b=@!
+
+        out @{4,27,`[,`2,`J}  'clear screen
+
+	if a=`p then
+            print @B:z
+        endif
+
+	!MAT HIST 2;b  'Horizontal Intensity Histo
+
+	'-----------------------------------------------------
+	' find torso
+	'-----------------------------------------------------
 
 	L=0
 	M=0
@@ -79,50 +97,23 @@ processimg:
 
 	LIST T=@b
 	!MAT ZERO T;M;0;31;31    'mask off right-hand side
-	'PRINT @T:32
-	!MAT HIST 1;T            'Vertical Intensity Histo
-	'PRINT @!
 
-	M=0
-	S=0
-	P=1 'threshold arm
+	gosub processarm
 
-	FOR I=0 TO 31
-		IF (@![i]>=P) and (M=0) THEN
-		    M=i
-		ENDIF
-		IF (@![i]<P) and (s=0) and (m>0) THEN
-		    S=i
-		ENDIF
-	NEXT I
-
-	P=$MAX(@!)
-
-        if p=0 then
-           print "nothing detected"
-           goto rhs
-        endif
-
-	PRINT "Width=   ";S-M
-	PRINT "Max=     ";
-
-	'straight hand mean width/height > x
-
-	IF (s-m)/p > 1 THEN
+	if k=1 then
 		PRINT "left arm straight"
 		gosub larmout
-	ELSE
-		'diagonal arms 
-		p=$IMAX(@!);l
-		PRINT p
-		IF P<10 THEN
-			PRINT "left arm up"
-			gosub larmup
-		ELSE
-			PRINT "left arm down"
-			gosub larmdown
-		ENDIF
-	ENDIF 
+	endif
+
+	if k=2 then
+		PRINT "left arm up"
+		gosub larmup
+	endif
+
+	if k=3 then
+		PRINT "left arm down"
+		gosub rarmdown
+	endif
 
 	'-----------------------------------------------------
 	' find right arm position
@@ -130,9 +121,38 @@ processimg:
 rhs:
 	LIST T=@B
 	!MAT ZERO T;0;0;N;31   	' mask off left-hand side
+
+	gosub processarm
+
+	if k=1 then
+		PRINT "right arm straight"
+		gosub rarmout
+	endif
+
+	if k=2 then
+		PRINT "right arm up"
+		gosub rarmup
+	endif
+
+	if k=3 then
+		PRINT "right arm down"
+		gosub rarmdown
+	endif
+
+mvarm:
+        gosub movearm
+	if t<>1 then mainloop
+fin:
+	end
+
+'-----------------------------------------------------
+
+processarm:
 	'PRINT @T:32
 	!MAT HIST 1;T  'Vertical Intensity Histo
 	'PRINT @!
+
+	k=0
 
 	M=0
 	S=0
@@ -150,34 +170,27 @@ rhs:
 	P=$MAX(@!)
 
         if p=0 then
-           print "nothing detected"
-           goto mvarm
+           	print "nothing detected"
+		return
         endif
 
 	PRINT "Width=   ";S-M
 	PRINT "Max=     ";
 
 	IF (s-m)/p > 1 THEN
-		PRINT "right arm straight"
-		gosub rarmout
+		k=1
 	ELSE
 		'diagonal arms 
 		p=$IMAX(@!);l
 		PRINT p
 		IF P<10 THEN
-			PRINT "right arm up"
-			gosub rarmup
+			k=2
 		ELSE
-			PRINT "right arm down"
-			gosub rarmdown
+			k=3
 		ENDIF
 	ENDIF 
 
-mvarm:
-        gosub movearm
-	goto mainloop
-
-end
+	return
 
 '-----------------------------------------------------
 ' load webcam (jpg) image
@@ -187,20 +200,20 @@ end
 '-----------------------------------------------------
 
 camgrab:
-   !wait image
-   !image load z
-   LIST A=@!            'initialise prev image
+	!wait image
+	!image load z
+	LIST A=@!            'initialise prev image
 loop:
-   !wait image
-   !image load z      'load next image
-   LIST B=@! 
-   S=$abs($sum(@B-@A))  'compare with prev & next images
-   print S
-   if ((f=1) and (s>60)) or  ( (f=0) and (s<60)) then done    'if difference > threshold done
-   LIST A=@B            'else prev = next
-   goto loop            'go round again
+	!wait image
+	!image load z      'load next image
+	LIST B=@! 
+	S=$abs($sum(@B-@A))  'compare with prev & next images
+	print S
+	if ((f=1) and (s>60)) or  ( (f=0) and (s<60)) then done    'if difference > threshold done
+	LIST A=@B            'else prev = next
+	goto loop            'go round again
 done:
-   return
+	return
 
 '-----------------------------------------------------
 'arm movements - based on 'dance hands' configuration

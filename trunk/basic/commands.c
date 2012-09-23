@@ -1362,11 +1362,9 @@ int cmd_scale(line_t ln)
 			eval_expr(&p, &cf);
 		}
 
-                printf("DBG %d,%d,%d,%d\n", ct,cf,nis,n);
-			
 		for (i=0; i<nis; i++)
 		{
-			if (scene[i]>=n) scene[i]=ct; else scene[i]=cf;
+			if (abs(scene[i])>=n) scene[i]=ct; else scene[i]=cf;
 		}
 		return 0;
 	}
