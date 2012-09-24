@@ -12,8 +12,8 @@ Basic process
   # Subtract background and threshold
   # Use a horizontal historgram to determine arm and torso dimensions
   # Use a vertical histogram of a sub area to determine left arm elevation 
-  # Not shown - repeat for right arm
-  # Not shown - get robot to take up robot arm position - See ArmsMoving - as an example of ho to do this
+  # Repeat for right arm
+  # Get robot to take up robot arm position 
   # Repeat from Step 2
 
 Still work in progress 
