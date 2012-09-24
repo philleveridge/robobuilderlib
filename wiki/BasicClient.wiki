@@ -52,7 +52,7 @@ VT100 window - connected to Robobuilder
 
 http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-15%2022:16:19.png
 
-"image window" after selecting a jpf asnd using "load web" vutton
+"image window" after selecting a jpg asnd using "load web" button
 
 http://robobuilderlib.googlecode.com/svn/trunk/basic/BasicClient/Screenshot%20from%202012-09-07%2020:12:25.png
 
