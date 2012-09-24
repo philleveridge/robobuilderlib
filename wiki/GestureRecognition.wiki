@@ -16,48 +16,35 @@ Basic process
   # Not shown - get robot to take up robot arm position - See ArmsMoving - as an example of ho to do this
   # Repeat from Step 2
 
-Still work in progress
+Still work in progress 
+
+Latest code: http://robobuilderlib.googlecode.com/svn/trunk/basic/examples/guesture.rbas
 
 = Details =
 
+Image Grab code
+
 <code language="vb">
-!MAT DEF B;32;32
-!MAT DEF A;32;32
-!MAT DEF C;32;32
-!MAT DEF T;32;32
+camgrab:
+	!wait image
+	!image load z
+	LIST A=@!            'initialise prev image
+loop:
+	!wait image
+	!image load z      'load next image
+	LIST B=@! 
+	S=$abs($sum(@B-@A))  'compare with prev & next images
+	print S
+	if ((f=1) and (s>60)) or  ( (f=0) and (s<60)) then done    'if difference > threshold done
+	LIST A=@B            'else prev = next
+	GOTO loop            'go round again
+done:
+	RETURN
+</code>
 
-Print "Load Background"
-kloop:
-   if $kir<0 then kloop
-
-!IMAGE LOAD 32 ';"back.jpg"
-LIST B=@!
-!MAT PRINT B
-
-Print "Start"
-kloop2: if $kir<0 then kloop2
-
-mainloop:
-        Print "Load Image"
-        !WAIT IMAGE
-	!IMAGE LOAD 32 ';"object.jpg"
-	LIST A=@!
-	!MAT PRINT A
-	LIST C=@B-@A
-
-	FOR i=0 to 32*32
-	  m=$abs(@c[i])
-	  if m>20 then
-	     set @c,i,1
-	  else
-	     set @c,i,0
-	  endif
-	next i
-
-	!MAT PRINT C
-	!MAT HIST 2;C  'HorixontalIntensity Histo
-	PRINT @!
-
+Locate torso and arms using a horizontal histogram
+<code language="vb">
+	!MAT HIST 2;b  'Horizontal Intensity Histo
 	L=0
 	M=0
 	R=0
@@ -65,77 +52,99 @@ mainloop:
 	P=3  'threshold arm
 	Q=10 'threshol body
 
-	for I=0 to 31
-		if (@![i]>=P) and (L=0) then
+	FOR I=0 TO 31
+		IF (@![i]>=P) and (L=0) THEN
 		    L=i
-		endif
-		if (@![i]>=Q) and (m=0) then
+		ENDIF
+		IF (@![i]>=Q) and (m=0) THEN
 		    m=i
-		endif
-		if (@![i]<Q) and (M>0) and (s=0) then
+		ENDIF
+		IF (@![i]<Q) and (M>0) and (s=0) THEN
 		    S=i
-		endif
-		if (@![i]<P) and (S>0) and (r=0) then
+		ENDIF
+		IF (@![i]<P) and (S>0) and (r=0) THEN
 		    R=i
-		endif
-	next I
-
+		ENDIF
+	NEXT I
 	W=S-M
 	L=M-L
 	R=R-S
 	N=S
+	PRINT "Torso Width=";W
+	PRINT "L hand=     ";L
+	PRINT "R hand=     ";R
+</code>
 
-	print "Torso Width=";W
-	print "L hand=     ";L
-	print "R hand=     ";R
-
-	'mask off right-hand side
-	LIST T=@C
-	!MAT ZERO T;M;0;31;31
-	print @T:32
+Determine an Arms position using vertical histogram masked using info from torso dimensions 
+<code language="vb">
+processarm:
 	!MAT HIST 1;T  'Vertical Intensity Histo
-	PRINT @!
-
+	k=0 ' return arm position
 	M=0
 	S=0
 	P=1 'threshold arm
-
-	for I=0 to 31
-		if (@![i]>=P) and (M=0) then
+	FOR I=0 TO 31
+		IF (@![i]>=P) and (M=0) THEN
 		    M=i
-		endif
-		if (@![i]<P) and (s=0) and (m>0) then
+		ENDIF
+		IF (@![i]<P) and (s=0) and (m>0) THEN
 		    S=i
-		endif
-	next I
-
+		ENDIF
+	NEXT I
 	P=$MAX(@!)
-	print "Width=   ";S-M
-	print "Max=     ";P
+        IF p=0 then
+           	print "nothing detected"
+		return
+        ENDIF
+	PRINT "Width=   ";S-M
+	PRINT "Max=     ";
 
-	'straight hand mean width/height > x
+	IF (s-m)/p > 1 THEN
+		k=1
+	ELSE
+		'diagonal arms 
+		p=$IMAX(@!);l
+		PRINT p
+		IF P<10 THEN
+			k=2
+		ELSE
+			k=3
+		ENDIF
+	ENDIF 
+	RETURN
+</code>
 
-	if (s-m)/p > 1 then
-	   print "left arm straight"
-	else
-	  'diagnols
-	   p=$imax(@!);l
-	   print p
-	   if P<10 then
-	     print "left arm up"
-	   else
-	     print "left arm down"
-	   endif
-	endif 
-
-	'mask off right-hand side
-	LIST T=@C
-	!MAT ZERO T;0;0;N;31
-	print @T:32
-	!MAT HIST 1;T  'Vertical Intensity Histogram
-        'same process as for left hand
-
-        'now move arms
-        'here
-        GOTO mainloop
+Move arm code - this is for the robot in "dance hands" configuration. Alternative look at ArmsMoving wiki.
+<code language="vb">
+initarm:
+    LIST v=16,141,86,248,41,103,103,161,0,206,144, 93, 95, 65,155,156,183
+    return
+movearm:
+   print @v
+   move @v,10,1000
+   return
+larmdown:
+   set @v,11,95   '-1
+   set @v,12,109  '+45
+   return
+larmout:
+   set @v,11,142   '+47
+   set @v,12,109   '+45
+   return
+larmup:
+   set @v,11,195   '+100
+   set @v,12,93    '+28
+   return
+rarmdown:
+   set @v,14,157   '1
+   set @v,15,138   '-45
+   return
+rarmout:
+   set @v,14,110   '-47
+   set @v,15,138   '-45
+   return
+rarmup:
+   set @v,14,56    '-100
+   set @v,15,155   '-28
+   return
 </code>
