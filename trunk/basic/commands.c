@@ -1574,12 +1574,15 @@ int cmd_gen(line_t line)
 	return 0;
 }
 
+
+extern BYTE cpos[];  // for motor-neuron support
+
 int cmd_network(line_t ln)
 {
 	// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
 	// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
 	char *p=ln.text;
-	int  i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t,rinp,comp,cpn;
+	int  i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t,rinp,comp,cpn, moton;
 	long t2;
 
 #ifdef WIN32
@@ -1604,21 +1607,23 @@ int cmd_network(line_t ln)
 		}
 	}
 	// code here
-	noi=param[0];
-	noo=param[1];
-	flg=param[2];
-	sho=0;
-	rinp=0;
-	comp=0;
-	nl1=param[3];
-	nl2=param[4];
-	nl3=param[5];
-	ofset=param[6];
+	noi	=param[0];
+	noo	=param[1];
+	flg	=param[2];
+	sho	=0;
+	rinp	=0;
+	comp	=0;
+	moton	=0;
+	nl1	=param[3];
+	nl2	=param[4];
+	nl3	=param[5];
+	ofset	=param[6];
 
-	comp = (flg&32); // comparator inputs
-	rinp = (flg&16); // randomised inputs
-	sho  = (flg&8);   // show output
-	flg  = flg & 7;   // 0, 1, 2, 3  or 4 (sigmoid mode)
+	moton 	= (flg&64); // motonuron outputs
+	comp 	= (flg&32); // comparator inputs
+	rinp 	= (flg&16); // randomised inputs
+	sho  	= (flg&8);   // show output
+	flg  	= flg & 7;   // 0, 1, 2, 3  or 4 (sigmoid mode)
 
 	if (noi<=0 || noo<=0)
 	{
@@ -1645,7 +1650,6 @@ int cmd_network(line_t ln)
 	}
 
 #ifndef WIN32
-
 	int l1o[nl1];
 	int l2o[nl2];
 	int l3o[nl3];
@@ -1723,7 +1727,8 @@ int cmd_network(line_t ln)
 	for (i=0; i<nl3; i++)
 	{
 		int inp, s=0;
-		if (sho) rprintf("OUTPUT NEURON = %d\n", i+1);
+		if (moton && sho) rprintf("MOTOR NEURON = %d\n", i+1);
+		else if (sho) rprintf("OUTPUT NEURON = %d\n", i+1);
 
 		if (nl2==0)
 		{
@@ -1751,20 +1756,46 @@ int cmd_network(line_t ln)
 		if (sho) rprintf("Th=-(%d)\n",scene[t]);
 
 		s -= scene[t];
+		if (moton)
+		{
+			l3o[i]=s;
+			if (sho) rprintf("SO=%d\n", l3o[i]);
+		}		
+		else
+		{
+			l3o[i]=sigmoid(s,flg);
+			if (sho) rprintf("OO=%d\n", l3o[i]);
+		}
 
-		l3o[i]=sigmoid(s,flg);
-		if (sho) rprintf("OO=%d\n", l3o[i]);
 
 	}
 
 	for (i=0; i<noo; i++)
 	{
-		if (nl3==0)
-			scene[noi+i]=l1o[i]; // if no output layer use layer 1
-		else
-			scene[noi+i]=l3o[i];
+		if (moton)
+		{
+			int sn=scene[noi+i];
+			sn=(sn<0) ?0 :sn;
+			sn=(sn>30)?30:sn;
 
-		if (sho) rprintf("FO%d=%d\n", i+1,scene[noi+i]);
+			if (nl3==0)
+			{
+				if (sho) rprintf("Servo %d=%d %d\n", sn, l1o[i], cpos[sn]);
+			}
+			else
+			{
+				if (sho) rprintf("Servo %d=%d %d\n", sn, l3o[i], cpos[sn]);
+			}
+		}
+		else
+		{
+			if (nl3==0)
+				scene[noi+i]=l1o[i]; // if no output layer use layer 1
+			else
+				scene[noi+i]=l3o[i];
+
+			if (sho) rprintf("FO%d=%d\n", i+1,scene[noi+i]);
+		}
 	}
 	return 0;
 }
