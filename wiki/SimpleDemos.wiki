@@ -3,7 +3,7 @@
 = Introduction =
 
 These are available from examples sub- folder
-http://code.google.com/p/robobuilderlib/source/browse/#svn/trunk/examples
+http://code.google.com/p/robobuilderlib/source/browse/#svn/trunk/basic/examples
 For more examples programs:
 
 For advanced demos see [BasicDemos] 
