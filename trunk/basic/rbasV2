@@ -10,7 +10,7 @@ BASIC="/home/phil/Desktop/R2/svn src/robobuilderlib/basic/Basic"
 fi
 
 
-awk 'BEGIN {ln=10; prog=""; ifc=0;}
+awk 'BEGIN {ln=5; prog=""; ifc=0;}
 {
 	gsub(/\015$/,"");
 	gsub(/['\''].*$/,"");
@@ -53,7 +53,7 @@ END {
 
 cat bas1.txt
 
-awk 'BEGIN {ln=10; prog=""; ifc=0; IGNORECASE=1;}
+awk 'BEGIN {ln=5; prog=""; ifc=0; IGNORECASE=1;}
 {
 	gsub(/['\''].*$/,"");
 
@@ -85,7 +85,7 @@ awk 'BEGIN {ln=10; prog=""; ifc=0; IGNORECASE=1;}
 	if (/^else$/)
 	{
 	   prog = prog ln  " GOTO-00" ifc "\n";
-	   ln += 10;
+	   ln += 3;
 	   gsub("ELSE-00" ifc, "ELSE " ln, prog);
 
 	   next;
@@ -99,7 +99,6 @@ awk 'BEGIN {ln=10; prog=""; ifc=0; IGNORECASE=1;}
 	   next;
 	}
 
-
 	if ($0=="") next; #{prog = prog "\n"; next;}
 
 	if (/^[A-Za-z][ \t]*=/)
@@ -109,11 +108,10 @@ awk 'BEGIN {ln=10; prog=""; ifc=0; IGNORECASE=1;}
 
 	if (/^[^0-9]/) {
 		prog = prog ln  " "  $0 "\n";
-        	ln=ln+10;
+        	ln=ln+3;
 	}
 	else
 	{
-		#print $0;
 		prog =  prog $0 "\n";
 	}
 }
@@ -123,9 +121,7 @@ END {
 	for (i in sym) { 
     	printf "%10s %10s\n", i, sym[i] > "sym.txt"; 
     	gsub("\\<" i "\\>" ,sym[i],prog);
-	}
-
-	
+	}	
 	print prog
 	print "."
 }' <bas1.txt >bas.txt

@@ -501,20 +501,55 @@ int cmd_run(line_t l)
 		return 0;
 }
 
+extern int gkp;
+
 int cmd_wait(line_t l)
 {
-		long n=l.value;
-		char *p=l.text;
-		if (*p!=0 )
+
+	int key;
+	long n=l.value;
+	char *p=l.text;
+	
+	if (*p!=0 )
+	{
+#ifdef IMAGE
+extern int imready, pbrunning;
+
+		if (!strncmp(p,"IMAG",4))
 		{
-			if (eval_expr(&p, &n) != NUMBER)
-			{
-				BasicErr=1;
-				return 0;
-			}
+			while (imready==0 && (key=uartGetByte())<0 ) 
+				; // wait for signal
+			imready=0;
+			if (key>=0) gkp=key;
+			return 0;
 		}
-		delay_ms((int)n);
-		return 0;
+
+		if (!strncmp(p,"PLAY",4))
+		{
+			while (pbrunning==0 && (key=uartGetByte())<0 ) 
+				; // wait for signal
+			pbrunning=0;
+			if (key>=0) gkp=key;
+			return 0;
+		}
+#endif
+
+		if (!strncmp(p,"KEY",3))
+		{
+			while ((key=uartGetByte())<0 ) 
+				; // wait for signal
+			gkp=key;
+			return 0;
+		}
+
+		if (eval_expr(&p, &n) != NUMBER)
+		{
+			BasicErr=1;
+			return 0;
+		}
+	}
+	delay_ms((int)n);
+	return 0;
 }
 
 int cmd_play(line_t l)
@@ -1582,7 +1617,7 @@ int cmd_network(line_t ln)
 	// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
 	// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
 	char *p=ln.text;
-	int  i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t,rinp,comp,cpn, moton;
+	int  i, j, param[7],noi,noo,flg,sho,nl1,nl2,nl3,ofset,t,rinp,comp,cpn, moton,agen;
 	long t2;
 
 #ifdef WIN32
@@ -1614,11 +1649,13 @@ int cmd_network(line_t ln)
 	rinp	=0;
 	comp	=0;
 	moton	=0;
+	agen	=0;
 	nl1	=param[3];
 	nl2	=param[4];
 	nl3	=param[5];
 	ofset	=param[6];
 
+	agen 	= (flg&128); // age neurons
 	moton 	= (flg&64); // motonuron outputs
 	comp 	= (flg&32); // comparator inputs
 	rinp 	= (flg&16); // randomised inputs
@@ -1752,17 +1789,31 @@ int cmd_network(line_t ln)
 				if (sho) rprintf("Input=%d (%d x %d)\n",j,inp,scene[t]);
 			}
 		}
-		t++;
-		if (sho) rprintf("Th=-(%d)\n",scene[t]);
 
-		s -= scene[t];
 		if (moton)
 		{
-			l3o[i]=s;
-			if (sho) rprintf("SO=%d\n", l3o[i]);
+			int v; char sn=scene[noi+i];
+			sn=(sn<0) ?0 :sn;
+			sn=(sn>30)?30:sn;
+
+			v=wckPosRead(sn);
+			if (v>=0)
+				cpos[sn]=(BYTE)v;
+			else
+				rprintf("Servo read fail\n");
+
+			l3o[i]=cpos[sn]+s;
+			l3o[i]=(l3o[i]>254)?254:l3o[i];
+			l3o[i]=(l3o[i]<0)  ?0  :l3o[i];
+
+			if (sho) 
+				rprintf("(%d) Th=%d\nSO=%d\n", sn, cpos[sn], l3o[i]);
 		}		
 		else
 		{
+			t++;
+			if (sho) rprintf("Th=-(%d)\n",scene[t]);
+			s -= scene[t];
 			l3o[i]=sigmoid(s,flg);
 			if (sho) rprintf("OO=%d\n", l3o[i]);
 		}
@@ -1778,13 +1829,14 @@ int cmd_network(line_t ln)
 			sn=(sn<0) ?0 :sn;
 			sn=(sn>30)?30:sn;
 
-			if (nl3==0)
+			if (nl3>0)
 			{
-				if (sho) rprintf("Servo %d=%d %d\n", sn, l1o[i], cpos[sn]);
+				if (sho) rprintf("Servo %d=%d\n", sn,l3o[i]);
+				if (!dbg) wckPosSend(sn,speed,l3o[i]);
 			}
 			else
 			{
-				if (sho) rprintf("Servo %d=%d %d\n", sn, l3o[i], cpos[sn]);
+				rprintf("?No L3 servo specified\n");
 			}
 		}
 		else
@@ -1797,6 +1849,21 @@ int cmd_network(line_t ln)
 			if (sho) rprintf("FO%d=%d\n", i+1,scene[noi+i]);
 		}
 	}
+
+	//firelist
+	if (agen)
+	{
+rprintf("t=%d\n",t);
+		for (i=0; i<nl1; i++)  {t++; scene[t] += l1o[i]; rprintf("%d, ",l1o[i]); }
+rprintf("t=%d\n",t);
+		for (i=0; i<nl2; i++)  {t++; scene[t] += l2o[i]; rprintf("%d, ",l2o[i]); }
+rprintf("t=%d\n",t);
+		for (i=0; i<nl3; i++)  {t++; scene[t] += l3o[i]; rprintf("%d, ",l3o[i]); }
+		rprintf("\n");
+rprintf("t=%d\n",t);
+		if (nis<=t) nis=t+1;
+	}
+	
 	return 0;
 }
 

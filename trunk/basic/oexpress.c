@@ -1145,6 +1145,13 @@ void extend(char *x)
 			pbrunning=0;
 			if (key>=0) gkp=key;
 		}
+
+		if (!strcmp(tokbuff,"KEY"))
+		{
+			while ((key=uartGetByte())<0 ) 
+				; // wait for signal
+			gkp=key;
+		}
 		return;
 	}
 
