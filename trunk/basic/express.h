@@ -9,7 +9,6 @@ enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 #define MAX_DEPTH  25
 #endif
 
-
 extern unsigned char 	eval_expr(char **str, long *res);
 extern int		eval_list(char *p);
 extern long		math(long n1, long n2, char op);
@@ -18,6 +17,16 @@ extern void		setvar(char n, long v);
 extern long		getvar(char n);
 
 #ifdef PARSE
+//
+// The new expression parser
+// work in progress
+//
+typedef struct mat {
+	int h; 
+	int w;
+	char name;
+} Matrix;
+
 
 typedef struct object {
         int   type;
