@@ -17,7 +17,27 @@
 #include "express.h"
 #include "functions.h"
 #include "lists.h"
-//
+
+//matrix.c matrix fuctions 
+extern void matzero	(char ln1, int a, int b, int c, int d) ;
+extern void transpose	(char ln1) ;  				// @A^T"
+extern void multiply	(char ln1, char ln2, char lnx);   	// "@X = @A * @B"//
+extern void convolve	(char ln1, char ln2);   		// "@A (.) @B"
+extern void histogram	(char ln1, int mode);   		// "@A 
+
+//cmap.c functions
+extern void showImage	(int n);
+extern void clear_colors();
+extern int  add_color   (char *s, int r, int g, int b, int min);
+extern void clrmap      ();
+extern void add_thresh  (int n, int minR, int maxR, int minG, int maxG, int minB, int maxB);
+extern int  processFrame(int sz, int *data);
+
+//jpeg.c
+extern int  loadJpg     (char* Name);
+extern void output_frame(int sz);
+
+
 // The new expression parser
 // work in progress
 //
@@ -326,7 +346,6 @@ tOBJ eval_oxpr(char *s)
 	int op=NA;
 	int lf=1;
 	int tk=0;
-	int tmp;
 
 	r.type=EMPTY;
 	strncpy(exprbuff,s,63);
@@ -788,7 +807,6 @@ int pbtime=0;
 void playback(int mode)
 {
 	int i;
-	int t=scene[0];
 	int n=scene[1];
 
 	if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
@@ -877,184 +895,8 @@ void pb2()
 	pbtime=gtick + scene[0];
 }
 
-typedef struct mat {
-	int h; 
-	int w;
-	char name;
-} Matrix;
+extern Matrix mstore[MAXLIST];
 
-Matrix mstore[MAXLIST];
-
-void matzero(char ln1, int a, int b, int c, int d)   // "@A * @B"
-{
-	int *arrayA, szA, i, j;
-
-	int h=mstore[ln1-'A'].h;
-	int w=mstore[ln1-'A'].w;
-
-	arrayA=listarray(ln1);
-	szA   =listsize(ln1);
-
-	if (arrayA==0 || szA==0 || a<0 || b<0 || c>=w || d>=h) 
-	{
-		printf ("Bad parameter zero @%c[%d,%d - %d,%d]\n",ln1,a,b,c,d);
-		return; //bad array size
-	}
-
-	for (i=a; i<=c; i++)
-	{
-		for (j=b; j<=d; j++)
-		{
-			arrayA[j*w+i]=0;
-		}
-	}			
-}
-
-void convolve(char ln1, char ln2)   // "@A * @B"
-{
-	int *arrayA, szA;
-	int *arrayB, szB;
-	int h=mstore[ln1-'A'].h;
-	int w=mstore[ln1-'A'].w;
-	int mx,my;
-
-	arrayA=listarray(ln1);
-	szA   =listsize(ln1);
-	arrayB=listarray(ln2);
-	szB   =listsize(ln2);
-
-	if (arrayA==0 || arrayB==0) 
-		return; //error
-	if (szA<szB|| szA != h*w) 
-		return; //bad array size
-
-	if (szB==9) // 3x3 kernel
-	{
-		for (my=0;my<h; my++)
-		{
-			for (mx=0;mx<w; mx++)
-			{
-				int p=0;
-				if (mx<w-1) 
-					p += arrayA[my*w+mx+1]*arrayB[5];
-				p += arrayA[my*w+mx+0]*arrayB[4];
-				if (mx>0)   
-					p += arrayA[my*w+mx-1]*arrayB[3];
-
-				if (my>0) {
-					if (mx<w-1) 
-						p += arrayA[my*w+mx+1-w]*arrayB[2];
-					p += arrayA[my*w+mx+0-w]*arrayB[1];
-					if (mx>0)   
-						p += arrayA[my*w+mx-1-w]*arrayB[0];
-				}
-
-				if (my<h-1) {
-					if (mx<w-1) 
-						p += arrayA[my*w+mx+1+w]*arrayB[9];
-					p += arrayA[my*w+mx+0+w]*arrayB[8];
-					if (mx>0)   
-						p += arrayA[my*w+mx-1+w]*arrayB[7];
-				}
-
-				if (mx==0 || mx==w-1 || my==0 || my==h-1)
-					scene[my*w+mx]=0;
-				else
-					scene[my*w+mx]=abs(p);
-			}
-		}
-	}
-	
-	if (szB==2 && mstore[ln2-'A'].w==2 ) // 2x1 
-	{
-		for (my=0;my<h; my++)
-		{
-			for (mx=0;mx<w; mx++)
-			{
-				if (mx<w-1) 
-					scene[my*w+mx]= abs(arrayA[my*w+mx]*arrayB[0] + arrayA[my*w+mx+1]*arrayB[1]);
-				else
-					scene[my*w+mx]= 0;
-			}
-		}
-	}
-
-	if (szB==2 && mstore[ln2-'A'].w==1 ) //  1x2 kernel
-	{
-		for (my=0;my<h; my++)
-		{
-			for (mx=0;mx<w; mx++)
-			{
-				if (my<h-1) 
-					scene[my*w+mx]= abs(arrayA[my*w+mx]*arrayB[0] + arrayA[(my+1)*w+mx]*arrayB[1]);
-				else
-					scene[my*w+mx]= 0;
-			}
-		}
-	}
-
-	if (szB==4) // 2x2 kernel
-	{
-		for (my=0;my<h; my++)
-		{
-			for (mx=0;mx<w; mx++)
-			{
-				int p=0;
-				scene[my*w+mx]=abs(p);  // tbd
-			}
-		}
-	}
-	nis=h*w;	
-}
-
-void histogram(char ln1, int mode)   // "@A 
-{
-	int *arrayA, szA;
-
-	int h=mstore[ln1-'A'].h;
-	int w=mstore[ln1-'A'].w;
-	int mx,my;
-
-	arrayA=listarray(ln1);
-	szA   =listsize(ln1);
-
-	if (arrayA==0 || szA<=0 || h*w != szA) 
-	{
-		printf ("error in HIST\n");
-		return; //bad array size
-	}
-
-
-
-//printf ("mode = %d, size=%d, mat=%c\n", mode, szA, ln1);
-
-	if (mode==1)
-	{
-		for (my=0;my<h; my++)
-		{
-			int p=0;
-			for (mx=0;mx<w; mx++)
-			{
-				p += arrayA[my*w+mx];	
-			}				
-			scene[my]=p;
-		}
-		nis=h;
-	}
-	else
-	{
-		for (mx=0;mx<w; mx++)
-		{
-			int p=0;
-			for (my=0;my<h; my++)
-			{
-				p += arrayA[my*w+mx];	
-			}				
-			scene[mx]=p;
-		}
-		nis=w;
-	}
-}
 
 void extend(char *x)
 {
@@ -1281,6 +1123,55 @@ void extend(char *x)
 			printf ("MAT HIST - syntax error @ '%c'\n", *e=='\0'?'?':*e);
 		}
 
+		if (!strcmp(tokbuff,"MULT"))
+		{
+			// !MAT MULT X;A;B		
+			char ma='A'; char mb='B'; char mx='X';
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{
+					mx=tokbuff[0];
+
+					if (*e++ == ';')
+					{
+						if (get_str_token(0))
+						{
+							ma=tokbuff[0];
+
+							if (*e++ == ';')
+							{
+								if (get_str_token(0))
+								{
+									mb=tokbuff[0];
+									multiply(ma,mb,mx);
+									return;
+								}
+							}
+						}
+					}
+				}
+			}
+			printf ("MAT MULT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
+
+		if (!strcmp(tokbuff,"TRAN"))
+		{
+			// !MAT TRAN B  			
+			char ma='A'; 
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{
+					ma=tokbuff[0];
+					transpose(ma);
+					return;
+				}
+			}
+			printf ("MAT TRAN - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
+
+
 		if (!strcmp(tokbuff,"ZERO"))
 		{
 			// !MAT ZERO A;1;1;2;2
@@ -1452,7 +1343,6 @@ void extend(char *x)
 		if (!strcmp(tokbuff,"COLO"))
 		{
 			int args[6];
-			int n;
 			char color[10];
 
 			if (*e++ == '\0')

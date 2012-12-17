@@ -13,6 +13,7 @@
 #define LISTMEM 128
 #endif
 
+
 extern int				scene[];	  // generic array
 extern int				nis;
 
@@ -25,5 +26,6 @@ extern int  list_eval  (char, char *p, int);
 extern int  listsize   (char ln);
 extern void listinit   ();
 extern void listdump   ();
-
+extern int *listarray  (char ln);
+extern int  listcreate (char ln, int size, int type);
 #endif
