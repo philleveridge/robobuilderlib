@@ -1,0 +1,71 @@
+i
+LIST A=6,1,2,3,4,5,6
+!MAT DEF A;3;2
+!MAT DEF B;3;2
+
+!MAT PRINT A
+LIST B=@A
+!MAT TRAN A
+!MAT PRINT A
+!MAT PRINT B
+!MAT DEF X;3;3
+!MAT MULT X;A;B
+!MAT PRINT X
+!MAT DEF X;2;2
+!MAT MULT X;B;A
+!MAT PRINT X
+
+
+> !MAT PRINT A
+matrix 'A' 2x3
+  1   4 
+  2   5 
+  3   6 
+> !MAT PRINT B
+matrix 'B' 3x2
+  1   2   3 
+  4   5   6 
+> !MAT DEF X;3;3
+Create matrix 'X' 3x3
+> !MAT MULT X;A;B
+> !MAT PRINT X
+matrix 'X' 3x3
+ 17  22  27 
+ 22  29  36 
+ 27  36  45 
+> !MAT DEF X;2;2
+Create matrix 'X' 2x2
+> !MAT MULT X;B;A
+> !MAT PRINT X
+matrix 'X' 2x2
+ 14  32 
+ 32  77 
+
+'======================================================================
+
+octave-3.2.4:1> A=[1 2 3;4 5 6]
+A =
+
+   1   2   3
+   4   5   6
+
+octave-3.2.4:2> B=A'
+B =
+
+   1   4
+   2   5
+   3   6
+
+octave-3.2.4:3> A*B
+ans =
+
+   14   32
+   32   77
+
+octave-3.2.4:4> B*A
+ans =
+
+   17   22   27
+   22   29   36
+   27   36   45
+

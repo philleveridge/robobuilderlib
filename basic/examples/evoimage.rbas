@@ -1,0 +1,22 @@
+PRINT "hello world"
+! MAT DEF I;3;3
+LIST N = $zeros(4*9)   'inputs
+'LIST W = $rnd()       'weights
+
+loop:
+   PRINT @N:3
+   List a=$rnd(9,1,9)
+   delete @n,0,8
+   list n=@n.@a
+   gosub checkfit
+   k=$kbd
+   if k=27 then done
+   goto loop
+
+
+checkfit:
+   return
+
+done:
+   print "done"
+   end
