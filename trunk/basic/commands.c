@@ -1104,16 +1104,19 @@ int cmd_ic2i(line_t ln)
 					BasicErr=1;
 					return 0;
 				}
+				listreadc(arrayname);
 			}
 			else
 				nis=0;
 		}	
 		for (i=0; i<nis; i++)
 			ob[i]=scene[i];
+
 		I2C_read (addr, nis, ob, ibc, ib);
 			
 		for (i=0; i<ibc; i++)
-			scene[i]=ib[i];					
+			scene[i]=ib[i];	
+		nis=ibc;				
 	}
 	return 0;
 }
@@ -1371,6 +1374,10 @@ int cmd_on(line_t ln)
 
 int cmd_scale(line_t ln)
 {
+	// scale @X,10     - scales array to max value 10
+	// scale @X,5,1,0  - threshold  @X >=5 set 1 else 0
+	// results in @!
+
 	char *p=ln.text;
 	long n=0,ct=0,cf=0;	
 	int i,s;
@@ -1380,15 +1387,18 @@ int cmd_scale(line_t ln)
 		BasicErr=1;
 		return 0;
 	}
-	n=0;
+
+	listreadc(arrayname);
+
 	if (*p==',')
 	{
 		p++;
 		eval_expr(&p, &n);
 	}
 
-	if (*p==',')  //threshold rather than scale
+	if (*p==',' || *p==':')  //threshold rather than scale
 	{
+		char f=*p;
 		p++;
 		eval_expr(&p, &ct);
 		if (*p==',')
@@ -1399,7 +1409,14 @@ int cmd_scale(line_t ln)
 
 		for (i=0; i<nis; i++)
 		{
-			if (abs(scene[i])>=n) scene[i]=ct; else scene[i]=cf;
+			if (f==',')
+			{
+				if (scene[i]>=n) scene[i]=ct; else scene[i]=cf;
+			}
+			else
+			{
+				if (abs(scene[i])>=n) scene[i]=ct; else scene[i]=cf;
+			}
 		}
 		return 0;
 	}
@@ -1412,7 +1429,11 @@ int cmd_scale(line_t ln)
 		{
 			if (scene[i]>s) s=scene[i];
 		}
+
+		if (s==0) return 0;
+
 		s=n/s;
+
 		for (i=0; i<nis; i++)
 		{
 			scene[i]=scene[i]*s; // scale
@@ -1431,6 +1452,9 @@ int cmd_fft(line_t ln)
 		BasicErr=1;
 		return 0;
 	}
+
+	listreadc(arrayname);
+
 	n=0;
 	if (*p==',')
 	{
