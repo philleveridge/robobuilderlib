@@ -101,14 +101,12 @@ void multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 {
 	int *arrayA = listarray(ln1);
 	int *arrayB = listarray(ln2);
-	int *arrayX = listarray(lnx);
-
+	int *arrayX;
+ 
 	int ha=mstore[ln1-'A'].h;
 	int wa=mstore[ln1-'A'].w;
 	int hb=mstore[ln2-'A'].h;
 	int wb=mstore[ln2-'A'].w;
-	int hx=mstore[lnx-'A'].h;
-	int wx=mstore[lnx-'A'].w;
 
 	// ha,wa * hb,wb
 	// wa == hb
@@ -119,13 +117,19 @@ void multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 		printf ("Bad Matrix definition\n");
 		return; //error
 	}
-	if (hx != ha || wx != wb || wa != hb) 
+	if (wa != hb) 
 	{
-		printf ("Bad Matrix size (%d,%d) * (%d,%d) = (%d,%d)\n",ha,wa,hb,wb,hx,wx);
+		printf ("Bad Matrix size (%d,%d) * (%d,%d) = (%d,%d)\n",wa,ha,wb);
 		return; //bad array size
 	}
 
 	int m,rx,ry;
+
+	listcreate(lnx, wb*ha, 2);
+	mstore[lnx-'A'].w=wb;
+	mstore[lnx-'A'].h=ha;
+	mstore[lnx-'A'].name=lnx;
+	arrayX = listarray(lnx);
 
 	for (ry=0; ry<ha; ry++)
 	{
@@ -134,8 +138,8 @@ void multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 			arrayX[rx+ry*wb] = 0;
 			for (m=0; m<hb; m++)
 			{
-				// R(rx,ry) += A(rx,m) * B(m,ry)
-				arrayX[rx+ry*wb] += (arrayA[rx*wa+m] * arrayB[ry+m*wb]);
+				// R(rx,ry) += A(ry,m) * B(m,rx)
+				arrayX[rx+ry*wb] += (arrayA[ry*wa+m] * arrayB[rx+m*wb]);
 			}
 		}
 	}
