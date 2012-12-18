@@ -1,0 +1,43 @@
+'
+' simple demo of processing input line
+'Protocol
+'#tXXYYY  test output values XX and YYY
+'#sXXYYY  set  servo  XX to postion YYY
+'
+loop:
+   k=$kbd
+   out k
+   if k=`# then
+      a=$kbd
+
+      b=$kbd-48
+      b=b*10
+      b=b+($kbd-48)
+
+      c=$kbd-48
+      c=c*10
+      c=c+($kbd-48)
+      c=c*10
+      c=c+($kbd-48)
+
+      if a=`t then
+         print "Test ";b;",";c
+      endif  
+
+      if a=`s then
+         print "Set servo ";b;"=";c
+         servo b=c
+      endif 
+ 
+   endif
+
+eol:
+   if k=7 then done
+   if k=13 then loop
+   k=$kbd
+   out k
+   goto eol
+
+done:
+   print "Exit"
+   end

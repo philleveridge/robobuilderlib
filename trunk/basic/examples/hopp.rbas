@@ -1,0 +1,56 @@
+'work in progress
+'tests matrix functions to do bidirectional associative memory (hopfield)
+'from: http://en.wikipedia.org/wiki/Bidirectional_associative_memory
+'dec 2012
+
+'declare matrix
+!mat def a;1;6
+!mat def b;4;1
+!mat def t;4;6
+!mat def m;4;6
+
+'learn 1
+print "Learn 1"
+LIST A = 6, 1, 0, 1, 0, 1, 0
+SCALE @A,1,1,-1
+LIST A=@!
+print "inp 1=";@A 'biploar form
+
+LIST B = 4, 1, 1, 0, 0!mat
+SCALE @B,1,1,-1
+LIST B=@!
+print "inp 2=";@B 'biploar form
+
+!mat mult t;a;b
+!mat print t
+list m=@t
+
+'learn 2
+print "Learn 2"
+LIST A = 6, 1, 1, 1, 0, 0, 0
+SCALE @A,1,1,-1
+LIST A=@!
+print @A 'biploar form
+
+LIST B = 4, 1, 0, 1, 0
+SCALE @B,1,1,-1
+LIST B=@!
+print @B 'biploar form
+
+!mat mult t;a;b
+!mat print t
+
+list m=@M+@t
+!mat print m
+
+'recall
+print "Recall"
+!mat def a;6;1
+LIST A = 6, 1, 0, 1, 0, 1, 0
+!mat print A
+list b=$zeros(4)
+!mat mult b;a;m
+!mat print b
+scale @b,1,1,0
+print @!
+
