@@ -1396,7 +1396,7 @@ int cmd_scale(line_t ln)
 		eval_expr(&p, &n);
 	}
 
-	if (*p==',' || *p==':')  //threshold rather than scale
+	if (*p==',' || *p=='#')  //threshold rather than scale
 	{
 		char f=*p;
 		p++;
@@ -1684,6 +1684,166 @@ int cmd_ikin(line_t line)
 	return 0;
 }
 
+
+
+//matrix.c matrix fuctions 
+extern void matzero	(char ln1, int a, int b, int c, int d) ;
+extern void transpose	(char ln1) ;  				// @A^T"
+extern void multiply	(char ln1, char ln2, char lnx);   	// "@X = @A * @B"//
+extern void convolve	(char ln1, char ln2);   		// "@A (.) @B"
+extern void histogram	(char ln1, int mode);   		// "@A 
+extern Matrix mstore[MAXLIST];
+
+int cmd_matrix(line_t ln)
+{
+	char *p=ln.text;
+	int i,j,h,w;
+	char m, ma, mb, mx;
+	long n;
+
+	if (!strncmp(p,"DEF ",4))
+	{
+		// !MAT DEF A;1;2
+		p+=4;
+		if (*p != '\0')
+		{			
+			m=*p++;
+			if (*p++ == ';')
+			{
+				eval_expr(&p, &n);
+				w=n;
+
+				if (*p++ == ';')
+				{
+					eval_expr(&p, &n);
+					h=n;
+					rprintf ("Create matrix '%c' %dx%d\n", m,w,h);
+					listcreate(m, w*h, 2);
+					mstore[m-'A'].w=w;
+					mstore[m-'A'].h=h;
+					mstore[m-'A'].name=m;
+					return 0;
+				}
+			}
+
+		}
+	}
+
+	if (!strncmp(p,"PRINT ",6))
+	{
+		p+=6;		
+		if (*p != '\0')
+		{
+			m=*p++;
+			rprintf ("matrix '%c' %dx%d\n", mstore[m-'A'].name, mstore[m-'A'].w, mstore[m-'A'].h);
+			h=mstore[m-'A'].h;
+			w=mstore[m-'A'].w;
+			for (j=0; j<h;j++)
+			{
+				for (i=0; i<w; i++)
+				{
+					rprintf ("%3d ", listread(m, j*w+i));
+				}
+				rprintfCRLF();
+			}
+			return 0;
+		}
+	}
+
+	if (!strncmp(p,"CONV ",5))
+	{
+		// !MAT CON A;B
+		p+=5;
+		if (*p != '\0')
+		{
+			ma=*p++;
+			if (*p++ == ';')
+			{				
+				mb=*p;
+				convolve(ma, mb) ;
+				return 0;
+			}
+		}
+	}
+
+	if (!strncmp(p,"HIST ",5))
+	{
+		// !MAT HIST 1;A			
+		p+=5;
+		if (*p != '\0')
+		{
+			eval_expr(&p, &n);
+			if (*p++ == ';')
+			{				
+				ma=p[0];
+				histogram(ma, n);
+				return 0;
+			}
+		}
+	}
+
+	if (!strncmp(p,"MULT ",5))
+	{
+		// !MAT MULT X;A;B	
+		p+=5;
+		if (*p != '\0')
+		{
+			mx=*p++;
+
+			if (*p++ == ';')
+			{
+				ma=*p++;
+				if (*p++ == ';')
+				{
+					mb=*p++;
+					multiply(ma,mb,mx);
+					return 0;
+				}
+
+			}
+		}
+	}
+
+	if (!strncmp(p,"TRAN ",5))
+	{
+		// !MAT TRAN B  
+		p+=5;			
+		if (*p != '\0')
+		{
+			ma=*p++;
+			transpose(ma);
+			return 0;
+		}
+	}
+
+	if (!strncmp(p,"ZERO ",5))
+	{
+		// !MAT ZERO A;1;1;2;2
+		
+		int a[4];
+		p+=5;
+
+		if (*p != '\0')
+		{			
+			ma=*p++;
+
+			for (i=0; i<4; i++)
+			{
+				if (i<3 && *p != ';')
+					return;
+				p++;
+				eval_expr(&p, &n);
+				a[i]=n;
+			}
+			matzero(ma,a[0],a[1],a[2],a[3]);
+			return 0;
+		}
+	}
+	BasicErr=1;
+	return 1;
+}
+
+
 int cmd_network(line_t ln);
 
 int (*cmdtab[])(line_t) = {
@@ -1729,7 +1889,8 @@ int (*cmdtab[])(line_t) = {
 	cmd_network,//NETWOR
 	cmd_delsel,//SELECT
 	cmd_extend,//!(EXPAND)
-	cmd_on     //ON
+	cmd_on,    //ON
+	cmd_matrix //!(EXPAND)
 };
 
 unsigned char execute(line_t line, int dbf)

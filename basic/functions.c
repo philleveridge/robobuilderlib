@@ -502,6 +502,57 @@ long fn_stand(long v)
 	return 0;
 }
 
+long fn_scale(long v)
+{
+	long n=0,a=0,ct=0,cf=0;	
+	int i,s;
+
+	if (v==2)
+	{
+		// $scale (@X,10 )    - scales array to max value 10
+		n=epop();
+		a=epop();
+
+		listreadc((char)a);
+
+		s=scene[0];
+		for (i=0; i<nis; i++)
+		{
+			if (scene[i]>s) s=scene[i];
+		}
+
+		if (s==0) return 0;
+
+		s=n/s;
+
+		for (i=0; i<nis; i++)
+		{
+			scene[i]=scene[i]*s; // scale
+		}
+	}
+
+	if (v==4)
+	{
+		// $scale (@X,5,1,0)  - threshold  @X >=5 set 1 else 
+		cf=epop();
+		ct=epop();
+		n=epop();
+		a=epop();
+
+		listreadc((char)a);
+
+		for (i=0; i<nis; i++)
+		{
+			if (scene[i]>=n) scene[i]=ct; else scene[i]=cf;
+			//if (abs(scene[i])>=n) scene[i]=ct; else scene[i]=cf;
+		}
+	}
+
+	fn_type=ARRAY;	
+	return 0;
+}
+
+
 long (*fnctab[])(long) = {
 	fn_volt,  //sVOLT 
 	fn_ir,    //sIR 
@@ -542,7 +593,8 @@ long (*fnctab[])(long) = {
 	fn_turtle,//sTURTLE
 	fn_event, //sEVENT
 	fn_map,   //sMAP
-	fn_shuf   //sSHUF
+	fn_shuf,   //sSHUF
+	fn_scale  //sSHUF
 #ifdef IMAGE
 	,fn_imready     //sIMR
 	,fn_plyrunning  //sPLY
