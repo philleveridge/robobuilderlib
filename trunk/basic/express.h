@@ -16,17 +16,19 @@ extern void		showvars();
 extern void		setvar(char n, long v);
 extern long		getvar(char n);
 
+typedef struct mat {
+	char h; 
+	char w;
+	char name;
+} Matrix;
+
+
+
 #ifdef PARSE
 //
 // The new expression parser
 // work in progress
 //
-typedef struct mat {
-	int h; 
-	int w;
-	char name;
-} Matrix;
-
 
 typedef struct object {
         int   type;

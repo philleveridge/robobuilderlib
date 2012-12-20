@@ -4,9 +4,9 @@
 
 #ifdef IMAGE
 //BBigger for image processing support
-#define SCENESZ 4096
-#define MAXLIST 26
-#define LISTMEM 32768
+#define SCENESZ 8192   //8K
+#define MAXLIST 26 
+#define LISTMEM 65536  //64K
 #else
 #define SCENESZ 128
 #define MAXLIST 5

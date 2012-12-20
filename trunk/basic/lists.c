@@ -31,10 +31,10 @@
 
 extern unsigned char	cpos[];
 
-extern int				BasicErr;
-extern BYTE				sData[];
-extern int 				sDcnt;
-extern BYTE				nos;
+extern int		BasicErr;
+extern BYTE		sData[];
+extern int 		sDcnt;
+extern BYTE		nos;
 extern volatile BYTE	MIC_SAMPLING;
 extern volatile WORD	gtick;
 

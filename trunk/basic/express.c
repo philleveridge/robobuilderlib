@@ -40,7 +40,7 @@ extern int dbg;
 const char *o 	= "+-*/><gl=n&%|:?";
 const int mp[]  = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
 
-const  prog_char  specials[40][7] = {
+const  prog_char  specials[43][7] = {
 
 		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
 		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
@@ -49,7 +49,7 @@ const  prog_char  specials[40][7] = {
 		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
 		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS",
 		"MIC",   "X",    "Y",     "Z",    "PSD", 
-		"GREY",  "TURTLE", "EVENT", "MAP","SHUF"
+		"GREY",  "TURTLE", "EVENT", "MAP","SHUF", "SCALE"
 #ifdef IMAGE
 	,"IMR"    //sIMR
 	,"PLY"  //sPLY
@@ -435,6 +435,11 @@ unsigned char eval_expr(char **str, long *res)
 					noargs=2;
 				}
 
+				if (i==sSCALE)
+				{
+					noargs=4;
+				}
+
 				if (noargs>0 && **str=='(') 
 				{
 					n1=noargs;
@@ -442,6 +447,7 @@ unsigned char eval_expr(char **str, long *res)
 					{
 						int ty;
 						tmp=0;
+						if (**str==')') break;
 						(*str)++;
 						ty= eval_expr(str, &tmp);
 						if (ty==NUMBER)
@@ -455,7 +461,7 @@ unsigned char eval_expr(char **str, long *res)
 						}
 						noargs--;
 					}
-					tmp=n1;
+					tmp=n1-noargs;
 					(*str)++;
 					if (tmp==1) tmp=epop();
 				}

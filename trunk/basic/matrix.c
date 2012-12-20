@@ -14,13 +14,15 @@
 #define NULL (void *)0
 #endif
 
+
+
 #include "express.h"
 #include "functions.h"
 #include "lists.h"
 
 extern int  dbg;
 
-Matrix mstore[MAXLIST];
+Matrix mstore[26];
 
 /**********************************************************/
 
@@ -36,7 +38,7 @@ void matzero(char ln1, int a, int b, int c, int d)
 
 	if (arrayA==0 || szA==0 || a<0 || b<0 || c>=w || d>=h) 
 	{
-		printf ("Bad parameter zero @%c[%d,%d - %d,%d]\n",ln1,a,b,c,d);
+		//printf ("Bad parameter zero @%c[%d,%d - %d,%d]\n",ln1,a,b,c,d);
 		return; //bad array size
 	}
 
@@ -119,7 +121,7 @@ void multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 	}
 	if (wa != hb) 
 	{
-		printf ("Bad Matrix size (%d,%d) * (%d,%d) = (%d,%d)\n",wa,ha,wb);
+		printf ("Bad Matrix size (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
 		return; //bad array size
 	}
 
@@ -262,7 +264,7 @@ void histogram(char ln1, int mode)   // "@A
 
 	if (arrayA==0 || szA<=0 || h*w != szA) 
 	{
-		printf ("error in HIST\n");
+		//printf ("error in HIST\n");
 		return; //bad array size
 	}
 

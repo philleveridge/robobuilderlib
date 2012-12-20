@@ -31,23 +31,17 @@ $Revision$
 #include "ir.h"
 #include "accelerometer.h"
 
-
 extern int strlen	(char *);
 extern char *strstr	(char *, char *);
 extern int rand();
 int dbg=0;
 int remote=0;
-
 #endif
 
 #ifdef WIN32
-
 #include <stdio.h>
 #include <string.h>
-
 #include "win.h"
-
-
 #endif
 
 #ifdef LINUX
@@ -107,6 +101,7 @@ const prog_char tokens[NOTOKENS][7] ={
 	"SAMPLE","SCALE",  "DATA",
 	"SET", 	"INSERT", "DELETE",
 	"GEN",  "NETWOR", "SELECT", "!", "ON",
+	"MAT",
 };
 
 extern const prog_char *specials[];
@@ -536,6 +531,7 @@ void basic_load(int tf)
 		case NETWORK:
 		case SELECT:
 		case EXTEND:
+		case MATRIX:
 			newline.text=cp;
 			break;
 		case LIST:
