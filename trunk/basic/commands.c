@@ -1684,14 +1684,13 @@ int cmd_ikin(line_t line)
 	return 0;
 }
 
-
-
 //matrix.c matrix fuctions 
-extern void matzero	(char ln1, int a, int b, int c, int d) ;
-extern void transpose	(char ln1) ;  				// @A^T"
-extern void multiply	(char ln1, char ln2, char lnx);   	// "@X = @A * @B"//
-extern void convolve	(char ln1, char ln2);   		// "@A (.) @B"
-extern void histogram	(char ln1, int mode);   		// "@A 
+extern int matzero	(char ln1, int a, int b, int c, int d) ;
+extern int matzerodiag	(char ln1) ;
+extern int transpose	(char ln1, char ln2) ;  		// @A^T"
+extern int multiply	(char ln1, char ln2, char lnx);   	// "@X = @A * @B"//
+extern int convolve	(char ln1, char ln2);   		// "@A (.) @B"
+extern int histogram	(char ln1, int mode);   		// "@A 
 extern Matrix mstore[MAXLIST];
 
 int cmd_matrix(line_t ln)
@@ -1742,7 +1741,8 @@ int cmd_matrix(line_t ln)
 			{
 				for (i=0; i<w; i++)
 				{
-					rprintf ("%3d ", listread(m, j*w+i));
+					int v=listread(m, j*w+i);
+					rprintf ("%3d ", v );
 				}
 				rprintfCRLF();
 			}
@@ -1806,12 +1806,18 @@ int cmd_matrix(line_t ln)
 
 	if (!strncmp(p,"TRAN ",5))
 	{
-		// !MAT TRAN B  
+		// !MAT TRAN B[;A] 
 		p+=5;			
 		if (*p != '\0')
 		{
 			ma=*p++;
-			transpose(ma);
+			if (*p++ == ';')
+			{
+				mb=*p++;
+			}
+			else
+			 	mb=ma;
+			transpose(ma,mb);
 			return 0;
 		}
 	}
@@ -1826,6 +1832,13 @@ int cmd_matrix(line_t ln)
 		if (*p != '\0')
 		{			
 			ma=*p++;
+
+			if (*p != ';')
+			{
+				//MAT ZERO A -> set diagnalo to zero
+				matzerodiag(ma);
+				return 0;
+			}
 
 			for (i=0; i<4; i++)
 			{

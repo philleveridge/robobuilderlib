@@ -26,7 +26,31 @@ Matrix mstore[26];
 
 /**********************************************************/
 
-void matzero(char ln1, int a, int b, int c, int d)   
+
+int matzerodiag(char ln1)   
+{
+	int *arrayA, szA, i;
+
+	int h=mstore[ln1-'A'].h;
+	int w=mstore[ln1-'A'].w;
+
+	arrayA=listarray(ln1);
+	szA   =listsize(ln1);
+
+	if (arrayA==0 || szA==0 || h != w) 
+	{
+		//printf ("Bad parameter zero @%c[%d,%d - %d,%d]\n",ln1,a,b,c,d);
+		return 1; //bad array size
+	}
+
+	for (i=0; i<=h; i++)
+	{
+		arrayA[i*w+i]=0;
+	}
+	return 0;
+}
+
+int matzero(char ln1, int a, int b, int c, int d)   
 {
 	int *arrayA, szA, i, j;
 
@@ -39,7 +63,7 @@ void matzero(char ln1, int a, int b, int c, int d)
 	if (arrayA==0 || szA==0 || a<0 || b<0 || c>=w || d>=h) 
 	{
 		//printf ("Bad parameter zero @%c[%d,%d - %d,%d]\n",ln1,a,b,c,d);
-		return; //bad array size
+		return 1; //bad array size
 	}
 
 	for (i=a; i<=c; i++)
@@ -49,7 +73,7 @@ void matzero(char ln1, int a, int b, int c, int d)
 			arrayA[j*w+i]=0;
 		}
 	}
-	return;			
+	return 0;			
 }
 
 /******************************
@@ -64,7 +88,7 @@ T(A) = 1 4
 *******************************/
 
 
-void transpose(char ln1)   // @A^T"
+int transpose(char ln1, char lnx)   // @A^T"
 {
 	int *arrayA, szA;
 	int h=mstore[ln1-'A'].h;
@@ -74,7 +98,7 @@ void transpose(char ln1)   // @A^T"
 	szA   =listsize(ln1);
 
 	if (arrayA==0 || szA != h*w) 
-		return; //error
+		return 1; //error
 
 	// Mresult = [w,h]
 	int mx,my;
@@ -89,17 +113,30 @@ void transpose(char ln1)   // @A^T"
 		}
 	}
 
-	for (mx=0; mx<h*w; mx++) arrayA[mx]=tp[mx];
-		
-	mstore[ln1-'A'].h = w;
-	mstore[ln1-'A'].w = h;
-	return;
+	if (lnx==ln1)
+	{
+		mstore[ln1-'A'].h = w;
+		mstore[ln1-'A'].w = h;
+		for (mx=0; mx<h*w; mx++) arrayA[mx]=tp[mx];		
+	}
+	else
+	{
+		//create
+		int *arrayX;
+		listcreate(lnx, h*w, 2);
+		mstore[lnx-'A'].w=h;
+		mstore[lnx-'A'].h=w;
+		mstore[lnx-'A'].name=lnx;
+		arrayX = listarray(lnx);
+		for (mx=0; mx<h*w; mx++) arrayX[mx]=tp[mx];	
+	}
+	return 0;
 }
 
 
 /**********************************************************/
 
-void multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
+int multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 {
 	int *arrayA = listarray(ln1);
 	int *arrayB = listarray(ln2);
@@ -117,12 +154,12 @@ void multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 	if (arrayA==0 || arrayB==0 || arrayX==0) 
 	{
 		printf ("Bad Matrix definition\n");
-		return; //error
+		return 1; //error
 	}
 	if (wa != hb) 
 	{
 		printf ("Bad Matrix size (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
-		return; //bad array size
+		return 2; //bad array size
 	}
 
 	int m,rx,ry;
@@ -145,13 +182,13 @@ void multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 			}
 		}
 	}
-	return;
+	return 0;
 }
 
 
 /**********************************************************/
 
-void convolve(char ln1, char ln2)   // "@A (.) @B"
+int convolve(char ln1, char ln2)   // "@A (.) @B"
 {	
 	int *arrayA, szA;
 	int *arrayB, szB;
@@ -165,9 +202,9 @@ void convolve(char ln1, char ln2)   // "@A (.) @B"
 	szB   =listsize(ln2);
 
 	if (arrayA==0 || arrayB==0) 
-		return; //error
+		return 1 ; //error
 	if (szA<szB|| szA != h*w) 
-		return; //bad array size
+		return 2; //bad array size
 
 	if (szB==9) // 3x3 kernel
 	{
@@ -245,13 +282,14 @@ void convolve(char ln1, char ln2)   // "@A (.) @B"
 			}
 		}
 	}
-	nis=h*w;	
+	nis=h*w;
+	return 0;	
 }
 
 
 /**********************************************************/
 
-void histogram(char ln1, int mode)   // "@A 
+int histogram(char ln1, int mode)   // "@A 
 {
 	int *arrayA, szA;
 
@@ -265,7 +303,7 @@ void histogram(char ln1, int mode)   // "@A
 	if (arrayA==0 || szA<=0 || h*w != szA) 
 	{
 		//printf ("error in HIST\n");
-		return; //bad array size
+		return 1; //bad array size
 	}
 
 //printf ("mode = %d, size=%d, mat=%c\n", mode, szA, ln1);
@@ -296,4 +334,5 @@ void histogram(char ln1, int mode)   // "@A
 		}
 		nis=w;
 	}
+	return 0;
 }

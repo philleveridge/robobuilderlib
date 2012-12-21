@@ -17,8 +17,8 @@ extern void		setvar(char n, long v);
 extern long		getvar(char n);
 
 typedef struct mat {
-	char h; 
-	char w;
+	unsigned char h; 
+	unsigned char w;
 	char name;
 } Matrix;
 
