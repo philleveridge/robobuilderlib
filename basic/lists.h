@@ -4,7 +4,7 @@
 
 #ifdef IMAGE
 //BBigger for image processing support
-#define SCENESZ 8192   //8K
+#define SCENESZ 10000   //8K
 #define MAXLIST 26 
 #define LISTMEM 65536  //64K
 #else
@@ -14,8 +14,8 @@
 #endif
 
 
-extern int				scene[];	  // generic array
-extern int				nis;
+extern int  scene[];	  // generic array
+extern int  nis;
 
 extern char arrayname;
 extern int  listread   (char ln, int n);

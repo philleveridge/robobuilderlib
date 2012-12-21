@@ -17,7 +17,7 @@
 int Sqrt(long x)
 {
    double f=sqrt((double)x);
-   return (int)f;
+   return (int)(f+0.5);
 }
 
 extern int rand();
@@ -137,6 +137,7 @@ long fn_ir2act(long v)
 long fn_norm(long v)
 {
 	int lc;
+	listreadc(v);
 	for (lc=0; lc<nis; lc++)
 	{
 		v += (scene[lc]*scene[lc]);
@@ -147,6 +148,7 @@ long fn_norm(long v)
 long fn_min(long v)
 {
 	int lc;
+	listreadc(v);
 	v=scene[0];
 	for (lc=0; lc<nis; lc++)
 	{
@@ -158,7 +160,8 @@ long fn_min(long v)
 long fn_max(long v)
 {
 	// MAX(@A,[n]) 
-	int m=scene[(int)v];
+	int m=scene[0];
+	listreadc(v);
 	int lc, k;
 	for (lc=0; lc<nis  && lc<SCENESZ; lc++)
 	{
@@ -170,7 +173,9 @@ long fn_max(long v)
 long fn_imax(long v)
 {
 	// IMAX(@A,[n]) 
-	int m=scene[(int)v];
+	//int m=scene[(int)v];
+	int m=scene[0];
+	listreadc(v);
 	int lc, k=0;
 	for (lc=0; lc<nis  && lc<SCENESZ; lc++)
 	{
@@ -182,6 +187,7 @@ long fn_imax(long v)
 long fn_sum(long v)
 {
 	int lc; 
+	listreadc(v);
 	v=0;
 	for (lc=0; lc<nis; lc++)
 	{
@@ -569,7 +575,7 @@ long (*fnctab[])(long) = {
 	fn_find,  //sFIND
 	fn_cb2i,  //sCVB2I
 	fn_ne,    //sNE
-	fn_ns,    //sNS
+	fn_ns,    //sNSIntro To Neural Net With Matlab 6.0
 	fn_max,   //sMAX
 	fn_sum,   //sSUM
 	fn_min,   //sMIN

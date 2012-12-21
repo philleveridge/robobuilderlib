@@ -43,10 +43,10 @@ extern int dbg;
 int scene[SCENESZ];	  	// generic/current (!) array
 int nis=0;        		// number of item isn array
 
-static int  listmem	[LISTMEM];
-static char names	[MAXLIST];
-static int  len	    	[MAXLIST];
-static int  lists	[MAXLIST];
+static 		int  listmem	[LISTMEM];
+static 		char names	[MAXLIST];
+static unsigned int  len	[MAXLIST];
+static unsigned int  lists	[MAXLIST];
 
 static int  nol=0;
 static int  eol=0;
@@ -180,6 +180,8 @@ int listcreate(char ln, int size, int type)
 		len[nol]   = size;
 		lists[nol] = eol; // this need setting to next free location
 		eol += size;
+
+//printf("DBG:: list create %d %d %d\n", nol,eol,size);
 	}
 	nol++;
 	return nol-1;
