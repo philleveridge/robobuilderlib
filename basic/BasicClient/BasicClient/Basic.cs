@@ -55,7 +55,7 @@ namespace RobobuilderLib
 		    "PORT", "ROM", "TYPE","ABS", "KIR",   "FIND",
             "CVB2I","NE",  "NS",  "MAX", "SUM",   "MIN",  
             "NORM", "SQRT","SIN", "COS", "IMAX",  "HAM", 
-		    "RANGE", "EVENT", "ZEROS"
+		    "RANGE", "EVENT", "ZEROS", "SCALE"
         };
         
          public static  string[] tokens = new string[] {
@@ -69,7 +69,7 @@ namespace RobobuilderLib
 	        "MTYPE", "LIGHTS", "SORT",   "FFT", 
             "SAMPLE","SCALE",  "DATA",
             "SET",   "INSERT", "DELETE",
-            "GEN",  "NETWORK", "SELECT", "!", "ON",
+            "GEN",  "NETWORK", "SELECT", "!", "ON", "MAT",
             "ENDIF" // leave at end
         };
         
@@ -84,7 +84,7 @@ namespace RobobuilderLib
             MTYPE, LIGHTS, SORT,   FFT, 
             SAMPLE,SCALE,  DATA,
             SET, INSERT,   DELETE,
-            GEN, NETWORK,  SELECT, EXPAND, ON,
+            GEN, NETWORK,  SELECT, EXPAND, ON, MATRIX,
             ENDIF
 	        };
 							
@@ -140,6 +140,7 @@ namespace RobobuilderLib
             help.Add("GEN",     "GEN n");
             help.Add("NETWORK", "NETWORK a,b,c,d,e,f");
             help.Add("SELECT",  "SELECT n,[m|*]");
+            help.Add("MAT",  "MAT {DEF|MULT|ZERO|PRINT|CONV|TRAN)[;args[;..]]");
             help.Add("ON",      "ON [TIME x|KEY] GOSUB y");
 
             // special regs
@@ -175,7 +176,8 @@ namespace RobobuilderLib
             help.Add("$SIG",    "$SIG(a) - Sigmoid function");
             help.Add("$DSIG",   "$DSIG(a) - Derivative Sigmoid function");
             help.Add("$ZEROS",  "$ZEROS(x) - array of x zeros"); 
-            help.Add("$EVENT",  "$EVENT - see ON");
+            help.Add("$EVENT",  "$EVENT - see manual");
+            help.Add("$SCALE",  "$SCALE(@A,x[,y,z] - see manual");
         }
 
         /*------------------------------------- -------------------------------------*/
@@ -666,6 +668,8 @@ namespace RobobuilderLib
                     case KEY.SELECT:
                     case KEY.EXPAND:
                     case KEY.SCALE:
+                    case KEY.WAIT:
+                    case KEY.MATRIX:
                         ln.text = upperIt(z);
                         break;
                     case KEY.LIST:
@@ -751,7 +755,7 @@ namespace RobobuilderLib
                         if (GetNext(ref z,false) != "=") { errno = 1; }
                         ln.text = upperIt(z);
                         break;
-                    case KEY.WAIT:
+
                     case KEY.GOTO:
                     case KEY.GOSUB:
                     case KEY.PLAY: 

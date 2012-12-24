@@ -160,9 +160,10 @@ long fn_min(long v)
 long fn_max(long v)
 {
 	// MAX(@A,[n]) 
+	int lc, k;
 	int m=scene[0];
 	listreadc(v);
-	int lc, k;
+
 	for (lc=0; lc<nis  && lc<SCENESZ; lc++)
 	{
 		if (scene[lc]>m) { m=scene[lc]; k=lc;}
@@ -174,9 +175,10 @@ long fn_imax(long v)
 {
 	// IMAX(@A,[n]) 
 	//int m=scene[(int)v];
+	int lc, k=0;
 	int m=scene[0];
 	listreadc(v);
-	int lc, k=0;
+
 	for (lc=0; lc<nis  && lc<SCENESZ; lc++)
 	{
 		if (scene[lc]>m) { m=scene[lc]; k=lc;}
