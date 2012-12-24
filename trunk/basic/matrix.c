@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include "win.h"
+int tp[10000]; //windows temp fix
 #endif
 
 #ifdef LINUX
@@ -93,6 +94,11 @@ int transpose(char ln1, char lnx)   // @A^T"
 	int *arrayA, szA;
 	int h=mstore[ln1-'A'].h;
 	int w=mstore[ln1-'A'].w;
+	int mx,my;
+
+#ifndef WIN32
+	int tp[w*h]; //temp
+#endif
 
 	arrayA=listarray(ln1);
 	szA   =listsize(ln1);
@@ -101,8 +107,8 @@ int transpose(char ln1, char lnx)   // @A^T"
 		return 1; //error
 
 	// Mresult = [w,h]
-	int mx,my;
-	int tp[w*h]; //temp
+
+
 	for (my=0; my<h; my++)
 	{
 		for (mx=0; mx<w; mx++)
@@ -138,6 +144,8 @@ int transpose(char ln1, char lnx)   // @A^T"
 
 int multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 {
+
+	int m,rx,ry;
 	int *arrayA = listarray(ln1);
 	int *arrayB = listarray(ln2);
 	int *arrayX;
@@ -162,7 +170,6 @@ int multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 		return 2; //bad array size
 	}
 
-	int m,rx,ry;
 
 	listcreate(lnx, wb*ha, 2);
 	mstore[lnx-'A'].w=wb;

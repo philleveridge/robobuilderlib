@@ -43,8 +43,8 @@ int simple_network(int noi, int noo, int nl1, int nl2, int nl3, int ofset, int f
 	int comp = (flg&32); // comparator inputs
 	int rinp = (flg&16); // randomised inputs
 	int sho  = (flg&8);   // show output
-	
-	flg  = flg & 7;   // 0, 1, 2, 3  or 4 (sigmoid mode)
+	int i=ofset;
+	int t,cpn;
 
 #ifndef WIN32
 	int l1o[nl1];
@@ -52,7 +52,8 @@ int simple_network(int noi, int noo, int nl1, int nl2, int nl3, int ofset, int f
 	int l3o[nl3];
 #endif
 
-	int i=ofset;
+	flg  = flg & 7;   // 0, 1, 2, 3  or 4 (sigmoid mode)
+
 	if (nl2==0)
 		ofset= ofset* (((noi+1)*nl1) + ((nl1+1)*nl3));
 	else
@@ -70,9 +71,9 @@ int simple_network(int noi, int noo, int nl1, int nl2, int nl3, int ofset, int f
 		if (ofset>0) rprintf("Offset = %d (%d)\n\n", i,ofset);
 	}
 
-	int t=noi+noo+ofset-1; // index through weights and threshold
+	t=noi+noo+ofset-1; // index through weights and threshold
 
-	int cpn = (rinp!=0)?(noi/nl1):noi;
+	cpn = (rinp!=0)?(noi/nl1):noi;
 	if (sho) rprintf("Conn Per INPUT NEURON = %d\n", cpn);
 	for (i=0; i<nl1; i++)
 	{
