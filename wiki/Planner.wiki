@@ -2,28 +2,30 @@
 
 = Introduction =
 
+Motion planner.  Uses a MDP algorithm and then gradient follows to find the path.  The target location has the "100" areas to avoid a cost of 0.  Once completed you can start at any location on the grid and follow the arrows to get the to the target.
+
+This sets up a specific scenario - simply change the SETs to add different obstacles and stop or target location.
+
+Each iteration is shown and program waits for a key press before going around the loop.  The loop stops when location 10 (or 1,2 assuming 0,0 is top/left square) is non zero and thus a solution exists to target.
+
+Source : http://code.google.com/p/robobuilderlib/source/browse/trunk/basic/examples/planner.rbas
+
 <code language="vb">
 '
 '
-'
-
+'set up  obstacles
 List !=$ZEROS(64)
-
-'set up  obtacles
-
-set 17,-500
+set 17,-500   'barrier
 set 18,-500
 set 19,-500
 set 26,-500
 set 27,-500
-set 45,100
+set 45,100    'target
 
 loop:
-
-print @!:8
-
-for i=0 to 7
-   for j=0 to 7
+  print @!:8
+  for i=0 to 7
+    for j=0 to 7
       m=@![j+i*8]
       c=m
 
@@ -40,58 +42,45 @@ for i=0 to 7
            m=t
          endif
       endif
-
       if j<7 then
          t= @![(i*8)+j+1]-5
          if m<t then
            m=t
          endif
       endif
-
       if j>0 then
          t= @![(i*8)+j-1]-5
          if m<t then
            m=t
          endif
       endif
-
       if c>=0 then
              insert $NE,m
       else
              insert $NE,c
       endif
-
       if @![10]>0 then dne 
-
    next j
-
-next i
+  next i
 print "?"
 k=$kbd
-
 delete 0,63
 goto loop
 
 dne:
-
-print @!:8
-
-for k=0 to 7
+ print @!:8
+ for k=0 to 7
    for l=0 to 7
      m=@![l+k*8]
-
      if m=100 then
          out `O
          goto nxt
      endif
-
      if m<0 then
          out `#
          goto nxt
      endif
-
      p=`.
-
      if k<7 then
          t=@![(k+1)*8+l]
          if m<t then
@@ -99,7 +88,6 @@ for k=0 to 7
            p=`V
          endif
      endif
-
      if k>0 then
          t=@![(k-1)*8+l]
          if m<t then
@@ -107,7 +95,6 @@ for k=0 to 7
            p=`^
          endif
      endif
-
      if l<7 then
          t= @![l+1+k*8]
          if m<t then
@@ -115,7 +102,6 @@ for k=0 to 7
            p=`>
          endif
      endif
-
      if l>0 then
          t= @![L-1+K*8]
          if m<t then
@@ -126,19 +112,120 @@ for k=0 to 7
      out p
 nxt:
      out 32
-     next l
-     print
-next k
-
-print "done"
-
-end
-
-
-
-
-
+   next l
+   print
+  next k
+  print "done"
+  end
 </code>
 
+= Output =
 
+{{{
+: z
+Clear Program 
+Loaded - bindata.txt
+77 lines loaded
+: r
+Run Program 
+0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0
+0,-500,-500,-500,0,0,0,0
+0,0,-500,-500,0,0,0,0
+0,0,0,0,0,0,0,0
+0,0,0,0,0,100,0,0
+0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0
 
+?
+0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0
+0,-500,-500,-500,0,0,0,0
+0,0,-500,-500,0,0,0,0
+0,0,0,0,0,95,0,0
+0,0,0,0,95,100,95,0
+0,0,0,0,0,95,0,0
+0,0,0,0,0,0,0,0
+
+?
+0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0
+0,-500,-500,-500,0,0,0,0
+0,0,-500,-500,0,90,0,0
+0,0,0,0,90,95,90,0
+0,0,0,90,95,100,95,90
+0,0,0,0,90,95,90,0
+0,0,0,0,0,90,0,0
+
+?
+0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0
+0,-500,-500,-500,0,85,0,0
+0,0,-500,-500,85,90,85,0
+0,0,0,85,90,95,90,85
+0,0,85,90,95,100,95,90
+0,0,0,85,90,95,90,85
+0,0,0,0,85,90,85,0
+
+?
+0,0,0,0,0,0,0,0
+0,0,0,0,0,80,0,0
+0,-500,-500,-500,80,85,80,0
+0,0,-500,-500,85,90,85,80
+0,0,80,85,90,95,90,85
+0,80,85,90,95,100,95,90
+0,0,80,85,90,95,90,85
+0,0,0,80,85,90,85,80
+
+?
+0,0,0,0,0,75,0,0
+0,0,0,0,75,80,75,0
+0,-500,-500,-500,80,85,80,75
+0,0,-500,-500,85,90,85,80
+0,75,80,85,90,95,90,85
+75,80,85,90,95,100,95,90
+0,75,80,85,90,95,90,85
+0,0,75,80,85,90,85,80
+
+?
+0,0,0,0,70,75,70,0
+0,0,0,70,75,80,75,70
+0,-500,-500,-500,80,85,80,75
+0,70,-500,-500,85,90,85,80
+70,75,80,85,90,95,90,85
+75,80,85,90,95,100,95,90
+70,75,80,85,90,95,90,85
+0,70,75,80,85,90,85,80
+
+?
+0,0,0,65,70,75,70,65
+0,0,65,70,75,80,75,70
+0,-500,-500,-500,80,85,80,75
+65,70,-500,-500,85,90,85,80
+70,75,80,85,90,95,90,85
+75,80,85,90,95,100,95,90
+70,75,80,85,90,95,90,85
+65,70,75,80,85,90,85,80
+
+0,0,0,65,70,75,70,65
+0,0,65,70,75,80,75,70
+0,-500,-500,-500,80,85,80,75
+65,70,-500,-500,85,90,85,80
+70,75,80,85,90,95,90,85
+75,80,85,90,95,100,95,90
+70,75,80,85,90,95,90,85
+65,70,75,80,85,90,85,80
+0
+
+. . V V V V V V 
+. > > > V V V V 
+V # # # V V V V 
+V V # # V V V V 
+V V V V V V V V 
+> > > > > O < < 
+^ ^ ^ ^ ^ ^ ^ ^ 
+^ ^ ^ ^ ^ ^ ^ ^ 
+done
+End of program
+Elapsed Time 00:07-841
+}}}
