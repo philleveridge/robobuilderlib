@@ -1,9 +1,9 @@
-#summary One-sentence summary of this page.
+#summary Autonomously navigate around remembering the space
 
 = Introduction =
 
-Add your content here.
-
+This navigates around a space using the PSD sensor to identify obstacles and remembering where its been in an array which it displays by outputting as it goes
+ Source : http://code.google.com/p/robobuilderlib/source/browse/trunk/basic/examples/maze.rbas
 
 = Details =
 
@@ -140,7 +140,7 @@ forwardz:
 
 show:
   FOR J=0 TO v-1
-    FOR I=0 TOz v-1
+    FOR I=0 TO v-1
       m=@![I*v+J]
       OUT @A[m]
     NEXT I
@@ -156,3 +156,19 @@ matrix:
     RETURN
 
 </code>
+
+= Output =
+
+{{{
+........
+........
+........
+........
+....^...
+........
+........
+........
+
+PSD= 0
+
+}}}
