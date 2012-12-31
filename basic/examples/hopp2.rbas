@@ -1,0 +1,46 @@
+'''''''''''''''''''''''''''''''''''''''''
+'train a hopfield - 4 input
+'''''''''''''''''''''''''''''''''''''''''
+MAT DEF A;4;1
+LIST A=$SCALE(@{4,1,0,1,0},1,1,-1)
+MAT TRAN A;B
+MAT PRINT A
+MAT PRINT B
+MAT MULT X;B;A
+MAT ZERO X
+MAT PRINT X
+
+'recover learned item
+list y=4,0,0,1,0 ' lets see if we 
+
+print "check for : ";@y
+
+Loop:
+list t=@y
+
+'update unit k (0-3)
+for k=0 to 3
+   print "unit ";k; " : ";   
+   s=@y[k]
+   print s;" + ";
+   for j=0 to 3
+      s=s + (@y[j]*@x[k*4+j])
+   next j
+   print s
+   if s>0 then
+      set @y,k,1
+   else
+      set @y,k,0
+   endif
+next k
+
+print "Converge ?"
+'does  @t=@y ?
+if $HAM(@T,@Y)<>0 then Loop
+print "Yes - Returned: ";@y
+
+END
+
+
+
+

@@ -131,7 +131,7 @@ forwardz:
 
 show:
   FOR J=0 TO v-1
-    FOR I=0 TOz v-1
+    FOR I=0 TO v-1
       m=@![I*v+J]
       OUT @A[m]
     NEXT I
@@ -144,4 +144,5 @@ matrix:
     'create an empty matrix
     DELETE *
     LIST !=$zeros(v*v)
-	RETURN
+
+    RETURN

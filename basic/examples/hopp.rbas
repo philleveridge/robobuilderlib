@@ -48,9 +48,85 @@ print "Recall"
 !mat def a;6;1
 LIST A = 6, 1, 0, 1, 0, 1, 0
 !mat print A
-list b=$zeros(4)
-!mat mult b;a;m
-!mat print b
-scale @b,1,1,0
-print @!
+
+
+'''''''''''''''''''''''''''''''''''''''''
+'train a hopfield - 4 input
+'''''''''''''''''''''''''''''''''''''''''
+LIST A=$SCALE(@{4,1,0,1,0},1,1,-1)
+LIST B=@A
+MAT TRAN B
+MAT PRINT A
+MAT PRINT B
+MAT MULT X;B;A
+MAT PRINT X
+
+
+'''''''''''''''''''''''''''''''''''''''''
+'train a hopfield - 64 input - simple image
+'''''''''''''''''''''''''''''''''''''''''
+'simulated input pattern
+mat def j;64;1
+mat def k;64;1
+
+LIST I=$zeros(64)
+set @i,28,1
+set @i,35,1
+set @i,36,1
+print @i:8
+
+LIST J=$SCALE(@I,1,1,-1)
+PRINT @J
+LIST K=@J
+
+mat tran k
+mat mult m;k;j
+mat print k
+mat print j
+print @m:64
+
+'''''''''''''''''''''''''''''''''''''''''
+'learning machine
+'''''''''''''''''''''''''''''''''''''''''
+mat def x;4;2
+mat def y;4;2
+mat def t;4;2
+LIST X=8,1,1,0,1,1,0,0,1
+list Y=8,0,1,1,1,1,0,1,0
+list t=@x
+mat tran t
+mat mult w;t;y
+mat print w 
+
+mat def r;4;1
+list r=4,1,1,1,1
+mat mult z;r;w
+mat print z
+
+'> MAT PRINT Z
+'matrix 'Z' 4x1
+'  2   3   5   3 
+
+'''''''''''''''''''''''''''''''''''''''''
+'energy functions 
+''''''''''''''''''''''''''''''''''''''''''
+store 1 0 1 1
+
+list i=$scale(@{4,1,0,1,1},1,1,-1)
+mat def i;4;1
+mat tran i;j
+mat mult w;j;i
+mat print w
+
+
+mat def i;4;3
+list i=12,1,1,-1,-1,-1,1,-1,1,-1,-1,-1,1
+mat tran i;j
+
+mat print i
+mat print j
+mat mult w;j;i
+mat print w
+mat zero w
+mat print w
 
