@@ -2,7 +2,37 @@
 
 = Introduction =
 
-3 neuron network
+3 neuron network demo solving XOR problem using genetic algorithm
+
+Latest source code : http://code.google.com/p/robobuilderlib/source/browse/trunk/basic/examples/newnn.rbas
+
+neuron network - to solve XOR problem
+{{{
+  I1 --  N1
+      X     > N3 - O1
+  I2 --  N2
+}}}
+Is stored as a 9 element matrix:  
+{{{
+W11,W12,T1
+W21,W22,T2
+W31,W32,T3
+}}}
+
+Each possible Input has an expected out calculated by O1(expected) = I1 XOR I2.  So
+
+{{{
+I1  I2  01
+----------
+0   0   0
+1   0   1
+0   1   1
+1   1   0
+}}}
+
+This program runs until a perfect score of 4 is reached, this can be quick or take a long time if random start condition is unlucky.  
+
+When a successful matrix is found the program re-runs the final test using "verbose node" on NETWORK command to show how it was calculated and then prints out the 3x3 matrix that was found:
 
 = Details =
 
@@ -37,13 +67,16 @@ loop:
   LET g=g+1           'increment generation counter
   if $kir<0 then loop 'loop if no key or IR pressed
 
+  print "key pressed"
+  end
+
 done:
    print "Found Network=";k
    f=1                        'flag output
    t=11                       'verbose mode 3
    gosub testfit              're-run test
-   select 3+(9*k),(9*k+1)+2   'select winning network
-   print @!:9                 'and display
+   select 3+(9*k),9*(k+1)+2   'select winning network
+   print @!:3                 'and display
    end
 
 testfit:
@@ -65,3 +98,139 @@ testfit:
   print "Network ";k;" Score=";s
   return
 </code>
+
+
+= output =
+{{{
+
+Generation 145998
+Network 0 Score=3
+Network 1 Score=3
+Network 2 Score=3
+Network 3 Score=3
+Generation 145999
+Network 0 Score=3
+Network 1 Score=3
+Network 2 Score=3
+Network 3 Score=3
+Generation 146000  <--- yes that took quite a while to run !!
+Network 0 Score=3
+Network 1 Score=3
+Network 2 Score=4  <--- Program stops as soon as one solution score 4
+Found Network=2
+NOI   = 2          
+NOO   = 1
+Flags = 3
+NO L1 = 2
+NO L2 = 0
+NO L3 = 1
+
+Offset = 2 (18)
+
+Conn Per INPUT NEURON = 2
+INPUT NEURON = 1
+Input=0 (0 x -26)
+Input=1 (0 x -13)
+0-(-28)
+O1=1
+INPUT NEURON = 2
+Input=0 (0 x -28)
+Input=1 (0 x -25)
+0-(-20)
+O2=1
+OUTPUT NEURON = 1
+Input=0 (1 x 1)
+Input=1 (1 x -24)
+Th=-(0)
+OO=0
+FO1=0
+I1=0 I2=0 E=0 O=0
+NOI   = 2
+NOO   = 1
+Flags = 3
+NO L1 = 2
+NO L2 = 0
+NO L3 = 1
+
+Offset = 2 (18)
+
+Conn Per INPUT NEURON = 2
+INPUT NEURON = 1
+Input=0 (1 x -26)
+Input=1 (0 x -13)
+-26-(-28)
+O1=1
+INPUT NEURON = 2
+Input=0 (1 x -28)
+Input=1 (0 x -25)
+-28-(-20)
+O2=0
+OUTPUT NEURON = 1
+Input=0 (1 x 1)
+Input=1 (0 x -24)
+Th=-(0)
+OO=1
+FO1=1
+I1=1 I2=0 E=1 O=1
+NOI   = 2
+NOO   = 1
+Flags = 3
+NO L1 = 2
+NO L2 = 0
+NO L3 = 1
+
+Offset = 2 (18)
+
+Conn Per INPUT NEURON = 2
+INPUT NEURON = 1
+Input=0 (0 x -26)
+Input=1 (1 x -13)
+-13-(-28)
+O1=1
+INPUT NEURON = 2
+Input=0 (0 x -28)
+Input=1 (1 x -25)
+-25-(-20)
+O2=0
+OUTPUT NEURON = 1
+Input=0 (1 x 1)
+Input=1 (0 x -24)
+Th=-(0)
+OO=1
+FO1=1
+I1=0 I2=1 E=1 O=1
+NOI   = 2
+NOO   = 1
+Flags = 3
+NO L1 = 2
+NO L2 = 0
+NO L3 = 1
+
+Offset = 2 (18)
+
+Conn Per INPUT NEURON = 2
+INPUT NEURON = 1
+Input=0 (1 x -26)
+Input=1 (1 x -13)
+-39-(-28)
+O1=0
+INPUT NEURON = 2
+Input=0 (1 x -28)
+Input=1 (1 x -25)
+-53-(-20)
+O2=0
+OUTPUT NEURON = 1
+Input=0 (0 x 1)
+Input=1 (0 x -24)
+Th=-(0)
+OO=0
+FO1=0
+I1=1 I2=1 E=0 O=0
+Network 2 Score=4
+-26,-13,-28
+-28,-25,-20
+1,-24,0
+
+End of program
+Elapsed Time 02:39-531
+}}}
