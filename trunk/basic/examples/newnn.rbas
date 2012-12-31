@@ -30,14 +30,16 @@ loop:
   g=g+1
 
   if $kir<0 then loop
+  print "Key pressed"
+  end
 
 done:
    print "Found Network=";k
    f=1                        'flag output
    t=11                       'verbose mode 3
    gosub testfit              're-run test
-   select 3+(9*k),(9*k+1)+2   'select winning network
-   print @!:9                 'and display
+   select 3+(9*k),9*(k+1)+2   'select winning network
+   print @!:3                 'and display
    end
 
 testfit:
