@@ -3,14 +3,38 @@
 = Introduction =
 
 This custom firmware for Robobuilder gives it the ability to create and store simple programs in an elementary BASIC language. The software is stable beta release. *_Always download latest version firmware _*
-  # For example programs see [SimpleDemos]and [BasicDemos]
-  # Features - improved stability and expression handling. 
+
+This BASIC is a simple integer version based on Dartmouth Basic (see wiki http://en.wikipedia.org/wiki/BASIC). But with some additional features to support robotics on the Robobuilder RBC robots.
+
+== Feature Summary == 
+  # A-Z 32 bit signed integer variables
+  # IF THEN ELSE
+  # GOTO & GOSUB/RETURN
+  # FOR NEXT Loops
+  # PRINT
+  # END
+  # Immediate mode so commands can be run direct from command line
+  # Debug mode to allow trace of programs
+  # Full maths expression including AND OR
+  # Maths functions suc as SIN and COS
+  # Special features including access to Servo (Read/ Write), sensors PSD and Accelerometer
+  # Lists (A-Z) (and soon MATrix commands)
+  # Built in motions (19 including football kick)
+  # Built in FFT - can access sound samples and process in realtime
+  # Built in Neural network calculation
+  # Event handling
+  # I2C communication
+  # Offset feature supports different robot configs  
+  # Hardware access to LED and Buttons
+  # Cross platform support for Linux, Windows and Omnima (openwrt)
+  # See manual for fuller explanation : http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.2.2.pdf
+  # For example programs see [SimpleDemos] and [BasicDemos]
+
+== Recent updates ==
+  # improved stability and expression handling. 
   # Event handling with ON TIME x GOSUB y and ON KEY GOSUB y (see example 22 - [SimpleDemos#22])
-  # Operator precedence. i.e PRINT 3*5+4*6 now prints 39 (not 87!) 
   # AND, OR and MOD are supported i.e. PRINT (1=1) AND (2=2) prints 1 (true). The old | % & still work as well 
-  # Complex expressions now work such as (from dynamic gate demo) 
-    {{{ LET P=@B[Y]+@A[Y]*$SIN((X+@C[y])*16)/32768 }}}
-  # Expression use 32 bit integer arithmetic - previously it was 16 bit, this make the range much better for complex expression - like above
+   # Expression use 32 bit integer arithmetic - previously it was 16 bit, this make the range much better for complex expression - like above
   # There's a new variant of MOVE command MOVE A,B,C,D - see below
   # Command mode extensions
     # p option - set all servos passive 
@@ -20,10 +44,11 @@ This custom firmware for Robobuilder gives it the ability to create and store si
      # New List functions $SHUF and $MAP 
      # New List operators '+' '-' and '.' 
      # New options on LIST to support stacks and hence Procedure and Functions
-  # Reduce memory footprint - better stability
+     # New SCALE function
   # Versions for Linux and Windows now has floating point. 
   # New extended commands: covering image processing ExtendedCommands 
-  # Bug fixes
+ 
+== Latest Bug fixes ==
      #  fix to expression handler and Cos function
      #  fix to edit lines 
 
@@ -48,7 +73,7 @@ At the prompt type one of the following
   * i - input a new program [. at start of line will exit input mode]
   * r - run current program [or press Red button on IR remote]
   * R - run in TRACE mode
-  * l - list current program
+  * l - list current program (or L to also list variable values)
   * c - clear memory
   * z - download (requires client - see below)
   * p - sets passive (input mode) on the servos
@@ -151,6 +176,7 @@ SYNTAX:
 [Line No] SELECT index,index
 [Line No] GEN No_Gn,length,Mute rate%,Mute rnge,Val[min,max],type
 [Line No] NETWORK No input,No outputs,flag,no lay 1,no lay 2, no lay3
+[Line No] MAT [DEF|TRAN|MULT|ZERO|CONV] [args;args;...]
 }}}
 
 == Example syntax ==
@@ -175,6 +201,8 @@ SYNTAX:
 ||SORT #a,b,c||specialised sort for use with GEN- tbc||
 ||GEN 8,6,0,0,0,5,2||GENerate array,||
 ||NETWORK  2,1,4,2,0,1||creates a 3 neuron network (2 input 1 output) ||
+||SCALE || Scale command will scale a list or threshold a list ||
+||MAT || Matrix commands options DEF, MULT, TRAN, ZERO, CONV, PRINT||
 
 == Functions and Special variables ==
 Functions an variables can be used in an expression, for example LET A=$X would set A to the current value of X accelerometer. The value of $X changes in real time.
@@ -209,6 +237,8 @@ Functions an variables can be used in an expression, for example LET A=$X would 
 ||$ZEROS(x)||return an array of zeros  ||
 ||$SHUF(x)||create a list of shuffled numbers from 1-X ||
 ||$MAP(@x,@y)||Map array X using array Y ||
+||$SCALE(@A,x[,y,z]||Scale array A by X or Threshold A where A(i)>=x y else z||
+
 
 
 == Built in motions ==
