@@ -453,11 +453,11 @@ if (dbg) {rprintf("Eval Array %c %d %d %d\n", arrayname,sz, ind, l); }
 	if (ln != '!') 
 	{
 		ind = listcreate(ln,(int)n,1);
-		sz  = len[ind];
 		if (ind<0)
 		{
 			BasicErr=8; return 0;
 		}
+		sz  = len[ind];
 	}
 	else
 	{
@@ -465,9 +465,10 @@ if (dbg) {rprintf("Eval Array %c %d %d %d\n", arrayname,sz, ind, l); }
 		sz=nis=(int)n;
 	}
 	
-	if (*t++ != ',') 
+	if (n>0 && *t++ != ',') 
 	{ 
-		BasicErr=7; return 0; 
+		BasicErr=7; 
+		return 0; 
 	}
 	for (i=0;i<sz;i++)
 	{

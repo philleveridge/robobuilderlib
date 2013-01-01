@@ -9,7 +9,7 @@
 #define LISTMEM 65536  //64K
 #else
 #define SCENESZ 128
-#define MAXLIST 5
+#define MAXLIST 8
 #define LISTMEM 128
 #endif
 

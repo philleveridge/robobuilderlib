@@ -650,8 +650,20 @@ int cmd_out(line_t ln)
 		while (l>0) { rprintfChar(n); l--;}
 		break;
 	case ARRAY:
+		n=0;
+		if (*p==':')
+		{
+			p++;
+			if (eval_expr(&p, &n) != NUMBER)
+			{
+				BasicErr=3; break;
+			}
+		}
 		for (l=0; l<listsize(arrayname); l++)
+		{
+			if (l>0 && n>0 && l%n==0) rprintfCRLF();
 			rprintfChar(listread(arrayname,l));
+		}
 		break;
 	}
 	return 0;
