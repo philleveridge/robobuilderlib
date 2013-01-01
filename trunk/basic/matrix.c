@@ -129,11 +129,19 @@ int transpose(char ln1, char lnx)   // @A^T"
 	{
 		//create
 		int *arrayX;
-		listcreate(lnx, h*w, 2);
+		int r = listcreate(lnx, h*w, 2);
+
+		if (r<0) 
+		{
+			printf ("DBG listcreate failed (%d)\n",r);
+			return 0;
+		}
+
 		mstore[lnx-'A'].w=h;
 		mstore[lnx-'A'].h=w;
 		mstore[lnx-'A'].name=lnx;
 		arrayX = listarray(lnx);
+		if (arrayX==NULL) return 0;
 		for (mx=0; mx<h*w; mx++) arrayX[mx]=tp[mx];	
 	}
 	return 0;
