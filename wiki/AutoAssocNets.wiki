@@ -108,7 +108,9 @@ GOTO loop
 </code>
 
 == Demo 2 ==
-BAM - bidirection associative memory - section 6.5
+BAM - bi-direction associative memory - section 6.5
+
+Note the new OUT @A:n feature to display network 
 
 <code language="vb">
 test3:
