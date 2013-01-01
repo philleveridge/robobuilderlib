@@ -179,7 +179,11 @@ int multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 	}
 
 
-	listcreate(lnx, wb*ha, 2);
+	if (listcreate(lnx, wb*ha, 2)<0)
+	{
+			printf ("Can't create matrix\n");
+			return 1;
+	}
 	mstore[lnx-'A'].w=wb;
 	mstore[lnx-'A'].h=ha;
 	mstore[lnx-'A'].name=lnx;

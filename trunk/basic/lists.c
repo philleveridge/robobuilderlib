@@ -165,12 +165,18 @@ int listcreate(char ln, int size, int type)
 
 
 	if (t>=0 && len[t]==size)
+	{
+		if (dbg) {rprintf("@%c Already exists %d\n", ln, size); }
 		return t;
+	}
 
 	listdestroy(ln); // remove if already exists
 
 	if (nol==(MAXLIST-1))
+	{
+		rprintf("Fail Create -- %d\n", MAXLIST);
 		return -1;
+	}
 
 	if (dbg) {rprintf("Create -- %d %d\n", eol+size, LISTMEM); }
 
