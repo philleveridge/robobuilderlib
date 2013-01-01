@@ -1,0 +1,155 @@
+#summary Auto-associative Memory Demos
+
+= Introduction =
+
+Demos - require new matrix capability - 
+Based on book :
+http://books.google.co.uk/books?id=jJTN8RPgyXgC&pg=PA181&lpg=PA181&dq=hopfield+network+using+matlab&source=bl&ots=h_dBNKPDSJ&sig=dppwzgKyOPMCrp_EvDG9DgvoHFE&hl=en&sa=X&ei=jyXTUPiVJ--20QWBp4DQDA&ved=0CFUQ6AEwBQ#v=onepage&q=hopfield%20network%20using%20matlab&f=false
+
+
+= Details =
+
+Simple menu system to choose demo
+
+<code language="vb">
+loop:
+   PRINT "Test"
+   PRINT "1: Hebbs Rule 1 vector"
+   PRINT "2: Hebbs rule 2 vectors"
+   PRINT "3: BAM - H and E"
+   PRINT "Test [1-3]?";
+   LET k=$KBD
+   IF k=49 THEN test1
+   IF k=50 THEN test2
+   IF k=51 THEN test3
+   IF k=`q THEN done
+   PRINT "? input"
+   GOTO loop
+done:
+   PRINT "done"
+   END
+</code>
+
+== Demo 1 ==
+Hebb rule to store and retrieve a 4 input vector
+Auto associative memory example from book "Intro to neural net with matlab 6.0" From section 6.4 example 6.10
+
+<code language="vb">
+test1:
+MAT def a;4;1
+LIST a=4,1,1,-1,-1
+MAT tran a;b
+MAT PRINT a
+MAT PRINT b
+MAT mult w;b;a
+
+PRINT "test same input"
+LIST a=4,1,1,-1,-1
+MAT mult y;a;w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+PRINT "test one mistake input"
+LIST a=4,-1,1,-1,-1
+MAT mult y;a;w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+PRINT "test one missing input"
+LIST a=4,0,1,-1,-1
+MAT mult y;a;w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+PRINT "test one missing input"
+LIST a=4,1,1,0,-1
+MAT mult y;a;w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+PRINT "test two missing inputs"
+LIST a=4,0,1,0,-1
+MAT mult y;a;w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+GOTO loop
+</code>
+
+== Demo 2 ==
+<code language="vb">
+test2:
+'example 6.13
+LIST a=4,1,-1,1,-1
+MAT tran a;b
+MAT mult w;b;a
+MAT PRINT w
+LIST y=@w
+PRINT @y
+
+LIST a=4,-1,1,1,-1
+MAT tran a;b
+MAT mult w;b;a
+LIST y=@y+@w
+PRINT @y
+
+LIST a=4,1,1,-1,-1
+MAT tran a;b
+MAT mult w;b;a
+LIST w=@y+@w
+MAT zero w
+MAT PRINT w
+
+PRINT "test 1st input"
+LIST a=4,1,-1,1,-1
+MAT mult y;a;w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+PRINT "test 2nd input"
+LIST a=4,-1,1,1,-1
+MAT mult y;a;w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+GOTO loop
+</code>
+
+== Demo 2 ==
+BAM - bidirection associative memory - section 6.5
+
+<code language="vb">
+test3:
+MAT def a;1;15
+MAT def b;2;1
+PRINT "store letter E"
+LIST a=$SCALE(@{15,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1},1,1,-1)
+PRINT @a:3
+LIST b=2,-1,1
+MAT mult w;a;b
+MAT PRINT w
+LIST o=$SCALE(@a,1,`*,` )
+OUT @o:3
+PRINT
+LIST y=@w
+PRINT "store letter H"
+LIST a=$SCALE(@{15,1,0,1,1,0,1,1,1,1,1,0,1,1,0,1},1,1,-1)
+PRINT @a:3
+LIST b=2,1,1
+MAT mult w;a;b
+LIST o=$SCALE(@a,1,`*,` )
+OUT @o:3
+PRINT
+LIST w=@y+@w
+MAT PRINT w
+PRINT "test response E"
+MAT def a;15;1
+LIST a=$SCALE(@{15,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1},1,1,-1)
+MAT mult y;a;w
+PRINT $SCALE(@y,1,1,-1)
+MAT tran w;t
+LIST b=2,-1,1
+MAT mult z;b;t
+PRINT $SCALE(@z,1,1,0):3
+PRINT "test response H"
+LIST a=$SCALE(@{15,1,0,1,1,0,1,1,1,1,1,0,1,1,0,1},1,1,-1)
+MAT mult y;a;w
+PRINT $SCALE(@y,1,1,-1)
+GOTO loop
+</code>
+
+= Output =
+{{{
+}}}
