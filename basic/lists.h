@@ -2,14 +2,14 @@
 #ifndef LISTS_H
 #define LISTS_H
 
-#ifdef IMAGE
+#ifdef WIN32|IMAGE
 //BBigger for image processing support
 #define SCENESZ 10000   //8K
 #define MAXLIST 26 
 #define LISTMEM 65536  //64K
 #else
 #define SCENESZ 128
-#define MAXLIST 8
+#define MAXLIST 5
 #define LISTMEM 128
 #endif
 
