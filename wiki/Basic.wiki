@@ -15,8 +15,8 @@ This BASIC is a simple integer version based on Dartmouth Basic (see wiki http:/
   # END
   # Immediate mode so commands can be run direct from command line
   # Debug mode to allow trace of programs
-  # Full maths expression including AND OR
-  # Maths functions suc as SIN and COS
+  # Full maths expression `+ * - /` and including MOD AND OR
+  # Maths functions such as SIN and COS
   # Special features including access to Servo (Read/ Write), sensors PSD and Accelerometer
   # Lists (A-Z) (and soon MATrix commands)
   # Built in motions (19 including football kick)
@@ -27,6 +27,7 @@ This BASIC is a simple integer version based on Dartmouth Basic (see wiki http:/
   # Offset feature supports different robot configs  
   # Hardware access to LED and Buttons
   # Cross platform support for Linux, Windows and Omnima (openwrt)
+      # Includes extended commands for image processing
   # See manual for fuller explanation : http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.2.2.pdf
   # For example programs see [SimpleDemos] and [BasicDemos]
 
