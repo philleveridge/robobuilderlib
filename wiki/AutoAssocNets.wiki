@@ -4,8 +4,7 @@
 
 Demos - require new matrix capability - 
 Based on book :
-http://books.google.co.uk/books?id=jJTN8RPgyXgC&pg=PA181&lpg=PA181&dq=hopfield+network+using+matlab&source=bl&ots=h_dBNKPDSJ&sig=dppwzgKyOPMCrp_EvDG9DgvoHFE&hl=en&sa=X&ei=jyXTUPiVJ--20QWBp4DQDA&ved=0CFUQ6AEwBQ#v=onepage&q=hopfield%20network%20using%20matlab&f=false
-
+http://books.google.co.uk/books?id=jJTN8RPgyXgC&pg=PA181&lpg=PA181#v=onepage&q&f=false
 
 = Details =
 
@@ -36,39 +35,39 @@ Auto associative memory example from book "Intro to neural net with matlab 6.0" 
 
 <code language="vb">
 test1:
-MAT def a;4;1
-LIST a=4,1,1,-1,-1
-MAT tran a;b
-MAT PRINT a
-MAT PRINT b
-MAT mult w;b;a
+   MAT def a;4;1
+   LIST a=4,1,1,-1,-1
+   MAT tran a;b
+   MAT PRINT a
+   MAT PRINT b
+   MAT mult w;b;a
 
-PRINT "test same input"
-LIST a=4,1,1,-1,-1
-MAT mult y;a;w
-PRINT "Output=";$SCALE(@y,1,1,-1)
+   PRINT "test same input"
+   LIST a=4,1,1,-1,-1
+   MAT mult y;a;w
+   PRINT "Output=";$SCALE(@y,1,1,-1)
 
-PRINT "test one mistake input"
-LIST a=4,-1,1,-1,-1
-MAT mult y;a;w
-PRINT "Output=";$SCALE(@y,1,1,-1)
+   PRINT "test one mistake input"
+   LIST a=4,-1,1,-1,-1
+   MAT mult y;a;w
+   PRINT "Output=";$SCALE(@y,1,1,-1)
 
-PRINT "test one missing input"
-LIST a=4,0,1,-1,-1
-MAT mult y;a;w
-PRINT "Output=";$SCALE(@y,1,1,-1)
+   PRINT "test one missing input"
+   LIST a=4,0,1,-1,-1
+   MAT mult y;a;w
+   PRINT "Output=";$SCALE(@y,1,1,-1)
 
-PRINT "test one missing input"
-LIST a=4,1,1,0,-1
-MAT mult y;a;w
-PRINT "Output=";$SCALE(@y,1,1,-1)
+   PRINT "test one missing input"
+   LIST a=4,1,1,0,-1
+   MAT mult y;a;w
+   PRINT "Output=";$SCALE(@y,1,1,-1)
 
-PRINT "test two missing inputs"
-LIST a=4,0,1,0,-1
-MAT mult y;a;w
-PRINT "Output=";$SCALE(@y,1,1,-1)
+   PRINT "test two missing inputs"
+   LIST a=4,0,1,0,-1
+   MAT mult y;a;w
+   PRINT "Output=";$SCALE(@y,1,1,-1)
 
-GOTO loop
+   GOTO loop
 </code>
 
 == Demo 2 ==
