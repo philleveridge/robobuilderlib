@@ -6,6 +6,8 @@ This custom firmware for Robobuilder gives it the ability to create and store si
 
 This BASIC is a simple integer version based on Dartmouth Basic (see wiki http://en.wikipedia.org/wiki/BASIC). But with some additional features to support robotics on the Robobuilder RBC robots.
 
+For an in depth look at features  see [http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.2.2.pdf Robobuild Basic manual 2.2.2] for more details. And for example programs see [SimpleDemos] and [BasicDemos]
+
 == Feature Summary == 
   # A-Z 32 bit signed integer variables
   # IF THEN ELSE
@@ -31,11 +33,9 @@ This BASIC is a simple integer version based on Dartmouth Basic (see wiki http:/
       # Includes extended commands for image processing see [ImageDemo demo]
       # floating point arithmetic
       # Asynchronous move routing (PLY/REC)
-  # See [http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.2.2.pdf Manual] for more details
-  # For example programs see [SimpleDemos] and [BasicDemos]
 
 == Recent updates ==
-  # improved stability and expression handling. 
+
   # Event handling with ON TIME x GOSUB y and ON KEY GOSUB y : see [SimpleDemos#22)_ON_event_base_routines]
   # AND, OR and MOD are supported i.e. PRINT (1=1) AND (2=2) prints 1 (true). The old | % & still work as well 
    # Expression use 32 bit integer arithmetic - previously it was 16 bit, this make the range much better for complex expression - like above
@@ -48,9 +48,12 @@ This BASIC is a simple integer version based on Dartmouth Basic (see wiki http:/
      # New List functions $SHUF and $MAP 
      # New List operators '+' '-' and '.' 
      # New options on LIST to support stacks and hence Procedure and Functions
-     # New SCALE function
+     # New $SCALE function
   # Versions for Linux and Windows now has floating point. 
   # New extended commands: covering image processing ExtendedCommands 
+  # MATRIX handling now standard
+     # New demos [AutoAssocNets] and [HopfieldNetworks] show features in use
+  # OUT options can now take a width field on its array
  
 == Latest Bug fixes ==
      #  fix to expression handler and Cos function
