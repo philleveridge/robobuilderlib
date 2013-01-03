@@ -52,7 +52,7 @@ For an in depth look at features  see [http://code.google.com/p/robobuilderlib/d
   # Versions for Linux and Windows now has floating point. 
   # New extended commands: covering image processing ExtendedCommands 
   # MATRIX handling now standard
-     # New demos [AutoAssocNets] and [HopfieldNetworks] show features in use
+     # New demos [AutoAssocNets] and [HopfieldNetwork] show features in use
   # OUT options can now take a width field on its array
  
 == Latest Bug fixes ==
