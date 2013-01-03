@@ -2,12 +2,21 @@
 #ifndef LISTS_H
 #define LISTS_H
 
-#ifdef WIN32|IMAGE
-//BBigger for image processing support
+#ifdef WIN32
+//Bigger for MATRIX processing support
 #define SCENESZ 10000   //8K
 #define MAXLIST 26 
 #define LISTMEM 65536  //64K
-#else
+#endif
+
+#ifdef IMAGE
+//Bigger for image processing support
+#define SCENESZ 10000   //8K
+#define MAXLIST 26 
+#define LISTMEM 65536  //64K
+#endif
+
+#ifdef AVR
 #define SCENESZ 128
 #define MAXLIST 5
 #define LISTMEM 128
