@@ -43,7 +43,7 @@ extern int dbg;
 int scene[SCENESZ];	  	// generic/current (!) array
 int nis=0;        		// number of item isn array
 
-static 		int  listmem	[LISTMEM];
+		int  listmem	[LISTMEM];
 static 		char names	[MAXLIST];
 static unsigned int  len	[MAXLIST];
 static unsigned int  lists	[MAXLIST];
@@ -178,16 +178,25 @@ int listcreate(char ln, int size, int type)
 		return -1;
 	}
 
-	if (dbg) {rprintf("Create -- %d %d\n", eol+size, LISTMEM); }
-
 	if (eol + size < LISTMEM)
 	{
+		int i;
+		if (dbg) {rprintf("Create -- %d %d\n", eol+size, LISTMEM); }
+
 		names[nol] = ln;
 		len[nol]   = size;
 		lists[nol] = eol; // this need setting to next free location
+
+		for (i=0;i<size;i++) listmem[eol+i]=0; //initialise list
+
 		eol += size;
 
 //printf("DBG:: list create %d %d %d\n", nol,eol,size);
+	}
+	else
+	{
+		rprintf("Fail Create out of space - %d\n", eol + size);
+		return -1;
 	}
 	nol++;
 	return nol-1;
@@ -439,10 +448,10 @@ int list_eval(char ln, char *p, int ty)
 			nis=sz;
 		}
 		else
+		{
 			ind = listcreate(ln,sz,1);
-
-
-if (dbg) {rprintf("Eval Array %c %d %d %d\n", arrayname,sz, ind, l); }
+			if (arrayname !='!') l = listexist(arrayname);
+		}
 
 		for (i=0;i<sz;i++)
 		{			

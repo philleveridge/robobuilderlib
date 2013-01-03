@@ -15,6 +15,10 @@ int tp[10000]; //windows temp fix
 #define NULL (void *)0
 #endif
 
+#ifdef AVR
+#include "rprintf.h"
+#endif
+
 
 
 #include "express.h"
@@ -106,16 +110,12 @@ int transpose(char ln1, char lnx)   // @A^T"
 	if (arrayA==0 || szA != h*w) 
 		return 1; //error
 
-	// Mresult = [w,h]
-
 
 	for (my=0; my<h; my++)
 	{
 		for (mx=0; mx<w; mx++)
 		{
 			tp[mx*h+my] = arrayA[my*w+mx];	
-
-//printf ("DBG: %d,%d = %d\n", mx,my, tp[mx*h+my]);
 		}
 	}
 
@@ -133,16 +133,18 @@ int transpose(char ln1, char lnx)   // @A^T"
 
 		if (r<0) 
 		{
-			printf ("DBG listcreate failed (%d)\n",r);
-			return 0;
+			rprintfProgStr(PSTR("Err: listcreate failed\n"));
+			return 1;
 		}
 
 		mstore[lnx-'A'].w=h;
 		mstore[lnx-'A'].h=w;
 		mstore[lnx-'A'].name=lnx;
 		arrayX = listarray(lnx);
-		if (arrayX==NULL) return 0;
-		for (mx=0; mx<h*w; mx++) arrayX[mx]=tp[mx];	
+		if (arrayX==(int *)0) 
+			return 0;
+		for (mx=0; mx<h*w; mx++) 
+			arrayX[mx]=tp[mx];	
 	}
 	return 0;
 }
@@ -153,41 +155,46 @@ int transpose(char ln1, char lnx)   // @A^T"
 int multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 {
 
-	int m,rx,ry;
-	int *arrayA = listarray(ln1);
-	int *arrayB = listarray(ln2);
-	int *arrayX;
+	int m,rx,ry, ha,wa,hb,wb;
+	int *arrayA, *arrayB, *arrayX;
  
-	int ha=mstore[ln1-'A'].h;
-	int wa=mstore[ln1-'A'].w;
-	int hb=mstore[ln2-'A'].h;
-	int wb=mstore[ln2-'A'].w;
+	ha=(int)(mstore[ln1-'A'].h);
+	wa=(int)(mstore[ln1-'A'].w);
+	hb=(int)(mstore[ln2-'A'].h);
+	wb=(int)(mstore[ln2-'A'].w);
+
+	if (dbg) rprintf (" Matrix Mult %c(%d,%d) *  %c(%d,%d) \n",ln1,wa,ha,ln2,wb,hb);
 
 	// ha,wa * hb,wb
 	// wa == hb
       	// Mresult =[ha*wb]
 
-	if (arrayA==0 || arrayB==0 || arrayX==0) 
-	{
-		printf ("Bad Matrix definition\n");
-		return 1; //error
-	}
+
 	if (wa != hb) 
 	{
-		printf ("Bad Matrix size (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
+		rprintf ("Bad Matrix size (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
 		return 2; //bad array size
 	}
 
-
 	if (listcreate(lnx, wb*ha, 2)<0)
 	{
-			printf ("Can't create matrix\n");
+			rprintfProgStr(PSTR("Can't create matrix\n"));
 			return 1;
 	}
+
 	mstore[lnx-'A'].w=wb;
 	mstore[lnx-'A'].h=ha;
 	mstore[lnx-'A'].name=lnx;
+
+	arrayA = listarray(ln1);
+	arrayB = listarray(ln2);
 	arrayX = listarray(lnx);
+
+	if (arrayA==(int *)0 || arrayB==(int *)0 || arrayX==(int *)0) 
+	{
+		rprintfProgStr(PSTR("Bad Matrix definition\n"));
+		return 1; //error
+	}
 
 	for (ry=0; ry<ha; ry++)
 	{
