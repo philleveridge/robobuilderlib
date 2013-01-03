@@ -6,7 +6,7 @@
 Loop:
    print "Listen"
 
-   SAMPLE 4,5000,1,64 //min level 4, 5 secs, 1ms, 64 samples
+   SAMPLE 4,5000,1,64 'min level 4, 5 secs, 1ms, 64 samples
    IF $NE=0 THEN Done
    FFT @!,1000
 
