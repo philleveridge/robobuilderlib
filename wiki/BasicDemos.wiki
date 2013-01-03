@@ -13,26 +13,26 @@ If you find bugs - please report them on the Google site.
 = Latest demos =
 See new wiki pages for latest demos (all require BasicIDE/JBasic - [BasicClient] for details on the IDE)
 
-  * ArmsMoving
-  * [Cwalk2]
-  * [sample]
-  * [neuron1]
-  * [MazeNavigation]
-  * [Generate]
-  * [Kinematics]
-  * [Planner]
-  * [evo2]
-  * [AutoAssocNets]
-  * [HopfieldNetwork]
+  * [ArmsMoving Continuous arm movement using a cubic function]
+  * [Cwalk2 Continuous Walking]
+  * [sample FFT Sound Sample]
+  * [neuron1 Neural Network demo (XOR problem)]
+  * [MazeNavigation Maze Navigation]
+  * [Generate On fly generating a gait using sine waves]
+  * [Kinematics Simepl inverse 2D kinematic demo]
+  * [Planner Simple MDP type motion planner]
+  * [evo2 Using Genetic algorithm]
+  * [AutoAssocNets Auto-associative Network (ANN) demo - using matrices]
+  * [HopfieldNetwork Hopfiled Network demo - using matrices]
 
 = Advanced demos =
 
-  * [#Continuous_Walking]
-  * [#Basic_auto-balance]
-  * [#Mirror_moves]
-  * [#Dynamic_distance_sensor]
-  * [#Generating_a_walking_gait]
-  * [#Modify_RBC_Serial_Number]
+  * [#Continuous_Walking Continuous walk using pre-planned moves]
+  * [#Basic_auto-balance Very simple auto balance whilst standing]
+  * [#Mirror_moves One arm mirroring other arm moving]
+  * [#Dynamic_distance_sensor Arm reacting to object proximity]
+  * [#Generating_a_walking_gait Generating a walking gate using sine waves]
+  * [#Modify_RBC_Serial_Number Modify EPROM serial number]
 
 ----
 
