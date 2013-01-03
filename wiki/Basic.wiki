@@ -26,9 +26,11 @@ This BASIC is a simple integer version based on Dartmouth Basic (see wiki http:/
   # I2C communication
   # Offset feature supports different robot configs  
   # Hardware access to LED and Buttons
-  # Cross platform support for Linux, Windows and Omnima (openwrt)
+  # Cross platform support for [LinuxBuild], Windows and [Omnima] (openwrt)
       # Includes extended commands for image processing
-  # See manual for fuller explanation : http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.2.2.pdf
+      # floating point arithmetic
+      # Asynchronous move routing (PLY/REC)
+  # See [http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.2.2.pdf Manual] for more details
   # For example programs see [SimpleDemos] and [BasicDemos]
 
 == Recent updates ==
