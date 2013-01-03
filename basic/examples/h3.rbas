@@ -1,0 +1,21 @@
+mat def s;4;3
+list s=12,1,1,-1,-1,-1,1,-1,1,-1,-1,-1,1
+
+mat print s
+mat tran s;t
+mat mult w;t;s
+mat zero w
+mat print w
+
+list a=4,1,1,-1,-1
+mat def a;4;1
+mat tran a;b
+
+mat print a
+mat print b
+
+
+
+
+
+
