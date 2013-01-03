@@ -2,14 +2,21 @@
 
 = Introduction =
 
-Add your content here.
+Uses a FFT to split sound received.
 
+{{{
+SAMPLE - get the data into a special LIST @!
+FFT    - does the FFT putting result into @!
+}}}
+
+Set variable F before running program to either show frequemcy diagram, or use it to move arms in time with sound.
+
+Program will stop if it "hears" no sound during 5s sample window
 
 = Details =
 
 <code language="vb">
    'demo Sample sound test
-
    STAND $NS  'attention !
    LET F=0    'switch display modes
 
@@ -28,7 +35,7 @@ Loop:
 
    wait 50
 
-   if $kir<0 then Loop   'loop if nothing pressed
+   IF $kir<0 THEN Loop   'loop if nothing pressed
    F=1-F                 'else switch display mode
    GOTO Loop             'and loop
 
@@ -36,9 +43,13 @@ Done:
    print "Finished"
    stand $NS
    END
+</code>
 
+This shows the FFT as a bar chart
+
+<code language="vb">
 Showfft:
-   gosub clscreen
+   GOSUB clscreen
    LET n=$MAX(@![1,31])
 
    FOR e=0 TO 30
@@ -52,16 +63,22 @@ Showfft:
    LET t=1+$IMAX(@!)
    PRINT "Pk=";n;"[";t;"] Hz=";t*16
    RETURN
+</code>
 
+This clears screen for each run.  
+<code language="vb">
 clscreen:
    OUT 27 'esc
    OUT 91 '[
    OUT 50 '2
    OUT 74 'J
    RETURN
+</code>
 
+This moves the servos depending on amplitude of two frequencies
+<code language="vb">
 moveservos:
-   gosub clscreen
+   GOSUB clscreen
    n=$MAX(@!)     'Find the peak value
 
    d = @![16]     'Approx 256 +/- 8Hz
@@ -81,3 +98,15 @@ moveservos:
    SERVO 14=205-q
    RETURN
 </code>
+
+= Output =
+
+{{{
+--------------------------P=26
+------------------------Q=24
+Listen
+User Break on line 14
+Elapsed Time 00:27-668
+: 
+
+}}}
