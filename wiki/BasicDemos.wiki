@@ -17,12 +17,13 @@ See new wiki pages for latest demos (all require BasicIDE/JBasic - [BasicClient]
   * [Cwalk2]
   * [sample]
   * [neuron1]
-  * [matrix]
+  * [MazeNavigation]
   * [Generate]
   * [Kinematics]
   * [Planner]
   * [evo2]
-
+  * [AutoAssocNets]
+  * [HopfieldNetwork]
 
 = Advanced demos =
 
