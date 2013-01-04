@@ -25,7 +25,7 @@ For an in depth look at features  see [http://code.google.com/p/robobuilderlib/d
   # Built in motions (19 including football kick)
   # Built in FFT - [sample FFT demo]  can access sound samples and process in realtime
   # Built in Neural network calculation see [neuron1 demo]
-  # Event handling
+  # Event handling [SimpleDemos#22)_ON_event_base_routines ON GOSUB]
   # I2C communication
   # Offset feature supports different robot configs  
   # Hardware access to LED and Buttons
@@ -36,7 +36,7 @@ For an in depth look at features  see [http://code.google.com/p/robobuilderlib/d
 
 == Recent updates ==
 
-  # Event handling with ON TIME x GOSUB y and ON KEY GOSUB y : see [SimpleDemos#22)_ON_event_base_routines]
+  # Event handling with ON TIME x GOSUB y and ON KEY GOSUB y : see [SimpleDemos#22)_ON_event_base_routines Example 22]
   # AND, OR and MOD are supported i.e. PRINT (1=1) AND (2=2) prints 1 (true). The old | % & still work as well 
    # Expression use 32 bit integer arithmetic - previously it was 16 bit, this make the range much better for complex expression - like above
   # There's a new variant of MOVE command MOVE A,B,C,D - see below
