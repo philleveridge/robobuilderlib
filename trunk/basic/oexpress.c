@@ -897,6 +897,20 @@ void pb2()
 
 extern Matrix mstore[MAXLIST];
 
+// new float matrices
+
+extern int   fmatrixcreate	(char m, int w, int h);
+extern float fget		(char m,int w,int h);
+extern int   fset		(char m,int w,int h, float v);
+extern int   fmatzero		(char ln1, int a, int b, int c, int d);
+extern int   fmatzerodiag	(char ln1) ;
+extern int   fmatprint		(char m);
+extern int   ftranspose		(char ln1, char lnx);
+extern int   fmultiply		(char ln1, char ln2, char lnx);
+extern int   fhistogram		(char ln1, int mode);
+extern int   fconvolve		(char ln1, char ln2);
+extern int   fadd		(char ln1, char ln2, char lnx, char op);
+extern int   fsize		(char m, int p);
 
 void extend(char *x)
 {
@@ -967,37 +981,6 @@ void extend(char *x)
 	}
 
 	e=x;
-	if (get_str_token("WAIT")==1)
-	{
-
-		int key;
-#ifdef IMAGE
-		if (get_str_token("IMAG")==1)
-		{
-			while (imready==0 && (key=uartGetByte())<0 ) 
-				; // wait for signal
-			imready=0;
-			if (key>=0) gkp=key;
-		}
-#endif
-		if (!strcmp(tokbuff,"PLAY"))
-		{
-			while (pbrunning==0 && (key=uartGetByte())<0 ) 
-				; // wait for signal
-			pbrunning=0;
-			if (key>=0) gkp=key;
-		}
-
-		if (!strcmp(tokbuff,"KEY"))
-		{
-			while ((key=uartGetByte())<0 ) 
-				; // wait for signal
-			gkp=key;
-		}
-		return;
-	}
-
-	e=x;
 	if (get_str_token("MAT")==1)
 	{
 		if (get_str_token("LOAD")==1)
@@ -1010,6 +993,7 @@ void extend(char *x)
 			v=get("DFN");
 			matrixload(val, v.string);
 		}
+
 		if (!strcmp(tokbuff,"STOR"))
 		{
 			if (*e != '\0')
@@ -1022,6 +1006,45 @@ void extend(char *x)
 			matrixstore(val, v.string);
 		}
 
+		if (!strcmp(tokbuff,"SET"))
+		{
+			//!MAT SET X=1.3,1.2 .....
+			char m; float f;
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{					
+					m=tokbuff[0];
+					if (*e++ == '=')
+					{
+						int i=0, j=0;
+						int w=fsize(m,0);
+						int h=fsize(m,1);
+						while (*e != 0)
+						{
+							v=eval_oxpr(e);	
+							f=v.floatpoint;
+
+							fset(m,i,j,f);
+							if (++i == w)
+							{
+								i=0; j++;
+							}
+							if (j==h)
+								return;
+
+							if (*e++ != ';')
+							{
+								printf ("Incorrect args (%d,%d) %d ?\n",i,j,h*w);
+								return;
+							}
+						}
+					}
+				}
+			}
+						
+		}
+
 		if (!strcmp(tokbuff,"PRIN"))
 		{
 			char m;
@@ -1031,19 +1054,9 @@ void extend(char *x)
 				{
 					int i,j,h,w;
 					m=tokbuff[0];
-					printf ("matrix '%c' %dx%d\n", mstore[m-'A'].name, mstore[m-'A'].w, mstore[m-'A'].h);
-					h=mstore[m-'A'].h;
-					w=mstore[m-'A'].w;
-					for (j=0; j<h;j++)
-					{
-						for (i=0; i<w; i++)
-						{
-							printf ("%3d ", listread(m, j*w+i));
-						}
-						printf ("\n");
-					}
+					fmatprint(m);
 					return;
-				}
+				}		
 			}
 			printf ("MAT PRINT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
 		}
@@ -1066,10 +1079,7 @@ void extend(char *x)
 							v=eval_oxpr(e);	
 							h=v.number;
 							printf ("Create matrix '%c' %dx%d\n", m,w,h);
-							listcreate(m, w*h, 2);
-							mstore[m-'A'].w=w;
-							mstore[m-'A'].h=h;
-							mstore[m-'A'].name=m;
+							fmatrixcreate(m,w,h);
 							return;
 						}
 					}
@@ -1092,7 +1102,7 @@ void extend(char *x)
 						if (get_str_token(0))
 						{
 							mb=tokbuff[0];
-							convolve(ma, mb) ;
+							fconvolve(ma, mb) ;
 							return;
 						}
 					}
@@ -1115,7 +1125,7 @@ void extend(char *x)
 					if (get_str_token(0))
 					{
 						ma=tokbuff[0];
-						histogram(ma, m);
+						fhistogram(ma, m);
 						return;
 					}
 				}
@@ -1133,18 +1143,18 @@ void extend(char *x)
 				{
 					mx=tokbuff[0];
 
-					if (*e++ == ';')
+					if (*e++ == '=')
 					{
 						if (get_str_token(0))
 						{
 							ma=tokbuff[0];
 
-							if (*e++ == ';')
+							if (*e++ == '*')
 							{
 								if (get_str_token(0))
 								{
 									mb=tokbuff[0];
-									multiply(ma,mb,mx);
+									fmultiply(ma,mb,mx);
 									return;
 								}
 							}
@@ -1155,16 +1165,56 @@ void extend(char *x)
 			printf ("MAT MULT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
 		}
 
+		if (!strcmp(tokbuff,"OP"))
+		{
+			// !MAT ADD X;A;B		
+			char ma='A'; char mb='B'; char mx='X'; char op='+';
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{
+					mx=tokbuff[0];
+
+					if (*e++ == '=')
+					{
+						if (get_str_token(0))
+						{
+							ma=tokbuff[0];
+
+							if (*e == '+' || *e == '-' || *e == '*'|| *e == '/')
+							{
+								op=*e++;
+								if (get_str_token(0))
+								{
+									mb=tokbuff[0];
+									fadd(ma,mb,mx,op);
+									return;
+								}
+							}
+						}
+					}
+				}
+			}
+			printf ("MAT OP - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
+
 		if (!strcmp(tokbuff,"TRAN"))
 		{
 			// !MAT TRAN B  			
 			char ma='A'; 
+			char mb; 
 			if (*e != '\0')
 			{
 				if (get_str_token(0))
 				{
 					ma=tokbuff[0];
-					transpose(ma);
+					if (*e++ == ';')
+					{
+						mb=*e++;
+					}
+					else
+					 	mb=ma;
+					ftranspose(ma,mb);
 					return;
 				}
 			}
@@ -1183,6 +1233,12 @@ void extend(char *x)
 				if (get_str_token(0))
 				{
 					ma=tokbuff[0];
+ 					if (*e != ';')
+				        {
+				                //MAT ZERO A -> set diagnalo to zero
+				                fmatzerodiag(ma);
+				                return;
+				        }
 
 					for (i=0; i<4; i++)
 					{
@@ -1192,7 +1248,7 @@ void extend(char *x)
 						v=eval_oxpr(e);
 						a[i]=v.number;
 					}
-					matzero(ma,a[0],a[1],a[2],a[3]);
+					fmatzero(ma,a[0],a[1],a[2],a[3]);
 					return;
 				}
 	
