@@ -1,0 +1,85 @@
+#summary Integer matrix commands
+
+= Introduction =
+
+Add your content here.
+
+==Simple Matrices==
+Matrix values are stored in LIST of the same name. Its up to the programmer to ensure list size matches the matrix size. So a 3x2 matrix is represented by a list of 6 elements. The matrix command will check and throw an error if size doesn't match.
+
+  * MAT DEF   M;w;h           Define a matrix 'M' size wxh
+  * MAT ZERO  M;x1;y1;x2;y2   Zero matrix elements (or parts there off)
+  * MAT ZERO  M               Zero matrix diagonal
+  * MAT CONV  M1;M2           Convolves a Matrix M1 with Matrix M2
+  * MAT HIST  mode;M          Returns in @! a histogram of matrix M
+  * MAT PRINT M               Simple Print
+  * MAT MULT  M1;M2;M3        Simple Print
+  * MAT TRAN  M1;M2           Transpose M1 result in M2
+
+= Details =
+
+
+= Examples =
+
+Example defining a simple matrix
+
+{{{
+> MAT DEF Z;4;5
+Create matrix 'Z' 4x5
+> LIST Z=20,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0
+> MAT PRINT Z
+matrix 'Z' 4x5
+  1   2   3   4 
+  5   6   7   8 
+  9   0   1   2 
+  3   4   5   6 
+  7   8   9   0 
+> MAT DEF A;3;2
+Create matrix 'A' 3x2
+> LIST A=6,1,2,3,4,5,6
+> MAT PRINT A
+matrix 'A' 3x2
+  1   2   3 
+  4   5   6 
+> MAT ZERO A;1;0;2;1
+> MAT PRINT A
+matrix 'A' 3x2
+  1   0   0 
+  4   0   0 
+}}}
+
+Matrix examples
+{{{
+10 MAT DEF A;4;4
+15 Print "Create Matrix with random elements"
+20 LIST A=$RND(16,0,255)
+30 LIST B=9,1,0,-1,1,0,-1,1,0,-1
+40 MAT PRINT A
+45 Print "Convolve with 3x3 kernel"
+50 MAT CONV A;B
+60 PRINT @!:4
+65 Print "Histogram (Sum row or columns)"
+70 MAT HIST 1;B
+80 PRINT @!
+}}}
+
+Output
+{{{
+: r
+Run Program 
+matrix 'A' 4x4
+202  48  66 143 
+188 159 123 206 
+209 184 177 135 
+236 138 214 187 
+Convolve with 3x3 kernel
+0,0,0,0
+0,902,356,0
+0,1029,723,0
+0,0,0,0
+
+Histogram (Sum row or columns)
+0,0,0,0,0,902,356,0,0,1029,723,0,0,0,0,0
+
+End
+}}}
