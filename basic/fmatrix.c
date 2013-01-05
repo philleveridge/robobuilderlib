@@ -54,9 +54,6 @@ void initmatrix()
 	initflag=0;
 }
 
-
-
-
 int fmatrixcreate(char m, int w, int h)
 {
 	if (initflag)
@@ -85,7 +82,7 @@ int fmatrixcreate(char m, int w, int h)
 		fmstore[m].fstore = &fdata[fs];
 		fm=fm+1;
 		fs=fs+h*w;
-		printf ("fs=%d\n",fs);
+if (dbg) printf ("fs=%d\n",fs);
 		fmstore[m].w=w;
 		fmstore[m].h=h;
 		return 0;
@@ -140,6 +137,32 @@ int fsize(char m, int p) //p=0 return w else return h
 		}
 	}
 	return 0;
+}
+
+int fimport(char m, char m2)
+{
+	int *arrayA, szA;
+	int i;
+	
+	arrayA=listarray(m2);
+	szA   =listsize(m2);
+
+	
+	if (m>='A' && m<='Z' && arrayA!=0)
+	{
+		int n=fmstore[m-'A'].h*fmstore[m-'A'].w;
+
+		for (i=0; i<n; i++)
+		{
+			fmstore[m-'A'].fstore[i] = (float)listread(m2,i);
+		}
+		return 0;
+	}
+	else
+	{
+		printf ("Param error %c<-%d\n",m,m2);
+		return 1;
+	}
 }
 
 /**********************************************************/
