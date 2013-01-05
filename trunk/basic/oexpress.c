@@ -431,7 +431,7 @@ void printtype(tOBJ r)
     {
             rprintf("%d", r.number);
     }
-	else if (r.type == FLOAT)
+    else if (r.type == FLOAT)
     {
             rprintf("%f", r.floatpoint);
     }
@@ -911,6 +911,7 @@ extern int   fhistogram		(char ln1, int mode);
 extern int   fconvolve		(char ln1, char ln2);
 extern int   fadd		(char ln1, char ln2, char lnx, char op);
 extern int   fsize		(char m, int p);
+extern int   fimport		(char m, char m2);
 
 void extend(char *x)
 {
@@ -1020,10 +1021,27 @@ void extend(char *x)
 						int i=0, j=0;
 						int w=fsize(m,0);
 						int h=fsize(m,1);
+
+						if (*e == '@')
+						{
+							//!MAT SET A=@B
+							char im;
+							e++;
+							im=*e++;
+			
+							fimport(m,im);
+							return;
+						}
+
 						while (*e != 0)
 						{
 							v=eval_oxpr(e);	
-							f=v.floatpoint;
+							if (v.type==FLOAT)
+								f=v.floatpoint;
+							if (v.type==INTGR)
+								f=(float)v.number;
+							else
+								f=0.0;
 
 							fset(m,i,j,f);
 							if (++i == w)
@@ -1041,24 +1059,72 @@ void extend(char *x)
 						}
 					}
 				}
-			}
-						
+			}					
+		}
+
+		if (!strcmp(tokbuff,"APPL"))
+		{
+			//!MAT APPLY X=1.2*ME .....
+			char *t, m; float f;
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{					
+					m=tokbuff[0];
+					if (*e++ == '=')
+					{
+						int i=0, j=0;
+						int w=fsize(m,0);
+						int h=fsize(m,1);
+						v.type=FLOAT;
+						t=e; 
+						for (i=0; i<w; i++)
+						{
+							for (j=0;j<h; j++)
+							{
+								v.floatpoint = fget(m,i,j);
+								set("ME",v);
+								v.floatpoint = (float)j;
+								set("MR",v);
+								v.floatpoint = (float)i;
+								set("MC",v);
+								e=t;
+								v=eval_oxpr(e);	
+
+
+
+								if (v.type==FLOAT)
+									f=v.floatpoint;
+								else
+								if (v.type==INTGR)
+									f=(float)v.number;
+								else
+									f=0.0;
+								fset(m,i,j,f);
+							}
+						}
+					}
+				}
+			}					
 		}
 
 		if (!strcmp(tokbuff,"PRIN"))
 		{
 			char m;
-			if (*e != '\0')
+			while (*e != '\0')
 			{
 				if (get_str_token(0))
 				{
-					int i,j,h,w;
 					m=tokbuff[0];
 					fmatprint(m);
-					return;
-				}		
+					if (*e == ';') e++;	
+				}
+				else
+				{
+					printf ("MAT PRINT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+				}
 			}
-			printf ("MAT PRINT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+			return;
 		}
 
 		if (!strcmp(tokbuff,"DEF"))
