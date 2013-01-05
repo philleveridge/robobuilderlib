@@ -42,25 +42,15 @@ new functions available:
 !PRINT DFN
 }}}
 
-==Simple Matrices==
-Matrix values are stored in LIST of the same name. Its up to the programmer to ensure list size matches the matrix size. So a 3x2 matrix should be represented by a list of 6 elements. The matrix command will check and throw an error if size doesn't match.
+== Matrices extensions==
 
-  * MAT DEF   M;w;h           Define a matrix size
-  * MAT ZERO  M;x1;y1;x2;y2   Zero matrix elements (or parts there off)
-  * MAT LOAD  n               reads from DFN - default = data.txt
-  * MAT STOR  n               writes to DFN - default =  data.txt
-  * MAT CONV  M1;M2           Convolves a Matrix A with 3x3 Matrix B
-  * MAT HIST  mode;M          Returns in @! a histogram of matrix M
-  * MAT PRIN  M               Simple Print
+  * !MAT LOAD  n               reads from DFN - default = data.txt
+  * !MAT STOR  n               writes to DFN - default =  data.txt
 
-==Wait on Events==
-Additional WAIT functions to wait for an event rather than a time period
-  * WAIT IMAGE 'wait for image ready signal (USR1)
-  * WAIT PLY   'waits until play has complete
+Coming soon - floating point matrices.
 
 ==Image Processing==
 
-===Simple Processing===
 Load and process a jpeg file. The filename is set in variable IFN and default is "test.jpg"
 
   * IMAGE LOAD n  loads  and greyscales IFN to @! [nxn]
@@ -100,45 +90,7 @@ Loosely Based on a subset of CMVision library  converted to C.
 
   * IMAGE REG cid  region info sent to @!  ( area, x1,y1,x2,y2,cx,cy - for each region of color 'cid' )
 
-==Misc Examples==
-
-Example defining a simple matrix
-
-{{{
-> !MAT DEF Z;4;5
-Create matrix 'Z' 4x5
-> LIST Z=20,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0
-> !MAT PRIN Z
-matrix 'Z' 4x5
-  1   2   3   4 
-  5   6   7   8 
-  9   0   1   2 
-  3   4   5   6 
-  7   8   9   0 
-> !MAT DEF A;3;2
-Create matrix 'A' 3x2
-> LIST A=6,1,2,3,4,5,6
-> !MAT PRINT A
-matrix 'A' 3x2
-  1   2   3 
-  4   5   6 
-> !MAT ZERO A;1;0;2;1
-> !MAT PRINT A
-matrix 'A' 3x2
-  1   0   0 
-  4   0   0 
-}}}
-
-Matrix examples
-{{{
-!MAT DEF A;8;8
-LIST A=$RND(64,0,255)
-LIST B=9,1,0,-1,1,0,-1,1,0,-1
-!MAT PRIN A
-!MAT CONV A;B
-PRINT @!:8
-!MAT HIST 1;B
-}}}
+== Examples ==
 
 Example of defining a colour filter
 and processing an image for that colour
