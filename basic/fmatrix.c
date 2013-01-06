@@ -68,7 +68,7 @@ int fmatrixcreate(char m, int w, int h)
 
 	if (fmstore[m].w>0 && h*w <= fmstore[m].w*fmstore[m].h )
 	{
-		printf ("Re-use Space\n");
+		if (dbg) printf ("Re-use Space\n");
 		fmstore[m].w=w;
 		fmstore[m].h=h;
 		return 0;
@@ -105,8 +105,8 @@ if (dbg) printf ("GET %c (%d,%d)=%f\n",m,w,h,f);
 
 		return f;
 	}
-	else
-		printf ("Param error %d,%d\n",w,h);
+//	else
+//		printf ("Param error %d,%d\n",w,h);
 	return 0.0;
 }
 
@@ -141,11 +141,10 @@ int fsize(char m, int p) //p=0 return w else return h
 
 int fimport(char m, char m2)
 {
-	int *arrayA, szA;
+	int *arrayA;
 	int i;
 	
 	arrayA=listarray(m2);
-	szA   =listsize(m2);
 
 	
 	if (m>='A' && m<='Z' && arrayA!=0)
@@ -155,6 +154,40 @@ int fimport(char m, char m2)
 		for (i=0; i<n; i++)
 		{
 			fmstore[m-'A'].fstore[i] = (float)listread(m2,i);
+		}
+		return 0;
+	}
+	else
+	{
+		printf ("Param error %c<-%d\n",m,m2);
+		return 1;
+	}
+}
+
+int fimportf(char m, char m2, float rd)
+{
+	int i,j;
+	//copy m2 -> m and pad with cd or rd
+		
+	if (m>='A' && m<='Z' && m2>='A' && m2<='Z')
+	{
+		int h1=fmstore[m-'A'].h;
+		int w1=fmstore[m-'A'].w;
+		int h2=fmstore[m2-'A'].h;
+		int w2=fmstore[m2-'A'].w;
+
+		for (i=0; i<h1; i++)
+		{
+			for (j=0; j<w1; j++)
+			{
+				float f=0.0;
+				if (i>=h2 || j>=w2) 
+					f=rd;
+				else
+					f=fmstore[m2-'A'].fstore[j+i*w2];
+
+				fmstore[m-'A'].fstore[j+i*w1]=f;
+			}
 		}
 		return 0;
 	}
@@ -267,7 +300,7 @@ int ftranspose(char ln1, char lnx)   // @A^T"
 
 	if (lnx==ln1)
 	{
-		printf("transpose same array\n");
+		if (dbg) printf("transpose same array\n");
 		fmstore[lnx-'A'].h = w;
 		fmstore[lnx-'A'].w = h;		
 	}
@@ -371,19 +404,19 @@ int fadd(char ln1, char ln2, char lnx, char op)   // "@X = @A + @B"
 	float tp[wb*ha]; //temp
 #endif
 
-	if (wa != wb || ha != hb) 
-	{
-		printf ("Bad Matrix size (%d,%d) + (%d,%d) \n",wa,ha,wb,hb);
-		return 2; //bad array size
-	}
+	//if (wa != wb || ha != hb) 
+	//{
+	//	printf ("Bad Matrix size (%d,%d) + (%d,%d) \n",wa,ha,wb,hb);
+	//	return 2; //bad array size
+	//}
 
 	if (op=='+')
 	{
 		for (ry=0; ry<ha; ry++)
 		{
-			for (rx=0; rx<wb; rx++)
+			for (rx=0; rx<wa; rx++)
 			{
-				tp[rx+ry*wb] = fget(ln1,rx,ry) + fget(ln2,rx,ry);  
+				tp[rx+ry*wa] = fget(ln1,rx,ry) + fget(ln2,rx,ry);  
 			}
 		}
 	}
@@ -392,9 +425,9 @@ int fadd(char ln1, char ln2, char lnx, char op)   // "@X = @A + @B"
 	{
 		for (ry=0; ry<ha; ry++)
 		{
-			for (rx=0; rx<wb; rx++)
+			for (rx=0; rx<wa; rx++)
 			{
-				tp[rx+ry*wb] = fget(ln1,rx,ry) - fget(ln2,rx,ry);  
+				tp[rx+ry*wa] = fget(ln1,rx,ry) - fget(ln2,rx,ry);  
 			}
 		}
 	}
@@ -403,9 +436,9 @@ int fadd(char ln1, char ln2, char lnx, char op)   // "@X = @A + @B"
 	{
 		for (ry=0; ry<ha; ry++)
 		{
-			for (rx=0; rx<wb; rx++)
+			for (rx=0; rx<wa; rx++)
 			{
-				tp[rx+ry*wb] = fget(ln1,rx,ry) * fget(ln2,rx,ry);  
+				tp[rx+ry*wa] = fget(ln1,rx,ry) * fget(ln2,rx,ry);  
 			}
 		}
 	}
@@ -414,14 +447,14 @@ int fadd(char ln1, char ln2, char lnx, char op)   // "@X = @A + @B"
 	{
 		for (ry=0; ry<ha; ry++)
 		{
-			for (rx=0; rx<wb; rx++)
+			for (rx=0; rx<wa; rx++)
 			{
-				tp[rx+ry*wb] = fget(ln1,rx,ry) / fget(ln2,rx,ry);  
+				tp[rx+ry*wa] = fget(ln1,rx,ry) / fget(ln2,rx,ry);  
 			}
 		}
 	}
 
-	if (fmatrixcreate(lnx, wb, ha)<0)
+	if (fmatrixcreate(lnx, wa, ha)<0)
 	{
 		printf ("Can't create (%d,%d) \n",wb,ha);
 		return 1;
@@ -429,9 +462,9 @@ int fadd(char ln1, char ln2, char lnx, char op)   // "@X = @A + @B"
 
 	for (ry=0; ry<ha; ry++)
 	{
-		for (rx=0; rx<wb; rx++)
+		for (rx=0; rx<wa; rx++)
 		{
-			fset(lnx,rx, ry, tp[rx+ry*wb]);	
+			fset(lnx,rx, ry, tp[rx+ry*wa]);	
 		}
 	}
 	return 0;
@@ -551,9 +584,6 @@ int fhistogram(char ln1, int mode)   // "@A
 	int h=fmstore[ln1-'A'].h;
 	int w=fmstore[ln1-'A'].w;
 	int mx,my;
-
-
-//printf ("mode = %d, size=%d, mat=%c\n", mode, szA, ln1);
 
 	if (mode==1)
 	{

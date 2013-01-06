@@ -45,6 +45,8 @@
 #include "lists.h"
 
 
+void record	(int mode);
+void playback	(int mode);
 
 static int  forptr[MAX_FOR_NEST];   			  	// nested for/next
 static char nxtptr[MAX_FOR_NEST][MAX_FOR_EXPR];   	// nested for/next
@@ -733,12 +735,39 @@ int cmd_move(line_t ln)
 	// with args (No Frames / Time in Ms) - use MotionBuffer
 	// MOVE A,B,C,D
 	// Move to position @![a,a+b],C,D
+
+	// MOVE REC n
+	// MOVE PLAY n
 			
 	if (p!=0 && *p != 0)
 	{	
 		int j, st=0;
 		long tm=0,fm=0, nb=0;
 		BYTE pos[32];
+
+		if (!strncmp(p,"REC ",4))
+		{
+			p+=4;
+			if (eval_expr(&p, &nb) != NUMBER)
+			{
+				BasicErr=1;
+				return 0;
+			}
+			record(nb);
+			return 0;
+		}
+
+		if (!strncmp(p,"PLAY ",5))
+		{
+			p+=4;
+			if (eval_expr(&p, &nb) != NUMBER)
+			{
+				BasicErr=1;
+				return 0;
+			}
+			playback(nb);
+			return 0;
+		}
 
 		switch (eval_expr(&p, &fm))
 		{
@@ -1866,6 +1895,171 @@ int cmd_matrix(line_t ln)
 	}
 	BasicErr=1;
 	return 1;
+}
+
+/**************************************************************************/
+
+//extern int   nis;
+//extern int   gotoln(int gl);
+//extern void  setline(WORD p);
+//extern int   BasicErr;
+//extern volatile WORD	gtick;
+
+int pbrunning=0;
+int pbstep=0;
+int pbtime=0;
+
+void record(int mode)
+{
+	//scene[0]=time
+	//scene[1]=nof servos
+	//scene[2]..scene[2+nof-1] = servoids
+
+	int i,n,p;
+
+	if (mode>=16)
+	{
+		n=mode;
+		scene[0]=500;
+		scene[1]=n;	
+		for (i=0; i<n; i++)
+		{
+			scene[2+i]=i;
+		}			
+	}
+	else
+	{
+		n=scene[1];
+		if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
+	}
+
+	for (i=2; i<2+n; i++)
+	{
+		if (dbg) printf ("Passive %d\n",scene[i]); 
+		if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+		// set passive
+	}
+
+	p=2+n;
+
+	printf ("Press any key to record or 'esc' to finish\n");
+
+	while (1)
+	{
+		//wait for key press
+		int key;
+
+		while ((key=uartGetByte())<0) ;
+
+		if (key==27)
+		{
+			printf ("Done\n");
+			nis=p;
+			return;
+		}
+
+		printf("%d: ", 1+(p-n-2)/n);
+
+		for (i=2; i<2+n; i++)
+		{
+			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+			// record
+			scene[p] = wckPosRead(scene[i]); //read values
+			printf("%d ", scene[p]);
+			p++;
+		}
+		printf("\n");
+	}
+}
+
+void playback(int mode)
+{
+	int i;
+	int n=scene[1];
+
+	if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
+
+	if (mode==3)
+	{
+		pbrunning=0; // pause
+		return;
+	}
+
+	if (mode==4)
+	{
+		pbrunning=1; // re-start
+		return;
+	}
+
+	if (mode==5)
+	{
+		pbrunning=1; // reset
+		pbstep=0;	
+		return;
+	}
+
+	if (mode>=10)
+	{
+		pbrunning=1;           // run from
+		pbstep=2+(mode-9)*n;	 // step 
+	}
+	else
+	{
+		//mode 1 & 2 - set up
+		pbstep=2+n;
+		pbrunning=1; // start running
+	}
+	pbtime=scene[0];
+
+	if (mode==2)  
+		return;  // asynch mode
+
+	while (1)
+	{
+		for (i=2; i<2+n; i++)
+		{
+			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+			// wckMove(scene[i],scene[p++])
+			if (dbg) printf ("Move %d = %d\n",scene[i],scene[pbstep]); 
+			wckPosSend(scene[i], 4, scene[pbstep++]);
+		}
+
+		//wait for time t;
+		if (dbg) 
+			printf ("Wait %d\n",scene[0]); 
+		delay_ms(pbtime);
+
+		if (mode >= 10 || pbstep >=nis)
+		{
+			printf ("Done\n");
+			pbrunning=0;
+			return;
+		}	
+	}
+}
+
+
+void pb2()
+{
+	int i=0;
+	int n=scene[1];
+
+	for (i=2; i<2+n; i++)
+	{
+		if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+		// wckMove(scene[i],scene[p++])
+		if (dbg) printf ("Move %d = %d\n",scene[i],scene[pbstep]); 
+		wckPosSend(scene[i], 4, scene[pbstep++]);
+	}
+
+	if (pbstep >=nis)
+	{
+		printf ("Done\n");
+		pbrunning=0;
+		pbtime=0;
+		return;
+	}
+	pbtime=gtick + scene[0];
 }
 
 

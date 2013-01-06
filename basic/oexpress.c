@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
+#include <time.h>
 #include "linux.h"
-
-#define NULL (void *)0
 #endif
 
 #include "express.h"
@@ -87,6 +87,9 @@ typedef struct ops {
 } tOP, *tOPp;
 
 void osin ();
+void osig ();
+void ornd ();
+void odsig ();
 void opsd ();
 void omax ();
 void oprint ();
@@ -109,7 +112,11 @@ tOP oplist[] = {
 	{"AND",  8,  LAND,  2, NULL},
 	{"OR",   8,  LOR,   2, NULL},
 	{"SIN",  40, NA,    1, osin},  //function single arg
+	{"SIG",  40, NA,    1, osig},  //function single arg
+	{"SIG",  40, NA,    1, osig},  //sigmoid functon
+	{"DSIG", 40, NA,    1, odsig},  //sigmoid functon
 	{"PSD",  40, NA,    0, opsd},  //const
+	{"RND",  40, NA,    0, ornd},  //in-const
 	{"MAX",  40, NA,    2, omax},   //function two args
 };
 
@@ -631,11 +638,52 @@ void osin()
 	return ;
 }
 
+void osig()
+{
+	//binary signmoid function
+	tOBJ r,a;
+	r.type=FLOAT;
+	r.floatpoint=0.0;
+	a=pop();
+
+	if (a.type==FLOAT)
+	{
+		r.floatpoint=1/(1+exp(-a.floatpoint));
+	}
+	push(r);
+	return ;
+}
+
+void odsig()
+{
+	//derivative binary sigmoid
+	tOBJ r,a;
+	r.type=FLOAT;
+	r.floatpoint=0.0;
+	a=pop();
+
+	if (a.type==FLOAT)
+	{
+		r.floatpoint=a.floatpoint*(1-a.floatpoint);
+	}
+	push(r);
+	return ;
+}
+
 void opsd()
 {
 	tOBJ r;
 	r.type=INTGR;
 	r.number=50;
+	push(r);
+	return;
+}
+
+void ornd()
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=(float)rand()/RAND_MAX;
 	push(r);
 	return;
 }
@@ -726,173 +774,27 @@ int get_opr_token(unsigned char op)
 	return 0;
 }
 
-/**************************************************************************/
-
-extern int   nis;
-extern int   gotoln(int gl);
-extern void  setline(WORD p);
-extern int   BasicErr;
-extern int   imready;
-extern int   gkp;
-
-static int  intf=1;
-
-void record(int mode)
+float tofloat(tOBJ v)
 {
-	//scene[0]=time
-	//scene[1]=nof servos
-	//scene[2]..scene[2+nof-1] = servoids
-
-	int i,n,p;
-
-	if (mode>=16)
-	{
-		n=mode;
-		scene[0]=500;
-		scene[1]=n;	
-		for (i=0; i<n; i++)
-		{
-			scene[2+i]=i;
-		}			
-	}
+	float f=0.0;
+	if (v.type==FLOAT)
+		f=v.floatpoint;
 	else
-	{
-		n=scene[1];
-		if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
-	}
+	if (v.type==INTGR)
+		f=(float)v.number;
 
-	for (i=2; i<2+n; i++)
-	{
-		if (dbg) printf ("Passive %d\n",scene[i]); 
-		if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
-		// set passive
-	}
-
-	p=2+n;
-
-	printf ("Press any key to record or 'esc' to finish\n");
-
-	while (1)
-	{
-		//wait for key press
-		int key;
-
-		while ((key=uartGetByte())<0) ;
-
-		if (key==27)
-		{
-			printf ("Done\n");
-			nis=p;
-			return;
-		}
-
-		printf("%d: ", 1+(p-n-2)/n);
-
-		for (i=2; i<2+n; i++)
-		{
-			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
-			// record
-			scene[p] = wckPosRead(scene[i]); //read values
-			printf("%d ", scene[p]);
-			p++;
-		}
-		printf("\n");
-	}
+	return f;
 }
 
-int pbrunning=0;
-int pbstep=0;
-int pbtime=0;
-
-void playback(int mode)
+int toint(tOBJ v)
 {
-	int i;
-	int n=scene[1];
-
-	if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
-
-	if (mode==3)
-	{
-		pbrunning=0; // pause
-		return;
-	}
-
-	if (mode==4)
-	{
-		pbrunning=1; // re-start
-		return;
-	}
-
-	if (mode==5)
-	{
-		pbrunning=1; // reset
-		pbstep=0;	
-		return;
-	}
-
-	if (mode>=10)
-	{
-		pbrunning=1;           // run from
-		pbstep=2+(mode-9)*n;	 // step 
-	}
+	int f=0;
+	if (v.type==FLOAT)
+		f=(int)v.floatpoint;
 	else
-	{
-		//mode 1 & 2 - set up
-		pbstep=2+n;
-		pbrunning=1; // start running
-	}
-	pbtime=scene[0];
-
-	if (mode==2)  
-		return;  // asynch mode
-
-	while (1)
-	{
-		for (i=2; i<2+n; i++)
-		{
-			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
-			// wckMove(scene[i],scene[p++])
-			if (dbg) printf ("Move %d = %d\n",scene[i],scene[pbstep]); 
-			wckPosSend(scene[i], 4, scene[pbstep++]);
-		}
-
-		//wait for time t;
-		if (dbg) 
-			printf ("Wait %d\n",scene[0]); 
-		delay_ms(pbtime);
-
-		if (mode >= 10 || pbstep >=nis)
-		{
-			printf ("Done\n");
-			pbrunning=0;
-			return;
-		}	
-	}
-}
-
-extern volatile WORD	gtick;
-
-void pb2()
-{
-	int i=0;
-	int n=scene[1];
-
-	for (i=2; i<2+n; i++)
-	{
-		if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
-		// wckMove(scene[i],scene[p++])
-		if (dbg) printf ("Move %d = %d\n",scene[i],scene[pbstep]); 
-		wckPosSend(scene[i], 4, scene[pbstep++]);
-	}
-
-	if (pbstep >=nis)
-	{
-		printf ("Done\n");
-		pbrunning=0;
-		pbtime=0;
-		return;
-	}
-	pbtime=gtick + scene[0];
+	if (v.type==INTGR)
+		f=v.number;
+	return f;
 }
 
 extern Matrix mstore[MAXLIST];
@@ -912,6 +814,15 @@ extern int   fconvolve		(char ln1, char ln2);
 extern int   fadd		(char ln1, char ln2, char lnx, char op);
 extern int   fsize		(char m, int p);
 extern int   fimport		(char m, char m2);
+extern int   fimportf		(char m, char m2, float rd);
+
+// play / record  functions (moved to command.c
+
+extern void record	(int mode);
+extern void playback	(int mode);
+extern void pb2		();
+
+static int  intf;
 
 void extend(char *x)
 {
@@ -923,29 +834,9 @@ void extend(char *x)
 		v.type=FLOAT; v.floatpoint=3.1415926;  set("PI", v);
 		v.type=STR;   v.string    ="data.txt"; set("DFN", v);
 		v.type=STR;   v.string    ="test.jpg"; set("IFN", v);
-	}
-
-	e=x;
-	if (get_str_token("REC")==1)
-	{
-		if (*e != '\0')
-
-			v=eval_oxpr(e);
-		else
-			v.number=1;
-		record(v.number);
-		return;
-	}
-
-	e=x;
-	if (get_str_token("PLY")==1)
-	{
-		if (*e != '\0')
-			v=eval_oxpr(e);
-		else
-			v.number=1;
-		playback(v.number);
-		return;
+		
+		//seed the RNG
+		srand ( (unsigned)time ( NULL ) );
 	}
 
 	e=x;
@@ -1010,7 +901,7 @@ void extend(char *x)
 		if (!strcmp(tokbuff,"SET"))
 		{
 			//!MAT SET X=1.3,1.2 .....
-			char m; float f;
+			char m;
 			if (*e != '\0')
 			{
 				if (get_str_token(0))
@@ -1033,17 +924,20 @@ void extend(char *x)
 							return;
 						}
 
+						if (*e >= 'A' && *e <='Z' && *(e+1)==';')
+						{
+							//!MAT SET A=B;1.0
+							char im=*e;
+							e+=2;
+							v=eval_oxpr(e);		
+							fimportf(m, im, tofloat(v));
+							return;
+						}
+
 						while (*e != 0)
 						{
 							v=eval_oxpr(e);	
-							if (v.type==FLOAT)
-								f=v.floatpoint;
-							if (v.type==INTGR)
-								f=(float)v.number;
-							else
-								f=0.0;
-
-							fset(m,i,j,f);
+							fset(m,i,j,tofloat(v));
 							if (++i == w)
 							{
 								i=0; j++;
@@ -1065,7 +959,7 @@ void extend(char *x)
 		if (!strcmp(tokbuff,"APPL"))
 		{
 			//!MAT APPLY X=1.2*ME .....
-			char *t, m; float f;
+			char *t, m;
 			if (*e != '\0')
 			{
 				if (get_str_token(0))
@@ -1089,23 +983,40 @@ void extend(char *x)
 								v.floatpoint = (float)i;
 								set("MC",v);
 								e=t;
-								v=eval_oxpr(e);	
-
-
-
-								if (v.type==FLOAT)
-									f=v.floatpoint;
-								else
-								if (v.type==INTGR)
-									f=(float)v.number;
-								else
-									f=0.0;
-								fset(m,i,j,f);
+								v=eval_oxpr(e);
+								fset(m,i,j,tofloat(v));
 							}
 						}
 					}
 				}
 			}					
+		}
+
+		if (!strcmp(tokbuff,"DEF"))
+		{
+			// !MAT DEF A;1;2
+			char m; int w; int h;
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{					
+					m=tokbuff[0];
+					if (*e++ == '=')
+					{
+						v=eval_oxpr(e);	
+						w=v.number;
+						if (*e++ == ';')
+						{
+							v=eval_oxpr(e);	
+							h=v.number;
+							if (dbg) printf ("Create matrix '%c' %dx%d\n", m,w,h);
+							fmatrixcreate(m,w,h);
+							return;
+						}
+					}
+				}
+			}
+			printf ("MAT DEF - syntax error @ '%c'\n", *e=='\0'?'?':*e);
 		}
 
 		if (!strcmp(tokbuff,"PRIN"))
@@ -1122,37 +1033,12 @@ void extend(char *x)
 				else
 				{
 					printf ("MAT PRINT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+					return;
 				}
 			}
 			return;
 		}
 
-		if (!strcmp(tokbuff,"DEF"))
-		{
-			// !MAT DEF A;1;2
-			char m; int w; int h;
-			if (*e != '\0')
-			{
-				if (get_str_token(0))
-				{					
-					m=tokbuff[0];
-					if (*e++ == ';')
-					{
-						v=eval_oxpr(e);	
-						w=v.number;
-						if (*e++ == ';')
-						{
-							v=eval_oxpr(e);	
-							h=v.number;
-							printf ("Create matrix '%c' %dx%d\n", m,w,h);
-							fmatrixcreate(m,w,h);
-							return;
-						}
-					}
-				}
-			}
-			printf ("MAT DEF - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
 
 		if (!strcmp(tokbuff,"CONV"))
 		{
