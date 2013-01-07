@@ -11,21 +11,6 @@ see here for more ImageDemos example codes. And advanced demo GestureRecognition
 
 new functions available:
 
-==Record and Play==
-
-  * PLY	mode  play moves from @!
-      * mode 1 - Play all Moves return when finished
-      * mode 2 - Play all modes asynchronously i.e. returns immediately but continues playing until complete
-      * mode 3 - Pause play (use with mode 2)
-      * mode 4 - Restart for current move (use after a pause)
-      * mode 5 - restart from begining
-      * mode 10+n - play 1 move from n-10.  i.e. 10 will play 0th (first move)
-
-  * REC	mode 
-      * mode 1  - record to @! Array must be initialise 
-        [0]=time, [1]=nos, [2]...[2+nos]=servo ids
-      * mode 16 - record to @! But initialise for 16 consecutive servos
-
 ==Typed variables==
 
   * LET    enhanced assignment, variables can have names and type i.e
@@ -42,12 +27,6 @@ new functions available:
 !PRINT DFN
 }}}
 
-== Matrices extensions==
-
-  * !MAT LOAD  n               reads from DFN - default = data.txt
-  * !MAT STOR  n               writes to DFN - default =  data.txt
-
-Coming soon - floating point matrices.
 
 ==Image Processing==
 
@@ -65,8 +44,7 @@ Load and process a jpeg file. The filename is set in variable IFN and default is
 !IMAGE SHOW 6
 }}}
 
-
-===Advanced Processing===
+== Advanced Processing ==
 Loosely Based on a subset of CMVision library  converted to C.
 
   * IMAGE RAW     reads IFN (test.jpg) => frame buffer   
@@ -90,7 +68,7 @@ Loosely Based on a subset of CMVision library  converted to C.
 
   * IMAGE REG cid  region info sent to @!  ( area, x1,y1,x2,y2,cx,cy - for each region of color 'cid' )
 
-== Examples ==
+=== Examples ===
 
 Example of defining a colour filter
 and processing an image for that colour
@@ -107,4 +85,41 @@ and processing an image for that colour
 80 PRINT "Box=";@![1];",";@![2];" to ";@![3];",";@![4]
 85 PRINT "Center=";@![5];",";@![6]
 90 GOTO 38
+}}}
+
+== Matrix extensions==
+
+  * !MAT LOAD  n               reads from DFN - default = data.txt
+  * !MAT STOR  n               writes to DFN - default =  data.txt
+
+Coming soon - floating point matrices.
+
+=== examples ===
+{{{
+'define float matrix
+!mat def v=3;4    
+
+'load data into matrix
+!mat set v=2.0;1.0;0.0;1.0;2.0;2.0;0.0;3.0;1.0;0.0;0.0;-1.0
+!mat set s=r;1.0
+!mat set s=@r
+
+'load data into matrix
+!mat print v;w
+
+'matrix multiply
+!MAT MULT R=X*V
+
+'apply to each element ME=set to valie of element
+!MAT APPL R=SIG(ME)  'apply to each element of Matrix R
+
+'matrix transpose
+!mat tran s
+!mat tran s;p
+
+'element by element ops
+!MAT OP Z=G*S         
+!MAT OP W=W+R
+!MAT OP W=W-R
+!MAT OP W=W/R
 }}}
