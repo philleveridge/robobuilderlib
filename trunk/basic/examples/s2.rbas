@@ -1,53 +1,30 @@
 10 PRINT "LISTEN"
-
 20 SAMPLE 5,5000,1,64
-
 24 IF $NE=0 THEN 60
-
 30 FFT @!,1000
-
 35 GOSUB 95
-
 40 LET n=$IMAX(@!)
-
 42 PRINT "Pk=";$MAX(@!);"  Hz=";(31*(n+1))/2
-
 48 PRINT
-
 50 GOTO 10
-
 60 END
-
 
 'show fft
 
-95 PRINT @![1,31]
-
+95 select 1,31
+96 print @!
 99 GOSUB 200
-
 100 FOR c=0 TO 30
-
 102 PRINT c;
-
 105 OUT 45,@![c]
-
 106 OUT 42
-
 110 PRINT
-
 115 NEXT c
-
 120 RETURN
-
-
 
 'clear screen
 200 OUT 27 'esc
-
 210 OUT 91 '[
-
 220 OUT 50 '2
-
 230 OUT 74 'J
-
 240 RETURN

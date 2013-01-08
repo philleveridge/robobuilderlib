@@ -29,7 +29,8 @@ Done:
 
 Showfft:
    gosub clscreen
-   n=$MAX(@![1,31])
+   select 1,*
+   n=$MAX(@!)
 
    for e=0 to 30
      print e+1;" ";

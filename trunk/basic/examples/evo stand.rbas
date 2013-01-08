@@ -34,14 +34,17 @@ loop:
       set e,@![t]
    next e
 
-   print "DATA V=";@![0,o+l-1]   'truncate all but the parent data
+   'print "DATA V=";@![0,o+l-1]   'truncate all but the parent data
+   select 0,o+l-1
+   print "Data v=";@!
 
    goto loop
 
 done:
    print
    print "Final values after ";c;" generations"
-   print "MOVE @{";l;",";@![0,l-1];"}"
+   select 0,l-1
+   print "MOVE @{";l;",";@!;"}"
    move @v,10,1000           
    end
 

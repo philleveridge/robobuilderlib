@@ -15,8 +15,10 @@
 75 print @{3,1,2,3}-@{2,4,5}
 76 PRINT @{5,1,2,3,4,5}
 77 PRINT @{5,1,2,3,4,5}[2]
-78 PRINT @{5,1,2,3,4,5}[2,3]
-79 PRINT @{5,1,2,3,4,5}[2,7]
+
+'sub list not supported - use delete/select
+'78 PRINT @{5,1,2,3,4,5}[2,3]
+'79 PRINT @{5,1,2,3,4,5}[2,7]
 
 
 'Output
