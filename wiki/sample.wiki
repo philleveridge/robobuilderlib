@@ -50,7 +50,9 @@ This shows the FFT as a bar chart
 <code language="vb">
 Showfft:
    GOSUB clscreen
-   LET n=$MAX(@![1,31])
+   
+   select 1,*      'remove DC component from FFT - cell 0
+   LET n=$MAX(@!)
 
    FOR e=0 TO 30
      print e+1;" ";
