@@ -39,7 +39,9 @@ loop:
       set e+o,@![t]
    next e
 
-   print "DATA=";@![0,o+l-1]   'truncate all but the parent data
+   'print "DATA=";@![0,o+l-1]   'truncate all but the parent data
+   select 0,o+l-1
+   print "Data=";@!
 
    goto loop
 
