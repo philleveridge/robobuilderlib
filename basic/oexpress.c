@@ -822,7 +822,7 @@ extern void record	(int mode);
 extern void playback	(int mode);
 extern void pb2		();
 
-static int  intf;
+static int  intf=1;
 
 void extend(char *x)
 {
@@ -1119,7 +1119,7 @@ void extend(char *x)
 
 		if (!strcmp(tokbuff,"OP"))
 		{
-			// !MAT ADD X;A;B		
+			// !MAT OP X=A+B	
 			char ma='A'; char mb='B'; char mx='X'; char op='+';
 			if (*e != '\0')
 			{
@@ -1152,7 +1152,7 @@ void extend(char *x)
 
 		if (!strcmp(tokbuff,"TRAN"))
 		{
-			// !MAT TRAN B  			
+			// !MAT TRAN B or !MAT TRAN C=B  			
 			char ma='A'; 
 			char mb; 
 			if (*e != '\0')
@@ -1160,12 +1160,19 @@ void extend(char *x)
 				if (get_str_token(0))
 				{
 					ma=tokbuff[0];
-					if (*e++ == ';')
+					if (*e == ';')
 					{
+						e++;
 						mb=*e++;
 					}
-					else
-					 	mb=ma;
+					else if (*e == '=')
+					{
+						e++;
+						mb=ma;
+						ma=*e++;
+					}
+					else 	
+						mb=ma;
 					ftranspose(ma,mb);
 					return;
 				}
@@ -1173,10 +1180,24 @@ void extend(char *x)
 			printf ("MAT TRAN - syntax error @ '%c'\n", *e=='\0'?'?':*e);
 		}
 
+		if (!strcmp(tokbuff,"NORM"))
+		{
+			// !MAT NORM A
+			char ma='A';
+			if (*e != '\0')
+			{			
+				if (get_str_token(0))
+				{
+					ma=tokbuff[0];
+					fmatnorm(ma);
+				}
+			}
+		}
+
 
 		if (!strcmp(tokbuff,"ZERO"))
 		{
-			// !MAT ZERO A;1;1;2;2
+			// !MAT ZERO A;1;1;2;2 or !MAT ZERO A
 			
 			int a[4],i;
 			char ma='A';
@@ -1215,8 +1236,13 @@ void extend(char *x)
 	e=x;
 	if (get_str_token("IMAG")==1)
 	{
+		if (get_str_token("UNLO")==1)
+		{
+			rellock();
+			return;
+		}
 
-		if (get_str_token("LOAD")==1)
+		if (!strcmp(tokbuff,"LOAD"))
 		{
 			int sz = 8;
 			if (*e != '\0')

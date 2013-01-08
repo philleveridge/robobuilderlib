@@ -29,7 +29,6 @@ extern long		getvar(char n);
 typedef struct mat {
 	unsigned char h; 
 	unsigned char w;
-	char name;
 } Matrix;
 
 

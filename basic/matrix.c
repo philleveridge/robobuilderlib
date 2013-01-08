@@ -19,15 +19,55 @@ int tp[10000]; //windows temp fix
 #include "rprintf.h"
 #endif
 
-
-
 #include "express.h"
 #include "functions.h"
 #include "lists.h"
 
 extern int  dbg;
 
-Matrix mstore[26];
+static Matrix mstore[26];
+
+int matgetw(char m)
+{
+	return (m>='A' && m<='Z')?mstore[m-'A'].w:0;
+}
+
+int matgeth(char m)
+{
+	return (m>='A' && m<='Z')?mstore[m-'A'].h:0;
+}
+
+int matcreate(char m, int w, int h)
+{
+	if (!(m>='A' && m<='Z'))
+		return 1;
+	if (listcreate(m, w*h, 2)<0)
+		return 1;
+	mstore[m-'A'].w=w;
+	mstore[m-'A'].h=h;
+	if (dbg) rprintf ("Create matrix '%c' %dx%d\n", m,w,h);
+	return 0;
+}
+
+int matprint(char m)
+{
+	int h,w,i,j;
+	rprintf ("matrix '%c' %dx%d\n", m, matgetw(m), matgeth(m));
+	w=matgetw(m);
+	h=matgeth(m);
+	for (j=0; j<h;j++)
+	{
+		for (i=0; i<w; i++)
+		{
+			int v=listread(m, j*w+i);
+			rprintf ("%3d ", v );
+		}
+		rprintfCRLF();
+	}
+	return 0;
+}
+
+
 
 /**********************************************************/
 
@@ -36,8 +76,8 @@ int matzerodiag(char ln1)
 {
 	int *arrayA, szA, i;
 
-	int h=mstore[ln1-'A'].h;
-	int w=mstore[ln1-'A'].w;
+	int w=matgetw(ln1);
+	int h=matgeth(ln1);
 
 	arrayA=listarray(ln1);
 	szA   =listsize(ln1);
@@ -55,12 +95,14 @@ int matzerodiag(char ln1)
 	return 0;
 }
 
+/**********************************************************/
+
 int matzero(char ln1, int a, int b, int c, int d)   
 {
 	int *arrayA, szA, i, j;
 
-	int h=mstore[ln1-'A'].h;
-	int w=mstore[ln1-'A'].w;
+	int w=matgetw(ln1);
+	int h=matgeth(ln1);
 
 	arrayA=listarray(ln1);
 	szA   =listsize(ln1);
@@ -96,8 +138,8 @@ T(A) = 1 4
 int transpose(char ln1, char lnx)   // @A^T"
 {
 	int *arrayA, szA;
-	int h=mstore[ln1-'A'].h;
-	int w=mstore[ln1-'A'].w;
+	int w=matgetw(ln1);
+	int h=matgeth(ln1);
 	int mx,my;
 
 #ifndef WIN32
@@ -139,7 +181,6 @@ int transpose(char ln1, char lnx)   // @A^T"
 
 		mstore[lnx-'A'].w=h;
 		mstore[lnx-'A'].h=w;
-		mstore[lnx-'A'].name=lnx;
 		arrayX = listarray(lnx);
 		if (arrayX==(int *)0) 
 			return 0;
@@ -158,17 +199,16 @@ int multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 	int m,rx,ry, ha,wa,hb,wb;
 	int *arrayA, *arrayB, *arrayX;
  
-	ha=(int)(mstore[ln1-'A'].h);
-	wa=(int)(mstore[ln1-'A'].w);
-	hb=(int)(mstore[ln2-'A'].h);
-	wb=(int)(mstore[ln2-'A'].w);
+	wa=matgetw(ln1);
+	ha=matgeth(ln1);
+	wb=matgetw(ln2);
+	hb=matgeth(ln2);
 
 	if (dbg) rprintf (" Matrix Mult %c(%d,%d) *  %c(%d,%d) \n",ln1,wa,ha,ln2,wb,hb);
 
 	// ha,wa * hb,wb
 	// wa == hb
       	// Mresult =[ha*wb]
-
 
 	if (wa != hb) 
 	{
@@ -184,7 +224,6 @@ int multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 
 	mstore[lnx-'A'].w=wb;
 	mstore[lnx-'A'].h=ha;
-	mstore[lnx-'A'].name=lnx;
 
 	arrayA = listarray(ln1);
 	arrayB = listarray(ln2);
@@ -218,8 +257,8 @@ int convolve(char ln1, char ln2)   // "@A (.) @B"
 {	
 	int *arrayA, szA;
 	int *arrayB, szB;
-	int h=mstore[ln1-'A'].h;
-	int w=mstore[ln1-'A'].w;
+	int w=matgetw(ln1);
+	int h=matgeth(ln1);
 	int mx,my;
 
 	arrayA=listarray(ln1);
@@ -269,7 +308,7 @@ int convolve(char ln1, char ln2)   // "@A (.) @B"
 		}
 	}
 	
-	if (szB==2 && mstore[ln2-'A'].w==2 ) // 2x1 kernel
+	if (szB==2 && matgetw(ln2)==2 ) // 2x1 kernel
 	{
 		for (my=0;my<h; my++)
 		{
@@ -283,7 +322,7 @@ int convolve(char ln1, char ln2)   // "@A (.) @B"
 		}
 	}
 
-	if (szB==2 && mstore[ln2-'A'].w==1 ) //  1x2 kernel
+	if (szB==2 && matgetw(ln2)==1 ) //  1x2 kernel
 	{
 		for (my=0;my<h; my++)
 		{
@@ -318,9 +357,8 @@ int convolve(char ln1, char ln2)   // "@A (.) @B"
 int histogram(char ln1, int mode)   // "@A 
 {
 	int *arrayA, szA;
-
-	int h=mstore[ln1-'A'].h;
-	int w=mstore[ln1-'A'].w;
+	int w=matgetw(ln1);
+	int h=matgeth(ln1);
 	int mx,my;
 
 	arrayA=listarray(ln1);

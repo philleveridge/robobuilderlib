@@ -1732,12 +1732,16 @@ extern int transpose	(char ln1, char ln2) ;  		// @A^T"
 extern int multiply	(char ln1, char ln2, char lnx);   	// "@X = @A * @B"//
 extern int convolve	(char ln1, char ln2);   		// "@A (.) @B"
 extern int histogram	(char ln1, int mode);   		// "@A 
-extern Matrix mstore[MAXLIST];
+extern int matgetw	(char m);
+extern int matgeth	(char m);
+extern int matcreate	(char m, int w, int h);
+extern int matprint	(char m);
+
 
 int cmd_matrix(line_t ln)
 {
 	char *p=ln.text;
-	int i,j,h,w;
+	int i,w;
 	char m, ma, mb, mx;
 	long n;
 
@@ -1748,20 +1752,16 @@ int cmd_matrix(line_t ln)
 		if (*p != '\0')
 		{			
 			m=*p++;
-			if (*p++ == ';')
+			if (*p == ';' || *p == '=')
 			{
+				p++;
 				eval_expr(&p, &n);
 				w=n;
 
 				if (*p++ == ';')
 				{
 					eval_expr(&p, &n);
-					h=n;
-					rprintf ("Create matrix '%c' %dx%d\n", m,w,h);
-					listcreate(m, w*h, 2);
-					mstore[m-'A'].w=w;
-					mstore[m-'A'].h=h;
-					mstore[m-'A'].name=m;
+					matcreate(m,w,n);
 					return 0;
 				}
 			}
@@ -1775,18 +1775,7 @@ int cmd_matrix(line_t ln)
 		if (*p != '\0')
 		{
 			m=*p++;
-			rprintf ("matrix '%c' %dx%d\n", mstore[m-'A'].name, mstore[m-'A'].w, mstore[m-'A'].h);
-			h=mstore[m-'A'].h;
-			w=mstore[m-'A'].w;
-			for (j=0; j<h;j++)
-			{
-				for (i=0; i<w; i++)
-				{
-					int v=listread(m, j*w+i);
-					rprintf ("%3d ", v );
-				}
-				rprintfCRLF();
-			}
+			matprint(m);
 			return 0;
 		}
 	}
@@ -1831,11 +1820,13 @@ int cmd_matrix(line_t ln)
 		{
 			mx=*p++;
 
-			if (*p++ == ';')
+			if (*p == ';' || *p == '=')
 			{
+				p++;
 				ma=*p++;
-				if (*p++ == ';')
+				if (*p == ';' || *p == '*')
 				{
+					p++;
 					mb=*p++;
 					multiply(ma,mb,mx);
 					return 0;
@@ -1884,7 +1875,7 @@ int cmd_matrix(line_t ln)
 			for (i=0; i<4; i++)
 			{
 				if (i<3 && *p != ';')
-					return;
+					return 1;
 				p++;
 				eval_expr(&p, &n);
 				a[i]=n;
@@ -1898,12 +1889,6 @@ int cmd_matrix(line_t ln)
 }
 
 /**************************************************************************/
-
-//extern int   nis;
-//extern int   gotoln(int gl);
-//extern void  setline(WORD p);
-//extern int   BasicErr;
-//extern volatile WORD	gtick;
 
 int pbrunning=0;
 int pbstep=0;
@@ -1930,19 +1915,20 @@ void record(int mode)
 	else
 	{
 		n=scene[1];
-		if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
+		if (nis<n+2) { rprintf ("Err - setup array [%d,%d]\n",nis,n); return;}
 	}
 
 	for (i=2; i<2+n; i++)
 	{
-		if (dbg) printf ("Passive %d\n",scene[i]); 
-		if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+		if (scene[i]<0 || scene[i]>30)  { rprintf ("Err - servo id %d\n", scene[i]); return;}
 		// set passive
+		if (dbg) rprintf ("Passive %d\n",scene[i]); 
+		wckSetPassive(scene[i]);
 	}
 
 	p=2+n;
 
-	printf ("Press any key to record or 'esc' to finish\n");
+	rprintfProgStr (PSTR("Press any key to record or 'esc' to finish\n"));
 
 	while (1)
 	{
@@ -1953,22 +1939,22 @@ void record(int mode)
 
 		if (key==27)
 		{
-			printf ("Done\n");
+			rprintfProgStr (PSTR("Done\n"));
 			nis=p;
 			return;
 		}
 
-		printf("%d: ", 1+(p-n-2)/n);
+		rprintf("%d: ", 1+(p-n-2)/n);
 
 		for (i=2; i<2+n; i++)
 		{
-			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+			if (scene[i]<0 || scene[i]>30)  { rprintf ("Err -servo id %d\n", scene[i]); return;}
 			// record
 			scene[p] = wckPosRead(scene[i]); //read values
-			printf("%d ", scene[p]);
+			rprintf("%d ", scene[p]);
 			p++;
 		}
-		printf("\n");
+		rprintfCRLF();
 	}
 }
 
@@ -1977,7 +1963,7 @@ void playback(int mode)
 	int i;
 	int n=scene[1];
 
-	if (nis<n+2) { printf ("Error - set up current array [%d,%d]\n",nis,n); return;}
+	if (nis<n+2) { rprintf ("Err - setup array [%d,%d]\n",nis,n); return;}
 
 	if (mode==3)
 	{
@@ -2018,20 +2004,20 @@ void playback(int mode)
 	{
 		for (i=2; i<2+n; i++)
 		{
-			if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+			if (scene[i]<0 || scene[i]>30)  { rprintf ("Err - servo id %d\n", scene[i]); return;}
 			// wckMove(scene[i],scene[p++])
-			if (dbg) printf ("Move %d = %d\n",scene[i],scene[pbstep]); 
+			if (dbg) rprintf ("Move %d = %d\n",scene[i],scene[pbstep]); 
 			wckPosSend(scene[i], 4, scene[pbstep++]);
 		}
 
 		//wait for time t;
 		if (dbg) 
-			printf ("Wait %d\n",scene[0]); 
+			rprintf ("Wait %d\n",scene[0]); 
 		delay_ms(pbtime);
 
 		if (mode >= 10 || pbstep >=nis)
 		{
-			printf ("Done\n");
+			rprintfProgStr (PSTR("Done\r\n"));
 			pbrunning=0;
 			return;
 		}	
@@ -2046,15 +2032,15 @@ void pb2()
 
 	for (i=2; i<2+n; i++)
 	{
-		if (scene[i]<0 || scene[i]>30)  { printf ("Error - invalid servo id %d\n", scene[i]); return;}
+		if (scene[i]<0 || scene[i]>30)  { rprintf ("invalid servo id %d\n", scene[i]); return;}
 		// wckMove(scene[i],scene[p++])
-		if (dbg) printf ("Move %d = %d\n",scene[i],scene[pbstep]); 
+		if (dbg) rprintf ("Move %d = %d\n",scene[i],scene[pbstep]); 
 		wckPosSend(scene[i], 4, scene[pbstep++]);
 	}
 
 	if (pbstep >=nis)
 	{
-		printf ("Done\n");
+		rprintfProgStr (PSTR("Done\r\n"));
 		pbrunning=0;
 		pbtime=0;
 		return;

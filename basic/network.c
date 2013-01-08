@@ -22,6 +22,9 @@
 #include "macro.h"
 #include "wckmotion.h"
 #include "rprintf.h"
+
+int abs(int);
+
 #endif
 
 
@@ -154,7 +157,7 @@ int simple_network(int noi, int noo, int nl1, int nl2, int nl3, int ofset, int f
 
 		if (moton)
 		{
-			int v; char sn=scene[noi+i];
+			int v, sn=scene[noi+i];
 			sn=(sn<0) ?0 :sn;
 			sn=(sn>30)?30:sn;
 

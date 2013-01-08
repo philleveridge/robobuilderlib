@@ -6,7 +6,11 @@
 
 #define EDIT_H
 
+#ifdef OMNIMA
+#define EEPROM_MEM_SZ 	65536 // 64K
+#else
 #define EEPROM_MEM_SZ 	3072 // 3K
+#endif
 
 typedef struct basic_line {
     	int           lineno;

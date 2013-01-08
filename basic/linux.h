@@ -47,7 +47,7 @@ extern void			eeprom_write_byte (unsigned char *b, unsigned char c);
 
 extern int			uartGetByte();
 extern void			rprintfStrLen(char *p, int s, int l);
-
+extern void 			rprintfCRLF();
 extern void			initfirmware();
 extern void			binmode();
 
