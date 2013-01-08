@@ -9,7 +9,7 @@ CFLAGS =  -D LINUX -D PARSE -D OMNIMA -D IMAGE
 CFLAGS += -g -Wall -gdwarf-2 -std=gnu99 -funsigned-char  # -funsigned-bitfields -fpack-struct -fshort-enums
 
 
-OBJECTS = edit.o fix_fft.o  linux.o  lists.o express.o functions.o oexpress.o commands.o linux-remote.o basic.o matrix.o network.o jpeg.o cmap.o
+OBJECTS = edit.o fix_fft.o  linux.o  lists.o express.o functions.o oexpress.o commands.o linux-remote.o basic.o matrix.o network.o jpeg.o cmap.o fnetwork.o fmatrix.o
 LIBS = -lpthread -lm -ljpeg
 
 

@@ -12,13 +12,15 @@ int tp[10000]; //windows temp fix
 #include <math.h>
 #include "linux.h"
 
-#define NULL (void *)0
+//#define NULL (void *)0
 #endif
 
 
 #include "express.h"
 #include "functions.h"
 #include "lists.h"
+
+int abs(int);
 
 extern int  dbg;
 
@@ -33,7 +35,7 @@ float  fdata   [10000];
 
 int fm=0;
 int fs=0;
-static initflag=1;
+static int initflag=1;
 
 /**********************************************************/
 
@@ -54,12 +56,13 @@ void initmatrix()
 	initflag=0;
 }
 
-int fmatrixcreate(char m, int w, int h)
+int fmatrixcreate(char ma, int w, int h)
 {
+	int m;
 	if (initflag)
 		initmatrix();
 
-	m=m-'A';
+	m=ma-'A';
 	if (m<0 || m>25 || w<=0 || h<=0)
 	{
 		printf ("Param error\n");
@@ -78,7 +81,6 @@ int fmatrixcreate(char m, int w, int h)
 
 	if (fs+h*w<10000)
 	{
-
 		fmstore[m].fstore = &fdata[fs];
 		fm=fm+1;
 		fs=fs+h*w;
@@ -205,10 +207,7 @@ int fimportf(char m, char m2, float rd)
 
 int fmatzerodiag(char ln1)   
 {
-	int *arrayA, szA, i;
-
-	int h=fmstore[ln1-'A'].h;
-	int w=fmstore[ln1-'A'].w;
+	int i, h=fmstore[ln1-'A'].h;
 
 	for (i=0; i<=h; i++)
 	{
@@ -250,6 +249,43 @@ int fmatzero(char ln1, int a, int b, int c, int d)
 //
 /**********************************************************/
 
+int fmatnorm(char ln1)   
+{
+	int i, j;
+
+	int h=fmstore[ln1-'A'].h;
+	int w=fmstore[ln1-'A'].w;
+
+	// find max
+	float max=0.0;
+
+	for (i=0; i<w; i++)
+	{
+		for (j=0; j<h; j++)
+		{
+			float v=fget(ln1,i,j);
+			if (i==0 && j==0) max=v;
+			else
+			if (v>max) max=v;
+		}
+	}
+
+	for (i=0; i<w; i++)
+	{
+		for (j=0; j<h; j++)
+		{
+			fset(ln1,i,j,fget(ln1,i,j)/max);
+		}
+	}
+
+	return 0;			
+}
+
+/**********************************************************/
+//
+//
+/**********************************************************/
+
 int fmatprint(char m)
 {
 	int i,j;
@@ -265,7 +301,7 @@ int fmatprint(char m)
 		}
 		printf ("\n");
 	}
-	return;
+	return 0;
 }
 
 /******************************
@@ -393,11 +429,10 @@ int fmultiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 int fadd(char ln1, char ln2, char lnx, char op)   // "@X = @A + @B"
 {
 
-	int m,rx,ry, ha,wa,hb,wb;
+	int rx,ry, ha,wa,wb;
  
 	ha=(int)(fmstore[ln1-'A'].h);
 	wa=(int)(fmstore[ln1-'A'].w);
-	hb=(int)(fmstore[ln2-'A'].h);
 	wb=(int)(fmstore[ln2-'A'].w);
 
 #ifndef WIN32
@@ -483,7 +518,7 @@ int fconvolve(char ln1, char ln2)   // "@A (.) @B"
 	int h=fmstore[ln1-'A'].h;
 	int w=fmstore[ln1-'A'].w;
 	int mx,my;
-	int szA=h*w;
+	//int szA=h*w;
 	int szB=fmstore[ln2-'A'].w*fmstore[ln2-'A'].h;
 
 	if (szB==9) // 3x3 kernel
@@ -579,8 +614,6 @@ int fconvolve(char ln1, char ln2)   // "@A (.) @B"
 
 int fhistogram(char ln1, int mode)   // "@A 
 {
-	int *arrayA, szA;
-
 	int h=fmstore[ln1-'A'].h;
 	int w=fmstore[ln1-'A'].w;
 	int mx,my;
