@@ -16,7 +16,6 @@ namespace RobobuilderLib
         binxfer btf;
         ServoSim sim = null;
 
-
         bool readyDownload = false;
         string bfn = "basic.exe";
         string bdn = "bindata.txt";
