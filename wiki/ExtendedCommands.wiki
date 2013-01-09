@@ -100,26 +100,22 @@ Coming soon - floating point matrices.
 !mat def v=3;4    
 
 'load data into matrix
-!mat set v=2.0;1.0;0.0;1.0;2.0;2.0;0.0;3.0;1.0;0.0;0.0;-1.0
-!mat set s=r;1.0
-!mat set s=@r
+!mat let v=2.0;1.0;0.0;1.0;2.0;2.0;0.0;3.0;1.0;0.0;0.0;-1.0
+!mat let s=@r      'matrix load from integer list
+!mat let s=r       'matrix copy r to s
+!mat let s=r;1.0   'matrix copy into s and fill extra space with value
+!MAT let R=X*V     'matrix product
+!mat let s=p^      'matrix transpose
+!MAT let Z=G.S     'matrix element by element multiply     
+!MAT let W=W+R     'matrix element by element add
+!MAT let W=W-R     'matrix element by element sub
+!MAT let W=W/R     'matrix element by element divide
+!MAT let W=W#R     'matrix convolve
 
-'load data into matrix
+'print matrix(s)
 !mat print v;w
 
-'matrix multiply
-!MAT MULT R=X*V
-
-'apply to each element ME=set to valie of element
+'apply to each element ME=set to value of element
 !MAT APPL R=SIG(ME)  'apply to each element of Matrix R
 
-'matrix transpose
-!mat tran s
-!mat tran s;p
-
-'element by element ops
-!MAT OP Z=G*S         
-!MAT OP W=W+R
-!MAT OP W=W-R
-!MAT OP W=W/R
 }}}
