@@ -96,6 +96,22 @@ if (dbg) printf ("fs=%d\n",fs);
 	}
 }
 
+int fmatcopy(char ma, char mb)
+{
+	//ma -> mb
+	int i;
+	int w=fmstore[ma-'A'].w;
+	int h=fmstore[ma-'A'].h;
+	fmatrixcreate(mb,w, h);
+
+if (dbg) printf ("sz=%d\n",h*w);
+
+  	for (i=0; i<h*w; i++)
+		fmstore[mb-'A'].fstore[i]=fmstore[ma-'A'].fstore[i];
+
+	return 0;
+}
+
 float fget(char m,int w,int h)
 {
 	if (m>='A' && m<='Z' && h>=0 && w>=0 && h<fmstore[m-'A'].h && w<fmstore[m-'A'].w)
@@ -325,6 +341,7 @@ int ftranspose(char ln1, char lnx)   // @A^T"
 #ifndef WIN32
 	float tp[w*h]; //temp
 #endif
+if (dbg) printf ("transpose=%c->%c\n",ln1,lnx);
 
 	for (my=0; my<h; my++)
 	{

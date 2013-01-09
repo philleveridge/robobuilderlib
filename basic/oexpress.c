@@ -797,7 +797,6 @@ int toint(tOBJ v)
 	return f;
 }
 
-extern Matrix mstore[MAXLIST];
 
 // new float matrices
 
@@ -815,12 +814,8 @@ extern int   fadd		(char ln1, char ln2, char lnx, char op);
 extern int   fsize		(char m, int p);
 extern int   fimport		(char m, char m2);
 extern int   fimportf		(char m, char m2, float rd);
-
-// play / record  functions (moved to command.c
-
-extern void record	(int mode);
-extern void playback	(int mode);
-extern void pb2		();
+extern int   fmatnorm		(char ln1);
+extern int   fmatcopy		(char ma, char mb);
 
 static int  intf=1;
 
@@ -898,9 +893,56 @@ void extend(char *x)
 			matrixstore(val, v.string);
 		}
 
-		if (!strcmp(tokbuff,"SET"))
+		if (!strcmp(tokbuff,"DEF"))
 		{
-			//!MAT SET X=1.3,1.2 .....
+			// !MAT DEF A;1;2
+			char m; int w; int h;
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{					
+					m=tokbuff[0];
+					if (*e++ == '=')
+					{
+						v=eval_oxpr(e);	
+						w=v.number;
+						if (*e++ == ';')
+						{
+							v=eval_oxpr(e);	
+							h=v.number;
+							if (dbg) printf ("Create matrix '%c' %dx%d\n", m,w,h);
+							fmatrixcreate(m,w,h);
+							return;
+						}
+					}
+				}
+			}
+			printf ("MAT DEF - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
+
+		if (!strcmp(tokbuff,"PRIN"))
+		{
+			char m;
+			while (*e != '\0')
+			{
+				if (get_str_token(0))
+				{
+					m=tokbuff[0];
+					fmatprint(m);
+					if (*e == ';') e++;	
+				}
+				else
+				{
+					printf ("MAT PRINT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+					return;
+				}
+			}
+			return;
+		}
+
+		if (!strcmp(tokbuff,"LET"))
+		{
+			//!MAT LET X=1.3,1.2 .....
 			char m;
 			if (*e != '\0')
 			{
@@ -915,7 +957,7 @@ void extend(char *x)
 
 						if (*e == '@')
 						{
-							//!MAT SET A=@B
+							//!MAT LET A=@B
 							char im;
 							e++;
 							im=*e++;
@@ -926,11 +968,74 @@ void extend(char *x)
 
 						if (*e >= 'A' && *e <='Z' && *(e+1)==';')
 						{
-							//!MAT SET A=B;1.0
+							//!MAT LET A=B;1.0
 							char im=*e;
 							e+=2;
 							v=eval_oxpr(e);		
 							fimportf(m, im, tofloat(v));
+							return;
+						}
+
+						if (*e >= 'A' && *e <='Z')
+						{
+							//!MAT LET A=B+C
+							char op,mb;
+							char ma=*e++;
+
+							if (*e==0)
+							{
+								fmatcopy(ma, m);
+								return;
+							}
+
+							while (*e != 0)
+							{
+								op=*e++;
+
+								if (op == '^')
+								{
+									// transpose
+									ftranspose(ma,m);
+									ma=m;
+									continue;
+								}
+
+								if (get_str_token(0))
+								{
+									mb=tokbuff[0];
+
+									if (*e=='^')
+									{
+										ftranspose(mb,mb); //this overwrites
+										e++;
+									}
+									
+									if (op == '*')
+									{
+										// mult
+										fmultiply(ma,mb,m);
+									}
+									else
+									if (op == '+' || op == '-' || op  == '.' || op == '/')
+									{
+										if (op=='.') op='*';
+										fadd(ma,mb,m,op);
+									}
+									else
+									if (op == '#')
+									{
+										//convolve
+										fconvolve(ma, mb) ;
+										fmatcopy(ma, m);
+									}
+									else
+									{
+										printf("? invalid MAT op %c\n", op);
+										return;
+									}
+									ma=m;
+								}
+							}
 							return;
 						}
 
@@ -992,77 +1097,6 @@ void extend(char *x)
 			}					
 		}
 
-		if (!strcmp(tokbuff,"DEF"))
-		{
-			// !MAT DEF A;1;2
-			char m; int w; int h;
-			if (*e != '\0')
-			{
-				if (get_str_token(0))
-				{					
-					m=tokbuff[0];
-					if (*e++ == '=')
-					{
-						v=eval_oxpr(e);	
-						w=v.number;
-						if (*e++ == ';')
-						{
-							v=eval_oxpr(e);	
-							h=v.number;
-							if (dbg) printf ("Create matrix '%c' %dx%d\n", m,w,h);
-							fmatrixcreate(m,w,h);
-							return;
-						}
-					}
-				}
-			}
-			printf ("MAT DEF - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
-
-		if (!strcmp(tokbuff,"PRIN"))
-		{
-			char m;
-			while (*e != '\0')
-			{
-				if (get_str_token(0))
-				{
-					m=tokbuff[0];
-					fmatprint(m);
-					if (*e == ';') e++;	
-				}
-				else
-				{
-					printf ("MAT PRINT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-					return;
-				}
-			}
-			return;
-		}
-
-
-		if (!strcmp(tokbuff,"CONV"))
-		{
-			// !MAT CON A;B
-			char ma,mb;
-			if (*e != '\0')
-			{
-				if (get_str_token(0))
-				{
-					ma=tokbuff[0];
-					if (*e++ == ';')
-					{				
-						if (get_str_token(0))
-						{
-							mb=tokbuff[0];
-							fconvolve(ma, mb) ;
-							return;
-						}
-					}
-				}
-			}
-			printf ("MAT CONV - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
-
 		if (!strcmp(tokbuff,"HIST"))
 		{
 			// !MAT HIST 1;A
@@ -1083,101 +1117,6 @@ void extend(char *x)
 				}
 			}
 			printf ("MAT HIST - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
-
-		if (!strcmp(tokbuff,"MULT"))
-		{
-			// !MAT MULT X;A;B		
-			char ma='A'; char mb='B'; char mx='X';
-			if (*e != '\0')
-			{
-				if (get_str_token(0))
-				{
-					mx=tokbuff[0];
-
-					if (*e++ == '=')
-					{
-						if (get_str_token(0))
-						{
-							ma=tokbuff[0];
-
-							if (*e++ == '*')
-							{
-								if (get_str_token(0))
-								{
-									mb=tokbuff[0];
-									fmultiply(ma,mb,mx);
-									return;
-								}
-							}
-						}
-					}
-				}
-			}
-			printf ("MAT MULT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
-
-		if (!strcmp(tokbuff,"OP"))
-		{
-			// !MAT OP X=A+B	
-			char ma='A'; char mb='B'; char mx='X'; char op='+';
-			if (*e != '\0')
-			{
-				if (get_str_token(0))
-				{
-					mx=tokbuff[0];
-
-					if (*e++ == '=')
-					{
-						if (get_str_token(0))
-						{
-							ma=tokbuff[0];
-
-							if (*e == '+' || *e == '-' || *e == '*'|| *e == '/')
-							{
-								op=*e++;
-								if (get_str_token(0))
-								{
-									mb=tokbuff[0];
-									fadd(ma,mb,mx,op);
-									return;
-								}
-							}
-						}
-					}
-				}
-			}
-			printf ("MAT OP - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
-
-		if (!strcmp(tokbuff,"TRAN"))
-		{
-			// !MAT TRAN B or !MAT TRAN C=B  			
-			char ma='A'; 
-			char mb; 
-			if (*e != '\0')
-			{
-				if (get_str_token(0))
-				{
-					ma=tokbuff[0];
-					if (*e == ';')
-					{
-						e++;
-						mb=*e++;
-					}
-					else if (*e == '=')
-					{
-						e++;
-						mb=ma;
-						ma=*e++;
-					}
-					else 	
-						mb=ma;
-					ftranspose(ma,mb);
-					return;
-				}
-			}
-			printf ("MAT TRAN - syntax error @ '%c'\n", *e=='\0'?'?':*e);
 		}
 
 		if (!strcmp(tokbuff,"NORM"))
