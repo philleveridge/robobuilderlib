@@ -18,17 +18,17 @@ For an in depth look at features  see [http://code.google.com/p/robobuilderlib/d
   # [InputMode Simple] editor with Immediate mode so commands can be run directly
   # Debug mode to allow trace of programs
   # Full maths expression `+ * - /` and including MOD AND OR
-  # Maths functions such as SIN and COS
+  # [BasicDemos#Generating_a_walking_gait Maths] functions such as SIN and COS
   # Developer environment with VT100 terminal support (Windows/Mono - see [BasicClient]
   # Special features including access to Servo (Read/ Write), sensors PSD and Accelerometer
-  # Lists (A-Z) (and Matrix commands [MatrixCommands from Build 568])
+  # Lists (A-Z) (and [MatrixCommands Matrix commands])
   # Built in motions (19 including football kick)
   # Built in FFT - [sample FFT demo]  can access sound samples and process in realtime
   # Built in Neural network calculation see [neuron1 demo]
   # Event handling [SimpleDemos#22)_ON_event_base_routines ON GOSUB]
-  # I2C communication
+  # [SimpleDemos#17)_I2C_comm_example(s) I2C communication]
   # Offset feature supports different robot configs  
-  # Hardware access to LED and Buttons
+  # [SimpleDemos#20)_Reading_PF1_and_PF2 Hardware access] to LED and Buttons
   # Cross platform support for [LinuxBuild], Windows and [Omnima] (openwrt)
       # Includes extended commands for image processing see [ImageDemo demo]
       # floating point arithmetic
