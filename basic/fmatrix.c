@@ -24,14 +24,10 @@ int abs(int);
 
 extern int  dbg;
 
-typedef struct fmat {
-	int h; 
-	int w;
-	float *fstore;
-} fMatrix;
+#define MATSIZE   10000
 
 fMatrix fmstore[26];
-float  fdata   [10000];
+float  fdata   [MATSIZE];
 
 int fm=0;
 int fs=0;
@@ -56,6 +52,36 @@ void initmatrix()
 	initflag=0;
 }
 
+int fgetw(char m)
+{
+	return fmstore[m-'A'].w;
+}
+
+int fgeth(char m)
+{
+	return fmstore[m-'A'].h;
+}
+
+float *fgetd(char m)
+{
+	return &fmstore[m-'A'].fstore[0];
+}
+
+int fsize(char m, int p) //p=0 return w else return h
+{
+	if (m>='A' && m<='Z')
+	{
+		switch (p) {
+		case 0:  return fgetw(m);
+		case 1:  return fgeth(m);
+		case 2:  return fgeth(m)*fgetw(m);
+		default: return 0;
+		}
+	}
+	return 0;
+}
+
+
 int fmatrixcreate(char ma, int w, int h)
 {
 	int m;
@@ -69,7 +95,7 @@ int fmatrixcreate(char ma, int w, int h)
 		return 1;
 	}
 
-	if (fmstore[m].w>0 && h*w <= fmstore[m].w*fmstore[m].h )
+	if (fgetw(m)>0 && h*w <= fgetw(m)*fgeth(m) )
 	{
 		if (dbg) printf ("Re-use Space\n");
 		fmstore[m].w=w;
@@ -79,19 +105,18 @@ int fmatrixcreate(char ma, int w, int h)
 
 	//allocate space
 
-	if (fs+h*w<10000)
+	if (fs+h*w<MATSIZE)
 	{
 		fmstore[m].fstore = &fdata[fs];
 		fm=fm+1;
 		fs=fs+h*w;
-if (dbg) printf ("fs=%d\n",fs);
 		fmstore[m].w=w;
 		fmstore[m].h=h;
 		return 0;
 	}
 	else
 	{
-		printf ("out of space\n");
+		printf ("out of space %d (%d)\n",fs,MATSIZE);
 		return 1;
 	}
 }
@@ -100,41 +125,41 @@ int fmatcopy(char ma, char mb)
 {
 	//ma -> mb
 	int i;
-	int w=fmstore[ma-'A'].w;
-	int h=fmstore[ma-'A'].h;
+	int w=fgetw(ma);
+	int h=fgeth(ma);
 	fmatrixcreate(mb,w, h);
+	float *p=fgetd(mb);
 
-if (dbg) printf ("sz=%d\n",h*w);
+	if (dbg) printf ("sz=%d\n",h*w);
 
   	for (i=0; i<h*w; i++)
-		fmstore[mb-'A'].fstore[i]=fmstore[ma-'A'].fstore[i];
-
+		p[i]=fgetd(ma)[i];
 	return 0;
 }
 
+
+
 float fget(char m,int w,int h)
 {
-	if (m>='A' && m<='Z' && h>=0 && w>=0 && h<fmstore[m-'A'].h && w<fmstore[m-'A'].w)
+	if (m>='A' && m<='Z' && h>=0 && w>=0 && h<fgeth(m) && w<fgetw(m))
 	{
-		int n=h+fmstore[m-'A'].h*w;
+		int n=h+fgeth(m)*w;
 		float f=fmstore[m-'A'].fstore[n];
 
-if (dbg) printf ("GET %c (%d,%d)=%f\n",m,w,h,f);
+		if (dbg) printf ("GET %c (%d,%d)=%f\n",m,w,h,f);
 
 		return f;
 	}
-//	else
-//		printf ("Param error %d,%d\n",w,h);
 	return 0.0;
 }
 
 int fset(char m,int w,int h, float v)
 {
-if (dbg) printf ("SET %c (%d,%d)=%f\n",m,w,h,v);
+	if (dbg) printf ("SET %c (%d,%d)=%f\n",m,w,h,v);
 
-	if (m>='A' && m<='Z' && h>=0 && w>=0 && h<fmstore[m-'A'].h && w<fmstore[m-'A'].w)
+	if (m>='A' && m<='Z' && h>=0 && w>=0 && h<fgeth(m) && w<fgetw(m))
 	{
-		int n=h+fmstore[m-'A'].h*w;
+		int n=h+fgeth(m)*w;
 		fmstore[m-'A'].fstore[n] = v;
 		return 0;
 	}
@@ -143,35 +168,19 @@ if (dbg) printf ("SET %c (%d,%d)=%f\n",m,w,h,v);
 	return 1;
 }
 
-int fsize(char m, int p) //p=0 return w else return h
-{
-	if (m>='A' && m<='Z')
-	{
-		switch (p) {
-		case 0:  return fmstore[m-'A'].w;
-		case 1:  return fmstore[m-'A'].h;
-		case 2:  return fmstore[m-'A'].w*fmstore[m-'A'].h;
-		default: return 0;
-		}
-	}
-	return 0;
-}
 
 int fimport(char m, char m2)
 {
-	int *arrayA;
 	int i;
-	
-	arrayA=listarray(m2);
 
-	
-	if (m>='A' && m<='Z' && arrayA!=0)
+	if (m>='A' && m<='Z')
 	{
-		int n=fmstore[m-'A'].h*fmstore[m-'A'].w;
+		int n=fsize(m,2);
+		float *fp=fgetd(m);
 
 		for (i=0; i<n; i++)
 		{
-			fmstore[m-'A'].fstore[i] = (float)listread(m2,i);
+			fp[i] = (float)listread(m2,i);
 		}
 		return 0;
 	}
@@ -189,10 +198,10 @@ int fimportf(char m, char m2, float rd)
 		
 	if (m>='A' && m<='Z' && m2>='A' && m2<='Z')
 	{
-		int h1=fmstore[m-'A'].h;
-		int w1=fmstore[m-'A'].w;
-		int h2=fmstore[m2-'A'].h;
-		int w2=fmstore[m2-'A'].w;
+		int h1=fgeth(m);
+		int w1=fgetw(m);
+		int h2=fgeth(m2);
+		int w2=fgetw(m2);
 
 		for (i=0; i<h1; i++)
 		{
@@ -202,9 +211,8 @@ int fimportf(char m, char m2, float rd)
 				if (i>=h2 || j>=w2) 
 					f=rd;
 				else
-					f=fmstore[m2-'A'].fstore[j+i*w2];
-
-				fmstore[m-'A'].fstore[j+i*w1]=f;
+					f=fget(m2,j,i);
+				fset(m,j,i,f);
 			}
 		}
 		return 0;
@@ -223,7 +231,7 @@ int fimportf(char m, char m2, float rd)
 
 int fmatzerodiag(char ln1)   
 {
-	int i, h=fmstore[ln1-'A'].h;
+	int i, h=fgeth(ln1);
 
 	for (i=0; i<=h; i++)
 	{
@@ -241,8 +249,8 @@ int fmatzero(char ln1, int a, int b, int c, int d)
 {
 	int i, j;
 
-	int h=fmstore[ln1-'A'].h;
-	int w=fmstore[ln1-'A'].w;
+	int w=fgetw(ln1);
+	int h=fgeth(ln1);
 
 	if (a<0 || b<0 || c>=w || d>=h) 
 	{
@@ -269,8 +277,8 @@ int fmatnorm(char ln1)
 {
 	int i, j;
 
-	int h=fmstore[ln1-'A'].h;
-	int w=fmstore[ln1-'A'].w;
+	int w=fgetw(ln1);
+	int h=fgeth(ln1);
 
 	// find max
 	float max=0.0;
@@ -293,7 +301,6 @@ int fmatnorm(char ln1)
 			fset(ln1,i,j,fget(ln1,i,j)/max);
 		}
 	}
-
 	return 0;			
 }
 
@@ -305,8 +312,8 @@ int fmatnorm(char ln1)
 int fmatprint(char m)
 {
 	int i,j;
-	int h=fmstore[m-'A'].h;
-	int w=fmstore[m-'A'].w;
+	int w=fgetw(m);
+	int h=fgeth(m);
 	printf ("matrix '%c' %dx%d\n", m, w, h);
 
 	for (j=0; j<h;j++)
@@ -334,14 +341,14 @@ T(A) = 1 4
 
 int ftranspose(char ln1, char lnx)   // @A^T"
 {
-	int h=fmstore[ln1-'A'].h;
-	int w=fmstore[ln1-'A'].w;
+	int w=fgetw(ln1);
+	int h=fgeth(ln1);
 	int mx,my;
 
 #ifndef WIN32
 	float tp[w*h]; //temp
 #endif
-if (dbg) printf ("transpose=%c->%c\n",ln1,lnx);
+	if (dbg) printf ("transpose=%c->%c\n",ln1,lnx);
 
 	for (my=0; my<h; my++)
 	{
@@ -350,23 +357,11 @@ if (dbg) printf ("transpose=%c->%c\n",ln1,lnx);
 			tp[mx*h+my] = fget(ln1,mx,my);	
 		}
 	}
-
-	if (lnx==ln1)
+	
+	if (fmatrixcreate(lnx, h, w)<0) 
 	{
-		if (dbg) printf("transpose same array\n");
-		fmstore[lnx-'A'].h = w;
-		fmstore[lnx-'A'].w = h;		
-	}
-	else
-	{
-		//create	
-		printf("create array %c\n",lnx);
-		if (fmatrixcreate(lnx, h, w)<0) 
-		{
-			printf("Err: listcreate failed\n");
-			return 1;
-		}
-
+		printf("Err: listcreate failed\n");
+		return 1;
 	}
 
 	for (my=0; my<h; my++)
@@ -376,7 +371,6 @@ if (dbg) printf ("transpose=%c->%c\n",ln1,lnx);
 			fset(lnx,my,mx, tp[mx*h+my]);	
 		}
 	}
-
 	return 0;
 }
 
@@ -388,13 +382,12 @@ if (dbg) printf ("transpose=%c->%c\n",ln1,lnx);
 
 int fmultiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 {
-
 	int m,rx,ry, ha,wa,hb,wb;
  
-	ha=(int)(fmstore[ln1-'A'].h);
-	wa=(int)(fmstore[ln1-'A'].w);
-	hb=(int)(fmstore[ln2-'A'].h);
-	wb=(int)(fmstore[ln2-'A'].w);
+	wa=fgetw(ln1);
+	ha=fgeth(ln1);
+	wb=fgetw(ln2);
+	hb=fgeth(ln2);
 
 	// ha,wa * hb,wb
 	// wa == hb
@@ -445,22 +438,15 @@ int fmultiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 
 int fadd(char ln1, char ln2, char lnx, char op)   // "@X = @A + @B"
 {
-
 	int rx,ry, ha,wa,wb;
- 
-	ha=(int)(fmstore[ln1-'A'].h);
-	wa=(int)(fmstore[ln1-'A'].w);
-	wb=(int)(fmstore[ln2-'A'].w);
+
+	wa=fgetw(ln1);
+	ha=fgeth(ln1);
+	wb=fgetw(ln2);
 
 #ifndef WIN32
 	float tp[wb*ha]; //temp
 #endif
-
-	//if (wa != wb || ha != hb) 
-	//{
-	//	printf ("Bad Matrix size (%d,%d) + (%d,%d) \n",wa,ha,wb,hb);
-	//	return 2; //bad array size
-	//}
 
 	if (op=='+')
 	{
@@ -532,11 +518,11 @@ int fadd(char ln1, char ln2, char lnx, char op)   // "@X = @A + @B"
 int fconvolve(char ln1, char ln2)   // "@A (.) @B"
 {	
 
-	int h=fmstore[ln1-'A'].h;
-	int w=fmstore[ln1-'A'].w;
+	int w=fgetw(ln1);
+	int h=fgeth(ln1);
 	int mx,my;
-	//int szA=h*w;
-	int szB=fmstore[ln2-'A'].w*fmstore[ln2-'A'].h;
+
+	int szB=fsize(ln2,2);
 
 	if (szB==9) // 3x3 kernel
 	{
@@ -631,8 +617,8 @@ int fconvolve(char ln1, char ln2)   // "@A (.) @B"
 
 int fhistogram(char ln1, int mode)   // "@A 
 {
-	int h=fmstore[ln1-'A'].h;
-	int w=fmstore[ln1-'A'].w;
+	int w=fgetw(ln1);
+	int h=fgeth(ln1);
 	int mx,my;
 
 	if (mode==1)

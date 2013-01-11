@@ -27,15 +27,15 @@ extern BYTE cpos[];  // for motor-neuron support
 
 int fsimple_network(int noi, int noo, int nl1, int nl2, int nl3, int flg)
 {
+/*
 	int j;
-
 
 #ifndef WIN32
 	int l1o[nl1];
 	int l2o[nl2];
 	int l3o[nl3];
 #endif
-	
+*/	
 	return 0;
 }
 

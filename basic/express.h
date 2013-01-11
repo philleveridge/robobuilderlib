@@ -39,6 +39,13 @@ typedef struct mat {
 // work in progress
 //
 
+typedef struct fmat {
+	int h; 
+	int w;
+	float *fstore;
+} fMatrix;
+
+
 typedef struct object {
         int   type;
         union { int	q;
@@ -47,6 +54,7 @@ typedef struct object {
                 char    *string;
                 void    *cell;
                 void    *func;
+		char    fmat;
                 };
 } tOBJ;
 
@@ -59,7 +67,7 @@ typedef tOBJ (*PFP)(tCELLp);
 
 enum  TOKTYP	{NUMI, NUMF, DELI, ALPHA, OPR, STRNG};
 enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ, COMMA};
-enum  TYPE	{SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY};
+enum  TYPE	{SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT};
 
 tOBJ eval_oxpr(char *s);
 
