@@ -15,7 +15,7 @@ For an in depth look at features  see [http://code.google.com/p/robobuilderlib/d
   # FOR NEXT Loops
   # PRINT
   # END
-  # Immediate mode so commands can be run direct from command line
+  # [InputMode Simple] editor with Immediate mode so commands can be run directly
   # Debug mode to allow trace of programs
   # Full maths expression `+ * - /` and including MOD AND OR
   # Maths functions such as SIN and COS
