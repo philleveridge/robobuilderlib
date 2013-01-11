@@ -18,6 +18,8 @@ new functions available:
 !LET DFN="mydata.txt"
 !LET PI=3.1415
 }}}
+
+Support several functions SIN(x), sine of x; SIG(x) sigmoid function (1/(1+e*-x), DSIG(x) sigmoid derivative (x(1-x)).
   
   * PRINT
 {{{
@@ -94,7 +96,10 @@ and processing an image for that colour
 
 Coming soon - floating point matrices.
 
+See the [Backprop Back propagation demo] for an example of matrix in use.
+
 === examples ===
+
 {{{
 'define float matrix
 !mat def v=3;4    
