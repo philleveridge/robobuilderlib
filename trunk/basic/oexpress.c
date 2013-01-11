@@ -18,6 +18,28 @@
 #include "functions.h"
 #include "lists.h"
 
+
+// new float matrices
+
+extern int   fmatrixcreate	(char m, int w, int h);
+extern float fget		(char m,int w,int h);
+extern int   fgetw		(char m);
+extern int   fgeth		(char m);
+extern int   fset		(char m,int w,int h, float v);
+extern int   fmatzero		(char m, int a, int b, int c, int d);
+extern int   fmatzerodiag	(char m) ;
+extern int   fmatprint		(char m);
+extern int   ftranspose		(char m, char lnx);
+extern int   fmultiply		(char m, char ln2, char lnx);
+extern int   fhistogram		(char m, int mode);
+extern int   fconvolve		(char m, char ln2);
+extern int   fadd		(char m, char m2, char lnx, char op);
+extern int   fsize		(char m, int p);
+extern int   fimport		(char m, char m2);
+extern int   fimportf		(char m, char m2, float rd);
+extern int   fmatnorm		(char ln1);
+extern int   fmatcopy		(char ma, char mb);
+
 //matrix.c matrix fuctions 
 extern void matzero	(char ln1, int a, int b, int c, int d) ;
 extern void transpose	(char ln1) ;  				// @A^T"
@@ -465,6 +487,10 @@ void printtype(tOBJ r)
     {
         rprintfStr("FUNCTION");   
     }
+    else if (r.type == FMAT)
+    {
+	fmatprint(r.fmat);	 
+    }
     else    
     {               
         rprintfStr("? error - type\n");   
@@ -762,7 +788,7 @@ int get_integer()
 	int tk = get_token();
 	
 	if (tk==NUMI)
-		return tnum;;
+		return tnum;
 	return 0;
 }
 
@@ -798,26 +824,121 @@ int toint(tOBJ v)
 }
 
 
-// new float matrices
-
-extern int   fmatrixcreate	(char m, int w, int h);
-extern float fget		(char m,int w,int h);
-extern int   fset		(char m,int w,int h, float v);
-extern int   fmatzero		(char ln1, int a, int b, int c, int d);
-extern int   fmatzerodiag	(char ln1) ;
-extern int   fmatprint		(char m);
-extern int   ftranspose		(char ln1, char lnx);
-extern int   fmultiply		(char ln1, char ln2, char lnx);
-extern int   fhistogram		(char ln1, int mode);
-extern int   fconvolve		(char ln1, char ln2);
-extern int   fadd		(char ln1, char ln2, char lnx, char op);
-extern int   fsize		(char m, int p);
-extern int   fimport		(char m, char m2);
-extern int   fimportf		(char m, char m2, float rd);
-extern int   fmatnorm		(char ln1);
-extern int   fmatcopy		(char ma, char mb);
 
 static int  intf=1;
+
+void mexpress(char m)
+{
+	tOBJ v;
+
+	int w=fsize(m,0);
+	int h=fsize(m,1);
+
+	if (*e == '@')
+	{
+		//!MAT LET A=@B
+		char im;
+		e++;
+		im=*e++;
+
+		fimport(m,im);
+		return;
+	}
+
+	if (*e >= 'A' && *e <='Z' && *(e+1)==';')
+	{
+		//!MAT LET A=B;1.0
+		char im=*e;
+		e+=2;
+		v=eval_oxpr(e);		
+		fimportf(m, im, tofloat(v));
+		return;
+	}
+
+	if (*e >= 'A' && *e <='Z')
+	{
+		//!MAT LET A=B+C
+		char op,mb;
+		char ma=*e++;
+
+		if (*e==0)
+		{
+			fmatcopy(ma, m);
+			return;
+		}
+
+		while (*e != 0)
+		{
+			op=*e++;
+
+			if (op == '^')
+			{
+				// transpose
+				ftranspose(ma,m);
+				ma=m;
+				continue;
+			}
+
+			if (get_str_token(0))
+			{
+				mb=tokbuff[0];
+
+				if (*e=='^')
+				{
+					ftranspose(mb,mb); //this overwrites
+					e++;
+				}
+				
+				if (op == '*')
+				{
+					// mult
+					fmultiply(ma,mb,m);
+				}
+				else
+				if (op == '+' || op == '-' || op  == '.' || op == '/')
+				{
+					if (op=='.') op='*';
+					fadd(ma,mb,m,op);
+				}
+				else
+				if (op == '#')
+				{
+					//convolve
+					fconvolve(ma, mb) ;
+					fmatcopy(ma, m);
+				}
+				else
+				{
+					printf("? invalid MAT op %c\n", op);
+					return;
+				}
+				ma=m;
+			}
+		}
+		return;
+	}
+
+	int i=0, j=0;
+
+	while (*e != 0)
+	{
+		v=eval_oxpr(e);	
+		fset(m,i,j,tofloat(v));
+		if (++i == w)
+		{
+			i=0; j++;
+		}
+		if (j==h)
+			return;
+
+		if (*e != ';')
+		{
+			printf ("Incorrect args [%c] (%d,%d) %d ?\n",*e,i,j,h*w);
+			return;
+		}
+		e++;
+	}
+}
 
 void extend(char *x)
 {
@@ -949,113 +1070,10 @@ void extend(char *x)
 				if (get_str_token(0))
 				{					
 					m=tokbuff[0];
+
 					if (*e++ == '=')
 					{
-						int i=0, j=0;
-						int w=fsize(m,0);
-						int h=fsize(m,1);
-
-						if (*e == '@')
-						{
-							//!MAT LET A=@B
-							char im;
-							e++;
-							im=*e++;
-			
-							fimport(m,im);
-							return;
-						}
-
-						if (*e >= 'A' && *e <='Z' && *(e+1)==';')
-						{
-							//!MAT LET A=B;1.0
-							char im=*e;
-							e+=2;
-							v=eval_oxpr(e);		
-							fimportf(m, im, tofloat(v));
-							return;
-						}
-
-						if (*e >= 'A' && *e <='Z')
-						{
-							//!MAT LET A=B+C
-							char op,mb;
-							char ma=*e++;
-
-							if (*e==0)
-							{
-								fmatcopy(ma, m);
-								return;
-							}
-
-							while (*e != 0)
-							{
-								op=*e++;
-
-								if (op == '^')
-								{
-									// transpose
-									ftranspose(ma,m);
-									ma=m;
-									continue;
-								}
-
-								if (get_str_token(0))
-								{
-									mb=tokbuff[0];
-
-									if (*e=='^')
-									{
-										ftranspose(mb,mb); //this overwrites
-										e++;
-									}
-									
-									if (op == '*')
-									{
-										// mult
-										fmultiply(ma,mb,m);
-									}
-									else
-									if (op == '+' || op == '-' || op  == '.' || op == '/')
-									{
-										if (op=='.') op='*';
-										fadd(ma,mb,m,op);
-									}
-									else
-									if (op == '#')
-									{
-										//convolve
-										fconvolve(ma, mb) ;
-										fmatcopy(ma, m);
-									}
-									else
-									{
-										printf("? invalid MAT op %c\n", op);
-										return;
-									}
-									ma=m;
-								}
-							}
-							return;
-						}
-
-						while (*e != 0)
-						{
-							v=eval_oxpr(e);	
-							fset(m,i,j,tofloat(v));
-							if (++i == w)
-							{
-								i=0; j++;
-							}
-							if (j==h)
-								return;
-
-							if (*e++ != ';')
-							{
-								printf ("Incorrect args (%d,%d) %d ?\n",i,j,h*w);
-								return;
-							}
-						}
+						mexpress(m);
 					}
 				}
 			}					
