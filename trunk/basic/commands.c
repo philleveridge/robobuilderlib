@@ -1737,7 +1737,6 @@ extern int matgeth	(char m);
 extern int matcreate	(char m, int w, int h);
 extern int matprint	(char m);
 
-
 int cmd_matrix(line_t ln)
 {
 	char *p=ln.text;
@@ -1772,11 +1771,12 @@ int cmd_matrix(line_t ln)
 	if (!strncmp(p,"PRINT ",6))
 	{
 		p+=6;		
-		if (*p != '\0')
+		while (*p != '\0')
 		{
 			m=*p++;
 			matprint(m);
-			return 0;
+			if (*p++ != ';')
+			 return 0;
 		}
 	}
 
@@ -1812,9 +1812,35 @@ int cmd_matrix(line_t ln)
 		}
 	}
 
+	if (!strncmp(p,"APPLY ",6))
+	{
+		// MAT APPLY A=3+$i				
+		p+=6;
+		if (*p != '\0')
+		{
+			mx=*p++;
+			if (*p++ == '=')
+			{
+				char *t=p;	
+				int tn = nis;
+				int ne = listsize(mx);
+				for (i=0; i<ne; i++)
+				{
+					p=t;
+					n=0;
+					nis=listread(mx,i);
+					eval_expr(&p,&n);
+					listwrite(mx, i, n);
+				}
+				nis=tn;
+				return 0;	
+			}
+		}
+	}
+
 	if (!strncmp(p,"MULT ",5))
 	{
-		// !MAT MULT X;A;B	
+		// MAT MULT X;A;B	
 		p+=5;
 		if (*p != '\0')
 		{
@@ -1857,7 +1883,7 @@ int cmd_matrix(line_t ln)
 	if (!strncmp(p,"ZERO ",5))
 	{
 		// !MAT ZERO A;1;1;2;2
-		
+		// !MAT ZERO A	
 		int a[4];
 		p+=5;
 
@@ -1867,7 +1893,7 @@ int cmd_matrix(line_t ln)
 
 			if (*p != ';')
 			{
-				//MAT ZERO A -> set diagnalo to zero
+				//MAT ZERO A -> set diaganol to zero
 				matzerodiag(ma);
 				return 0;
 			}

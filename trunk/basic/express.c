@@ -371,12 +371,33 @@ unsigned char eval_expr(char **str, long *res)
 				(*str)++;
 				n1=0;
 				eval_expr(str, &n1);
+				if (**str == ',')
+				{
+					//sub list
+					int i, ct;
+					(*str)++;
+					eval_expr(str, &ct);
+					if (**str !=']' )
+						break;
 
-				n1 = (long)listread(arrayname, (int)n1);
-				(*str)++;
+					for (i=n1; i<=ct; i++)
+					{
+
+						scene[i-n1]= (long)listread(arrayname, i);
+					}
+					nis=ct-n1+1;
+					arrayname='!';
+					(*str)+=2;
+					return ARRAY;
+				}
+				else
+				{
+					n1 = (long)listread(arrayname, (int)n1);
+					(*str)++;
+				}
 				break;
 			}
-			if ((**str == '+' || **str == '-') && *(*str+1)=='@')
+			if ((**str == '+' || **str == '-' || **str == '/'|| **str == '*') && *(*str+1)=='@')
 			{
 				add_sub(arrayname, *(*str+2), **str) ;
 				arrayname='!';
