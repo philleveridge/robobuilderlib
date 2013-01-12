@@ -10,6 +10,7 @@ From [http://books.google.co.uk/books?id=jJTN8RPgyXgC&lpg=PA181&ots=h_dBNKPDSJ&d
 = Details =
 
 <code>
+!mat def w=4;1
 !mat def x=4;1
 !mat def v=3;4
 
