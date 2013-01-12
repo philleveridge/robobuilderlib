@@ -4,6 +4,8 @@
 
 Used as a test case for floating point matrix extended commands (only available on Linux and Omnima version)
 
+From [http://books.google.co.uk/books?id=jJTN8RPgyXgC&lpg=PA181&ots=h_dBNKPDSJ&dq=hopfield%20network%20using%20matlab&pg=PA194#v=onepage&q&f=false Introduction to neural networks with matlab 6.0] Example 8.1 pg 194
+
 
 = Details =
 
