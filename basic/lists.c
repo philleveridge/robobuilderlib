@@ -546,10 +546,19 @@ void add_sub(char ln1, char ln2, char op)   // "@A +/- @B"
 		}
 		else
 		{
-		if (op=='+')
-			scene[i] = arrayA[i] + arrayB[i];
-		else
-			scene[i] = arrayA[i] - arrayB[i];
+			switch (op) {
+			case '+':
+				scene[i] = arrayA[i] + arrayB[i];
+				break;
+			case '-':
+				scene[i] = arrayA[i] - arrayB[i];
+				break;
+			case '/':
+				scene[i] = arrayA[i] / arrayB[i];
+				break;
+			case '*':
+				scene[i] = arrayA[i] * arrayB[i];
+				break;			}
 		}
 	}
 	nis=szA;
