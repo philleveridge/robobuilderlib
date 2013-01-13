@@ -1211,10 +1211,11 @@ void uptime()
 
 void testforreset()
 {
-	if((PINA&03) == 0)  // PF1 on, PF2 off
+
+	if((PINA&03) == 0)  // PF1 on, PF2 on 
 	{
 		delay_ms(10);
-		if((PINA&3) == 0)
+		if((PINA&3) == 0) // after 1s still PF1 on, PF2 on 
 		{
 			rprintfProgStr(PSTR("reset\r\n"));
 			basic_clear();
@@ -1229,7 +1230,7 @@ void init()
 }
 
 extern int nis;
-
+extern int dcmp_mode() ;
 /*************************************************************************************************************
 
 COMMAND LINE
@@ -1401,6 +1402,11 @@ void basic()
 				}
 			}
 			break;
+#ifdef AVR
+		case 'M':
+			dcmp_mode();
+			break;
+#endif
 #ifndef AVR
 		case 'Z': // upload  (Unix & windows version only)
 			binstore();

@@ -374,7 +374,7 @@ unsigned char eval_expr(char **str, long *res)
 				if (**str == ',')
 				{
 					//sub list
-					int i, ct;
+					int i; long ct;
 					(*str)++;
 					eval_expr(str, &ct);
 					if (**str !=']' )
@@ -383,7 +383,7 @@ unsigned char eval_expr(char **str, long *res)
 					for (i=n1; i<=ct; i++)
 					{
 
-						scene[i-n1]= (long)listread(arrayname, i);
+						scene[i-n1]= (int)listread(arrayname, i);
 					}
 					nis=ct-n1+1;
 					arrayname='!';

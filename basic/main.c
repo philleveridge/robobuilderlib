@@ -21,19 +21,18 @@
 #include "accelerometer.h"
 #include "wckmotion.h"
 
-#define BR115200			7 
-#define DATA_REGISTER_EMPTY (1<<UDRE)
+#define BR115200		7 
+#define DATA_REGISTER_EMPTY 	(1<<UDRE)
 
 
 //adc.c
-extern BYTE				gAD_Ch_Index;
-extern void 			ADC_set(BYTE );
+extern BYTE		gAD_Ch_Index;
+extern void 		ADC_set(BYTE );
 extern volatile BYTE   	MIC_SAMPLING;
 
 // global variables------------------------------------------------------------
 WORD    gBtnCnt;						// counter for PF button press
-
-int		gX,gY,gZ;
+int	gX,gY,gZ;
 int 	autobalance;
 int     response;						//reponsd to event on/off
 
@@ -242,18 +241,19 @@ WORD	gBtnCnt;
 //------------------------------------------------------------------------------
 void ReadButton(void)
 {
-	if((PINA&03) == 1)  // PF1 on, PF2 off
+	// note:  on is low !
+	if((PINA&03) == 2)  // PF1 on, PF2 off
 	{
 		delay_ms(10);
-		if((PINA&1) == 1)
+		if((PINA&3) == 2) //held for 1s
 		{
 			gBtn_val = PF1_BTN_PRESSED;
 		}
 	}
-	if((PINA&3) == 2)  // PF1 on, PF2 off
+	if((PINA&3) == 1)  // PF1 on, PF2 off
 	{
 		delay_ms(10);
-		if((PINA&3) == 2)
+		if((PINA&3) == 1)  //held for 1s
 		{
 			gBtn_val = PF2_BTN_PRESSED;
 		}
@@ -296,11 +296,18 @@ void chargemode()
 	}
 }
 
+extern int dcmp_mode() ;
+
 void ProcButton(void)
 {
 	if(gBtn_val == PF1_BTN_PRESSED)
 	{
 		chargemode();
+	}
+
+	if(gBtn_val == PF2_BTN_PRESSED)
+	{
+		dcmp_mode();
 	}
 }
 
