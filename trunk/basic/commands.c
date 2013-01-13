@@ -456,40 +456,6 @@ int cmd_data(line_t l)
 		return 0;
 }	
 
-void PerformAction (int Action)
-{	
-	if (Action>=0 && Action <=18)
-	{
-	/*
-		0x00:  //PunchLeft
-		0x01:  //PunchRight
-		0x02:  //SidewalkLeft
-		0x03:  //SidewalkRight
-		0x04:  //TurnLeft
-		0x05:  //TurnRight
-		0x06:  //GetupBack
-		0x07:  //GetupFront
-		0x08:  //WalkForward
-		0x09:  //WalkBackward
-		0x0A:  //lshoot
-		0x0B:  //rshoot
-		0x0C:  //rsidewalk
-		0x0D:  //lsidewalk
-		0x0E:  //standupr
-		0x0F:  //standupf
-		0x10:  //sitdown
-		0x11:  //hi
-		0x12:  //kick left front turn
-	*/
-		rprintf("Play Motion %d\r\n", Action);
-		PlayMotion(Action);
-	}
-	else
-	{
-		rprintfProgStr(PSTR("Motion range:  0 - 18\r\n"));
-	}
-}
-
 int cmd_run(line_t l)
 {
 		long n=0;
@@ -499,7 +465,36 @@ int cmd_run(line_t l)
 			BasicErr=1;
 			return 0;
 		}
-		PerformAction(n);		
+		if (n>=0 && n <=18)
+		{
+		/*
+			0x00:  //PunchLeft
+			0x01:  //PunchRight
+			0x02:  //SidewalkLeft
+			0x03:  //SidewalkRight
+			0x04:  //TurnLeft
+			0x05:  //TurnRight
+			0x06:  //GetupBack
+			0x07:  //GetupFront
+			0x08:  //WalkForward
+			0x09:  //WalkBackward
+			0x0A:  //lshoot
+			0x0B:  //rshoot
+			0x0C:  //rsidewalk
+			0x0D:  //lsidewalk
+			0x0E:  //standupr
+			0x0F:  //standupf
+			0x10:  //sitdown
+			0x11:  //hi
+			0x12:  //kick left front turn
+		*/
+			rprintf("Play Motion %d\r\n",n);
+			PlayMotion(n);
+		}
+		else
+		{
+			rprintfProgStr(PSTR("Valid range: 0-18\r\n"));
+		}		
 		return 0;
 }
 
@@ -587,8 +582,8 @@ int cmd_speed(line_t l)
 
 int cmd_end(line_t l)
 {
-		rprintfProgStr (PSTR("End of program\r\n")); 
-		return 0xCC;
+	rprintfProgStr (PSTR("End of program\r\n")); 
+	return 0xCC;
 }
 
 void push_line(unsigned int n)
@@ -1949,7 +1944,7 @@ void record(int mode)
 	{
 		if (scene[i]<0 || scene[i]>30)  { rprintf ("Err - servo id %d\n", scene[i]); return;}
 		// set passive
-		if (dbg) rprintf ("Passive %d\n",scene[i]); 
+		if (dbg>1) rprintf ("Passive %d\n",scene[i]); 
 		wckSetPassive(scene[i]);
 	}
 
@@ -2033,12 +2028,12 @@ void playback(int mode)
 		{
 			if (scene[i]<0 || scene[i]>30)  { rprintf ("Err - servo id %d\n", scene[i]); return;}
 			// wckMove(scene[i],scene[p++])
-			if (dbg) rprintf ("Move %d = %d\n",scene[i],scene[pbstep]); 
+			if (dbg>1) rprintf ("Move %d = %d\n",scene[i],scene[pbstep]); 
 			wckPosSend(scene[i], 4, scene[pbstep++]);
 		}
 
 		//wait for time t;
-		if (dbg) 
+		if (dbg>1) 
 			rprintf ("Wait %d\n",scene[0]); 
 		delay_ms(pbtime);
 
@@ -2061,7 +2056,7 @@ void pb2()
 	{
 		if (scene[i]<0 || scene[i]>30)  { rprintf ("invalid servo id %d\n", scene[i]); return;}
 		// wckMove(scene[i],scene[p++])
-		if (dbg) rprintf ("Move %d = %d\n",scene[i],scene[pbstep]); 
+		if (dbg>1) rprintf ("Move %d = %d\n",scene[i],scene[pbstep]); 
 		wckPosSend(scene[i], 4, scene[pbstep++]);
 	}
 

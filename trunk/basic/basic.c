@@ -1364,8 +1364,8 @@ void basic()
 			rprintf ("%d lines loaded\r\n", findend());
 			break;
 		case '~':
-			dbg=1-dbg;
-			if (dbg) rprintfProgStr(PSTR("DEBUG ON\n"));
+			dbg=(++dbg)%4;
+			if (dbg) rprintfProgStr(PSTR("DEBUG ON\n")); else rprintfProgStr(PSTR("DEBUG OFF\n"));
 			break;
 		case 'Q':
 		case 'q': // query 
@@ -1395,10 +1395,9 @@ void basic()
 					rprintfProgStr (PSTR("EXIT DEMO MODE\r\n"));
 					break;
 				}
-
 				if (ch>=0 && ch<20)
 				{
-					PerformAction(map[ch]);
+					PlayMotion(map[ch]);
 				}
 			}
 			break;

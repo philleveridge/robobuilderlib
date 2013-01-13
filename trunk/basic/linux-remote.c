@@ -62,18 +62,19 @@ void writebyte(int b)
 	buf[0] = b;
 	write(fd, buf, 1);
 	
-	if (dbg) { printf ("[%02x]\n", buf[0]); }
+	if (dbg>2) { printf ("[%02x]\n", buf[0]); }
 }
 
 int readbyte()
 {
 	char buf[1];
 	if(fd == -1) {
-	  printf( "read byte failed - no port\n" );
+	  printf( "read byte failed - no port\n" );	
 	  return -1;
 	}
 
-	int b,cnt=0;
+	int b,cnt=gtick;
+
 
 	while (1)
 	{
@@ -81,18 +82,14 @@ int readbyte()
 
 		if (b>=0)
 		{
-			if (dbg) printf (")%02x( ", buf[0]);
+			if (dbg>2) printf (")%02x( ", buf[0]);
 			return buf[0];
 		}
-
-		//if (b<0 && errno!=EAGAIN)
-		//	break;
-
-		if (cnt++>10000) // timeout
-			break;
+		if ((gtick-cnt)>100)
+			break;  // break after 100ms
 	}
 
-	if (dbg) printf("Timeout\n");
+	if (dbg) printf("Read Timeout!!\n");
 	return -1;
 }
 
@@ -114,7 +111,7 @@ void closeport()
 
 /**************************************************************************************/
 
-#define	DBO(x) {if (dbg) {x}}
+#define	DBO(x) {if (dbg>2) {x}}
 extern int simflg, remote, dbg;
 
 #include <pthread.h>
@@ -181,6 +178,14 @@ void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
 	char CheckSum;
 	int i=0;
 	DBO(printf ("LINUX: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);)
+
+if (dbg>1) {
+		for (i=0; i<=LastID; i++)
+		{
+			printf ("%3d, ", (int)TargetArray[i]);
+		}
+		printf("\n");
+}
 
     pthread_mutex_lock( &cs_mutex );
 
@@ -323,6 +328,8 @@ WORD send_hex_array(int *p, int n)
  **************************************************************************************/
 extern int z_value,y_value,x_value,gDistance;
 
+static psd_status=0;
+
    int CB2I(int x) {if (x<128) return x; else return x-256;}
 
    int readXYZ()
@@ -346,8 +353,30 @@ extern int z_value,y_value,x_value,gDistance;
    		return;
    }
 
+void PSD_on(void)
+{
+	if (!psd_status)
+	{
+		psd_status=1;
+	   	wckReadPos(30,3);
+		delay_ms(50);
+	}
+}
+
+void PSD_off(void)
+{
+	if (psd_status)
+	{
+		psd_status=0;
+	   	wckReadPos(30,4);
+	}
+}
+
+
+
    int Get_AD_PSD()
    {
+		PSD_on();
    		readPSD();
    		return 0;
    }
@@ -491,6 +520,13 @@ extern int z_value,y_value,x_value,gDistance;
 			cpos[i]=p;
 		}
 		nos=i;
+
+if (dbg) {
+		for (i=0; i<nos; i++)
+		{
+			printf ("S[%d] = %d\n", i, cpos[i]);
+		}
+}
 		return i;
 	}
 
