@@ -130,7 +130,6 @@ int sDcnt=0;
 BYTE sData[64];
 int offset[32];
 
-void PSD_off() {}
 
 void sample_sound(int n){DBO(printf ("LIN: Sample sound %d\n", n);)}
 void sound_init()		{DBO(printf ("LIN: Sound init\n");)}
@@ -451,13 +450,6 @@ void main(int argc, char *argv[])
 		exit(0);
 	}
 
-	initsocket(sf);
-	initIO();        
-	initfirmware();
-	basic_zero();
-
-
-
 #ifdef IMAGE
 	signal(SIGUSR1, imageready);
 	int n=getpid();
@@ -466,12 +458,17 @@ void main(int argc, char *argv[])
 	fclose(pid);
 #endif
 
-	if (lf || rf)
-		binmode();
-
 	pthread_t pth;	// this is our thread identifier
 
 	pthread_create(&pth,NULL,monitor_proc,"TIMER0");
+
+	initsocket(sf);
+	initIO();        // requires timer     
+	initfirmware();
+	basic_zero();
+
+	if (lf || rf)
+		binmode();
 
 	if (rf) 
 		basic_run(0);

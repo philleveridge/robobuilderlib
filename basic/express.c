@@ -115,7 +115,7 @@ static int op=0;
 void dumpstack()
 {
 	int sc;
-	if (dbg) {
+	if (dbg>2) {
 		rprintf("Ops %d\n", op); 
 		for (sc=0;sc<op;sc++) rprintf("%d - [%c]\n", sc,ops[sc]);
 		rprintf("stack %d\n", sp); 
@@ -204,7 +204,7 @@ unsigned char eval_expr(char **str, long *res)
 #endif
 
 
-	if (dbg) {
+	if (dbg>1) {
 		rprintf("Eval =%s\n", *str); 
 		dumpstack(); // debug
 	}
