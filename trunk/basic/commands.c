@@ -1821,7 +1821,8 @@ int cmd_matrix(line_t ln)
 			mx=*p++;
 			if (*p++ == '=')
 			{
-				char *t=p;	
+				char *t=p;
+				long el;	
 				int tn = nis;
 				int ne = listsize(mx);
 				for (i=0; i<ne; i++)
@@ -1829,8 +1830,8 @@ int cmd_matrix(line_t ln)
 					p=t;
 					n=0;
 					nis=listread(mx,i);
-					eval_expr(&p,&n);
-					listwrite(mx, i, n);
+					eval_expr(&p,&el);
+					listwrite(mx, i, (int)el);
 				}
 				nis=tn;
 				return 0;	
