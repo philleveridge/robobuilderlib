@@ -1,0 +1,37 @@
+#summary Advanced Demos
+
+= Introduction =
+
+Latest demos (most/all require BasicIDE - [BasicClient] for details on the IDE) to compile and upload code.  Some all only work on the Linux/Windows/Omnima extended version.
+
+== Motion ==
+
+  * [Walking Walking algorithms]
+  * [ArmsMoving Continuous arm movement using a cubic function]
+  * [Cwalk2 Continuous Walking]
+  * [Generate On fly generating a gait using sine waves]
+
+== Sound ==
+
+  * [sample FFT Sound Sample]
+
+== Neural networks ==
+
+  * [AutoAssocNets Auto-associative Network (ANN) demo - using matrices]
+  * [HopfieldNetwork Hopfiled Network demo - using matrices]
+  * [neuron1 Neural Network demo (XOR problem)]
+  * [Backprop Back Propagation] learning using float point matrix
+
+== Planning ==
+
+  * [MazeNavigation Maze Navigation]
+  * [Kinematics Simple inverse 2D kinematic demo]
+  * [Planner Simple MDP type motion planner]
+
+== Genetic Algorithms ==
+
+  * [evo2 Using Genetic algorithm]
+
+== Access ROM / Hardware ==
+
+  * [AccessROM Change the Serial number]
