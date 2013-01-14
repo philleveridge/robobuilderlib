@@ -41,7 +41,7 @@ int matcreate(char m, int w, int h)
 {
 	if (!(m>='A' && m<='Z'))
 		return 1;
-	if (listcreate(m, w*h, 2)<0)
+	if (listcreate(m, w*h)<0) //, 2)<0)
 		return 1;
 	mstore[m-'A'].w=w;
 	mstore[m-'A'].h=h;
@@ -171,7 +171,7 @@ int transpose(char ln1, char lnx)   // @A^T"
 	{
 		//create
 		int *arrayX;
-		int r = listcreate(lnx, h*w, 2);
+		int r = listcreate(lnx, h*w); //, 2);
 
 		if (r<0) 
 		{
@@ -216,7 +216,7 @@ int multiply(char ln1, char ln2, char lnx)   // "@X = @A * @B"
 		return 2; //bad array size
 	}
 
-	if (listcreate(lnx, wb*ha, 2)<0)
+	if (listcreate(lnx, wb*ha)<0)//, 2)<0)
 	{
 			rprintfProgStr(PSTR("Can't create matrix\n"));
 			return 1;

@@ -36,5 +36,8 @@ extern int  listsize   (char ln);
 extern void listinit   ();
 extern void listdump   ();
 extern int *listarray  (char ln);
-extern int  listcreate (char ln, int size, int type);
+//extern int  listcreate (char ln, int size, int type);
+extern int  listcreate (char ln, int size);
+extern void listcopy   (char ln1, char ln2);
+
 #endif
