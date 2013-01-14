@@ -13,8 +13,7 @@ Matrix values are stored in LIST of the same name. Its up to the programmer to e
   * MAT CONV  M1;M2           Convolves a Matrix M1 with Matrix M2
   * MAT HIST  mode;M          Returns in @! a histogram of matrix M
   * MAT PRINT M               Simple Print
-  * MAT MULT  M1;M2;M3        Simple Print
-  * MAT TRAN  M1;M2           Transpose M1 result in M2
+
 
 = Details =
 
