@@ -2,11 +2,16 @@
 #labels Phase-Requirements
 = Introduction =
 
+_A functional BASIC interpreter running on the Robobuilder RBC unit. So for all those who would like to try programming - but are daunted by the complexity of writing in C - and yet want more than Action builder, download and try it out !!_
+
 This custom firmware for Robobuilder gives it the ability to create and store simple programs in an elementary BASIC language. The software is stable beta release. *_Always download latest version firmware _*
 
 This BASIC is a simple integer version based on Dartmouth Basic (see wiki http://en.wikipedia.org/wiki/BASIC). But with some additional features to support robotics on the Robobuilder RBC robots.
 
-For an in depth look at features  see [http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.2.2.pdf Robobuild Basic manual 2.2.2] for more details. And for example programs see [SimpleDemos] and [BasicDemos]
+For an in depth look at features  see [http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.2.2.pdf Robobuild Basic manual 2.2.2] for more details. And for example programs see :
+  * [SimpleDemos] or
+  * [BasicDemos] or
+  * [AdvancedDemos]
 
 == Feature Summary == 
   # A-Z 32 bit signed integer variables
