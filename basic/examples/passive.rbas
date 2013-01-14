@@ -1,0 +1,12 @@
+10 LIST A=@?
+20 WAIT 100
+30 LIST B=@?
+40 for i=0 to 15
+50 if $abs(@a[i]-@b[i])>1 then 60 else 100
+60 print "servo ";i;" = ";$servo(i)
+65 servo i=@
+70 list a=@b
+100 next i
+110 goto 30
+
+

@@ -157,7 +157,8 @@ void listdestroy(char ln)
 	eol=eol-sz;
 }
 
-int listcreate(char ln, int size, int type)
+
+int listcreate(char ln, int size)
 {
 	int t=listexist(ln);
 
@@ -414,7 +415,7 @@ int list_eval(char ln, char *p, int ty)
 		i = 0;
 		if (*d != 0xFF) return 0;
 		n = d[1];
-		ind = listcreate(ln,n,1);
+		ind = listcreate(ln,n);//,1);
 		for (i=0; i<n; i++)
 			listwritei(ind, i, d[i+2]);
 		return 0;
@@ -449,7 +450,7 @@ int list_eval(char ln, char *p, int ty)
 		}
 		else
 		{
-			ind = listcreate(ln,sz,1);
+			ind = listcreate(ln,sz);//,1);
 			if (arrayname !='!') l = listexist(arrayname);
 		}
 
@@ -467,7 +468,7 @@ int list_eval(char ln, char *p, int ty)
 
 	if (ln != '!') 
 	{
-		ind = listcreate(ln,(int)n,1);
+		ind = listcreate(ln,(int)n);//,1);
 		if (ind<0)
 		{
 			BasicErr=8; return 0;
@@ -522,6 +523,27 @@ void join(char ln1, char ln2)   // "@A . @B"
 			scene[i+szA] = arrayB[i];
 		}
 		nis=szA+szB;
+	}
+}
+
+void listcopy(char ln1, char ln2)
+{
+	//copy ln1 <- ln2
+	int *arrayA, szA;
+	int *arrayB, szB;
+	int i;
+	
+	szA   =listsize(ln1);
+	szB   =listsize(ln2);
+
+	listcreate(ln1, szB);
+
+	arrayA=listarray(ln1);
+	arrayB=listarray(ln2);
+	
+	for (i=0;i<szB; i++)
+	{
+		arrayA[i] = arrayB[i];
 	}
 }
 

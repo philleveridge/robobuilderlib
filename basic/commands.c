@@ -1770,8 +1770,9 @@ int cmd_matrix(line_t ln)
 		{
 			m=*p++;
 			matprint(m);
-			if (*p++ != ';')
+			if (!(*p == ';' || *p == ','))
 			 return 0;
+			p++;
 		}
 	}
 
@@ -1807,74 +1808,72 @@ int cmd_matrix(line_t ln)
 		}
 	}
 
-	if (!strncmp(p,"APPLY ",6))
+	if (!strncmp(p,"LET ",4) || (p[0]>='A' && p[0]<='Z' && p[1]=='='))
 	{
-		// MAT APPLY A=3+$i				
-		p+=6;
-		if (*p != '\0')
+		if (p[1]=='E')
+			p+=4;
+
+		if (p[1]=='=')
 		{
-			mx=*p++;
-			if (*p++ == '=')
-			{
-				char *t=p;
-				long el;	
-				int tn = nis;
-				int ne = listsize(mx);
-				for (i=0; i<ne; i++)
-				{
-					p=t;
-					n=0;
-					nis=listread(mx,i);
-					eval_expr(&p,&el);
-					listwrite(mx, i, (int)el);
-				}
-				nis=tn;
-				return 0;	
-			}
+			mx=p[0];
+			p=p+2;
 		}
-	}
+		else
+			return 1;
 
-	if (!strncmp(p,"MULT ",5))
-	{
-		// MAT MULT X;A;B	
-		p+=5;
-		if (*p != '\0')
+		if (*p =='(')
 		{
-			mx=*p++;
-
-			if (*p == ';' || *p == '=')
+			//LET A=(B)
+			char *t=p;
+			long el;	
+			int tn = nis;
+			int ne = listsize(mx);
+			for (i=0; i<ne; i++)
 			{
-				p++;
-				ma=*p++;
-				if (*p == ';' || *p == '*')
-				{
-					p++;
-					mb=*p++;
-					multiply(ma,mb,mx);
-					return 0;
-				}
-
+				p=t;
+				n=0;
+				nis=listread(mx,i);
+				eval_expr(&p,&el);
+				listwrite(mx, i, (int)el);
 			}
-		}
-	}
-
-	if (!strncmp(p,"TRAN ",5))
-	{
-		// !MAT TRAN B[;A] 
-		p+=5;			
-		if (*p != '\0')
-		{
-			ma=*p++;
-			if (*p++ == ';')
-			{
-				mb=*p++;
-			}
-			else
-			 	mb=ma;
-			transpose(ma,mb);
+			nis=tn;
 			return 0;
 		}
+
+		ma=*p++;
+		if (*p =='\0')
+		{
+			//LET A=B
+			matcreate(mx, matgetw(ma), matgeth(ma));
+			listcopy(mx, ma);
+		}
+		if (*p=='^')
+		{
+			//LET A=B^
+			transpose(ma,mx);
+			p++;
+		}
+		if (*p=='*')
+		{
+			//LET A=B*C
+			p++;
+			mb=*p++;
+			multiply(ma,mb,mx);
+		}
+		if (*p=='+' || *p=='-' || *p=='.' || *p=='/')
+		{
+			//LET A=B+C
+			char op=*p++;
+			if (op=='.') op='*';
+			mb=*p++;
+			add_sub(ma,mb,op);
+			//copy into mx @!
+			matcreate(mx, matgetw(ma), matgeth(ma));
+			listcopy(mx, '!');
+		}
+		return 0;
 	}
+
 
 	if (!strncmp(p,"ZERO ",5))
 	{

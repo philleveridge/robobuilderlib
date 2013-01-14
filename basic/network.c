@@ -233,14 +233,52 @@ rprintf("t=%d\n",t);
 	return 0;
 }
 
-
 int cmd_network(line_t ln)
 {
-	// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
-	// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
+
 	char *p=ln.text;
 	int  i, param[7],noi,noo,flg,nl1,nl2,nl3,offset;
 	long t2;
+
+	// NETWORK  @Input, @output, @weight1 [, @weight2, @weight3,] flags
+	if (*p=='@')
+	{
+		char mi,mo,mw1;
+		int i;
+		p++;
+		mi=*p++;
+		if (p[0]!="," && p[1]!='@') {BasicErr=3; return 0;}
+		p+=2;
+		mo=*p++;
+		if (p[0]!="," && p[1]!='@') {BasicErr=3; return 0;}
+		mw1=*p++;
+		if (p[0]!=",") {BasicErr=3; return 0;}
+		eval_expr(&p, &t2);
+		flg=t2;
+		noi=listsize(mi);
+		noo=listsize(mo);
+		nl3=0;
+		nl2=0;
+		nl1=noi;
+		offset=0;
+		//insert into scene[]
+
+		//TBC
+
+		// now egenrate network
+
+		if (simple_network(noi, noo, nl1, nl2, nl3, offset, flg)<0)
+			return 0;
+
+		for (i=0; i<noo; i++)
+		{
+			listwrite(mo,i,scene[noi+i]);
+		}
+		return 0;
+	}
+
+	// NETWORK  [no inputs],[no outputs],[flgs],[nn ly1],[nn ly2],[nl3], [offset]
+	// @! =I1 .. IN  O1 .. OM  W11 ..T1  WNM  .. TN
 
 	for (i=0; i<7; i++)
 	{

@@ -114,6 +114,7 @@ void ornd ();
 void odsig ();
 void opsd ();
 void omax ();
+void omat ();
 void oprint ();
 
 tOBJ get(char *name);
@@ -140,6 +141,7 @@ tOP oplist[] = {
 	{"PSD",  40, NA,    0, opsd},  //const
 	{"RND",  40, NA,    0, ornd},  //in-const
 	{"MAX",  40, NA,    2, omax},   //function two args
+	{"CELL", 40, NA,    3, omat},   //function two args
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -579,6 +581,30 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	return r;
 }
 
+
+float tofloat(tOBJ v)
+{
+	float f=0.0;
+	if (v.type==FLOAT)
+		f=v.floatpoint;
+	else
+	if (v.type==INTGR)
+		f=(float)v.number;
+
+	return f;
+}
+
+int toint(tOBJ v)
+{
+	int f=0;
+	if (v.type==FLOAT)
+		f=(int)v.floatpoint;
+	else
+	if (v.type==INTGR)
+		f=v.number;
+	return f;
+}
+
 tOBJ get(char *name)
 {
 	int i=0;
@@ -592,7 +618,6 @@ tOBJ get(char *name)
 		r.number=getvar(*name-'A');
 		return r;
 	}
-
 	while (i<nov)
 	{
 		if (strcmp(p,name)==0)
@@ -675,6 +700,29 @@ void osig()
 	if (a.type==FLOAT)
 	{
 		r.floatpoint=1/(1+exp(-a.floatpoint));
+	}
+	push(r);
+	return ;
+}
+/*
+> !MAT DEF A=1;3
+> !MAT LET A=1.0;2.0;3.0
+> !PRINT CELL("A",0,1)
+2.000000
+*/
+void omat() 
+{
+	//binary signmoid function
+	tOBJ r,m;
+	int row,col;
+	r.type=FLOAT;
+	r.floatpoint=0.0;
+	row=toint(pop());
+	col=toint(pop());
+	m=pop();
+	if (m.type==STR) 
+	{
+		r.floatpoint = fget(m.string[0],col,row);
 	}
 	push(r);
 	return ;
@@ -799,31 +847,6 @@ int get_opr_token(unsigned char op)
 		return 1;
 	return 0;
 }
-
-float tofloat(tOBJ v)
-{
-	float f=0.0;
-	if (v.type==FLOAT)
-		f=v.floatpoint;
-	else
-	if (v.type==INTGR)
-		f=(float)v.number;
-
-	return f;
-}
-
-int toint(tOBJ v)
-{
-	int f=0;
-	if (v.type==FLOAT)
-		f=(int)v.floatpoint;
-	else
-	if (v.type==INTGR)
-		f=v.number;
-	return f;
-}
-
-
 
 static int  intf=1;
 
