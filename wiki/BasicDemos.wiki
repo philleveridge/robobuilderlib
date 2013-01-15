@@ -10,7 +10,7 @@ The firmware has 19 built-in motions to try out, including football kicks. Full 
 
   * [#Mirror_moves One arm mirroring other arm moving]
   * [#Dynamic_distance_sensor Arm reacting to object proximity]
-  * [#Passiffy Auto setting passive mode of joint]
+  * [#Passify Auto setting passive mode of joint]
 
 ----
 
