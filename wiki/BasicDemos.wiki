@@ -10,6 +10,7 @@ The firmware has 19 built-in motions to try out, including football kicks. Full 
 
   * [#Mirror_moves One arm mirroring other arm moving]
   * [#Dynamic_distance_sensor Arm reacting to object proximity]
+  * [#Passiffy Auto setting passive mode of joint]
 
 ----
 
@@ -38,6 +39,33 @@ Run the program and then move the right arm - and watch the left arm follow!
 130 goto 60
 }}}
 
+
+----
+
+== Passify ==
+
+In this demo the robot will stand up and then hold position. But by apply pressure to a joint will cause it to be detected and the joint set to passive mode.
+
+  * Line 10 stores all current servo positions in List A
+  * Line 20 now wait 100ms
+  * Line 30 stores all current servo positions in List B
+  * Line 40-100 Now loop through looking for difference
+  * Line 65 set servo passive
+  * Line 70 copy current position back to original list A
+
+{{{
+5 STAND 16
+10 LIST A=@?
+20 WAIT 100
+30 LIST B=@?
+40 for i=0 to 15
+50 if $abs(@a[i]-@b[i])>1 then 60 else 100
+60 print "servo ";i;" = ";$servo(i)
+65 servo i=@
+70 list a=@b
+100 next i
+110 goto 30
+}}}
 
 ----
 
