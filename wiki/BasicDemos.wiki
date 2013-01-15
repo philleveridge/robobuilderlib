@@ -44,7 +44,7 @@ Run the program and then move the right arm - and watch the left arm follow!
 
 == Passify ==
 
-In this demo the robot will stand up and then hold position. But by apply pressure to a joint will cause it to be detected and the joint set to passive mode.
+In this demo the robot will stand up and then hold position. But by applying pressure to a joint,  cause it to be and move and the change detected and so the joint is set to passive mode.
 
   * Line 10 stores all current servo positions in List A
   * Line 20 now wait 100ms
@@ -73,7 +73,15 @@ In this demo the robot will stand up and then hold position. But by apply pressu
 
 The arms dynamically move as the distance sensor detects your presence !! 
 
-The value of the PSD sensor (always between 10 and 50) is used to set the position of servo 10 and 13 (the shoulders). These will move in unison based on the value. If nothing in range PSD will return 50, so servo 13 is set at 200 and servo 10=50, whilst at closet approach PSD will be 10 and Servo 13=240 and servo 10=10.
+The value of the PSD sensor (always between 10 and 50) is used to set the position of servo 10 and 13 (the shoulders). These will move in unison based on the value:
+{{{
+If nothing in range PSD will return 50, so 
+  servo 13 is set to 200 and 
+  servo 10 is set to 50, 
+whilst at closet approach PSD will be 10, so
+  Servo 13=240 and 
+  servo 10=10.
+}}}
 
 {{{
 10 stand 16
