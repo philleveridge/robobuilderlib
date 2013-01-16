@@ -1,0 +1,150 @@
+#summary Convolving a matrix
+
+= Introduction =
+
+This is only available in latest development version of code (not current release).  Uses the new LET format. (i.e. MAT C=A#B)
+
+= Details =
+
+===1-D convolve using (2x1) kernel== 
+
+Enter using 'i' mode:
+{{{
+> LIST A=10,0,0,0,0,1,1,1,1,0,0
+> LIST B=2,1,-1
+> MAT DEF A=10;1
+> MAT DEF C=10;1
+> MAT DEF B=2;1
+> MAT PRINT A,B
+matrix 'A' 10x1
+  0   0   0   0   1   1   1   1   0   0 
+matrix 'B' 2x1
+  1  -1 
+> MAT C=A#B
+> MAT PRINT C
+matrix 'C' 10x1
+  0   0   0   1   0   0   0   1   0   0 
+> 
+}}}
+
+
+== 2D convolve using 1x2 and 2x1 convole ==
+
+  * @A contains the Matrix (4x4)
+  * @B contains the Kernel (2x1)
+  * @C set to convolve
+
+{{{
+> LIST A=16,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1
+> MAT DEF A=4;4
+> LIST B=2,1,-1
+> MAT DEF B=2;1
+> MAT PRINT A,B
+matrix 'A' 4x4
+  0   0   1   1 
+  0   0   1   1 
+  0   0   1   1 
+  0   0   1   1 
+matrix 'B' 2x1
+  1  -1 
+}}}
+
+Use the the 2x1 to detect horizontal lines
+{{{
+> MAT DEF C=4;4
+> MAT C=A#B
+> MAT PRINT C
+matrix 'C' 4x4
+  0   1   0   0 
+  0   1   0   0 
+  0   1   0   0 
+  0   1   0   0 
+}}}
+
+If we look use 1x2 kernel it can't detect vertical line
+
+{{{
+MAT DEF B=1;2
+matrix 'B' 1x2
+  1 
+ -1 
+> MAT C=A#B
+> MAT PRINT C
+matrix 'C' 4x4
+  0   0   0   0 
+  0   0   0   0 
+  0   0   0   0 
+  0   0   0   0 
+}}}
+
+Using a 1x2 operator to detect horizontal lines 
+{{{
+> LIST A=16,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0
+> MAT C=A#B
+> MAT PRINT A,B,C
+matrix 'A' 4x4
+  1   1   1   1 
+  1   1   1   1 
+  0   0   0   0 
+  0   0   0   0 
+matrix 'B' 1x2
+  1 
+ -1 
+matrix 'C' 4x4
+  0   0   0   0 
+  1   1   1   1 
+  0   0   0   0 
+  0   0   0   0 
+}}}
+
+== 2D convolve using 3x3 kernel ==
+
+Initialises @A using for loop - this enable easy changes to different pattern and sizes.
+
+{{{
+10 LIST A = $ZEROS(64)
+20 FOR I = 0 TO 63
+30 SET @A,I,(I<32)
+40 NEXT I
+50 MAT DEF A;8;8
+60 MAT PRINT A
+70 MAT DEF D;3;3
+80 LIST D = 9,-1,-1,-1,2,2,2,-1,-1,-1
+90 MAT PRINT D
+100 MAT DEF F;8;8
+110 MAT F=A#D
+120 MAT PRINT F
+}}}
+
+=== Output ===
+
+{{{
+: r
+Run Program 
+matrix 'A' 8x8
+  1   1   1   1   1   1   1   1 
+  1   1   1   1   1   1   1   1 
+  1   1   1   1   1   1   1   1 
+  1   1   1   1   1   1   1   1 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+matrix 'D' 3x3
+ -1  -1  -1 
+  2   2   2 
+ -1  -1  -1 
+matrix 'F' 8x8
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+  0   3   3   3   3   3   3   0 
+  0   3   3   3   3   3   3   0 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+End
+}}}
+
+
+
