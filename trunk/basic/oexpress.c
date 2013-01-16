@@ -32,7 +32,7 @@ extern int   fmatprint		(char m);
 extern int   ftranspose		(char m, char lnx);
 extern int   fmultiply		(char m, char ln2, char lnx);
 extern int   fhistogram		(char m, int mode);
-extern int   fconvolve		(char m, char ln2);
+extern int   fconvolve		(char m, char ln2, char lnx);
 extern int   fadd		(char m, char m2, char lnx, char op);
 extern int   fsize		(char m, int p);
 extern int   fimport		(char m, char m2);
@@ -927,8 +927,7 @@ void mexpress(char m)
 				if (op == '#')
 				{
 					//convolve
-					fconvolve(ma, mb) ;
-					fmatcopy(ma, m);
+					fconvolve(ma, mb, m) ;
 				}
 				else
 				{

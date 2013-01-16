@@ -515,7 +515,7 @@ int fadd(char ln1, char ln2, char lnx, char op)   // "@X = @A + @B"
 //
 /**********************************************************/
 
-int fconvolve(char ln1, char ln2)   // "@A (.) @B"
+int fconvolve(char ln1, char ln2, char lnx)   // "@A (.) @B"
 {	
 
 	int w=fgetw(ln1);
@@ -524,6 +524,10 @@ int fconvolve(char ln1, char ln2)   // "@A (.) @B"
 
 	int szB=fsize(ln2,2);
 
+#ifndef WIN32
+	float tp[w*h]; //temp
+#endif
+
 	if (szB==9) // 3x3 kernel
 	{
 		for (my=0;my<h; my++)
@@ -531,65 +535,42 @@ int fconvolve(char ln1, char ln2)   // "@A (.) @B"
 			for (mx=0;mx<w; mx++)
 			{
 				float p=0.0f;
-/*
-				if (mx<w-1) 
-					p += arrayA[my*w+mx+1]*arrayB[5];
-				p += arrayA[my*w+mx+0]*arrayB[4];
-				if (mx>0)   
-					p += arrayA[my*w+mx-1]*arrayB[3];
 
-				if (my>0) {
-					if (mx<w-1) 
-						p += arrayA[my*w+mx+1-w]*arrayB[2];
-					p += arrayA[my*w+mx+0-w]*arrayB[1];
-					if (mx>0)   
-						p += arrayA[my*w+mx-1-w]*arrayB[0];
-				}
+				p += fget(ln1,mx-1,my-1)*fget(ln2,0,0);
+				p += fget(ln1,mx,my-1)  *fget(ln2,1,0);
+				p += fget(ln1,mx+1,my-1)*fget(ln2,2,0);
 
-				if (my<h-1) {
-					if (mx<w-1) 
-						p += arrayA[my*w+mx+1+w]*arrayB[9];
-					p += arrayA[my*w+mx+0+w]*arrayB[8];
-					if (mx>0)   
-						p += arrayA[my*w+mx-1+w]*arrayB[7];
-				}
-*/
+				p += fget(ln1,mx-1,my)  *fget(ln2,0,1);
+				p += fget(ln1,mx,my)    *fget(ln2,1,1);
+				p += fget(ln1,mx+1,my)  *fget(ln2,2,1);
 
-				if (mx==0 || mx==w-1 || my==0 || my==h-1)
-					scene[my*w+mx]=0;
-				else
-					scene[my*w+mx]=abs((int)p);
+				p += fget(ln1,mx-1,my+1)*fget(ln2,0,2);
+				p += fget(ln1,mx,my+1)  *fget(ln2,1,2);
+				p += fget(ln1,mx+1,my+1)*fget(ln2,2,2);
+
+				tp[my*w+mx]=abs((int)p);
 			}
 		}
 	}
 	
-	if (szB==2 && fmstore[ln2-'A'].w==2 ) // 2x1 kernel
+	if (szB==2 && fgetw(ln2)==2 ) // 2x1 kernel
 	{
 		for (my=0;my<h; my++)
 		{
 			for (mx=0;mx<w; mx++)
 			{
-				if (mx<w-1) 
-					//scene[my*w+mx]= abs(arrayA[my*w+mx]*arrayB[0] + arrayA[my*w+mx+1]*arrayB[1]);
-					scene[my*w+mx]= abs(fget(ln1,mx,my)*fget(ln2,0,0) + fget(ln1,mx+1,my)*fget(ln2,1,0));
-
-				else
-					scene[my*w+mx]= 0;
+				tp[my*w+mx]= abs(fget(ln1,mx,my)*fget(ln2,0,0) + fget(ln1,mx+1,my)*fget(ln2,1,0));
 			}
 		}
 	}
 
-	if (szB==2 && fmstore[ln2-'A'].w==1 ) //  1x2 kernel
+	if (szB==2 && fgetw(ln2)==1 ) //  1x2 kernel
 	{
 		for (my=0;my<h; my++)
 		{
 			for (mx=0;mx<w; mx++)
 			{
-				if (my<h-1) 
-					//scene[my*w+mx]= abs(arrayA[my*w+mx]*arrayB[0] + arrayA[(my+1)*w+mx]*arrayB[1]);
-					scene[my*w+mx]= abs(fget(ln1,mx,my)*fget(ln2,0,0) + fget(ln1,mx,my+1)*fget(ln2,0,1));
-				else
-					scene[my*w+mx]= 0;
+				tp[my*w+mx]= abs(fget(ln1,mx,my)*fget(ln2,0,0) + fget(ln1,mx,my+1)*fget(ln2,0,1));
 			}
 		}
 	}
@@ -601,11 +582,19 @@ int fconvolve(char ln1, char ln2)   // "@A (.) @B"
 			for (mx=0;mx<w; mx++)
 			{
 				int p=0;
-				scene[my*w+mx]=abs(p);  // tbd
+				tp[my*w+mx]=abs(p);  // tbd
 			}
 		}
 	}
-	nis=h*w;
+
+	for (my=0;my<h; my++)
+	{
+		for (mx=0;mx<w; mx++)
+		{
+			fset(lnx,mx,my,tp[my*w+mx]); 
+		}
+	}
+
 	return 0;	
 }
 

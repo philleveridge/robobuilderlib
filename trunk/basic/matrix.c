@@ -280,6 +280,7 @@ int convolve(char ln1, char ln2)   // "@A (.) @B"
 				int p=0;
 				if (mx<w-1) 
 					p += arrayA[my*w+mx+1]*arrayB[5];
+
 				p += arrayA[my*w+mx+0]*arrayB[4];
 				if (mx>0)   
 					p += arrayA[my*w+mx-1]*arrayB[3];
@@ -294,10 +295,10 @@ int convolve(char ln1, char ln2)   // "@A (.) @B"
 
 				if (my<h-1) {
 					if (mx<w-1) 
-						p += arrayA[my*w+mx+1+w]*arrayB[9];
-					p += arrayA[my*w+mx+0+w]*arrayB[8];
+						p += arrayA[my*w+mx+1+w]*arrayB[8];
+					p += arrayA[my*w+mx+0+w]*arrayB[7];
 					if (mx>0)   
-						p += arrayA[my*w+mx-1+w]*arrayB[7];
+						p += arrayA[my*w+mx-1+w]*arrayB[6];
 				}
 
 				if (mx==0 || mx==w-1 || my==0 || my==h-1)
@@ -343,7 +344,16 @@ int convolve(char ln1, char ln2)   // "@A (.) @B"
 			for (mx=0;mx<w; mx++)
 			{
 				int p=0;
-				scene[my*w+mx]=abs(p);  // tbd
+
+				if (mx<w-1) 
+					p += arrayA[my*w+mx]*arrayB[0] + arrayA[my*w+mx+1]*arrayB[1];
+
+
+				if (my<h-1) 
+					p += arrayA[my*w+mx+w]*arrayB[1] + arrayA[(my+1)*w+mx+1]*arrayB[2];
+
+
+				scene[my*w+mx]=abs(p);  
 			}
 		}
 	}
