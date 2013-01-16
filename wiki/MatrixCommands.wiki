@@ -50,5 +50,5 @@ matrix 'A' 3x2
   4   0   0 
 }}}
 
-For examples using Convolve see [Convole wiki page]
+For examples using Convolve see [Convolve wiki page]
 Also see [AutoAssocNets Neural network] example that uses matrix commands and [HopfieldNetwork Hopfield network] example
