@@ -23,8 +23,7 @@ matrix 'B' 2x1
 > MAT C=A#B
 > MAT PRINT C
 matrix 'C' 10x1
-  0   0   0   1   0   0   0   1   0   0 
-> 
+  0   0   0   1   0   0   0   1   0   0
 }}}
 
 
@@ -119,8 +118,6 @@ Initialises @A using for loop - this enable easy changes to different pattern an
 === Output ===
 
 {{{
-: r
-Run Program 
 matrix 'A' 8x8
   1   1   1   1   1   1   1   1 
   1   1   1   1   1   1   1   1 
@@ -143,8 +140,5 @@ matrix 'F' 8x8
   0   0   0   0   0   0   0   0 
   0   0   0   0   0   0   0   0 
   0   0   0   0   0   0   0   0 
-End
 }}}
-
-
 
