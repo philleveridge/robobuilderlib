@@ -10,13 +10,16 @@ Matrix values are stored in LIST of the same name. Its up to the programmer to e
   * MAT DEF   M;w;h           Define a matrix 'M' size wxh
   * MAT ZERO  M;x1;y1;x2;y2   Zero matrix elements (or parts there off)
   * MAT ZERO  M               Zero matrix diagonal
-  * MAT CONV  M1;M2           Convolves a Matrix M1 with Matrix M2
   * MAT HIST  mode;M          Returns in @! a histogram of matrix M
   * MAT PRINT M               Simple Print
 
-
-= Details =
-
+  * Coming soon
+    * LET M=A op B  where op = +-/.`*`()^
+    * Transpose         (^)
+    * Convolve          (#)
+    * Matrix product    `(*)`
+    * Element by element (+/-.)
+    * Details to follow 
 
 = Examples =
 
@@ -47,54 +50,5 @@ matrix 'A' 3x2
   4   0   0 
 }}}
 
-Matrix examples
-{{{
-10 MAT DEF A;4;4
-12 MAT DEF B;3;3
-15 Print "Create Matrix with random elements"
-20 LIST A=$RND(16,0,255)
-30 LIST B=9,1,0,-1,1,0,-1,1,0,-1
-40 MAT PRINT A
-45 Print "Convolve with 3x3 kernel"
-48 MAT PRINT B
-50 MAT CONV A;B
-60 PRINT "Copy result back in Matrix A"
-62 LIST A=@!
-63 MAT PRINT A
-65 Print "Histogram (Sum row)"
-70 MAT HIST 1;A
-72 PRINT @!
-73 Print "Histogram (Sum columns)"
-74 MAT HIST 2;A
-80 PRINT @!
-}}}
-
-Output
-{{{
-: r
-Run Program 
-Create Matrix with random elements
-matrix 'A' 4x4
-219 172 207 151 
-137 243  81   5 
-121 113  44  14 
- 13  96 107  89 
-Convolve with 3x3 kernel
-matrix 'B' 3x3
-  1   0  -1 
-  1   0  -1 
-  1   0  -1 
-Copy result back in Matrix A
-matrix 'A' 4x4
-  0   0   0   0 
-  0  45 215   0 
-  0  37 230   0 
-  0   0   0   0 
-Histogram (Sum row)
-0,260,267,0
-
-Histogram (Sum columns)
-0,82,445,0
-
-End
-}}}
+For examples using Convolve see [Convole wiki page]
+Also see [AutoAssocNets Neural network] example that uses matrix commands and [HopfieldNetwork Hopfield network] example
