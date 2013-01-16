@@ -1776,22 +1776,6 @@ int cmd_matrix(line_t ln)
 		}
 	}
 
-	if (!strncmp(p,"CONV ",5))
-	{
-		// !MAT CON A;B
-		p+=5;
-		if (*p != '\0')
-		{
-			ma=*p++;
-			if (*p++ == ';')
-			{				
-				mb=*p;
-				convolve(ma, mb) ;
-				return 0;
-			}
-		}
-	}
-
 	if (!strncmp(p,"HIST ",5))
 	{
 		// !MAT HIST 1;A			
@@ -1823,7 +1807,7 @@ int cmd_matrix(line_t ln)
 
 		if (*p =='(')
 		{
-			//LET A=(B)
+			//LET A=(expr)
 			char *t=p;
 			long el;	
 			int tn = nis;
@@ -1852,6 +1836,14 @@ int cmd_matrix(line_t ln)
 			//LET A=B^
 			transpose(ma,mx);
 			p++;
+		}
+		if (*p=='#')
+		{
+			//LET A=B#C
+			p++;
+			mb=*p++;
+			convolve(ma, mb) ;
+			listcopy(mx, '!');
 		}
 		if (*p=='*')
 		{
