@@ -21,16 +21,39 @@ If you want just to try it out (and not load on to Robot) then there are  window
 
 So assuming you have downloaded the program (and installed the firmware) - reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html VT100 terminal emulator] on the serial port (i.e. COM1 at 115200). You should see the following:
 {{{
-Basic v=$Revision: 538 $
+Basic v=$Revision: 629 $
 Commands: i r l c z q s V R F $
 
 16 servos connected
 0 lines in memory
-:
 }}}
 
 == Now in command mode ==
 
 Now enter program and run. If the program ever gets into a recurring loop (either accidentally or deliberately) then press 'Esc' on the PC keyboard. If that fails then hit the 'OFF' button (on the robot!)
 
-Notice how each time you enter input mode its adds to the current program. If you want to start over then press 'c.  To run the program press 'r' (and then Esc!)
+To enter a simple "Hello world" program - type following:
+{{{
+: i
+Enter Program '.' to Finish
+> 10 PRINT "Hello world"
+> 
+
+1 lines entered, [25/3072] Bytes
+}}
+To list the program:
+{{{
+: l
+List Program 
+10 PRINT "Hello world"
+}}
+And finally run the program:
+{{{
+: r
+Run Program 
+Hello world
+End
+Elapsed Time 00:00-000
+: 
+}}}
+You can now enter more lines by going back into [InputMode input mode]. If you want to start over then press 'c.  
