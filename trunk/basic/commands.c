@@ -302,12 +302,17 @@ int cmd_print(line_t l)
 extern int nos;
 int cmd_stand(line_t l)
 {
-	long n=nos;
+	long n=0;
 	char *p=l.text;
-	if (eval_expr(&p, &n)==NUMBER)
-		standup(n);
+
+	if (*p != '\0' && eval_expr(&p, &n)==NUMBER)
+	{
+		standup((int)n); 	
+	}
 	else
+	{
 		standup(nos);
+	}
 	return 0;
 }
 
@@ -533,8 +538,14 @@ extern int imready, pbrunning;
 
 		if (!strncmp(p,"KEY",3))
 		{
-			while ((key=uartGetByte())<0 ) 
-				; // wait for signal
+			gkp=-1;
+			while (1) 
+			{
+				if ((key=irGetByte())>=0)  break;
+				if ((key=uartGetByte())>=0) break;
+			}
+if (dbg) rprintf ("key=%d\n",key);
+
 			gkp=key;
 			return 0;
 		}
@@ -1724,9 +1735,9 @@ int cmd_ikin(line_t line)
 extern int matzero	(char ln1, int a, int b, int c, int d) ;
 extern int matzerodiag	(char ln1) ;
 extern int transpose	(char ln1, char ln2) ;  		// @A^T"
-extern int multiply	(char ln1, char ln2, char lnx);   	// "@X = @A * @B"//
-extern int convolve	(char ln1, char ln2);   		// "@A (.) @B"
-extern int histogram	(char ln1, int mode);   		// "@A 
+extern int multiply	(char ln1, char ln2, char lnx);   	// @X = @A * @B"//
+extern int convolve	(char ln1, char ln2);   		// @A # @B"
+extern int histogram	(char ln1, int mode);   		// @A 
 extern int matgetw	(char m);
 extern int matgeth	(char m);
 extern int matcreate	(char m, int w, int h);
@@ -1845,6 +1856,14 @@ int cmd_matrix(line_t ln)
 			convolve(ma, mb) ;
 			listcopy(mx, '!');
 		}
+
+		if (ma =='Z' && *p=='E' && *(p+1)=='R')
+		{
+			//LET A=ZER
+			p+=3;
+			matzerodiag(mx);
+		}
+
 		if (*p=='*')
 		{
 			//LET A=B*C
@@ -1887,7 +1906,7 @@ int cmd_matrix(line_t ln)
 
 			for (i=0; i<4; i++)
 			{
-				if (i<3 && *p != ';')
+				if (i<3 && (*p != ';'|| *p != ','))
 					return 1;
 				p++;
 				eval_expr(&p, &n);

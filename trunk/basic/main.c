@@ -186,7 +186,7 @@ void ChargeNiMH(void)
 
 	    	if (gSEC%5==0)
 		{
-			rprintf("%d:%d short 40ms charge pulses %dmV\r\n", gMIN, gSEC,gVOLTAGE);
+			rprintf("%02d:%02d short 40ms charge pulses %dmV\r\n", gMIN, gSEC,gVOLTAGE);
 		}
 		PWR_LED2_OFF;
 		PWR_LED1_ON;
@@ -207,22 +207,18 @@ void ChargeNiMH(void)
 		if (uartGetByte()>=0 || irGetByte()>=0)
   			break;
 
-		PWR_LED2_OFF;
-		if(g10MSEC > 500)	
-			PWR_LED1_ON;
-		else			
-			PWR_LED1_OFF;
-		if(g10MSEC == 0 || g10MSEC == 500)
-		{
-			Get_VOLTAGE();
-			DetectPower();
-			if (gSEC%5==0)
-			{
-				rprintf ("%d:%d full charge power %dmV\r\n", gMIN,gSEC,gVOLTAGE);
-			}
-		}
-		if(F_PS_PLUGGED == 0) break;
 		CHARGE_ENABLE;
+		PWR_LED1_ON;
+		delay_ms(500);
+		PWR_LED1_OFF;
+		CHARGE_DISABLE;
+		delay_ms(500);
+		Get_VOLTAGE();
+		DetectPower();
+		if (gSEC%5==0)		
+			rprintf ("%02d:%02d full charge power %dmV\r\n", gMIN,gSEC,gVOLTAGE);
+
+		if(F_PS_PLUGGED == 0) break;
 	}
 	CHARGE_DISABLE;
 	F_CHARGING = 0;
