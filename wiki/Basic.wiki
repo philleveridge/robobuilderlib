@@ -8,7 +8,7 @@ This custom firmware for Robobuilder gives it the ability to create and store si
 
 This BASIC is a simple integer version based on Dartmouth Basic (see wiki http://en.wikipedia.org/wiki/BASIC). But with some additional features to support robotics on the Robobuilder RBC robots.
 
-See [GettingStarted Getting started] wiki page
+See [GettingStarted Getting started] wiki page. 
 
 For an in depth look at features  see [http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.2.2.pdf Robobuild Basic manual 2.2.2] for more details. And for example programs see :
   * [SimpleDemos] or
@@ -40,6 +40,8 @@ For an in depth look at features  see [http://code.google.com/p/robobuilderlib/d
       # Includes extended commands for image processing see [ImageDemo demo]
       # floating point arithmetic
       # Asynchronous move routing (PLY/REC)
+
+See wiki page [LanguageSpec for language specification] details
 
 == Recent updates ==
 
