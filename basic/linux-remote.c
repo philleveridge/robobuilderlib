@@ -54,22 +54,23 @@ void openport()
 void writebyte(int b)
 {
 	char buf[1];
+
+	if (dbg>2) { printf ("[%02x]\n", buf[0]); }
+
 	if(fd == -1) {
-	  printf( "write byte failed - no port\n" );
+	  //printf( "write byte failed - no port\n" );
 	  return;
 	}
 
 	buf[0] = b;
 	write(fd, buf, 1);
-	
-	if (dbg>2) { printf ("[%02x]\n", buf[0]); }
 }
 
 int readbyte()
 {
 	char buf[1];
 	if(fd == -1) {
-	  printf( "read byte failed - no port\n" );	
+	  //printf( "read byte failed - no port\n" );	
 	  return -1;
 	}
 
