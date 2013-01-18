@@ -33,10 +33,19 @@ Command mode signified by ':'. Press a key or use Remote control (for some optio
 ||M||[#M_-_DCMP_mode Enter DCMP mode] (for remote serial control)||
 ||p||set all servos passive (i.e. free rotate)||
 ||s||robot to take stand position||
-||$ ||Enter Demo mode (also can use `*B` on remcon) - press Square to exit||
+||$ ||[#$_-_Demo_mode Enter Demo mode] (also can use `*B` on remcon) - press Square to exit||
 ||d||[#dump_memory dump eprom] - D for widemode||
 ||F||[#dump_memory dump firmware]||
+||Y||Coming soon - customise the "stand" position ||
+||y||Reset stand to default]||
+||~||Set debug level (default off 0)]||
+
 For more details and programming guide see the PDF manual.
+
+== $ - Demo mode ==
+
+This allows pre-built motions to be played by using the remote control
+esc or red button to exit back to command mode
 
 == R - trace mode ==
 
@@ -51,7 +60,7 @@ List Program
 : 
 }}}
 
-Now enter trace mode.  The command is displayed BEFORE execution by pressing Esc. 
+Now enter trace mode.  The command is displayed BEFORE execution. Press any key to execute line or  Esc to go back to command mode.
 {{{
 : R
 Run Program 
