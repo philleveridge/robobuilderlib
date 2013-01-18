@@ -2,7 +2,19 @@
 
 = Introduction =
 
-The start mode is command mode signified by ':'. Press a key or use Remote control (for some options) 
+When you fist power on the robot with basic firmware loaded it starts in Command mode after first displaying an initial introductory greeting.
+
+{{{
+Basic v=$Revision: 629 $
+Commands: i r l c z q s V R F $
+16 servos connected
+4 lines in memory
+: 
+}}}
+
+This shows the current version number, how many servos it can detect and how many lines are stored in memory.
+
+Command mode signified by ':'. Press a key or use Remote control (for some options)  and select one of the following options:
 
 == Detail ==
 
@@ -16,17 +28,82 @@ The start mode is command mode signified by ':'. Press a key or use Remote contr
 ||V||Show Version||
 ||c||Clear program||
 ||q||query servo status||
-||Q||Query and show values||
-||X||Enter Battery Charge mode||
-||M||Enter DCMP mode (for remote serial control)||
+||Q||[#Q_command Query] and show values||
+||X||[#X_charge_mode Enter Battery Charge mode]||
+||M||[#M_-_DCMP_mode Enter DCMP mode] (for remote serial control)||
 ||p||set all servos passive (i.e. free rotate)||
 ||s||robot to take stand position||
 ||$ ||Enter Demo mode (also can use `*B` on remcon) - press Square to exit||
-||d||dump eprom - D for widemode||
-||F||dump firmware||
+||d||[#dump_memory dump eprom] - D for widemode||
+||F||[#dump_memory dump firmware]||
 For more details and programming guide see the PDF manual.
 
-== dump memory ==
+== R - trace mode ==
+
+Lets assume we have a small program
+{{{
+: l
+List Program 
+10 STAND 
+20 WAIT KEY
+30 RUN 17
+40 GOTO 20
+: 
+}}}
+
+Now enter trace mode.  The command is displayed BEFORE execution by pressing Esc. 
+{{{
+: R
+Run Program 
+TRACE :: 10 - STAND ** User Break
+
+}}}
+
+== Q command ==
+
+{{{
+: Q
+16 servos connected
+4 lines stored
+Uptime: 00:03:11-604
+117, 85, 242, 39, 99, 126, 163, 3, 207, 146, 52, 54, 48, 200, 205, 205
+: 
+}}}
+
+== X charge mode ==
+
+Enter batter charging mode (also available by pressing PF1 at start up). It firsts test current voltage to determine if plugged in. i.e.
+
+{{{
+: X
+testing charge
+charge mode 
+8550 mV
+8664 mV
+8664 mV
+8721 mV
+8721 mV
+8721 mV
+8721 mV
+8721 mV
+8664 mV
+8664 mV
+Not plugged in
+: 
+}}}
+
+It will go on to charge (if plugged in) or return to command. Whilst charging any key will return to command mode.
+
+== M - DCMP mode ==
+
+This now enters Direct control mode (also available by pressing PF2 at start up). To exit DCMP requires power reset.
+
+{{{
+: M
+DCMP MODE
+}}}
+
+== Dump memory ==
 Really only for debugging
 
 dump program eprom space (shows how Basic has encode program)
