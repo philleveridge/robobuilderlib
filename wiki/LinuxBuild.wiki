@@ -14,6 +14,8 @@ The is a linux build of the Basic interpreter. At start up it will test on seria
   * COM     - COM port to connect to i.e. /dev/ttyA
   * COMPILE - put basic in input mode and read from stdio. Last line of input should be a '.'
   * RUN     - Load bindata.txt and run immediately
+  * STAND   - Load stand.txt - set default stand up values
+
 
 = BASIC differences =
 
