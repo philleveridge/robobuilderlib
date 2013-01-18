@@ -2,7 +2,7 @@
 #labels Phase-Requirements
 = Introduction =
 
-_A functional BASIC interpreter running on the Robobuilder RBC unit. So for all those who would like to try programming - but are daunted by the complexity of writing in C - and yet want more than Action builder, download and try it out !!_
+_A functional BASIC interpreter running on the Robobuilder RBC unit, for those people who would like to try programming - but are daunted by the complexity of writing in C - and yet want more than Action builder, download and try it out !!_
 
 This custom firmware for Robobuilder gives it the ability to create and store simple programs in an elementary BASIC language. The software is stable beta release. *_Always download latest version firmware _*
 
@@ -27,7 +27,7 @@ For an in depth look at features  see [http://code.google.com/p/robobuilderlib/d
   # Full maths expression `+ * - /` and including MOD AND OR
   # [Walking#Generating_a_walking_gait Maths functions] such as SIN and COS
   # Developer environment with VT100 terminal support (Windows/Mono - see [BasicClient]
-  # Special features including access to Servo (Read/ Write), sensors PSD and Accelerometer
+  # Special features including access to Servo (Read/ Write), sensors [SimpleDemos#10)_OUT_-_show_PSD_sensor_output_as_a_bar PSD] and [SimpleDemos#6)_read_accelerometer_values Accelerometer]
   # Lists (A-Z) (and [MatrixCommands Matrix commands])
   # [BuiltinMotion Built in motions] (19 including football kick)
   # Built in FFT - [sample FFT demo]  can access sound samples and process in realtime
