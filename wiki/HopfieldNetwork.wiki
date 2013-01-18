@@ -2,9 +2,7 @@
 
 = Introduction =
 
-Very simple proof of concept demo
-
-NB: This uses new Matrix capability and is currently on available in development version of both Basic and BasicIDE.
+==Very simple proof of concept demo==
 
 Notice how the $SCALE command is used in threshold mode to convert binary to bipolar (1,-1) input.  Also MAT ZERO only zero the diagonal of a square matrix. To zero the complete matrix just use LIST function $ZERO.  Also the $HAM function calculates the hamming distance between two arrays. This return 0 if they are exactly alike or non zero if not. 
 
@@ -24,39 +22,7 @@ MAT PRINT B
 MAT MULT X;B;A
 MAT ZERO X
 MAT PRINT X
-
-'''''''''''''''''''''''''''''''''''''''''
-'recover learned item
-'''''''''''''''''''''''''''''''''''''''''
-list y=4,0,0,1,0 ' create test input vector (notice different from train example)
-
-print "check for : ";@y
-
-Loop:
-list t=@y 'remember what we start with
-
-'update unit k (0-3)  this can be an/or random order
-for k=0 to 3
-   print "unit ";k; " : ";   
-   s=@y[k]
-   print s;" + ";
-   for j=0 to 3
-      s=s + (@y[j]*@x[k*4+j])
-   next j
-   print s
-   if s>0 then
-      set @y,k,1
-   else
-      set @y,k,0
-   endif
-next k
-
-print "Converge ?"
-'does  @t=@y ?
-if $HAM(@T,@Y)<>0 then Loop
-print "Yes - Returned: ";@y
-
-END</code>
+</code>
 
 = Output =
 {{{
@@ -92,3 +58,8 @@ Yes - Returned: 1,0,1,0
 End of program
 Elapsed Time 00:00-001
 }}}
+
+Note: Syntax of this command is changing in future versions
+  * MAT MULT X;B;A becomes MAT X=B*A
+  * MAT TRAN A;B  becomes MAT B=A^
+Which is I believe more readable !
