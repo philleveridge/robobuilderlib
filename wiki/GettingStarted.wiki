@@ -30,7 +30,7 @@ Commands: i r l c z q s V R F $
 
 == Now in command mode ==
 
-You start in [#CommandMode Command Mode]. Now to enter program you must go into [InputMode input mode] and then return to command mode to run. If the program ever gets into a recurring loop (either accidentally or deliberately) then press 'Esc' on the PC keyboard. If that fails then hit the 'OFF' button (on the robot!)
+You start in [#CommandMode Command Mode]. Now to enter program you type 'i' to get into [#InputMode input mode] and then return to command mode to run. If the program ever gets into a recurring loop (either accidentally or deliberately) then press 'Esc' on the PC keyboard. If that fails then hit the 'OFF' button (on the robot!)
 
 To enter a simple "Hello world" program - type following:
 {{{
@@ -41,7 +41,7 @@ Enter Program '.' to Finish
 
 1 lines entered, [25/3072] Bytes
 }}}
-To list the program:
+To list the program type 'l':
 {{{
 : l
 List Program 
