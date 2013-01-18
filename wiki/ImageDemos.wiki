@@ -4,10 +4,6 @@
 
 Image processing assumes a webcam is streaming jpeg images to a file called "test.jpg" using a streamer such as mjpg_streamer.
 
-
-
-
-
 In the /etc/init.d/mjpg_streamer I have added line
 
 {{{
@@ -17,17 +13,28 @@ service_start /usr/bin/mjpg_streamer --input "input_uvc.so \
 }}}
 
 This calls a file test.sh every 1s (1000ms)
-The name of the image file is passed as $1 and then test.jpg simply renames it, places it in correct directory and then signal basic using USR1 to tell it the image is ready.
+The name of the image file is passed as $1 and then test.jpg simply renames it, places it in correct directory and then signal basic using USR1 to tell it the image is ready. 
+
+Ive now added a simple locking mechanism such that the LOAD IMAGE command in basic will wait for the lock to be free.  This is too stop it trying to read from the jpeg file whilst being updated. The lock mechanism is  simple directory so that it can be controlled by shell script used by mjpeg streamer
 
 {{{
-# called by mjpg_streamer
-mv -f $1 test.jpg
-cp  test.jpg /www/test.jpg
-cp  test.jpg /root/test.jpg
+root@OpenWrt:~# cat /root/test.sh
+#
+DIR=/root
+echo $1
+#START critical section
+while ! $(mkdir /tmp/x.lock 2>/dev/null)
+do
+     echo 'a'
+done
+mv $1 $DIR/test.jpg
+rmdir /tmp/x.lock
+#END critical section
 
-#signal BASIC that image ready
-kill -s USR1 $(cat /root/PID)
+cp -f $DIR/test.jpg /www/test.jpg
+kill -s USR1 $(cat $DIR/PID)
 }}}
+
 The PID file is created when rbasic runs and contain the process ID to simplify the signal generation
 
 =A few simple demos=
