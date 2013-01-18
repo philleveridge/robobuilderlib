@@ -30,7 +30,7 @@ Commands: i r l c z q s V R F $
 
 == Now in command mode ==
 
-Now enter program and run. If the program ever gets into a recurring loop (either accidentally or deliberately) then press 'Esc' on the PC keyboard. If that fails then hit the 'OFF' button (on the robot!)
+You start in [#CommandMode Command Mode]. Now to enter program you must go into [InputMode input mode] and then return to command mode to run. If the program ever gets into a recurring loop (either accidentally or deliberately) then press 'Esc' on the PC keyboard. If that fails then hit the 'OFF' button (on the robot!)
 
 To enter a simple "Hello world" program - type following:
 {{{
@@ -40,14 +40,15 @@ Enter Program '.' to Finish
 > 
 
 1 lines entered, [25/3072] Bytes
-}}
+}}}
 To list the program:
 {{{
 : l
 List Program 
 10 PRINT "Hello world"
-}}
-And finally run the program:
+}}}
+
+And run the program:
 {{{
 : r
 Run Program 
@@ -56,4 +57,25 @@ End
 Elapsed Time 00:00-000
 : 
 }}}
-You can now enter more lines by going back into [InputMode input mode]. If you want to start over then press 'c.  
+You can now enter more lines by going back into [#InputMode input mode]. If you want to start over then press 'c.  
+my first program
+
+== First program ==
+
+Writing first _real_ program, one that controls the robot. Lets get to robot to stand up.
+{{{
+10 STAND
+}}}
+
+Try and run this. Now make it wave by going into input mode and adding
+{{{
+20 WAIT KEY
+30 RUN 17
+}}}
+
+You can run this, it will stand, wait for a key and then wave. Lets add a loop with a wait for key press
+{{{
+40 GOTO 20
+}}}
+
+Now run this. You can also run the program by pressing square/Red button on the controller. To exit press Esc.
