@@ -15,7 +15,7 @@ Download latest firmware (Basic.hex) and upload on to the Robots RBC module usin
 
 [http://robobuilderlib.googlecode.com/files/rbctool.jpg]
 
-If you're not using Windows, you can still download the custom firmware into your bot using the [ http://www.strout.net/info/robotics/utilities/avrbl-downloader/AVRBL Downloader/]. Or there's a Java based tool available in the source tree.
+If you're not using Windows, you can still download the custom firmware into your bot using the [ http://www.strout.net/info/robotics/utilities/avrbl-downloader/index.html]. Or there's a Java based tool available in the source tree.
 
 If you want just to try it out (and not load on to Robot) then there are  windows and Linux OS builds is available  (basic.exe). It input/outputs using console. Some Robot hardware functions are available if the robot is running DCMP firmware connected om serial port.
 
