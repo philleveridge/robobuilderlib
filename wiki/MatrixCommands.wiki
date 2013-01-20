@@ -16,7 +16,7 @@ Matrix values are stored in LIST of the same name. Its up to the programmer to e
   * Coming soon
     * LET M=A op B  where op = +-/.`*`()^
     * Transpose         (^)
-    * Convolve          (#)
+    * [Convolve]          (#)
     * Matrix product    `(*)`
     * Element by element (+/-.)
     * Details to follow 
@@ -26,7 +26,7 @@ Matrix values are stored in LIST of the same name. Its up to the programmer to e
 Example defining a simple matrix
 
 {{{
-> MAT DEF Z;4;5
+> MAT DEF Z=4;5
 Create matrix 'Z' 4x5
 > LIST Z=20,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0
 > MAT PRINT Z
@@ -36,7 +36,7 @@ matrix 'Z' 4x5
   9   0   1   2 
   3   4   5   6 
   7   8   9   0 
-> MAT DEF A;3;2
+> MAT DEF A=3;2
 Create matrix 'A' 3x2
 > LIST A=6,1,2,3,4,5,6
 > MAT PRINT A
