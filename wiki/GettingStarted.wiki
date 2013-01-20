@@ -60,19 +60,33 @@ Elapsed Time 00:00-000
 : 
 }}}
 You can now enter more lines by going back into [#InputMode input mode]. If you want to start over then press 'c.  
-my first program
 
 == First program ==
 
-Writing first _real_ program, one that controls the robot. Lets get to robot to stand up.
+Writing first _real_ program, one that controls the robot. Lets get to robot to stand up. 
 {{{
-10 STAND
+: c
+Clear Program 
+: i
+Enter Program '.' to Finish
+> 10 STAND
+> .
+1 lines entered, [12/3072] Bytes
+:
 }}}
 
 Try and run this. Now make it wave by going into input mode and adding
 {{{
-20 WAIT KEY
-30 RUN 17
+: r
+Run Program 
+End
+Elapsed Time 00:01-097
+: i
+> 20 WAIT KEY
+> 30 RUN 17
+>
+2 lines entered, [35/3072] Bytes
+:
 }}}
 
 You can run this, it will stand, wait for a key and then wave. Lets add a loop with a wait for key press
