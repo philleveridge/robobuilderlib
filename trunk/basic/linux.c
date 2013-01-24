@@ -418,12 +418,17 @@ void main(int argc, char *argv[])
 		if (!strcmp(argv[i],"IR"))
 			irf=1;
 
-		if (!strcmp(argv[i],"HANDS"))
-			setdh(1);
-
 		if (!strcmp(argv[i],"COMPILE"))
 			cf=1;
 
+		if (!strcmp(argv[i],"HANDS"))
+			setdh(1);
+
+		if (!strcmp(argv[i],"STAND"))
+		{
+			matrixload(32, "stand.txt");
+			initbpfromscene();
+		}
 
 		if (!strcmp(argv[i],"COM") && i<argc-1)
 		{

@@ -276,6 +276,25 @@ long fn_kir(long v)
 	return v;
 }
 
+long fn_input(long v) 
+{
+	int ch;
+	v=0;
+	rprintfChar('?'); rprintfChar(' ');
+	while (1)
+	{
+		ch=(long)uartGetByte();
+		if (ch>='0' && ch<='9') 	{rprintfChar(ch); v=(v*10)+(long)(ch-'0');} // '0' -'9'
+		if (ch==27 || ch==13 || ch==10)	{rprintfCRLF(); break; }	//esc or CR
+
+		ch=(long)irGetByte();
+		if (ch==7)			{rprintfCRLF(); break;}		//stop button
+		if (ch>=12 && ch <=20)		{rprintfChar('0'+(ch-11)); v=v*10+ch-11;} //1->9 on IR}	
+		if (ch==21)			{rprintfChar('0');v=v*10;} 	// 0 on IR
+	}
+	return v;
+}
+
 long fn_tick(long v) 
 {	
 	return gtick;
@@ -602,7 +621,8 @@ long (*fnctab[])(long) = {
 	fn_event, //sEVENT
 	fn_map,   //sMAP
 	fn_shuf,   //sSHUF
-	fn_scale  //sSHUF
+	fn_scale,  //sSHUF
+	fn_input  //sINP
 #ifdef IMAGE
 	,fn_imready     //sIMR
 	,fn_plyrunning  //sPLY

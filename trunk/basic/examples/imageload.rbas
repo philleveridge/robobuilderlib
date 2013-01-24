@@ -1,0 +1,15 @@
+
+2 let d=10
+3 list a=$zeros(d*d)
+5 wait image
+7 out @{4,27,`[,`2,`J}
+10 !IMAGE LOAD D
+20 !IMAGE SHOW 5
+30 list b=@!
+31 list c=@b
+32 list b=@b-@a
+35 print "======================="
+36 scale @b,10#1,0
+38 print @!:d
+39 list a=@c
+40 goto 5

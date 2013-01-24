@@ -875,29 +875,56 @@ void PlayMotion(BYTE n)
 }
 
 int dm=0;
-void setdh(int n) {dm=n;}
+void setdh(int n) 
+{
+	dm=(1-dm);
+	rprintf("DH mode=%d\n",dm);
+}
+
+BYTE initpos[32];
+int ibp=0;
+
+void initbp(int n)
+{	
+	int nw = n%32;
+	for (int j=0; j<nw; j++)
+	{
+		if (nw<=16)
+			initpos[j]=basic16[j]; // standard huno 
+		else
+		{
+			if (dm)
+				initpos[j]=basicdh[j]; //huno with hip and dance hands
+			else
+				initpos[j]=basic18[j]; //huno with hip 
+		}
+	}
+	ibp=1;
+}
+
+void initbpfromcpos()
+{	
+	int nw=nos;
+
+	if (nw<16 || nw>24) {printf ("?err=%s\n", nw); return;}
+
+	for (int j=0; j<nw; j++)
+	{
+		initpos[j]=cpos[j];
+	}
+	ibp=1;
+}
 
 void standup (int n)
 {
 	int nw = n%32;
-	BYTE temp[nw];
-	for (int j=0; j<nw; j++)
+
+	if (!ibp)
 	{
-		if (nw<=16)
-			temp[j]=basic16[j]; //huno with hip
-		else
-		{
-			if (dm)
-				temp[j]=basicdh[j]; //huno with hip
-			else
-				temp[j]=basic18[j]; //huno with hip
-		}
-		if (j<16 && (n&32==32))
-		{
-			temp[j] += offset[j];
-		}
+		initbp(nw);
 	}
-	PlayPose(1000, 10, 4, temp, nw); //huno basic
+
+	PlayPose(1000, 10, 4, initpos, nw); //huno basic
 }
 
 
