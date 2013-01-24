@@ -42,14 +42,15 @@ const int mp[]  = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
 
 const  prog_char  specials[43][7] = {
 
-		"VOLT",  "IR",   "KBD",  "RND",  "SERVO", 
-		"TICK",  "PORT", "ROM",  "TYPE", "ABS", 
-		"MAPIR", "KIR",  "FIND", "CVB2I","NE", 
-		"NS",    "MAX",  "SUM",  "MIN",  "NORM", 
-		"SQRT",  "SIN",  "COS",  "IMAX", "HAM", 
-		"RANGE", "SIG",  "DSIG",  "STAND", "ZEROS",
+		"VOLT",  "IR",   "KBD",   "RND",  "SERVO", 
+		"TICK",  "PORT", "ROM",   "TYPE", "ABS", 
+		"MAPIR", "KIR",  "FIND",  "CVB2I","NE", 
+		"NS",    "MAX",  "SUM",   "MIN",  "NORM", 
+		"SQRT",  "SIN",  "COS",   "IMAX", "HAM", 
+		"RANGE", "SIG",  "DSIG",  "STAND","ZEROS",
 		"MIC",   "X",    "Y",     "Z",    "PSD", 
-		"GREY",  "TURTLE", "EVENT", "MAP","SHUF", "SCALE"
+		"GREY",  "TURTLE","EVENT","MAP",  "SHUF", 
+		"SCALE", "INPUT"
 #ifdef IMAGE
 	,"IMR"    //sIMR
 	,"PLY"  //sPLY

@@ -403,7 +403,14 @@ void basic_load(int tf)
 		{
 		case LET: 
 		case FOR:
-			// read Variable		
+			// read Variable
+   			if (*cp=='@')
+			{
+				newline.var='@';
+				newline.text=cp;
+				break;
+			}
+			else
 			if ((newline.var = getVar(&cp))<0)
 			{
 				BasicErr=3;
@@ -743,6 +750,8 @@ extern int  gotoln(int gl);
 extern int  gevent;
 extern int  gkp;
 
+int breakp=0;
+
 void basic_start(int dbf)
 {
 	// Repeat
@@ -845,6 +854,13 @@ void basic_start(int dbf)
 			rprintfProgStr(PSTR("End\r\n"));
 			return;
 		}
+
+		if (line.lineno==breakp)
+		{
+			rprintfProgStr (PSTR(" ** Break\r\n")); 
+			showvars();
+			return;
+		}
 		
 		if (dbf) 
 		{
@@ -922,11 +938,11 @@ void dump(int sz)
 	{
 		int j;
 		char asciis[9];
-		rprintf ("%x ", i);
+		rprintf ("%02x ", i);
 		for (j=0; j<sz;  j++)
 		{
 			BYTE data = eeprom_read_byte((BYTE*)(BASIC_PROG_SPACE+i+j));
-			rprintf ("%x ", data);
+			rprintf ("%02x ", data);
 			if (sz==8) {if (data>27 && data<127) asciis[j]=data; else asciis[j]='.';}
 		}
 		if (sz==8) 
@@ -946,11 +962,11 @@ void dump_firmware()
 	{
 		int j;
 		char asciis[9];
-		rprintf ("%x ", i);
+		rprintf ("%02x ", i);
 		for (j=0; j<8;  j++)
 		{
 			BYTE data = eeprom_read_byte((BYTE*)(FIRMWARE+i+j));
-			rprintf ("%x ", data);
+			rprintf ("%02x ", data);
 			if (data>27 && data<127) asciis[j]=data; else asciis[j]='.';
 		}
 		asciis[8]='\0';
@@ -993,6 +1009,8 @@ void basic_list()
 		if (line.lineno==0) continue;
 
 		/* list code */
+
+		if (line.lineno==breakp) rprintfChar('*');
 	
 		rprintf ("%d ", line.lineno); 
 		rprintfProgStr (tokens[line.token]);
@@ -1000,7 +1018,9 @@ void basic_list()
 		
 		if (line.token==LET || line.token==GET || line.token==FOR || line.token==LIST || line.token==DATA)
 		{
-			if (line.var!=32)
+			if (line.var=='@')
+				;
+			else if (line.var!=32)
 				rprintf ("%c = ", line.var+'A');
 			else 
 				rprintfProgStr (PSTR("! = "));
@@ -1260,7 +1280,7 @@ void basic()
 		ch = GetByte();
 		if (ch > 26) {
 			rprintfChar(ch);
-			if (!(ch== 'G'|| ch=='g')) rprintfCRLF();
+			if (!(ch== 'G'|| ch=='g' || ch=='B')) rprintfCRLF();
 		}
 		switch (ch)
 		{
@@ -1289,6 +1309,7 @@ void basic()
 			break;
 		case 'G': // gosub
 		case 'g': // gosub
+		case 'B': // set breakpoint
 			{
 			int ch2,t,gn=0;
 			while(1)
@@ -1299,6 +1320,12 @@ void basic()
 				gn=gn*10+ch2-'0';
 			}
 			rprintfCRLF();
+			if (ch=='B')
+			{
+				breakp=gn;
+				rprintf("BP=%d\n",gn);
+				break;
+			}
 			t=gotoln(gn);
 			if (t>0)
 			{
@@ -1378,6 +1405,20 @@ void basic()
 				rprintfCRLF();
 			}
 			break;
+		case 'y':
+			// customise stand up
+			readservos(0);
+			rprintf("Init Stand %d\r\n", nos);
+			initbpfromcpos();
+			rprintf("LIST %d", nos); 
+			for (i=0; i<nos; i++) rprintf(",%d",cpos[i]); 
+			rprintfCRLF();
+			standup(nos);
+			break;
+		case 'Y':
+			rprintf("Reset Stand %d\r\n", nos);
+			initbp(nos);
+			//
 		case 'p': // passive 
 			passiveservos(nos);
 			break;

@@ -193,6 +193,12 @@ int cmd_let(line_t l)
 {		
 	long n=0;
 	char *p=l.text;
+
+	if (l.var=='@')
+	{
+		cmd_inset(l);
+		return 0;
+	}
 	switch(eval_expr(&p, &n))
 	{
 	case NUMBER:
@@ -948,7 +954,7 @@ int cmd_delsel(line_t ln)
 
 int cmd_inset(line_t ln)
 {
-	// i.e. SET [@A,]I,V
+	// i.e. SET [@A,]I,V or SET @A[i]=V
 	// current array ![I]=V
 	char *p=ln.text;
 	long n=0;	
@@ -960,23 +966,30 @@ int cmd_inset(line_t ln)
 	{
 		p++;
 		an=*p;
-		if (an != '!' && ( an<'A' || an>'Z')  || *(p+1) != ',')
+		if (!(an == '!' || ( an>='A' && an<='Z')  && ( *(p+1) == ',' || *(p+1) == '[')))
 		{
 			BasicErr=3; 	return 0;
 		}
 		p+=2;
 	}
-
 	if (eval_expr(&p, &n)!=NUMBER)
 	{
 		BasicErr=3; 	
 		return 0;
 	}
 	ind=n;
-	if (*p++ != ',' || n<0 || n>=SCENESZ)
+	if ( !(*p == ',' || *p==']')  || n<0 || n>=SCENESZ)
 	{
 		BasicErr=3; 	
 		return 0;
+	}
+	if (*p==',')
+	{
+		p=p+1;
+	}
+	else if (*p==']' &&  *(p+1)=='=')
+	{
+		p=p+2;
 	}
 	if (eval_expr(&p, &n)!=NUMBER)
 	{
