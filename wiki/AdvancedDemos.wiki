@@ -27,6 +27,7 @@ Latest demos (most/all require BasicIDE - [BasicClient] for details on the IDE) 
   * [MazeNavigation Maze Navigation]
   * [Kinematics Simple inverse 2D kinematic demo]
   * [Planner Simple MDP type motion planner]
+  * [Hexapawn Heuristic AI search and prune as game]
 
 == Genetic Algorithms ==
 
