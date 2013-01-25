@@ -20,9 +20,9 @@ Command mode signified by ':'. Press a key or use Remote control (for some optio
 
 || *Type* || *Description* ||
 ||r|| Run program - also press Square on Remcon||
-||R ||Run program Single step mode - will run one line at a time ||
+||R ||Run program [#R_-_trace_mode trace mode] - will run one line at a time ||
 ||g||Run from (Goto) line number||
-||G||As G but in single step mode||
+||G||As G but in [#R_-_trace_mode trace mode]||
 ||i||[InputMode Input  mode]||
 ||I||Input mode but show time for each command to run||
 ||l||List program||
