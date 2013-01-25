@@ -1,0 +1,221 @@
+#summary hexapawn - heuristic AI - on a robot !
+
+= Introduction =
+
+wikipedia http://en.wikipedia.org/wiki/Hexapawn
+{{{
+"Gardner specifically constructed it as a game with a small game tree,
+ in order to demonstrate how it could be played by a heuristic AI 
+implemented by a mechanical computer."
+}}}
+
+Inspired by http://www.atomclub.nl/sites/Fpga/www.howell1964.freeserve.co.uk/Acorn/Atom/amb/AtomMagic.htm
+
+Demos new $input and set @a`[`x`]`=y
+
+{{{
+: r
+Run Program 
+C C C    0 1 2
+         3 4 5
+H H H    6 7 8
+Input your move 
+? 63
+My move 14
+C   C    0 1 2
+H C      3 4 5
+  H H    6 7 8
+Input your move 
+? 
+}}}
+
+
+= Details =
+
+==initialise==
+
+<code language="vb">
+	c=1 'computer
+	h=2 'human
+	'stored positions
+	list s=$zeros(100)
+</code>
+
+==display board==
+
+<code language="vb">
+newg:
+	'clear board
+	list b=9,c,c,c,0,0,0,h,h,h
+main:
+	t=h
+	for i=0 to 8
+		out (@b[i]=0)*32+(@b[i]=c)*`C+(@b[i]=h)*`H
+		out 32
+		if i=2 then
+			print "   0 1 2"
+		endif
+		if i=5 then
+			print "   3 4 5"
+		endif
+		if i=8 then
+			print "   6 7 8"
+		endif
+	next i
+
+	'test all possible human moves
+	for m=10 to 87
+		gosub cm
+		if e=0 then ym
+	next m
+	goto yl
+</code>
+
+
+==read user move==
+This use new $input feature to read move. 
+<code language="vb">
+ym:
+	print "Input your move "
+	let m=$input
+	if m=0 then yl
+	gosub cm
+	if e<>0 then ym
+	gosub mp
+</code>
+
+==The robot make its move==
+
+Code the board and then search for position in possible list
+
+<code language="vb">
+	print "My move ";
+	t=c
+	x=@B[0]+(4*@b[3])+(16*@b[6])+64
+	y=@B[1]+(4*@b[4])+(16*@b[7])+64
+	z=@B[2]+(4*@b[5])+(16*@b[8])+64
+	v=0
+mm:
+	if @s[v]>128 then mend
+	if @s[v]=0 then newe
+	u=0
+	if @s[v]=x and @s[v+1]=y and @s[v+2]=z then sm
+	u=1
+	if @s[v]=z and @s[v+1]=y and @s[v+2]=x then sm
+	v=v+2
+mend:
+	v=v+1
+	if v<200 then mm
+	print "v=";v
+	end
+</code>
+
+==add new entry==
+Adds code position to store
+<code language="vb">
+newe:
+	set @s[v]=x 
+	set @s[v+1]=y
+	set @s[v+2]=z
+	set @s[v+3]=0
+	w=v+3
+	for m=0 to 78
+		if (m mod 10)<9 then
+			gosub cm
+			if e=0 then
+				set @s[w]=m+128
+				w=w+1
+				set @s[w] = 0
+			endif
+		endif
+	next m
+</code>
+
+==select move==
+<code language="vb">
+sm:
+	v=v+3
+	if @s[v]<128 then delm
+	m=@s[v]-128
+
+	if u=0 then sme
+
+	if m/10<3 then
+		m=m+60
+	endif
+
+	if m/10>5 then
+		m=m-60
+	endif
+
+	if m%10<3 then   
+		m=m+6
+	endif
+
+	if m%10>5 then
+		m=m-6
+	endif
+sme:
+	print m
+	gosub mp
+	l=v
+	goto main
+</code>
+
+==delete moves==
+Remove move from store because we lost - no use
+<code language="vb">
+delm:
+	for v=l to 100
+		set @s[v]=@s[v+1]
+	next v
+</code>
+
+==win or loose - its playing the game that's important ==
+<code language="vb">
+yw:
+	print "??"
+	print "you win!"
+ 	goto ag
+yl:
+	print "you loose - haha"
+ag:
+	print "Another game? press 1"
+	wait key
+	k=$kir
+	if k=`1 or k=18 then newg
+	end
+</code>
+
+==check move==
+Set return value in e, e=0 good, e=1 bad
+<code language="vb">
+cm:
+	e=1
+	f=m/10
+	g=m mod 10
+	if (@B[f]<>T) or (@B[G]=t) then
+		return
+	endif
+	if @b[G]=0 then
+		'move - must be straight
+		if ((t=c) and (g=f+3)) or ((t=h) and (g=f-3)) then good
+	else
+		'take - must be diaganol
+		if ((t=c) and ((g=f+4) or (g=g+2)) and ((g/3-f/3)=1)) then good
+		if ((t=h) and ((g=f-4) or (g=f-2)) and ((f/3-g/3)=1)) then good
+	endif
+	return
+good:
+	e=0
+	return
+</code>
+
+==move piece==
+Move in variable m. 63 means move from location 6 to location 3
+<code language="vb">
+mp:
+	set @b[m/10]=0
+	set @b[m%10]=t
+	return
+</code>
