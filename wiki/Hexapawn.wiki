@@ -65,19 +65,18 @@ main:
 			print "   6 7 8"
 		endif
 	next i
-
-	'test all possible human moves
-	for m=10 to 87
-		gosub cm
-		if e=0 then ym
-	next m
-	goto yl
 </code>
 
 
 ==read user move==
 This use new $input feature to read move. 
 <code language="vb">
+	'Check if legal human move available - if not finished
+	for m=10 to 87
+		gosub cm
+		if e=0 then ym
+	next m
+	goto yl
 ym:
 	print "Input your move "
 	let m=$input
