@@ -385,7 +385,9 @@ void basic_load(int tf)
 		if (*cp == '!') {
 			newline.token=EXTEND;
 			cp++;
-			//printf ("extended\n");
+		}
+		else if ( *cp=='@' || (*cp >= 'A' && *cp <= 'Z' && *(cp+1)=='=')) {
+			newline.token=LET;
 		}
 		else
 		{

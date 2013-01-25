@@ -24,24 +24,21 @@
 #include "functions.h"
 #include "lists.h"
 
-extern int				BasicErr;
-
+extern int		BasicErr;
 extern unsigned char	cpos[];
-extern BYTE				sData[];
-extern int 				sDcnt;
-
-
-extern BYTE				nos;
+extern BYTE		sData[];
+extern int 		sDcnt;
+extern BYTE		nos;
 extern volatile BYTE	MIC_SAMPLING;
 extern volatile BYTE    MIC_NOS;
 
 extern int dbg;
 
 const char *o 	= "+-*/><gl=n&%|:?";
-const int mp[]  = {10,10,20,20,5,5,5,5,5,5,5,0,0,0,0};
+		// +  -  *  /  > < >= <= = <> AND MOD OR IF ELSE
+const int mp[]  = {10,10,20,20,5,5,5, 5, 5,5, 2,  20, 2, 0, 0};
 
 const  prog_char  specials[43][7] = {
-
 		"VOLT",  "IR",   "KBD",   "RND",  "SERVO", 
 		"TICK",  "PORT", "ROM",   "TYPE", "ABS", 
 		"MAPIR", "KIR",  "FIND",  "CVB2I","NE", 
@@ -52,8 +49,8 @@ const  prog_char  specials[43][7] = {
 		"GREY",  "TURTLE","EVENT","MAP",  "SHUF", 
 		"SCALE", "INPUT"
 #ifdef IMAGE
-	,"IMR"    //sIMR
-	,"PLY"  //sPLY
+		,"IMR"  //sIMR
+		,"PLY"  //sPLY
 #endif
 };
 
@@ -571,7 +568,12 @@ long math(long n1, long n2, char op)
 		n1=n2 && n1; break;
 	case '|':
 		n1=n1 || n2; break;
-	case '%':
+	case '%':		
+		if (n2==0)
+		{
+			rprintfProgStr (PSTR("Err - mod 0\r\n"));
+			return 0;
+		}
 		n1=n1%n2; break;
 	case '>':
 		n1=(n1>n2)?1:0; break;		
