@@ -79,7 +79,7 @@ awk 'BEGIN {ln=5; prog=""; ifc=0; IGNORECASE=1;}
 	{
 	   ifc+=1;
 	   gsub(/if/,"IF");
-	   gsub(/then/,"THEN " ln+10 " ELSE-00" ifc);
+	   gsub(/then/,"THEN " ln+3 " ELSE-00" ifc);
 	}
 
 	if (/^else$/)

@@ -15,10 +15,11 @@
 
 	c=1 'computer
 	h=2 'human
+        p=100
 	'board
 
 	'stored positions
-	list s=$zeros(100)
+	list s=$zeros(p)
 
 '------------------------------------------------
 ' display board
@@ -79,7 +80,7 @@ mm:
 	v=v+2
 mend:
 	v=v+1
-	if v<200 then mm
+	if v<p then mm
 	print "v=";v
 	end
 
@@ -142,7 +143,7 @@ sme:
 '------------------------------------------------
 delm:
 	'print "L=";l
-	for v=l to 100
+	for v=l to p-1
 		set @s[v]=@s[v+1]
 	next v
 yw:
@@ -155,7 +156,7 @@ ag:
 	print "Another game? press 1"
 	wait key
 	k=$kir
-	if k=`1 or k=18 then newg
+	if k=`1 or k=12 then newg
 	end
 
 '------------------------------------------------
