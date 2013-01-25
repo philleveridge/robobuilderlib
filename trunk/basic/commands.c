@@ -144,8 +144,17 @@ int cmd_for(line_t l)
 	{
 		strncpy(nxtptr[fp],to+4, MAX_FOR_EXPR);
 		*to='\0'; // null terminate expr1
-		if (eval_expr(&p, &n)==NUMBER)
-			setvar(l.var, n);		
+		switch (eval_expr(&p, &n))
+		{
+			case ARRAY:
+				n=listsize(arrayname);
+			case NUMBER:
+				setvar(l.var, n);
+				break;	
+			default:
+				BasicErr=1;
+				return -1;
+		}	
 	}
 
 	fp++;
@@ -170,10 +179,16 @@ int cmd_next(line_t l)
 	// test against expr2 i.e var<=expr2
 	n=0;
 	p=nxtptr[fp-1];
-	if (eval_expr(&p, &n)!=NUMBER)
+	switch (eval_expr(&p, &n))
 	{
-		BasicErr=1;
-		return -1;
+		case NUMBER: 
+			break;
+		case ARRAY: 
+			n=listsize(arrayname);
+			break;
+		default:
+			BasicErr=1;
+			return -1;
 	}
 			
 	if (getvar(l.var) <= n) 
@@ -478,27 +493,13 @@ int cmd_run(line_t l)
 		}
 		if (n>=0 && n <=18)
 		{
-		/*
-			0x00:  //PunchLeft
-			0x01:  //PunchRight
-			0x02:  //SidewalkLeft
-			0x03:  //SidewalkRight
-			0x04:  //TurnLeft
-			0x05:  //TurnRight
-			0x06:  //GetupBack
-			0x07:  //GetupFront
-			0x08:  //WalkForward
-			0x09:  //WalkBackward
-			0x0A:  //lshoot
-			0x0B:  //rshoot
-			0x0C:  //rsidewalk
-			0x0D:  //lsidewalk
-			0x0E:  //standupr
-			0x0F:  //standupf
-			0x10:  //sitdown
-			0x11:  //hi
-			0x12:  //kick left front turn
-		*/
+		/*	0x00:  //PunchLeft      0x01:  //PunchRight  0x02:  //SidewalkLeft
+			0x03:  //SidewalkRight  0x04:  //TurnLeft    0x05:  //TurnRight
+			0x06:  //GetupBack      0x07:  //GetupFront  0x08:  //WalkForward
+			0x09:  //WalkBackward   0x0A:  //lshoot      0x0B:  //rshoot
+			0x0C:  //rsidewalk      0x0D:  //lsidewalk   0x0E:  //standupr
+			0x0F:  //standupf       0x10:  //sitdown     0x11:  //hi
+			0x12:  //kick left front turn */
 			rprintf("Play Motion %d\r\n",n);
 			PlayMotion(n);
 		}
