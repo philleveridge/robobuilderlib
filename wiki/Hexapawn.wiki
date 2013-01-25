@@ -13,6 +13,8 @@ Inspired by http://www.atomclub.nl/sites/Fpga/www.howell1964.freeserve.co.uk/Aco
 
 Demos new $input and set @a`[`x`]`=y
 
+Source: http://code.google.com/p/robobuilderlib/source/browse/trunk/basic/examples/hexpawn.rbas
+
 {{{
 : r
 Run Program 
@@ -38,7 +40,8 @@ Input your move
 	c=1 'computer
 	h=2 'human
 	'stored positions
-	list s=$zeros(100)
+	p=100
+	list s=$zeros(p)
 </code>
 
 ==display board==
@@ -105,7 +108,7 @@ mm:
 	v=v+2
 mend:
 	v=v+1
-	if v<200 then mm
+	if v<p then mm
 	print "v=";v
 	end
 </code>
@@ -166,7 +169,7 @@ sme:
 Remove move from store because we lost - no use
 <code language="vb">
 delm:
-	for v=l to 100
+	for v=l to p-1
 		set @s[v]=@s[v+1]
 	next v
 </code>
@@ -183,7 +186,7 @@ ag:
 	print "Another game? press 1"
 	wait key
 	k=$kir
-	if k=`1 or k=18 then newg
+	if k=`1 or k=12 then newg
 	end
 </code>
 
@@ -201,7 +204,7 @@ cm:
 		'move - must be straight
 		if ((t=c) and (g=f+3)) or ((t=h) and (g=f-3)) then good
 	else
-		'take - must be diaganol
+		'take - must be diagonal
 		if ((t=c) and ((g=f+4) or (g=g+2)) and ((g/3-f/3)=1)) then good
 		if ((t=h) and ((g=f-4) or (g=f-2)) and ((f/3-g/3)=1)) then good
 	endif
