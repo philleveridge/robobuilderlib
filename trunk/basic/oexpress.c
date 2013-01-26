@@ -1,6 +1,7 @@
 #ifdef WIN32
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 #include "win.h"
 #endif
@@ -853,7 +854,8 @@ static int  intf=1;
 void mexpress(char m)
 {
 	tOBJ v;
-
+	
+	int i=0, j=0;
 	int w=fsize(m,0);
 	int h=fsize(m,1);
 
@@ -940,7 +942,6 @@ void mexpress(char m)
 		return;
 	}
 
-	int i=0, j=0;
 
 	while (*e != 0)
 	{
