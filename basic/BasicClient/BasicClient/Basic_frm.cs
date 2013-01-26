@@ -326,6 +326,8 @@ namespace RobobuilderLib
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog s = new OpenFileDialog();
+            s.AddExtension = true;
+            s.Filter = "Basic (*.rbas)|*.rbas";
             if (s.ShowDialog() != DialogResult.OK)
                 return;
             try
@@ -664,15 +666,17 @@ namespace RobobuilderLib
         {
             // tbd
             OpenFileDialog s = new OpenFileDialog();
+            s.Filter = "Bindata.txt|bindata.txt";
             if (s.ShowDialog() != DialogResult.OK)
                 return;
             try
             {
                 string bf = File.ReadAllText(s.FileName);
                 input.Text = compiler.LoadBin(bf);
-                output.Text = "";
+                output.Text = "Binary download";
                 fname.Text = "";
                 //download_btn.Enabled = true;
+                readyDownload = true;
             }
             catch (Exception e1)
             {
