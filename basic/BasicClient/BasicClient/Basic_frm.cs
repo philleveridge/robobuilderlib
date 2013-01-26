@@ -897,6 +897,14 @@ namespace RobobuilderLib
 
         }
 
+        private void reLoadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            input.Text = File.ReadAllText(fname.Text);
+            output.Text = "Reloading .. " + fname.Text;
+            syntaxcheck(); //!
+            editfl = false;
+        }
+
 
 
 
