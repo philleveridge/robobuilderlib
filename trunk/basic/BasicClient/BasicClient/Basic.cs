@@ -55,7 +55,7 @@ namespace RobobuilderLib
 		    "PORT", "ROM", "TYPE","ABS", "KIR",   "FIND",
             "CVB2I","NE",  "NS",  "MAX", "SUM",   "MIN",  
             "NORM", "SQRT","SIN", "COS", "IMAX",  "HAM", 
-		    "RANGE", "EVENT", "ZEROS", "SCALE"
+		    "RANGE", "EVENT", "ZEROS", "SCALE", "INPUT"
         };
         
          public static  string[] tokens = new string[] {
@@ -140,7 +140,7 @@ namespace RobobuilderLib
             help.Add("GEN",     "GEN n");
             help.Add("NETWORK", "NETWORK a,b,c,d,e,f");
             help.Add("SELECT",  "SELECT n,[m|*]");
-            help.Add("MAT",  "MAT {DEF|MULT|ZERO|PRINT|CONV|TRAN)[;args[;..]]");
+            help.Add("MAT",     "MAT {DEF|LET|ZERO|PRINT|CONV)[;args[;..]]");
             help.Add("ON",      "ON [TIME x|KEY] GOSUB y");
 
             // special regs
@@ -178,6 +178,7 @@ namespace RobobuilderLib
             help.Add("$ZEROS",  "$ZEROS(x) - array of x zeros"); 
             help.Add("$EVENT",  "$EVENT - see manual");
             help.Add("$SCALE",  "$SCALE(@A,x[,y,z] - see manual");
+            help.Add("$INPUT",  "$INPUT get  number from IR or keyboard");
         }
 
         /*------------------------------------- -------------------------------------*/
@@ -495,6 +496,9 @@ namespace RobobuilderLib
                     if (tok.Length == 1 && tok[0] >= 'A' && tok[0] <= 'Z')
                         tok = "LET " + tok;
 
+                    if (tok.Length == 0 && z[0] == '@')
+                        tok = "LET ";
+
                     if (tok == "ENDIF")
                     {
                         //
@@ -627,6 +631,11 @@ namespace RobobuilderLib
                     case KEY.LET:
                     case KEY.GET:
                     case KEY.FOR:
+                        if (z[0] == '@') {
+                            ln.var = (byte)'@';
+                            ln.text = upperIt(z);
+                            break;
+                        }
                         int t1= GetVar(GetWord(ref z));
                         if (t1 < 0) errno = 3; else ln.var = (byte)t1;
                         if (GetNext(ref z, false) != "=") { errno = 1; }
@@ -1029,7 +1038,9 @@ namespace RobobuilderLib
 
                 if ((KEY)line.token == KEY.LET || (KEY)line.token == KEY.GET || (KEY)line.token == KEY.FOR || (KEY)line.token == KEY.LIST || (KEY)line.token == KEY.DATA)
                 {
-                    if (line.var != 32)
+                    if (line.var == (byte)'@')
+                        ;
+                    else if (line.var != 32)
                         m += String.Format("{0} = ", (char)('A' + line.var));
                     else
                         m += "! = ";
