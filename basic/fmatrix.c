@@ -124,11 +124,12 @@ int fmatrixcreate(char ma, int w, int h)
 int fmatcopy(char ma, char mb)
 {
 	//ma -> mb
+	float *p;
 	int i;
 	int w=fgetw(ma);
 	int h=fgeth(ma);
 	fmatrixcreate(mb,w, h);
-	float *p=fgetd(mb);
+	p=fgetd(mb);
 
 	if (dbg) printf ("sz=%d\n",h*w);
 

@@ -3,7 +3,7 @@
 
 enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 
-#ifdef WIN 
+#ifdef WIN32 
 #define MAX_DEPTH  500
 #endif
 
