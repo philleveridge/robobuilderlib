@@ -306,6 +306,8 @@ int cmd_print(line_t l)
 
 		if (*p=='\0') break; // done
 
+		if (*p==',') rprintfChar(' ');
+
 		if (*p!=';' && *p!=',') {
 			BasicErr=4; //rprintf ("synatx prob= [%d]\r\n", *p); // DEBUG
 			break;

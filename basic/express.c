@@ -385,7 +385,7 @@ unsigned char eval_expr(char **str, long *res)
 					}
 					nis=ct-n1+1;
 					arrayname='!';
-					(*str)+=2;
+					(*str)+=1;
 					return ARRAY;
 				}
 				else
