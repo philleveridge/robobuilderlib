@@ -156,7 +156,6 @@ int cmd_for(line_t l)
 				return -1;
 		}	
 	}
-
 	fp++;
 	return 0;
 }
@@ -179,6 +178,7 @@ int cmd_next(line_t l)
 	// test against expr2 i.e var<=expr2
 	n=0;
 	p=nxtptr[fp-1];
+
 	switch (eval_expr(&p, &n))
 	{
 		case NUMBER: 

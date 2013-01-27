@@ -468,9 +468,21 @@ tOBJ eval_oxpr(char *s)
 		}
 	}
 
+
+
 	while (oop>0)
 	{
 		reduce();
+	}
+
+	while (oop==0 && stacksize()>1)
+	{
+		tOBJ a,b;
+		int op=getOP("+");
+		b = pop();
+		a = pop();
+		a = omath(a, b, oplist[op].type );
+		push(a);
 	}
 
 	if (stacksize()>1)
