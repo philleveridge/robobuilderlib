@@ -2,6 +2,9 @@
 
 = Introduction =
 
+<img src=http://robobuilderlib.googlecode.com/files/IMG_3218.2.JPG width=350 >
+
+
 wikipedia http://en.wikipedia.org/wiki/Hexapawn
 {{{
 "Gardner specifically constructed it as a game with a small game tree,
