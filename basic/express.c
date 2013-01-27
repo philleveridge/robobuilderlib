@@ -183,6 +183,7 @@ unsigned char eval_expr(char **str, long *res)
 	long tmp=0;
 	int done=0;
 	int i;
+        int sgn=0;
 
 #ifdef PARSE
 	if (**str=='!')
@@ -234,8 +235,15 @@ unsigned char eval_expr(char **str, long *res)
 			(*str)++;
 		}
 
+		if (c=='-' && sgn==0)
+		{
+			sgn=-1;	
+			continue;
+		}
+
 		if (c>='0' && c<='9')
 		{
+			if (sgn==0) sgn=1;
 			n1 = n1*10 + c - '0';
 		}
 		else
@@ -263,6 +271,8 @@ unsigned char eval_expr(char **str, long *res)
 		case '|' :
 		case '%' :
 		case ':' :
+			n1=n1*sgn;
+			sgn=0;
 			if (c=='>' && **str=='=') {c='g'; (*str)++;}
 			if (c=='<' && **str=='=') {c='l'; (*str)++;}
 			if (c=='<' && **str=='>') {c='n'; (*str)++;}
@@ -287,7 +297,6 @@ unsigned char eval_expr(char **str, long *res)
 				return NUMBER;
 			}
 			n1=0;
-
 			break;
 		case '"':
 			return STRING;
@@ -295,7 +304,7 @@ unsigned char eval_expr(char **str, long *res)
 			break; //ignore sp
 		case '@':
 			if (**str=='#')
-            {
+            		{
 				arrayname = '!';
 				(*str)++;
 				for (i=0;i<16; i++)
@@ -304,32 +313,28 @@ unsigned char eval_expr(char **str, long *res)
 				}
 				nis=16;
 			}
-			else
-            if (**str=='{')
-            {
-                // literal
-                int cnt;
+			else if (**str=='{')
+			{
+				// literal
+				int cnt;
 				arrayname = '!';
-
-                (*str)++;
-                cnt=list_eval('!',*str,0);
-                *str = *str+cnt;
-                if (**str!='}')
-                {
-					break;
-                }
 				(*str)++;
-            }
-			else
-            if (**str=='!')
-            {
+				cnt=list_eval('!',*str,0);
+				*str = *str+cnt;
+				if (**str!='}')
+				{
+					break;
+				}
+				(*str)++;
+			}
+			else if (**str=='!')
+			{
 				//use current array
 				arrayname = **str;
 				(*str)++;
 			}
-			else
-            if (**str=='<')
-            {
+			else if (**str=='<')
+			{
 				//use sound array
 				for (i=0; (i<MIC_NOS && i<SDATASZ && i<SCENESZ); i++) 
 				{
@@ -339,9 +344,8 @@ unsigned char eval_expr(char **str, long *res)
 				arrayname = '!';
 				(*str)++;
 			}
-			else
-            if (**str=='?')
-            {
+			else if (**str=='?')
+			{
 				//use servo pos array
 				arrayname = '!';
 				readservos(nos);
@@ -353,15 +357,14 @@ unsigned char eval_expr(char **str, long *res)
 				nis=nos;
 				(*str)++;
 			}
-            else
-            {
+			else
+			{
 				i = (**str-'A');
 				if (i<0 || i >25)
 				{
 					break;
 				}
 				arrayname = **str;
-
 				(*str)++;
 			}
 			if (**str == '[')
@@ -380,7 +383,6 @@ unsigned char eval_expr(char **str, long *res)
 
 					for (i=n1; i<=ct; i++)
 					{
-
 						scene[i-n1]= (int)listread(arrayname, i);
 					}
 					nis=ct-n1+1;
@@ -407,7 +409,6 @@ unsigned char eval_expr(char **str, long *res)
 				arrayname='!';
 				(*str)+=3;
 			}
-
 			return ARRAY;
 			break;
 		case '$':
@@ -499,6 +500,7 @@ unsigned char eval_expr(char **str, long *res)
 		}
 	}
 
+	n1=n1*sgn;
 	epush(n1);
 
 	while (op>top) {

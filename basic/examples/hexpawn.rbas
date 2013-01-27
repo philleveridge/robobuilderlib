@@ -12,7 +12,6 @@
 '------------------------------------------------
 ' initialise
 '------------------------------------------------
-
 	c=1 'computer
 	h=2 'human
         p=100
@@ -42,16 +41,15 @@ main:
 		endif
 	next i
 
-	'test all possible human moves
+'------------------------------------------------
+'your move - 	GET USER MOVE
+'------------------------------------------------
+	'check if possible human move exists (else we win)
 	for m=10 to 87
 		gosub cm
 		if e=0 then ym
 	next m
 	goto yl
-
-'------------------------------------------------
-'your move - 	GET USER MOVE
-'------------------------------------------------
 ym:
 	print "Input your move "
 	let m=$input
@@ -61,9 +59,8 @@ ym:
 	gosub mp
 
 '------------------------------------------------
-'my move - 	ROBOT MOVE
+'my move - robots move
 '------------------------------------------------
-
 	print "My move ";
 	t=c
 	x=@B[0]+(4*@b[3])+(16*@b[6])+64
@@ -71,9 +68,9 @@ ym:
 	z=@B[2]+(4*@b[5])+(16*@b[8])+64
 	v=0
 mm:
+	u=0
 	if @s[v]>128 then mend
 	if @s[v]=0 then newe
-	u=0
 	if @s[v]=x and @s[v+1]=y and @s[v+2]=z then sm
 	u=1
 	if @s[v]=z and @s[v+1]=y and @s[v+2]=x then sm
@@ -108,6 +105,7 @@ newe:
 
 '------------------------------------------------
 ' select move
+' u=0 as stored, u=1 mean switch rows
 '------------------------------------------------
 sm:
 	v=v+3
@@ -118,25 +116,24 @@ sm:
 
 	if m/10<3 then
 		m=m+60
+		goto sm2
 	endif
-
 	if m/10>5 then
 		m=m-60
 	endif
-
+sm2:
 	if m%10<3 then   
 		m=m+6
+		goto sme
 	endif
-
 	if m%10>5 then
 		m=m-6
 	endif
 sme:
-	print m
+	print m,"u=";u
 	gosub mp
 	l=v
 	goto main
-
 
 '------------------------------------------------
 ' delete moves
