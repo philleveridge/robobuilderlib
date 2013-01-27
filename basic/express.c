@@ -250,6 +250,7 @@ unsigned char eval_expr(char **str, long *res)
 		if (c>='A' && c<='Z')
 		{
 			n1 = variable[c-'A'];
+			sgn=1;
 		}
 		else
 		switch (c)
@@ -257,6 +258,7 @@ unsigned char eval_expr(char **str, long *res)
 		case '(':
 			eval_expr(str, &tmp);
 			n1 = tmp;
+			sgn=1;
 			(*str)++;
 			break;
 		case '?' :
@@ -371,6 +373,7 @@ unsigned char eval_expr(char **str, long *res)
 			{
 				(*str)++;
 				n1=0;
+				sgn=1;
 				eval_expr(str, &n1);
 				if (**str == ',')
 				{
@@ -393,6 +396,7 @@ unsigned char eval_expr(char **str, long *res)
 				else
 				{
 					n1 = (long)listread(arrayname, (int)n1);
+					sgn=1;
 					(*str)++;
 				}
 				break;
@@ -416,6 +420,7 @@ unsigned char eval_expr(char **str, long *res)
 			{
 				int noargs=0;
 				n1=0;
+				sgn=1;
 				tmp=0;
 				for (i=0; i<NOSPECS; i++)
 				{
