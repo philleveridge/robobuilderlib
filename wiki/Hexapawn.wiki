@@ -98,9 +98,9 @@ Code the board and then search for position in possible list
 	z=@B[2]+(4*@b[5])+(16*@b[8])+64
 	v=0
 mm:
+	u=0
 	if @s[v]>128 then mend
 	if @s[v]=0 then newe
-	u=0
 	if @s[v]=x and @s[v+1]=y and @s[v+2]=z then sm
 	u=1
 	if @s[v]=z and @s[v+1]=y and @s[v+2]=x then sm
@@ -134,6 +134,7 @@ newe:
 </code>
 
 ==select move==
+ select move, if u=0 use as stored, u=1 mean switch rows
 <code language="vb">
 sm:
 	v=v+3
@@ -144,21 +145,21 @@ sm:
 
 	if m/10<3 then
 		m=m+60
+		goto sm2
 	endif
-
 	if m/10>5 then
 		m=m-60
 	endif
-
+sm2:
 	if m%10<3 then   
 		m=m+6
+		goto sme
 	endif
-
 	if m%10>5 then
 		m=m-6
 	endif
 sme:
-	print m
+	print m,"u=";u
 	gosub mp
 	l=v
 	goto main
