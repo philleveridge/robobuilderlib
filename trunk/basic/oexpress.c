@@ -110,6 +110,17 @@ typedef struct ops {
 } tOP, *tOPp;
 
 void osin ();
+void ocos ();
+void otan ();
+void osqrt();
+void olog ();
+void oexp ();
+void oacos();
+void oatan();
+void oabs ();
+void oacx ();
+void oacy ();
+void oacz ();
 void osig ();
 void ornd ();
 void odsig ();
@@ -136,10 +147,20 @@ tOP oplist[] = {
 	{"AND",  8,  LAND,  2, NULL},
 	{"OR",   8,  LOR,   2, NULL},
 	{"SIN",  40, NA,    1, osin},  //function single arg
-	{"SIG",  40, NA,    1, osig},  //function single arg
+	{"COS",  40, NA,    1, ocos},  //function single arg
+	{"TAN",  40, NA,    1, otan},  //function single arg
+	{"ATAN", 40, NA,    1, oatan},  //function single arg
+	{"ACOS", 40, NA,    1, oacos},  //function single arg
+	{"LOG",  40, NA,    1, olog},  //function single arg
+	{"EXP",  40, NA,    1, oexp},  //function single arg
+	{"SQRT", 40, NA,    1, osqrt},  //function single arg
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
 	{"DSIG", 40, NA,    1, odsig},  //sigmoid functon
 	{"PSD",  40, NA,    0, opsd},  //const
+	{"ACCX", 40, NA,    0, oacx},  //const
+	{"ACCY", 40, NA,    0, oacy},  //const
+	{"ACCZ", 40, NA,    0, oacz},  //const
+	{"ABS",  40, NA,    1, oabs},  //function single arg
 	{"RND",  40, NA,    0, ornd},  //in-const
 	{"MAX",  40, NA,    2, omax},   //function two args
 	{"CELL", 40, NA,    3, omat},   //function two args
@@ -274,11 +295,13 @@ int get_token()
 	return STRNG;
     }
 
-	if (isnumdot(*e))
+	if (isnumdot(*e) || (*e=='-' && isnumdot(*(e+1))) )
 	{
 		int r=NUMI;
+		int sgn=1;
 		double dn=0.1;
 		tnum=0;
+		if (*e=='-') { e++; sgn=-1; }
 		while (isnumdot(*e))
 		{
 			if (*e=='.') 
@@ -298,6 +321,8 @@ int get_token()
 			}
 			e++;
 		}
+		if (r==NUMI) tnum=tnum*sgn;
+		if (r==NUMF) tfloat=tfloat*(float)sgn;
 		return r;
 	}
 
@@ -690,18 +715,97 @@ void osin()
 	return ;
 }
 
-void osig()
+void ocos()
 {
-	//binary signmoid function
 	tOBJ r,a;
 	r.type=FLOAT;
 	r.floatpoint=0.0;
 	a=pop();
+	if (a.type==INTGR)
+	{
+		r.type = INTGR;
+		r.number = Cos(a.number%256);
+	}
 
 	if (a.type==FLOAT)
 	{
-		r.floatpoint=1/(1+exp(-a.floatpoint));
+		r.floatpoint=cos(a.floatpoint);
 	}
+	push(r);
+	return ;
+}
+
+void otan()
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=tan(tofloat(pop()));
+	push(r);
+	return ;
+}
+
+void olog()
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=log(tofloat(pop()));
+	push(r);
+	return ;
+}
+
+void oacos()
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=acos(tofloat(pop()));
+	push(r);
+	return ;
+}
+
+
+void oatan()
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=atan(tofloat(pop()));
+	push(r);
+	return ;
+}
+
+void oabs()
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=fabs(tofloat(pop()));
+	push(r);
+	return ;
+}
+
+void oexp()
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=exp(tofloat(pop()));
+	push(r);
+	return ;
+}
+
+void osqrt()
+{
+	//binary signmoid function
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=sqrt(tofloat(pop()));
+	push(r);
+	return ;
+}
+
+void osig()
+{
+	//binary signmoid function
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=1/(1+exp(-tofloat(pop())));
 	push(r);
 	return ;
 }
@@ -748,8 +852,39 @@ void odsig()
 void opsd()
 {
 	tOBJ r;
+	Get_AD_PSD();
 	r.type=INTGR;
-	r.number=50;
+	r.number=gDistance;
+	push(r);
+	return;
+}
+
+void oacx()
+{
+	tOBJ r;
+	Acc_GetData();
+	r.type=INTGR;
+	r.number=x_value;
+	push(r);
+	return;
+}
+
+void oacy()
+{
+	tOBJ r;
+	Acc_GetData();
+	r.type=INTGR;
+	r.number=y_value;
+	push(r);
+	return;
+}
+
+void oacz()
+{
+	tOBJ r;
+	Acc_GetData();
+	r.type=INTGR;
+	r.number=z_value;
 	push(r);
 	return;
 }
