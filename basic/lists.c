@@ -51,7 +51,10 @@ static unsigned int  lists	[MAXLIST];
 static int  nol=0;
 static int  eol=0;
 
+
+
 int list_eval(char, char *p, int);
+
 
 void listinit()
 {
@@ -216,6 +219,7 @@ int listreadi(int l, int n)
 
 int listread(char ln, int n)
 {
+	if (n<0) return 0;
 	if (ln=='!')
 		return scene[n];
 	return listreadi(listexist(ln),n);
@@ -252,7 +256,7 @@ void listwrite(char ln, int n, int v)
 {
 	if (ln=='!')
 	{
-		scene[n]=v;
+		if (n>=0) scene[n]=v;
 	}
 	else
 	{
