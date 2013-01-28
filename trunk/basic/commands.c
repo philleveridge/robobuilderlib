@@ -842,7 +842,7 @@ int cmd_move(line_t ln)
 			if (pos[j]>254)
 				pos[j] = 254;
 
-			if (dbg) rprintf("DBG:: MOVE %d=%d\n", j, pos[j]);
+			if (dbg) rprintf("MOVE %d=%d\n", j, pos[j]);
 		}
 
 		if (!dbg) PlayPose(tm, fm, speed, pos, (fmflg==0)?nb:0);
@@ -955,15 +955,31 @@ int cmd_delsel(line_t ln)
 	return 0;
 }
 
+int base=0;
+
 int cmd_inset(line_t ln)
 {
-	// i.e. SET [@A,]I,V or SET @A[i]=V
+	// i.e. SET    [@A,]I,V or SET @A[i]=V
+	// i.e. INSERT [@A,]I,V 
 	// current array ![I]=V
 	char *p=ln.text;
 	long n=0;	
 
 	int ind=0;
 	char an='!';
+
+	if (ln.token==SET && strncmp(p,"BASE ",5)==0)
+	{
+		base = *(p+5)=='1'?1:0;
+		printf("Set Base=%d\n",base);
+		return 0;
+	}
+
+	if ( *p>='A' && *p<='Z' && *(p+1)=='[')
+	{
+		an=*p;
+		p=p+2;
+	}
 
 	if (*p=='@')
 	{
@@ -1000,7 +1016,7 @@ int cmd_inset(line_t ln)
 		return 0;
 	}
 
-	listset(an, ind, n, ln.token==INSERT);
+	listset(an, ind-base, n, ln.token==INSERT);
 	return 0;
 }
 

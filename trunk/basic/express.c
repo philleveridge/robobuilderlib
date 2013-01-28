@@ -60,7 +60,6 @@ extern char *strchr(const char *, char);
 
 char arrayname;
 
-
 /*************************************************************************************************************
 
            Variable routines
@@ -165,6 +164,7 @@ long epop()
            Expression parser
 
 *************************************************************************************************************/
+extern int base;
 
 int preci(char s)
 {
@@ -241,6 +241,12 @@ unsigned char eval_expr(char **str, long *res)
 			continue;
 		}
 
+		if (c>='A' && c<='Z' && **str=='[')
+		{
+			c='@';
+			(*str)--;
+		}
+
 		if (c>='0' && c<='9')
 		{
 			if (sgn==0) sgn=1;
@@ -293,7 +299,7 @@ unsigned char eval_expr(char **str, long *res)
 			}
 			else
 			{
-				rprintf("eval stack err %d,%d\n", top,tsp);
+				rprintf("stack err %d,%d\n", top,tsp);
 				op=0;sp=0;
 				 *res=0; 
 				return NUMBER;
@@ -386,7 +392,7 @@ unsigned char eval_expr(char **str, long *res)
 
 					for (i=n1; i<=ct; i++)
 					{
-						scene[i-n1]= (int)listread(arrayname, i);
+						scene[i-n1]= (int)listread(arrayname, i-base);
 					}
 					nis=ct-n1+1;
 					arrayname='!';
@@ -395,7 +401,7 @@ unsigned char eval_expr(char **str, long *res)
 				}
 				else
 				{
-					n1 = (long)listread(arrayname, (int)n1);
+					n1 = (long)listread(arrayname, (int)n1-base);
 					sgn=1;
 					(*str)++;
 				}

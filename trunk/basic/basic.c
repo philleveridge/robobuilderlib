@@ -386,7 +386,7 @@ void basic_load(int tf)
 			newline.token=EXTEND;
 			cp++;
 		}
-		else if ( *cp=='@' || (*cp >= 'A' && *cp <= 'Z' && *(cp+1)=='=')) {
+		else if ( *cp=='@' || (*cp >= 'A' && *cp <= 'Z' && ( *(cp+1)=='=' || *(cp+1)=='[')) ) {
 			newline.token=LET;
 		}
 		else
@@ -406,7 +406,7 @@ void basic_load(int tf)
 		case LET: 
 		case FOR:
 			// read Variable
-   			if (*cp=='@')
+   			if (*cp=='@' || (*cp>='A' && *cp<='Z' && *(cp+1)=='['))
 			{
 				newline.var='@';
 				newline.text=cp;
@@ -993,7 +993,7 @@ void basic_list()
 	BYTE tmp=0;
 	nxtline = 0;	
 
-	rprintfProgStr(PSTR("List Program \r\n"));
+	rprintfProgStr(PSTR("List Program\r\n"));
 
 	if (nextchar() != 0xAA ) {
 		rprintfProgStr(PSTR("No program loaded\r\n"));
@@ -1245,14 +1245,19 @@ void testforreset()
 	}
 }
 
+extern int base;
+
 void init()
 {
 	int i;
 	for (i=0; i<16; i++) offset[i]=0;
+
+	base=0; // default base
 }
 
 extern int nis;
 extern int dcmp_mode() ;
+
 /*************************************************************************************************************
 
 COMMAND LINE
