@@ -631,7 +631,7 @@ namespace RobobuilderLib
                     case KEY.LET:
                     case KEY.GET:
                     case KEY.FOR:
-                        if (z[0] == '@') {
+                        if (z[0] == '@' || (z[0]>='A' && z[0]<='Z' && z[1]=='[')) {
                             ln.var = (byte)'@';
                             ln.text = upperIt(z);
                             break;

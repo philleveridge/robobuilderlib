@@ -192,6 +192,7 @@ namespace RobobuilderLib
                 else
                 {
                     s.PortName = comPort.Text;
+                    s.ReadTimeout = 250;
                     s.Open();
                     s.Write("V");
                     s.ReadTo("v=");
@@ -224,12 +225,11 @@ namespace RobobuilderLib
                         if (s.IsOpen)
                         {
                             s.Close();
-                            button1.BackColor = System.Drawing.Color.Red;
-                            runBtn.Visible = false;
-                            listBtn.Visible = false;
-                            stopBtn.Visible = false;
                         }
-
+                        button1.BackColor = System.Drawing.Color.Red;
+                        runBtn.Visible = false;
+                        listBtn.Visible = false;
+                        stopBtn.Visible = false;
                         return;
                     }
                 }
@@ -243,32 +243,36 @@ namespace RobobuilderLib
         void readData()
         {
             // mono read routine - doesn't handle serial events
-            s.ReadTimeout = 100;
+            s.ReadTimeout = 5;
             int b;
+            rx = "";
 
             while (s.IsOpen)
             {
-                try
+                if (!bm)
                 {
-                    if ((b = s.ReadByte()) > 0)
+                    try
                     {
-                        rx = "";
-                        while (b>0 && b != 255)
+                        if ((b = s.ReadByte()) > 0)
                         {
-                            //Console.WriteLine("{0} - {1}", b, rx);
-                            rx += Char.ToString((char)b);
-                            b = s.ReadByte();
+                            while (b > 0 && b != 255)
+                            {
+                                //Console.WriteLine("{0} - {1}", b, rx);
+                                rx += Char.ToString((char)b);
+                                b = s.ReadByte();
+                            }
 
                         }
                     }
-                }
-                catch
-                {
+                    catch
+                    {
+                    }
+                    DisplayText(null, null);
+                    rx = "";
                 }
                 Application.DoEvents();
-                DisplayText(null, null);
-                rx = "";
             }
+
 
         }
 
@@ -469,7 +473,7 @@ namespace RobobuilderLib
 
             if (!s.IsOpen)
             {
-                output.Text += "com port not open ..."; 
+                MessageBox.Show("Please connect first");
                 return;
             }
 
@@ -482,7 +486,7 @@ namespace RobobuilderLib
                 s.Write(".z"); // Auto set up download mode
 
                 btf = new binxfer(s);
-                btf.dbg = true;
+                btf.dbg = false;
                 btf.send_msg_raw('l', c);
 
                 if (btf.recv_packet())
@@ -505,6 +509,9 @@ namespace RobobuilderLib
 
             timer1.Enabled = false;
             progressBar1.Visible = false;
+
+            s.ReadTimeout = 50;
+            s.WriteTimeout = 50;
 
         }
 
@@ -708,8 +715,8 @@ namespace RobobuilderLib
             label8.Text = maxG.ToString();
             label9.Text = maxR.ToString();
 
-            label2.Text = String.Format("!IMAGE FILT N;{0};{1};{2};{3};{4};{5}",
-                minR, maxR, minG, maxG, minB, maxB);
+            textBox3.Text = String.Format("!IMAGE FILT {6};{0};{1};{2};{3};{4};{5}",
+                minR, maxR, minG, maxG, minB, maxB, textBox2.Text);
         }
 
         void loadimage()
