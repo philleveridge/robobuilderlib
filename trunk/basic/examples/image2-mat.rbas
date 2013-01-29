@@ -1,0 +1,28 @@
+   'image demo 2 as matrix
+    mat def n=5;2
+    mat def i=1;5
+    list n=10,1,-1,1,-1,0,-1,1,-1,1,0
+    list t=1,1
+    k=2
+
+    Print "Load image and turn head servo (20) to brightest source"
+    ON IMAGE GOSUB ImProc 
+Loop:
+    WAIT 50
+    GOTO Loop
+
+ImProc:
+    PRINT "load image"
+    !IMAGE LOAD 2        'load 2x2 image (grey scale)
+    !IMAGE SHOW 6        'show values
+    list i=@!.@t         'add threshold
+    mat print n;i        'show input and weights
+    mat o=n*i
+    mat print o          'show output
+    P=$SERVO(20)+k*((o[0]>0)-(o[1]>0))
+    print p
+    SERVO 20=P
+    return
+
+
+
