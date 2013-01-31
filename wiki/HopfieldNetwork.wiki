@@ -14,13 +14,13 @@ For more details on Hopfield networks: http://en.wikipedia.org/wiki/Hopfield_net
 '''''''''''''''''''''''''''''''''''''''''
 'train a hopfield - 4 input
 '''''''''''''''''''''''''''''''''''''''''
-MAT DEF A;4;1
+MAT DEF A=4;1
 LIST A=$SCALE(@{4,1,0,1,0},1,1,-1)
-MAT TRAN A;B
+MAT B=A^
 MAT PRINT A
 MAT PRINT B
-MAT MULT X;B;A
-MAT ZERO X
+MAT X=B*A
+MAT X=ZER
 MAT PRINT X
 
 '''''''''''''''''''''''''''''''''''''''''
@@ -36,16 +36,16 @@ list t=@y 'remember what we start with
 'update unit k (0-3)  this can be an/or random order
 for k=0 to 3
    print "unit ";k; " : ";   
-   s=@y[k]
+   s=y[k]
    print s;" + ";
    for j=0 to 3
-      s=s + (@y[j]*@x[k*4+j])
+      s=s + (y[j]*x[k*4+j])
    next j
    print s
    if s>0 then
-      set @y,k,1
+      set y[k]=1
    else
-      set @y,k,0
+      set y[k]=0
    endif
 next k
 
