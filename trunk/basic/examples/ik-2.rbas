@@ -1,0 +1,83 @@
+'''''''''''''''''''''''''''''''''''''''''
+'simple inverse kienmatics'
+'''''''''''''''''''''''''''''''''''''''''
+'
+	F=0
+	L=100
+	M=150 'mm
+	Y=100 'TY
+	for x=150 to 180
+		PRINT "Target X=";x;" Y=";y;
+		P=0
+		S=0
+		N=0
+		gosub Grad
+
+		PRINT "  Servo 1= ";P;", Servo 2=";S;" err=";r
+	next x
+
+	x=160 'TY
+	for y=80 to 120
+		PRINT "Target X=";x;" Y=";y;
+		P=0
+		S=0
+		N=0
+		gosub Grad
+
+		PRINT "  Servo 1= ";P;", Servo 2=";S;" err=";r
+	next y
+
+	print "done"
+	end
+
+'''''''''''''''''''''''''''''''''''''''''
+' Gradient decsent
+'''''''''''''''''''''''''''''''''''''''''
+
+Grad:
+	N=N+1
+	P=P+1
+	GOSUB calcd
+	T=R
+	P=P-2
+	GOSUB calcd
+	T=T-R
+
+	P=P+1
+	S=S+1
+	GOSUB calcd
+	Q=R
+	S=S-2
+	GOSUB calcd
+	Q=Q-R
+
+	'PRINT "T=";T;" Q=";Q
+
+	P=P-T
+	S=S-Q+1
+
+	GOSUB calcd
+
+	if f then
+		PRINT P;",";S;",";R;",";T;",";Q;",";E;",";D
+	endif
+
+	IF (R>25) AND (N<15) THEN Grad
+
+	return
+
+
+' calc 
+' L, M length
+' P,S   angles
+calcd:
+	D=L*$SIN(p)/32768
+	D=D+M*$SIN(s)/32768
+	E=L*$COS(p)/32768
+	E=E+M*$COS(s)/32768
+	R=$SQRT((D-Y)*(D-Y)+(E-X)*(E-X))
+	RETURN
+
+
+
+

@@ -38,7 +38,7 @@ const char *o 	= "+-*/><gl=n&%|:?";
 		// +  -  *  /  > < >= <= = <> AND MOD OR IF ELSE
 const int mp[]  = {10,10,20,20,5,5,5, 5, 5,5, 2,  20, 2, 0, 0};
 
-const  prog_char  specials[43][7] = {
+const  prog_char  specials[NOSPECS][7] = {
 		"VOLT",  "IR",   "KBD",   "RND",  "SERVO", 
 		"TICK",  "PORT", "ROM",   "TYPE", "ABS", 
 		"MAPIR", "KIR",  "FIND",  "CVB2I","NE", 
@@ -47,7 +47,7 @@ const  prog_char  specials[43][7] = {
 		"RANGE", "SIG",  "DSIG",  "STAND","ZEROS",
 		"MIC",   "X",    "Y",     "Z",    "PSD", 
 		"GREY",  "TURTLE","EVENT","MAP",  "SHUF", 
-		"SCALE", "INPUT"
+		"SCALE", "INPUT", "REV", "SORT"
 #ifdef IMAGE
 		,"IMR"  //sIMR
 		,"PLY"  //sPLY
@@ -433,7 +433,6 @@ unsigned char eval_expr(char **str, long *res)
 					if (!strncmp_P(*str, specials[i], strlen_P(specials[i])))
 						break;
 				}
-	
 				if (i==NOSPECS)
 				{
 					return -1; 		// no_match : match
@@ -445,7 +444,7 @@ unsigned char eval_expr(char **str, long *res)
 					i == sZEROS || i == sABS   || i == sCOS   || i == sCVB2I ||
 					i == sSIN   || i == sNORM  || i == sSUM   || i == sSERVO ||
 					i == sROM   || i == sMIN   || i == sMAX   || i == sIMAX  ||
-					i == sGREY  || i == sTURTLE || i== sSHUF)
+					i == sGREY  || i == sTURTLE || i== sSHUF || i==sREV  || i==sSORT)
 				{
 					noargs=1;
 				}

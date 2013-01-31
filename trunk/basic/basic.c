@@ -426,6 +426,7 @@ void basic_load(int tf)
 			if (newline.token==FOR)
 			{
 				char *to = strstr(cp," TO ");
+				if (to==0) to = strstr(cp," IN ");
 				if (to==0) BasicErr=1;
 			}
 			//else
@@ -1333,6 +1334,7 @@ void basic()
 				rprintf("BP=%d\n",gn);
 				break;
 			}
+			if (gn==0) {gn=breakp; breakp=0;} // continue
 			t=gotoln(gn);
 			if (t>0)
 			{

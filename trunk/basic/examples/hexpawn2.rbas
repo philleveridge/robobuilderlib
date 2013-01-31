@@ -1,0 +1,191 @@
+'------------------------------------------------'
+' http://en.wikipedia.org/wiki/Hexapawn
+' Demos new $input and a[x]=y
+' Inspired by 
+' http://www.atomclub.nl/sites/Fpga/www.howell1964.freeserve.co.uk/Acorn/Atom/amb/AtomMagic.htm
+' Build >693
+': r
+'Run Program 
+'C C C    0 1 2
+'         3 4 5
+'H H H    6 7 8
+'
+'------------------------------------------------
+' initialise
+'------------------------------------------------
+
+	const c 1  	'computer
+	const h 2   	'human
+
+        p=100
+	list s=$zeros(p)  'stored positions
+
+'------------------------------------------------
+' display board
+'------------------------------------------------
+newg:
+	list b=9,c,c,c,0,0,0,h,h,h   	'board
+main:
+	t=h
+	for i=0 to 8
+		out (B[i]=0)*32+(B[i]=c)*`C+(B[i]=h)*`H
+		out 32
+		if i=2 then
+			print "   0 1 2"
+		endif
+		if i=5 then
+			print "   3 4 5"
+		endif
+		if i=8 then
+			print "   6 7 8"
+		endif
+	next i
+
+'------------------------------------------------
+'your move - 	GET USER MOVE
+'------------------------------------------------
+	'check if possible human move exists (else we win)
+	for m=10 to 87
+		gosub cm
+		if e=0 then ym
+	next m
+	goto yl
+ym:
+	print "Input your move "
+	let m=$input
+	if m=0 then yl
+	gosub cm
+	if e<>0 then ym
+	gosub mp
+
+'------------------------------------------------
+'my move - robots move
+'------------------------------------------------
+	print "My move ";
+	t=c
+	x=B[0]+(4*B[3])+(16*B[6])+64
+	y=B[1]+(4*B[4])+(16*B[7])+64
+	z=B[2]+(4*B[5])+(16*B[8])+64
+	v=0
+mm:
+	u=0
+	if s[v]>128 then mend
+	if s[v]=0 then newe
+	if s[v]=x and s[v+1]=y and s[v+2]=z then sm
+	u=1
+	if s[v]=z and s[v+1]=y and s[v+2]=x then sm
+	v=v+2
+mend:
+	v=v+1
+	if v<p then mm
+	print "v=";v
+	end
+
+'------------------------------------------------
+'add new entry
+'------------------------------------------------
+newe:
+	s[v]=x 
+	s[v+1]=y
+	s[v+2]=z
+	s[v+3]=0
+	w=v+3
+	for m=0 to 78
+		if (m mod 10)<9 then
+			gosub cm
+			if e=0 then
+				s[w]=m+128
+				w=w+1
+				s[w] = 0
+			endif
+		endif
+	next m
+
+'------------------------------------------------
+' select move
+' u=0 as stored, u=1 mean switch rows
+'------------------------------------------------
+sm:
+	v=v+3
+	if s[v]<128 then delm
+	m=s[v]-128
+
+	if u=0 then sme
+
+	if m/10<3 then
+		m=m+60
+		goto sm2
+	endif
+	if m/10>5 then
+		m=m-60
+	endif
+sm2:
+	if m%10<3 then   
+		m=m+6
+		goto sme
+	endif
+	if m%10>5 then
+		m=m-6
+	endif
+sme:
+	print m
+	gosub mp
+	l=v
+	goto main
+
+'------------------------------------------------
+' delete moves
+'------------------------------------------------
+delm:
+	'print "L=";l
+	for v=l to p-1
+		s[v]=s[v+1]
+	next v
+yw:
+	print "??"
+	print "you win!"
+ 	goto ag
+yl:
+	print "you loose - haha"
+ag:
+	print "Another game? press 1"
+	wait key
+	k=$kir
+	if k=`1 or k=12 then newg
+	end
+
+'------------------------------------------------
+'check move e=0 good, e=1 bad
+'------------------------------------------------
+cm:
+	e=1
+	f=m/10
+	g=m mod 10
+	if (B[f]<>T) or (B[G]=t) then
+		return
+	endif
+	if B[G]=0 then
+		'move - must be straight
+		if ((t=c) and (g=f+3)) or ((t=h) and (g=f-3)) then good
+	else
+		'take - must be diaganol
+		if ((t=c) and ((g=f+4) or (g=g+2)) and ((g/3-f/3)=1)) then good
+		if ((t=h) and ((g=f-4) or (g=f-2)) and ((f/3-g/3)=1)) then good
+	endif
+	return
+good:
+	e=0
+	return
+
+'------------------------------------------------
+'move piece
+'------------------------------------------------
+mp:
+	b[m/10]=0
+	b[m%10]=t
+	return
+
+
+
+
+
