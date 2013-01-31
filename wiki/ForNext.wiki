@@ -79,5 +79,3 @@ This won't print as 7 > 5
 620 PRINT i
 630 NEXT i
 }}}
-
-
