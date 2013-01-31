@@ -1,0 +1,155 @@
+'Block 
+'	id      [number]
+'	type 	[0=Cube, 1=Pyramid, 2=table]
+'       color 	[0=red, 1=green, 2=blue]
+'       loc     [position]
+'       support [n, id1, id2, .. idn]
+'       sup-by  [n, id1, id2, .. idn]
+        
+
+	'''''''''''''''''''''''''''''''''''
+	'facts about the world
+	'''''''''''''''''''''''''''''''''''
+main:
+	list p=$zeros(64)
+	p=0
+
+	DATA H=0,0,0
+
+	DATA B=0,2,1,0,2,1,3,0
+	LIST M=@B
+
+	DATA B=1,0,0,1,1,2,1,0
+	LIST M=@M.@B
+
+	DATA B=2,0,2,1,0,1,1
+	LIST M=@M.@B
+
+	DATA B=3,0,1,3,1,4,1,0
+	LIST M=@M.@B
+
+	DATA B=4,1,2,3,0,1,3
+	LIST M=@M.@B
+
+	gosub showfacts
+
+	'''''''''''''''''''''''''''''''''''
+
+	l=1
+	gosub movehand
+	o=1
+	gosub grasp
+
+	'''''''''''''''''''''''''''''''''''
+
+	gosub showfacts
+
+	end
+
+ungrasp:
+	h[0]=0
+
+	p[p]=2
+	p=p+1
+	p[p]=o
+	p=p+1
+
+	return
+
+grasp:
+	h[0]=1
+	h[2]=o
+
+	p[p]=3
+	p=p+1
+	p[p]=o
+	p=p+1
+
+	return
+
+movehand:			
+	h[1]=l
+
+	p[p]=1
+	p=p+1
+	p[p]=l
+	p=p+1
+	return
+
+showfacts:
+	n=0
+	l=@m
+sfl:
+	print "Id: ";m[n];
+
+	if m[n+2]=0 then
+		print " Red";
+	endif
+	if m[n+2]=1 then
+		print " Green";
+	endif
+	if m[n+2]=2 then
+	  	print " Blue";
+	endif
+
+	if m[n+1]=0 then
+	  	print " Cube";
+	endif
+	if m[n+1]=1 then
+	  	print " Pyramid";
+	endif
+	if m[n+1]=2 then
+	  	print " Table";
+	endif
+	n=n+3
+	print " location: ";m[n];
+
+	n=n+1
+	s=m[n]
+	print " supports: ";
+	for i=1 to s
+	  	print m[n+i];",";
+	next i
+
+	n=n+s+1
+	s=m[n]
+	print " supported on: ";
+
+	for i=1 to s
+	  	print m[n+i];",";
+	next i
+
+	n=n+s+1
+	print
+	if n<l then sfl
+
+	if h[0]=1 then
+		print "Hand Grasping ";h[2];
+	endif
+	if h[0]=0 then
+		print "Hand Open";
+	endif
+	print " at loc",h[1]
+
+	gosub pplan
+	return
+
+pplan:
+	print "plan=";p
+	for i=0 to p-1 by 2
+		if p[i]=2 then
+			print "UnGrasp ";
+		endif
+		if p[i]=3 then
+			print "Grasp ";
+		endif
+		if p[i]=1 then
+			print "Move ";
+		endif
+
+		print  "[";p[i+1];"]"
+	next i
+	return
+
+
+

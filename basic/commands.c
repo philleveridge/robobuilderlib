@@ -132,31 +132,52 @@ int cmd_for(line_t l)
 	char *p=l.text;
 	char *to;
 	long n=0;
+	int inflg=0;
+	long by;
 
  	forptr[fp] = nxtline; 	// remember where next instruction is
-	// eval expr1 of line.text = "expr1 TO expr2"
+	// eval expr1 of line.text = "expr1 TO expr2 BY expr3"
 	// i.e var=expr1
+
+	nxtptr[fp][0]='T';
 
 	to = strstr(p," TO ");
 	if (to==0) 
-		BasicErr=1;
-	else
 	{
-		strncpy(nxtptr[fp],to+4, MAX_FOR_EXPR);
-		*to='\0'; // null terminate expr1
-		switch (eval_expr(&p, &n))
-		{
-			case ARRAY:
-				n=listsize(arrayname);
-			case NUMBER:
-				setvar(l.var, n);
-				break;	
-			default:
-				BasicErr=1;
-				return -1;
-		}	
+		to = strstr(p," IN ");	
+		if (to==0) {BasicErr=1; return 0;}
+		//foreach command
+		nxtptr[fp][0]='I';
+		inflg=1;
+		p=to+4;
+		eval_expr(&p, &n);
+		setvar(l.var, listread(arrayname,n));
+		strncpy(nxtptr[fp]+1,to+4, MAX_FOR_EXPR-1);
+		fp++;
+		return 0;
 	}
+
+
+	strncpy(nxtptr[fp]+1,to+4, MAX_FOR_EXPR-1);
+	*to='\0'; // null terminate expr1
+	switch (eval_expr(&p, &n))
+	{
+		case NUMBER:
+			setvar(l.var, n);
+			break;	
+		default:
+			BasicErr=1;
+			return -1;
+	}
+
 	fp++;
+
+	//check to see if NEXT condition already met
+	if (cmd_next(l)==1)
+	{
+		setline(findnext(nxtline,l.var));  //jump past if case
+	}
+
 	return 0;
 }
 
@@ -164,7 +185,11 @@ int cmd_next(line_t l)
 {
 	int t_ptr;
 	long n;
+	long by=1;
+	char *bystr=0;
 	char *p=l.text;
+	int inflg=0;
+
 	// increment var and check condition
 	if (fp<1)
 	{
@@ -172,12 +197,21 @@ int cmd_next(line_t l)
 	}
 	t_ptr=forptr[fp-1];
 
-	// increment var
-	setvar(l.var, getvar(l.var) + (long)1);
-
 	// test against expr2 i.e var<=expr2
 	n=0;
 	p=nxtptr[fp-1];
+
+	if (*p=='I') {
+		inflg=1;
+	}
+	p++;
+
+	if ((bystr=strstr(p, "BY "))!=0)
+	{
+		*(bystr-1)=',';
+		bystr += 3;
+		eval_expr(&bystr, &by);
+	}
 
 	switch (eval_expr(&p, &n))
 	{
@@ -190,16 +224,37 @@ int cmd_next(line_t l)
 			BasicErr=1;
 			return -1;
 	}
-			
-	if (getvar(l.var) <= n) 
-	{ 
-		// if true set ptr=stack; 
-		setline(t_ptr); 
-		return 0; //tmp=1
-	}	
+
+	if (inflg)
+	{
+		setvar(l.var, listread(arrayname,by));
+		sprintf(p,",BY %ld",by+1);
+		if (by<n )
+		{ 
+			setline(t_ptr); 
+			return 0; 
+		}	
+		else
+		{
+			fp--;
+		}
+	}
 	else
 	{
-		fp--;
+		// increment var (unless first from FOR)
+		if (l.token==NEXT) setvar(l.var, getvar(l.var) + by);
+		
+		if ((by>=0 && getvar(l.var) <= n) || (by<0 && getvar(l.var) >= n) )
+		{ 
+			// if true set ptr=stack; 
+			setline(t_ptr); 
+			return 0; //tmp=1
+		}	
+		else
+		{
+			fp--;
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -971,7 +1026,7 @@ int cmd_inset(line_t ln)
 	if (ln.token==SET && strncmp(p,"BASE ",5)==0)
 	{
 		base = *(p+5)=='1'?1:0;
-		printf("Set Base=%d\n",base);
+		rprintf("Set Base=%d\n",base);
 		return 0;
 	}
 
@@ -1784,7 +1839,7 @@ int cmd_matrix(line_t ln)
 
 	if (!strncmp(p,"DEF ",4))
 	{
-		// !MAT DEF A;1;2
+		// MAT DEF A;1;2 or MAT DEF A=3,2
 		p+=4;
 		if (*p != '\0')
 		{			
@@ -1795,7 +1850,7 @@ int cmd_matrix(line_t ln)
 				eval_expr(&p, &n);
 				w=n;
 
-				if (*p++ == ';')
+				if (*p++ == ';' || *p++ == ',')
 				{
 					eval_expr(&p, &n);
 					matcreate(m,w,n);
@@ -1826,7 +1881,7 @@ int cmd_matrix(line_t ln)
 		if (*p != '\0')
 		{
 			eval_expr(&p, &n);
-			if (*p++ == ';')
+			if (*p++ == ';' || *p++ == ',')
 			{				
 				ma=p[0];
 				histogram(ma, n);
@@ -1866,7 +1921,6 @@ int cmd_matrix(line_t ln)
 			nis=tn;
 			return 0;
 		}
-
 		ma=*p++;
 		if (*p =='\0')
 		{
@@ -1891,9 +1945,24 @@ int cmd_matrix(line_t ln)
 
 		if (ma =='Z' && *p=='E' && *(p+1)=='R')
 		{
-			//LET A=ZER
-			p+=3;
-			matzerodiag(mx);
+			//LET A=ZER or LET A=ZER(c1,r1,c2,r2)
+			p+=2;
+			if (*p=='(')
+			{
+				int a[4];
+				for (i=0; i<4; i++)
+				{
+					p++;
+					eval_expr(&p, &n);
+					a[i]=n;
+					if (i<3 &&  *p != ',')
+						return 1;
+				}
+				if (*p !=')') return 1;
+				matzero(mx,a[0],a[1],a[2],a[3]);
+			}
+			else
+				matzerodiag(mx);
 		}
 
 		if (*p=='*')
@@ -1910,43 +1979,10 @@ int cmd_matrix(line_t ln)
 			if (op=='.') op='*';
 			mb=*p++;
 			add_sub(ma,mb,op);
-			//copy into mx @!
 			matcreate(mx, matgetw(ma), matgeth(ma));
 			listcopy(mx, '!');
 		}
 		return 0;
-	}
-
-
-	if (!strncmp(p,"ZERO ",5))
-	{
-		// !MAT ZERO A;1;1;2;2
-		// !MAT ZERO A	
-		int a[4];
-		p+=5;
-
-		if (*p != '\0')
-		{			
-			ma=*p++;
-
-			if (*p != ';')
-			{
-				//MAT ZERO A -> set diaganol to zero
-				matzerodiag(ma);
-				return 0;
-			}
-
-			for (i=0; i<4; i++)
-			{
-				if (i<3 && (*p != ';'|| *p != ','))
-					return 1;
-				p++;
-				eval_expr(&p, &n);
-				a[i]=n;
-			}
-			matzero(ma,a[0],a[1],a[2],a[3]);
-			return 0;
-		}
 	}
 	BasicErr=1;
 	return 1;

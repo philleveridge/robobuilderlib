@@ -512,6 +512,43 @@ long fn_zeros(long v)
 	return 0;
 }
 
+
+
+long fn_rev(long v) 
+{
+	int lc;
+	int n;
+	char a=(char)v; //arrayname
+
+	n=listsize(a);
+
+	for (lc=0; lc<n; lc++)
+	{
+		scene[n-lc-1]= listread(a,lc);
+	}
+	nis=n;
+
+	fn_type=ARRAY;
+	return 0;
+}
+
+long fn_sort(long v) 
+{
+	int lc;
+	int n;
+	char a=(char)v; //arrayname
+
+	nis=listsize(a);
+	for (lc=0; lc<nis; lc++)
+	{
+		scene[lc]= listread(a,lc);
+	}
+	quicksort(scene,0,nis-1);
+
+	fn_type=ARRAY;
+	return 0;
+}
+
 long fn_stand(long v) 
 {
 	int lc;
@@ -622,7 +659,9 @@ long (*fnctab[])(long) = {
 	fn_map,   //sMAP
 	fn_shuf,   //sSHUF
 	fn_scale,  //sSHUF
-	fn_input  //sINP
+	fn_input,  //sINP
+	fn_rev,	   //sREV
+	fn_sort	  //sSORT
 #ifdef IMAGE
 	,fn_imready     //sIMR
 	,fn_plyrunning  //sPLY
