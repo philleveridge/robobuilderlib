@@ -19,7 +19,7 @@ For an in depth look at features  see [http://code.google.com/p/robobuilderlib/d
   # A-Z 32 bit signed integer variables
   # IF THEN ELSE
   # GOTO & GOSUB/RETURN
-  # FOR NEXT Loops
+  # [ForNext FOR NEXT] Loops
   # PRINT
   # END
   # [InputMode Simple] editor with Immediate mode so commands can be run directly
