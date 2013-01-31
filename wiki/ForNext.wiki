@@ -1,0 +1,83 @@
+#summary The FOR/NEXT loop
+
+= Introduction =
+
+Details on FOR next and how to use
+
+== The FOR/NEXT loop ==
+
+==Form 1==
+Coming soon - optional BY parameter, current default is '1' but by can be any number positive or negative.
+
+{{{
+FOR x = A TO B [ BY  C ]
+....
+NEXT x
+
+FOR x = 1 TO 5
+....
+NEXT x
+}}}
+
+==Form 2==
+Coming soon - iterate through a list
+{{{
+FOR x = A IN @B 
+''''
+NEXT x
+}}}
+
+== Details ==
+Allows control of looping a set number of times. Updates variable on each pass. FOR/next can be nested - one for loop inside another. Depth 3 max 
+
+===ok not nested ===
+{{{
+For A=1 to 5
+   print a,b
+next a
+for b=1 to 5
+   print a,b
+next b
+}}}
+
+===ok 2 deep nest ===
+{{{
+For A=1 to 5
+   for b=1 to 5
+      print a,b
+   next b
+next a
+}}}
+
+===Wrong overlapping ===
+{{{
+For A=1 to 5
+  for b=1 to 5
+    print a,b
+   next a
+next b
+}}}
+
+== more examples ==
+BY doesn't have to be only and doesn't have to match exactly
+{{{
+10 FOR I = 10 TO 3 BY -2
+20 PRINT I
+30 NEXT I
+}}}
+
+I is set to value of the list not an index so 6 then 3 then 1
+{{{
+410 FOR I = 1 in @{3,6,3,1}
+420 PRINT I
+430 NEXT I
+}}}
+
+This won't print as 7 > 5
+{{{
+610 FOR i = 7 to 5
+620 PRINT i
+630 NEXT i
+}}}
+
+
