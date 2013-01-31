@@ -35,36 +35,36 @@ Auto associative memory example from book "Intro to neural net with matlab 6.0" 
 
 <code language="vb">
 test1:
-   MAT def a;4;1
+   MAT def a=4;1
    LIST a=4,1,1,-1,-1
-   MAT tran a;b
+   MAT b=a^
    MAT PRINT a
    MAT PRINT b
-   MAT mult w;b;a
+   MAT w=b*a
 
    PRINT "test same input"
    LIST a=4,1,1,-1,-1
-   MAT mult y;a;w
+   MAT y=a*w
    PRINT "Output=";$SCALE(@y,1,1,-1)
 
    PRINT "test one mistake input"
    LIST a=4,-1,1,-1,-1
-   MAT mult y;a;w
+   MAT y=a*w
    PRINT "Output=";$SCALE(@y,1,1,-1)
 
    PRINT "test one missing input"
    LIST a=4,0,1,-1,-1
-   MAT mult y;a;w
+   MAT y=a*w
    PRINT "Output=";$SCALE(@y,1,1,-1)
 
    PRINT "test one missing input"
    LIST a=4,1,1,0,-1
-   MAT mult y;a;w
+   MAT y=a*w
    PRINT "Output=";$SCALE(@y,1,1,-1)
 
    PRINT "test two missing inputs"
    LIST a=4,0,1,0,-1
-   MAT mult y;a;w
+   MAT y=a*w
    PRINT "Output=";$SCALE(@y,1,1,-1)
 
    GOTO loop
@@ -75,33 +75,33 @@ test1:
 test2:
    'example 6.13
    LIST a=4,1,-1,1,-1
-   MAT tran a;b
-   MAT mult w;b;a
+   MAT b=a^
+   MAT w=b*a
    MAT PRINT w
    LIST y=@w
    PRINT @y
 
    LIST a=4,-1,1,1,-
-   MAT tran a;b
-   MAT mult w;b;a
+   MAT b=a^
+   MAT w=b*a
    LIST y=@y+@w
    PRINT @y
 
    LIST a=4,1,1,-1,-1
-   MAT tran a;b
-   MAT mult w;b;a
+   MAT b=a^
+   MAT w=b*a
    LIST w=@y+@w
-   MAT zero w
+   MAT w=ZER
    MAT PRINT w
 
    PRINT "test 1st input"
    LIST a=4,1,-1,1,-1
-   MAT mult y;a;w
+   MAT y=a*w
    PRINT "Output=";$SCALE(@y,1,1,-1)
 
    PRINT "test 2nd input"
    LIST a=4,-1,1,1,-1
-   MAT mult y;a;w
+   MAT y=a*w
    PRINT "Output=";$SCALE(@y,1,1,-1)
    GOTO loop
 </code>
@@ -127,14 +127,14 @@ The letters can then be recovered using either the pattern - converted to a 1x15
 <code language="vb">
 test3:
    'training
-   MAT def a;1;15
-   MAT def b;2;1
+   MAT def a=1;15
+   MAT def b=2;1
 
    PRINT "store letter E"
    LIST a=$SCALE(@{15,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1},1,1,-1)
    PRINT @a:3
    LIST b=2,-1,1
-   MAT mult w;a;b
+   MAT w=a*b
    MAT PRINT w
    OUT $SCALE(@a,1,```*,``` ):3
    PRINT
@@ -144,7 +144,7 @@ test3:
    LIST a=$SCALE(@{15,1,0,1,1,0,1,1,1,1,1,0,1,1,0,1},1,1,-1)
    PRINT @a:3
    LIST b=2,1,1
-   MAT mult w;a;b
+   MAT w=a*b
    OUT @$SCALE(@a,1,```*,``` ):3
    PRINT
 
@@ -152,20 +152,20 @@ test3:
    MAT PRINT w 'combined weight matrix
 
    'retrieving
-   MAT def a;15;1
+   MAT def a=15;1
    PRINT "test response E"
    LIST a=$SCALE(@{15,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1},1,1,-1)
-   MAT mult y;a;w
+   MAT y=a*w
    PRINT $SCALE(@y,1,1,-1)
-   MAT tran w;t
+   MAT t=w^
 
    LIST b=2,-1,1
-   MAT mult z;b;t
+   MAT z=b*t
    PRINT $SCALE(@z,1,1,0):3
 
    PRINT "test response H"
    LIST a=$SCALE(@{15,1,0,1,1,0,1,1,1,1,1,0,1,1,0,1},1,1,-1)
-   MAT mult y;a;w
+   MAT y=a*w
    PRINT $SCALE(@y,1,1,-1)
    GOTO loop
 </code>
