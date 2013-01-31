@@ -103,14 +103,14 @@ Initialises @A using for loop - this enable easy changes to different pattern an
 {{{
 10 LIST A = $ZEROS(64)
 20 FOR I = 0 TO 63
-30 SET @A,I,(I<32)
+30 SET A[I]=(I<32)
 40 NEXT I
-50 MAT DEF A;8;8
+50 MAT DEF A=8;8
 60 MAT PRINT A
-70 MAT DEF D;3;3
+70 MAT DEF D=3;3
 80 LIST D = 9,-1,-1,-1,2,2,2,-1,-1,-1
 90 MAT PRINT D
-100 MAT DEF F;8;8
+100 MAT DEF F=8;8
 110 MAT F=A#D
 120 MAT PRINT F
 }}}
@@ -141,4 +141,3 @@ matrix 'F' 8x8
   0   0   0   0   0   0   0   0 
   0   0   0   0   0   0   0   0 
 }}}
-
