@@ -1,0 +1,19 @@
+#summary Different limits
+
+= Introduction =
+
+Limits of parameters vary depending on which platform built for
+
+
+= Details =
+
+||*Parameter*||*Ominma/Linux*||*RBC firmware*||*Description*||
+||EEPROM_MEM_SZ 	||65536 (64K)  ||3072 ( 3K)||program size||
+||SCENESZ ||	10000   //8K   ||128||	current array size||
+||MAXLIST ||	26            || 5||	number of lists||
+||LISTMEM ||	65536      ||  128||  total list space||
+||MAX_DEPTH  ||	500      ||  	25||stack depth||
+||MAX_FOR_NEST	||10||	6|| ||
+||MAX_GOSUB_NEST||	50||	5|| ||
+||MAX_FOR_EXPR	||60 |||20 || ||
+||MAX_LINE  ||		100|| 100 || input line to editor||
