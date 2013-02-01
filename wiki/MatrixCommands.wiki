@@ -8,18 +8,18 @@ Add your content here.
 Matrix values are stored in LIST of the same name. Its up to the programmer to ensure list size matches the matrix size. So a 3x2 matrix is represented by a list of 6 elements. The matrix command will check and throw an error if size doesn't match.
 
   * MAT DEF   M=w;h           Define a matrix 'M' size wxh
-  * MAT ZERO  M;x1;y1;x2;y2   Zero matrix elements (or parts there off)
-  * MAT ZERO  M               Zero matrix diagonal
   * MAT HIST  mode;M          Returns in @! a histogram of matrix M
   * MAT PRINT M               Simple Print
 
   * Coming soon
     * LET M=A op B  where op = +-/.`*`()^
-    * Transpose         (^)
+    * Transpose          (^)
     * [Convolve]          (#)
-    * Matrix product    `(*)`
-    * Element by element (+/-.)
+    * Matrix product     `(*)`
+    * Element by element  (+/-.)
     * Details to follow 
+    * M=ZER(x1;y1;x2;y2)  Zero matrix elements (or parts there off)
+    * M=ZER               Zero matrix diagonal
 
 = Examples =
 
