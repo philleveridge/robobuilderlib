@@ -4,7 +4,7 @@
 
 Input mode (aka immediate mode) allows for programs to be input but also commands to be run instantly.
 
-To enter input mode type 'i' to the command prompt ':'. You will then be prompted for input with a '>'.  To exit input type a period "." as the first character of the line.
+To enter input mode type 'i' to the command prompt ':'. You will then be prompted for input with a '>'.  To exit input type a period "." as the first character of the line. Also '=' will recall the last line typed.
 
 = Details =
 
