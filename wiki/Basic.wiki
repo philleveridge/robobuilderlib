@@ -46,19 +46,20 @@ See wiki page [LanguageSpec for language specification] details
 == Recent updates ==
 
 Recent updates
-  # New functions $REV and $SORT
+  # New list functions $REV and $SORT
   # $input read a number kbd or ir controller
-  # SET BASE
-  # LET improvement A[x]=6 
-  # LIST improvement - sublist A[x,y]
-  # FOR/NEXT BY/IN
-  # Matrix commands 
+  # SET BASE option for lists
+  # LET improvement A`[`x`]`=6 
+  # LIST improvement - sub-lists  A`[`x,y`]`
+  # FOR/NEXT improvements :  BY/IN
+  # Matrix commands updates
   # Input mode '=' get last typed
   # MOVE options PLAY
   # y/Y option
+  # B - breakpoints
   # STAND - no need for argument
   # cmdline option STAND on Linux/Omnima load stand.txt
-  # DCMP mode!
+  # DCMP mode  (type M)!
   # Chargemode - improved output
   # Linux/omnima - more floating point functions SIN/COS ACOS TAN, LOG,EXP, etc
   # floating point matrices and Backprop example
