@@ -557,7 +557,7 @@ int cmd_run(line_t l)
 			0x0C:  //rsidewalk      0x0D:  //lsidewalk   0x0E:  //standupr
 			0x0F:  //standupf       0x10:  //sitdown     0x11:  //hi
 			0x12:  //kick left front turn */
-			rprintf("Play Motion %d\r\n",n);
+			rprintf("Run %d\r\n",n);
 			PlayMotion(n);
 		}
 		else
@@ -608,8 +608,6 @@ extern int imready, pbrunning;
 				if ((key=irGetByte())>=0)  break;
 				if ((key=uartGetByte())>=0) break;
 			}
-if (dbg) rprintf ("key=%d\n",key);
-
 			gkp=key;
 			return 0;
 		}
@@ -1850,8 +1848,9 @@ int cmd_matrix(line_t ln)
 				eval_expr(&p, &n);
 				w=n;
 
-				if (*p++ == ';' || *p++ == ',')
+				if (*p == ';' || *p == ',')
 				{
+					p++;
 					eval_expr(&p, &n);
 					matcreate(m,w,n);
 					return 0;
@@ -1876,16 +1875,33 @@ int cmd_matrix(line_t ln)
 
 	if (!strncmp(p,"HIST ",5))
 	{
-		// !MAT HIST 1;A			
+			
 		p+=5;
 		if (*p != '\0')
 		{
-			eval_expr(&p, &n);
-			if (*p++ == ';' || *p++ == ',')
-			{				
-				ma=p[0];
-				histogram(ma, n);
-				return 0;
+			if (*p>='A' && *p<='Z')
+			{
+				//MAT HIST A,1
+				ma=*p++;
+				if (*p== ',')
+				{
+					p++;				
+					eval_expr(&p, &n);
+					histogram(ma, n);
+					return 0;
+				}
+			}
+			else
+			{
+				//MAT HIST 1;A (deprecated)
+				eval_expr(&p, &n);
+				if (*p == ';' || *p== ',')
+				{
+					p++;				
+					ma=p[0];
+					histogram(ma, n);
+					return 0;
+				}
 			}
 		}
 	}

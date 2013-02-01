@@ -147,8 +147,9 @@ pplan:
 			print "Move ";
 		endif
 
-		print  "[";p[i+1];"]"
+		print  "[";p[i+1];"]";
 	next i
+	print
 	return
 
 
