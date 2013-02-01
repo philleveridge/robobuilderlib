@@ -98,10 +98,9 @@ const prog_char tokens[NOTOKENS][7] ={
 	"PLAY",  "OUT",    "OFFSET", "RUN",
 	"I2CO",  "I2CI",   "STEP",   "SPEED", 
 	"MTYPE", "LIGHTS", "SORT",   "FFT",
-	"SAMPLE","SCALE",  "DATA",
-	"SET", 	"INSERT", "DELETE",
-	"GEN",  "NETWOR", "SELECT", "!", "ON",
-	"MAT",
+	"SAMPLE","SCALE",  "DATA",   "SET", 	 
+        "INSERT","DELETE", "GEN",    "NETWOR", 
+  	"SELECT", "!", 	   "ON",     "MAT",
 };
 
 extern const prog_char *specials[];
@@ -246,6 +245,14 @@ int readLine(char *line)
 
 		while ((ch = uartGetByte())<0) ;
 
+		if (start==line && ch=='=' ) //recover last line
+		{
+			rprintfStr(line);
+			while (*line++!=0);
+			line--;
+			continue;
+		}
+
 		if (lf==1)
 		{
 			rprintfChar(ch);
@@ -275,13 +282,12 @@ int readLine(char *line)
 		
 		if (start==line && ch=='?' )
 		{
-			rprintfProgStr(PSTR("Program entry mode (. to exit)\r\n"));	
+			rprintfProgStr(PSTR("Input mode (. to exit)\r\n"));	
 			break;
 		}
 		
 		if (ch=='"') {qf=!qf;}
-
-			
+	
 		if (ch >= 'a' && ch <= 'z' && qf) ch = ch-'a'+'A';  // Uppercase only
 		
 		if (ch==8 || ch==127) //Bsapce ?
@@ -331,7 +337,7 @@ void basic_load(int tf)
 	
 	BasicErr=0;
 
-	rprintfProgStr(PSTR("Enter Program '.' to Finish\r\n"));
+	rprintfProgStr(PSTR("Input mode '.' to exit\r\n"));
 	
 	while (1)
 	{
