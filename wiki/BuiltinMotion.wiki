@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Basic Built in default motions
 
 = Introduction =
 
@@ -16,7 +16,9 @@ To try them out go into input a use RUN command i.e to walk forward
 }}}
 
 == Built in motions ==
-The following motions can be access by the RUN command - see above
+The following motions can be access by the RUN command - see above.
+
+You can also access them from "Demo mode" - available from command line
 
 {{{
 0) PunchLeft
