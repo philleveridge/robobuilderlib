@@ -45,25 +45,28 @@ See wiki page [LanguageSpec for language specification] details
 
 == Recent updates ==
 
-  # Event handling with ON TIME x GOSUB y and ON KEY GOSUB y : see [SimpleDemos#22)_ON_event_base_routines Example 22]
-  # AND, OR and MOD are supported i.e. PRINT (1=1) AND (2=2) prints 1 (true). The old | % & still work as well 
-   # Expression use 32 bit integer arithmetic - previously it was 16 bit, this make the range much better for complex expression - like above
-  # There's a new variant of MOVE command MOVE A,B,C,D - see below
-  # Command mode extensions
-    # p option - set all servos passive 
-    # Q option - queries all servo values and displays result 
-  # New options on SCALE command to enable threshold 
-  # List handling features. List are  separate from variable.
-     # New List functions $SHUF and $MAP 
-     # New List operators '+' '-' and '.' 
-     # New options on LIST to support stacks and hence Procedure and Functions
-     # New $SCALE function
-  # Versions for Linux and Windows now has floating point. 
-  # New extended commands: covering image processing ExtendedCommands 
-  # MATRIX handling now standard
-     # New demos [AutoAssocNets] and [HopfieldNetwork] show features in use
-  # OUT options can now take a width field on its array
- 
-== Latest Bug fixes ==
-     #  fix to expression handler and Cos function
-     #  fix to edit lines 
+Recent updates
+  # New functions $REV and $SORT
+  # $input read a number kbd or ir controller
+  # SET BASE
+  # LET improvement A[x]=6 
+  # LIST improvement - sublist A[x,y]
+  # FOR/NEXT BY/IN
+  # Matrix commands 
+  # Input mode '=' get last typed
+  # MOVE options PLAY
+  # y/Y option
+  # STAND - no need for argument
+  # cmdline option STAND on Linux/Omnima load stand.txt
+  # DCMP mode!
+  # Chargemode - improved output
+  # Linux/omnima - more floating point functions SIN/COS ACOS TAN, LOG,EXP, etc
+  # floating point matrices and Backprop example
+  # Wiki updates
+Basicclient reload/load binary/MONO fix on download
+  # new demo hexapawn!
+fixes 
+  # convolve matrix
+  # expression operator precedence bug on mod/%
+  # trap divide by 0 on mod
+  # fix unitary '-' i.e. -2--2 = 0
