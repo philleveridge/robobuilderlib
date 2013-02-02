@@ -23,7 +23,7 @@ If you want just to try it out (and not load on to Robot) then there are  window
 
 So assuming you have downloaded the program (and installed the firmware) - reset the power on the RBC and connect a [http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html VT100 terminal emulator] on the serial port (i.e. COM1 at 115200). You should see the following:
 {{{
-Basic v=$Revision: 629 $
+Basic v=$Revision: 710 $
 Commands: i r l c z q s V R F $
 
 16 servos connected
