@@ -38,9 +38,9 @@ Command mode signified by ':'. Press a key or use Remote control (for some optio
 ||$ ||[#$_-_Demo_mode Enter Demo mode] (also can use `*B` on remcon) - press Square to exit||
 ||d||[#dump_memory dump eprom] - D for widemode||
 ||F||[#dump_memory dump firmware]||
-||B||Coming soon - Set breakpoint||
-||Y||Coming soon - customise the "stand" position ||
-||y||Coming soon - Reset stand to default]||
+||B||Set breakpoint - type line number or zero to unset. Only 1 BP available||
+||Y||customise the "stand" position ||
+||y||Reset stand to default]||
 
 For more details and programming guide see the PDF manual.
 
