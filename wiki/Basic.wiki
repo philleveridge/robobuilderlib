@@ -64,10 +64,10 @@ Recent updates
   # Linux/omnima - more floating point functions SIN/COS ACOS TAN, LOG,EXP, etc
   # floating point matrices and Backprop example
   # Wiki updates
-Basicclient reload/load binary/MONO fix on download
-  # new demo hexapawn!
+  # new demo [Hexapawn hexapawn!]
 fixes 
   # convolve matrix
   # expression operator precedence bug on mod/%
   # trap divide by 0 on mod
   # fix unitary '-' i.e. -2--2 = 0
+  # Basicclient MONO fix on download slowed Vt100 terminal
