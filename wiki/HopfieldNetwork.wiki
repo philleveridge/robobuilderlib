@@ -91,7 +91,6 @@ End of program
 Elapsed Time 00:00-001
 }}}
 
-Note: Syntax of this command is changing in future versions
+Note: Syntax of this command has changed,to be more readable !
   * MAT MULT X;B;A becomes MAT X=B*A
-  * MAT TRAN A;B  becomes MAT B=A^
-Which is I believe more readable !
+  * MAT TRAN A;B   becomes MAT B=A^
