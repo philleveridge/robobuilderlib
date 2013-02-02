@@ -7,7 +7,7 @@ Details on FOR next and how to use
 == The FOR/NEXT loop ==
 
 ==Form 1==
-Coming soon - optional BY parameter, current default is '1' but by can be any number positive or negative.
+Loops setting the 'x' variable with values starting at A and incrementing until reach value B. The optional BY parameter enables the incrementing value to be changed from the default 1. and can be any number positive or negative. 
 
 {{{
 FOR x = A TO B [ BY  C ]
@@ -20,7 +20,7 @@ NEXT x
 }}}
 
 ==Form 2==
-Coming soon - iterate through a list
+In this form the variable x is set t each element inturn in the list, or iterating through the list @B.  
 {{{
 FOR x = A IN @B 
 ''''
@@ -50,12 +50,13 @@ next a
 }}}
 
 ===Wrong overlapping ===
+This will work !.  As here the loops overlap and a re not nested
 {{{
-For A=1 to 5
-  for b=1 to 5
-    print a,b
-   next a
-next b
+For A=1 to 5    <------
+  for b=1 to 5 <-     |
+    print a,b   |     |
+next a        --|- ----
+   next b-------
 }}}
 
 == more examples ==
