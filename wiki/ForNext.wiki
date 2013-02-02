@@ -50,7 +50,7 @@ next a
 }}}
 
 ===Wrong overlapping ===
-This will work !.  As here the loops overlap and a re not nested
+This will NOT work !.  As here the loops overlap and a re not nested
 {{{
 For A=1 to 5    <------
   for b=1 to 5 <-     |
