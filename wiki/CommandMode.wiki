@@ -5,7 +5,7 @@
 When you fist power on the robot with basic firmware loaded it starts in Command mode after first displaying an initial introductory greeting.
 
 {{{
-Basic v=$Revision: 629 $
+Basic v=$Revision: 710 $
 Commands: i r l c z q s V R F $
 16 servos connected
 4 lines in memory
