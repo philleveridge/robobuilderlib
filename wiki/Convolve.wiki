@@ -2,7 +2,7 @@
 
 = Introduction =
 
-This is only available in latest development version of code (not current release).  Uses the new LET format. (i.e. MAT C=A#B)
+Examples of matrix convolution. The uses the new MAT LET format. (i.e. MAT C=A#B)
 
 = Details =
 
