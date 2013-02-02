@@ -392,6 +392,10 @@ void basic_load(int tf)
 			newline.token=EXTEND;
 			cp++;
 		}
+		else if (*cp=='D' && *(cp+1)=='I' && *(cp+2)=='M')
+		{
+			newline.token=MATRIX;
+		}
 		else if ( *cp=='@' || (*cp >= 'A' && *cp <= 'Z' && ( *(cp+1)=='=' || *(cp+1)=='[')) ) {
 			newline.token=LET;
 		}
@@ -1034,6 +1038,7 @@ void basic_list()
 			else 
 				rprintfProgStr (PSTR("! = "));
 		}
+
 			
 		if (line.token==PUT)
 		{
@@ -1100,8 +1105,11 @@ void basic_list()
 				rprintfStr (p_else+1);
 			}
 		}
-		else
-		if (line.token==ON)
+		else if (line.token==MATRIX && !strncmp(line.text,"DIM",3))
+		{
+			rprintfStr (line.text);
+		}
+		else if (line.token==ON)
 		{
 			char *cp2, *p=0, *cp = line.text;
 			int l = strlen(cp);
@@ -1123,8 +1131,7 @@ void basic_list()
 		{
 			rprintf ("%c", line.var+'A');
 		}
-		else
-		if (line.token==DATA)
+		else if (line.token==DATA)
 		{
 			unsigned char i;
 			unsigned char n=(unsigned char)(*(line.text+1));
@@ -1132,13 +1139,11 @@ void basic_list()
 			for (i=1; i<n; i++)
 				rprintf (",%d", (unsigned char)line.text[2+i]);
 		}
-		else
-		if (line.token==FOR)
+		else if (line.token==FOR)
 		{
 			rprintfStr (line.text);
 		}
-		else
-		if (line.token==GOTO || line.token==GOSUB || line.token==PLAY  ) 
+		else if (line.token==GOTO || line.token==GOSUB || line.token==PLAY  ) 
 			rprintf ("%d", line.value);
 		else
 			rprintfStr (line.text);

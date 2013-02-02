@@ -1835,28 +1835,31 @@ int cmd_matrix(line_t ln)
 	char m, ma, mb, mx;
 	long n;
 
-	if (!strncmp(p,"DEF ",4))
+	if (!strncmp(p,"DEF ",4) || !strncmp(p,"DIM ",4))
 	{
 		// MAT DEF A;1;2 or MAT DEF A=3,2
 		p+=4;
 		if (*p != '\0')
 		{			
 			m=*p++;
-			if (*p == ';' || *p == '=')
+			if (*p == ';' || *p == '=' || *p == '(')
 			{
 				p++;
 				eval_expr(&p, &n);
 				w=n;
-
 				if (*p == ';' || *p == ',')
 				{
 					p++;
 					eval_expr(&p, &n);
 					matcreate(m,w,n);
-					return 0;
 				}
+				else
+				{
+					matcreate(m,w,1);
+				}
+				if (*p==')') p++;
 			}
-
+			return 0;
 		}
 	}
 
