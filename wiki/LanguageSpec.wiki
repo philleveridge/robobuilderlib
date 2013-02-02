@@ -14,7 +14,7 @@ VAR    A-Z  (integer only)
 OPER   + - * \ ( ) = < > % <= >= <> & | 
 CMD    LET:FOR:NEXT:GOTO:IF:THEN:ELSE:PRINT:END:SET:RUN:POKE
        WAIT:STEP:PUT:SERVO:MOVE:GOSUB:RETURN:LIST:STAND:OUT
-       I2CI:I2CO:OFFSET:SPEED:MTYPE:SCALE
+       I2CI:I2CO:OFFSET:SPEED:MTYPE:SCALE:MAT
 STRING " ... "
 EXPR1  VAR | LITERAL
 EXPR2  EXPR1 | STRING
@@ -29,7 +29,7 @@ EXPR   EXPR1 OPER EXPR1
 [LINE no] PRINT LIST [;]
 [LINE No] END
 [LINE no] IF  EXPR THEN LINE no ELSE Line No
-[LINE No] FOR VAR '=' EXPR 'To' EXPR
+[LINE No] FOR VAR '=' EXPR 'To' EXPR 'By' Expr
 [LINE No] NEXT VAR
 [LINE No] WAIT number
 [Line No] SERVO ID=EXPR | '@' | '~'
@@ -39,7 +39,7 @@ EXPR   EXPR1 OPER EXPR1
 [Line No] RETURN
 [Line No] STAND [16 | 18]  
 [LINE No] PUT VAR '=' $PORTA|B|C:0-7
-[LINE No] OUT EXPR,EXPR
+[LINE No] OUT EXPR,EXPR or OUT @X[:n]
 [Line No] RUN number
 [Line No] PLAY number
 [Line No] OFFSET [# | List | "blank"]
@@ -51,14 +51,14 @@ EXPR   EXPR1 OPER EXPR1
 [Line No] SAMPLE a,b[,c[,d]]
 [Line No] FFT list,scale
 [Line No] SCALE list,scale
-[Line No] SET index,value
 [Line No] SORT @array  | SORT #a,b,c
-[Line No] INSERT index,value
-[Line No] DELETE index
-[Line No] SELECT index,index
+[Line No] SET @L,index,value or SET @L[index]=value
+[Line No] INSERT @L,index,value or INSERT @L[index]=value
+[Line No] DELETE @L,index
+[Line No] SELECT @,index,index
 [Line No] GEN No_Gn,length,Mute rate%,Mute rnge,Val[min,max],type
-[Line No] NETWORK No input,No outputs,flag,no lay 1,no lay 2, no lay3
-[Line No] MAT [DEF|TRAN|MULT|ZERO|CONV] [args;args;...]
+[Line No] NETWOR No input,No outputs,flag,no lay 1,no lay 2, no lay3
+[Line No] MAT [DEF|LET] [args;args;...]
 }}}
 
 == Example syntax ==
@@ -72,7 +72,7 @@ EXPR   EXPR1 OPER EXPR1
 ||PUT PORT:A:8 = 3 ||set DDR of Port A = 3 (PIN0,PIN1 readable)||
 ||PUT PORT:A:2 = 1 ||set Port A bit 2 =1 (assuming writeable)||
 ||WAIT 200       ||Wait for a an amount of time in ms i.e. 200ms||
-||STAND 16      ||set servos to basic posture (for 16 or 18 servo bots)||
+||STAND      ||set servos to basic posture ||
 ||OFFSET        ||Defines a numeric offset array to be applied to MOVE and PLAY commands||
 ||RUN 0         ||Call Built in action using code i.e. RUN 0, would punch left See built in motion list below||
 ||I2CO 51,@{3,1,2,3}||will send 3 bytes to I2C address 51 ||
@@ -82,7 +82,7 @@ EXPR   EXPR1 OPER EXPR1
 ||STEP 5=30,50,5||STEP servo 5 from position 30 to position 50 in increments of 5 checking progress and stopping if obstruction||
 ||SORT #a,b,c||specialised sort for use with GEN- tbc||
 ||GEN 8,6,0,0,0,5,2||GENerate array,||
-||NETWORK  2,1,4,2,0,1||creates a 3 neuron network (2 input 1 output) ||
+||NETWOR  2,1,4,2,0,1||creates a 3 neuron network (2 input 1 output) ||
 ||SCALE || Scale command will scale a list or threshold a list ||
 ||MAT || Matrix commands options DEF, MULT, TRAN, ZERO, CONV, PRINT||
 
@@ -113,11 +113,12 @@ Functions an variables can be used in an expression, for example LET A=$X would 
 ||$SIN(x)||Sine of X where X 0-233 and return is +/-32K||
 ||$COS(x)||Cosine of X where X 0-233 and return is +/-32K||
 ||$RANGE(a,b,c)||return b < a < c ||
-||$SIG(x[,n])||  SIGMOID(x) - different scaling options set by n||
-||$DSIG(x)||SIGMOID derivative i.e.returns x*(1-x)  ||
 ||$STAND(x)||return an array of positions related to stand  ||
 ||$ZEROS(x)||return an array of zeros  ||
 ||$SHUF(x)||create a list of shuffled numbers from 1-X ||
 ||$MAP(@x,@y)||Map array X using array Y ||
 ||$SCALE(@A,x[,y,z]||Scale array A by X or Threshold A where A(i)>=x y else z||
+||$REV(@x)||return a list of elements from @X in reverse ||
+||$SORT(@x)||return a list of sorted numbers from list lowest first ||
+||$INPUT||wait for input and return an integer number (keyboard or IR) ||
 }}}
