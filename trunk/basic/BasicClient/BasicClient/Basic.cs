@@ -69,7 +69,7 @@ namespace RobobuilderLib
 	        "MTYPE", "LIGHTS", "SORT",   "FFT", 
             "SAMPLE","SCALE",  "DATA",
             "SET",   "INSERT", "DELETE",
-            "GEN",  "NETWORK", "SELECT", "!", "ON", "MAT",
+            "GEN",  "NETWORK", "SELECT", "!", "ON", "MAT", "DIM",
             "ENDIF" // leave at end
         };
         
@@ -84,7 +84,7 @@ namespace RobobuilderLib
             MTYPE, LIGHTS, SORT,   FFT, 
             SAMPLE,SCALE,  DATA,
             SET, INSERT,   DELETE,
-            GEN, NETWORK,  SELECT, EXPAND, ON, MATRIX,
+            GEN, NETWORK, SELECT, EXPAND, ON, MATRIX, DIM,
             ENDIF
 	        };
 							
@@ -604,6 +604,13 @@ namespace RobobuilderLib
 
                     lnc += 5;
                 }
+                else if (tok == "DIM")
+                {
+                    t = (byte)KEY.MATRIX;
+                    ln.token = (byte) t;
+                    z = "DIM " + z.Trim();
+                    lnc += 5;
+                }
                 else
                 {
                     t = IsToken(tok);
@@ -1032,8 +1039,16 @@ namespace RobobuilderLib
 
 		        /* list code */
 	
-		        m +=  String.Format("{0} ", line.lineno); 
-		        m +=  (tokens[line.token]);
+		        m +=  String.Format("{0} ", line.lineno);
+
+                if ((KEY)line.token == KEY.MATRIX && line.text.Substring(0, 3) == "DIM")
+                {
+                    m += line.text;
+                }
+                else
+                {
+                    m += (tokens[line.token]);
+                }
 		        m +=  (" ");
 
                 if ((KEY)line.token == KEY.LET || (KEY)line.token == KEY.GET || (KEY)line.token == KEY.FOR || (KEY)line.token == KEY.LIST || (KEY)line.token == KEY.DATA)
@@ -1082,7 +1097,12 @@ namespace RobobuilderLib
                     m += r;
 
 		        }
-		        else
+                else
+                if ((KEY)line.token == KEY.MATRIX && line.text.Substring(0, 3) == "DIM")
+                {
+                    ;
+                }
+                else
 		        if ((KEY)line.token==KEY.NEXT) 
 		        {
 			        m +=  String.Format("{0}", (char)(line.var+'A'));

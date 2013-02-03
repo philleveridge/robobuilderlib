@@ -1947,8 +1947,7 @@ int cmd_matrix(line_t ln)
 		if (*p =='\0')
 		{
 			//LET A=B
-			matcreate(mx, matgetw(ma), matgeth(ma));
-			listcopy(mx, ma);
+			matcopy(mx, ma);
 		}
 		if (*p=='^')
 		{

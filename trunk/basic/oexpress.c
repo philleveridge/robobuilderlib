@@ -409,7 +409,7 @@ tOBJ eval_oxpr(char *s)
 	int tk=0;
 
 	r.type=EMPTY;
-	strncpy(exprbuff,s,63);
+	strncpy(exprbuff,s,MAXSTRING-1);
 	e=exprbuff;
 
 	while (lf)
@@ -1010,6 +1010,8 @@ int get_opr_token(unsigned char op)
 void brainf(char *s)
 {
 	char array[30000];
+	char output[100];
+	char *op=output;
 	char *ptr=array;
 	int i;
 	for (i=0;i<30000;i++) array[i]=0;
@@ -1023,13 +1025,14 @@ void brainf(char *s)
 		case '<' : if (ptr>=array)      ptr--; 		break;
 		case '+' : (*ptr)++; 				break;
 		case '-' : (*ptr)--; 				break;
-		case '.' : printf("%c",*ptr); 			break;
+		case '.' : printf("%c",*ptr); *op++=*ptr;			break;
 		case ',' : *ptr = getchar(); 			break;
 		case '[' : if (*ptr==0) while (*s!=']') s++; 	break;
 		case ']' : while (*s!='[') s--; s--;		break;
 		}
 		s++;	
 	}
+	*op=0;
 }
 
 /***********************************************************************
@@ -1184,13 +1187,13 @@ void extend(char *x)
 	e=x;
 	if (get_str_token("BF")==1)
 	{
-		brainf("++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.");
+		//brainf("++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.");
 
-		//v=eval_oxpr(e);
-		//if (v.type==STR)
-		//	brainf(v.string);
-		//else
-		//	printf("need a string argument");
+		v=eval_oxpr(e);
+		if (v.type==STR)
+			brainf(v.string);
+		else
+			printf("need a string argument");
 		return;
 	}
 
