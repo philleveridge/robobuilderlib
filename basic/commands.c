@@ -1838,8 +1838,9 @@ int cmd_matrix(line_t ln)
 	if (!strncmp(p,"DEF ",4) || !strncmp(p,"DIM ",4))
 	{
 		// MAT DEF A;1;2 or MAT DEF A=3,2
+		// DIM A(1),B(2,3)
 		p+=4;
-		if (*p != '\0')
+		while (*p != '\0')
 		{			
 			m=*p++;
 			if (*p == ';' || *p == '=' || *p == '(')
@@ -1859,7 +1860,9 @@ int cmd_matrix(line_t ln)
 				}
 				if (*p==')') p++;
 			}
-			return 0;
+			if (*p != ',')
+				return 0;
+			p++;
 		}
 	}
 
