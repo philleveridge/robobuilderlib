@@ -86,16 +86,18 @@ extern int *frame;
 
 
 #define MAXSTACK 50
+#define MAXSTRING 1024
+
 
 char varname[256];
 tOBJ varobj[50];
 int nov=0;
 
 
-char exprbuff[64];
+char exprbuff[MAXSTRING];
 char *e;
 char tokbuff[5];
-char tmpstr[32];
+char tmpstr[MAXSTRING];
 int  tb;
 
 int    tnum;
@@ -173,11 +175,13 @@ tOBJ print(tOBJ r);
 /*  strings                                              */
 /**********************************************************/
 
-char strings[256], *estr=&strings[0];
+
+
+char strings[MAXSTRING], *estr=&strings[0];
 char *newstring(char *s)
 {
 	char *r=estr;
-	if (estr-&strings[0]>254)
+	if (estr-&strings[0]>MAXSTRING-1)
 		return 0;
 	strcpy(estr, s);
 	estr=estr+strlen(s);
@@ -996,6 +1000,42 @@ int get_opr_token(unsigned char op)
 	return 0;
 }
 
+/***********************************************************************
+
+!BF "++++++++++[>+++++++>++++++++++>+++>+<<<<-]+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>."
+
+***********************************************************************/
+
+
+void brainf(char *s)
+{
+	char array[30000];
+	char *ptr=array;
+	int i;
+	for (i=0;i<30000;i++) array[i]=0;
+
+	while (*s != 0)
+	{
+		if (dbg) printf("%c\n",*s);
+
+		switch (*s) {
+		case '>' : if (ptr<(array+29999)) ptr++; 	break;
+		case '<' : if (ptr>=array)      ptr--; 		break;
+		case '+' : (*ptr)++; 				break;
+		case '-' : (*ptr)--; 				break;
+		case '.' : printf("%c",*ptr); 			break;
+		case ',' : *ptr = getchar(); 			break;
+		case '[' : if (*ptr==0) while (*s!=']') s++; 	break;
+		case ']' : while (*s!='[') s--; s--;		break;
+		}
+		s++;	
+	}
+}
+
+/***********************************************************************
+
+************************************************************************/
+
 static int  intf=1;
 
 void mexpress(char m)
@@ -1139,6 +1179,19 @@ void extend(char *x)
 				return;
 			}	
 		}
+	}
+
+	e=x;
+	if (get_str_token("BF")==1)
+	{
+		brainf("++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.");
+
+		//v=eval_oxpr(e);
+		//if (v.type==STR)
+		//	brainf(v.string);
+		//else
+		//	printf("need a string argument");
+		return;
 	}
 
 	e=x;
