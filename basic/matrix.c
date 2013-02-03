@@ -67,6 +67,25 @@ int matprint(char m)
 	return 0;
 }
 
+int matcopy(char mx,char ma)
+{
+	int i,j;
+	int w=matgetw(ma);
+	int h=matgeth(ma);
+	int wx=matgetw(mx);
+	int hx=matgeth(mx);
+	if (wx<w || hx<h)
+	{
+		matcreate(mx, w, h);
+		wx=w;hx=h;
+	}
+	
+	for (j=0;j<h;j++)
+		for (i=0;i<w;i++)
+			listwrite(mx, i+j*wx, listread(ma,i+j*w));
+	return 0;
+}
+
 
 
 /**********************************************************/
