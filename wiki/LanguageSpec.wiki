@@ -14,39 +14,42 @@ VAR    A-Z  (integer only)
 OPER   + - * \ ( ) = < > % <= >= <> & | 
 CMD    LET:FOR:NEXT:GOTO:IF:THEN:ELSE:PRINT:END:SET:RUN:POKE
        WAIT:STEP:PUT:SERVO:MOVE:GOSUB:RETURN:LIST:STAND:OUT
-       I2CI:I2CO:OFFSET:SPEED:MTYPE:SCALE:MAT
+       I2CI:I2CO:OFFSET:SCALE:MAT
 STRING " ... "
 EXPR1  VAR | LITERAL
 EXPR2  EXPR1 | STRING
-LIST   EXPR2 [,EXPR2]
+LIST   EXPR2 [,EXPR2], ARRAY
 EXPR   EXPR1 OPER EXPR1 
+ARRAY  @A-Z  | @{n,..}
+AEXPR  ARRAY | ARRAY [+/*-.] ARRAY
 }}} 
 
 == Detail ==
 {{{
-[LINE no] LET  VAR '=' EXPR 
+[LINE no] [LET] VAR '=' EXPR 
+[LINE no] [LET] VAR[EXPR] '=' EXPR
 [LINE no] GOTO [Line No]
 [LINE no] PRINT LIST [;]
 [LINE No] END
 [LINE no] IF  EXPR THEN LINE no ELSE Line No
 [LINE No] FOR VAR '=' EXPR 'To' EXPR 'By' Expr
+[LINE No] FOR VAR '=' EXPR 'in' LIST
 [LINE No] NEXT VAR
 [LINE No] WAIT number
 [Line No] SERVO ID=EXPR | '@' | '~'
 [LINE No] LIST [VAR]=N,1,2,3 ..
+[LINE No] LIST [VAR]=AEXPR
 [LINE No] MOVE @[VAR],c,d | @[Var] | a,b,c,d
 [Line No] GOSUB [Line No]
 [Line No] RETURN
 [Line No] STAND [16 | 18]  
 [LINE No] PUT VAR '=' $PORTA|B|C:0-7
-[LINE No] OUT EXPR,EXPR or OUT @X[:n]
+[LINE No] OUT EXPR,EXPR or OUT ARRAY[:n]
 [Line No] RUN number
 [Line No] PLAY number
 [Line No] OFFSET [# | List | "blank"]
 [Line No] IC2O number,List
 [Line No] IC2I number,number,List
-[Line No] SPEED number
-[Line No] MTYPE number
 [Line No] STEP ID=number,number,number
 [Line No] SAMPLE a,b[,c[,d]]
 [Line No] FFT list,scale
@@ -58,7 +61,8 @@ EXPR   EXPR1 OPER EXPR1
 [Line No] SELECT @,index,index
 [Line No] GEN No_Gn,length,Mute rate%,Mute rnge,Val[min,max],type
 [Line No] NETWOR No input,No outputs,flag,no lay 1,no lay 2, no lay3
-[Line No] MAT [DEF|LET] [args;args;...]
+[Line No] MAT [PRINT|LET] [args;args;...]
+[Line No] DIM A-Z '(' EXPR [, EXPR ')' [, ...]
 }}}
 
 == Example syntax ==
