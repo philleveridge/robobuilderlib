@@ -66,6 +66,7 @@ EXPR   EXPR1 OPER EXPR1
 ||Command||Description||
 ||SERVO ID=POS  ||set servo id to position POS / @ / ~||
 ||LIST v=n,1,2,..n   ||Set V to a list of n elements ||
+||DATA v=1,2,..n   ||Set V to a list of BYTES (less storage space) ||
 ||MOVE @P,c,d    ||sends a Scene of servos position in array P,c steps in total of d ms (i.e. @A,10,1000 each step is 100ms||
 ||MOVE a,b,c,d    ||sends a Scene of servos position in @![a,a+b] c steps d ms so each step d/c >25ms||
 ||POKE 10,A     ||Put A into Byte 10||
@@ -74,17 +75,18 @@ EXPR   EXPR1 OPER EXPR1
 ||WAIT 200       ||Wait for a an amount of time in ms i.e. 200ms||
 ||STAND      ||set servos to basic posture ||
 ||OFFSET        ||Defines a numeric offset array to be applied to MOVE and PLAY commands||
-||RUN 0         ||Call Built in action using code i.e. RUN 0, would punch left See built in motion list below||
+||RUN n         ||Call Built in action using code i.e. RUN 0, would punch left See built in motion list||
 ||I2CO 51,@{3,1,2,3}||will send 3 bytes to I2C address 51 ||
 ||I2CI 52,5,@{2,1,1}||will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address.||
-||SPEED 2||Speed torque setting on Move 0-4 (0 maximum, 4 minimum) ||
-||MTYPE 3||Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear ||
+||SET SP n||Speed torque setting on Move 0-4 (0 maximum, 4 minimum) ||
+||SET MT n||Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear ||
+||SET BASE n||Set n=0 or 1 as initial list index ||
 ||STEP 5=30,50,5||STEP servo 5 from position 30 to position 50 in increments of 5 checking progress and stopping if obstruction||
 ||SORT #a,b,c||specialised sort for use with GEN- tbc||
 ||GEN 8,6,0,0,0,5,2||GENerate array,||
 ||NETWOR  2,1,4,2,0,1||creates a 3 neuron network (2 input 1 output) ||
 ||SCALE || Scale command will scale a list or threshold a list ||
-||MAT || Matrix commands options DEF, MULT, TRAN, ZERO, CONV, PRINT||
+||MAT || Matrix commands options DIM, LET, PRINT||
 
 == Functions and Special variables ==
 Functions an variables can be used in an expression, for example LET A=$X would set A to the current value of X accelerometer. The value of $X changes in real time.
@@ -99,6 +101,7 @@ Functions an variables can be used in an expression, for example LET A=$X would 
 ||$TICK        ||Number of tenths of a second||
 ||$PORT        ||Read Bit 6 of Port A .. LET A=$PORT:A:6 ||
 ||$RND         ||Random numbers - different number each time called ||
+||$RND(x,y,z)  ||List of x Random numbers - values between y and z ||
 ||$MIC         ||Microphone level||
 ||$SERVO(id)   ||position of servo id, i.e.  LET A=$SERVO(5) get Servo ID 5 position ||
 ||$ABS(x)      ||Absolute value of x returned||
@@ -109,6 +112,7 @@ Functions an variables can be used in an expression, for example LET A=$X would 
 ||$MAX(@n)||return maximum element value in array n ||
 ||$MIN(@n)|| return minimum element value in array n    ||
 ||$NORM||   ||
+||$HAM(@b,@b|| Hamming distance between too list (i.e. no. of exact matches)  ||
 ||$SUM(@n)|| return sum of element values in array n    ||
 ||$SIN(x)||Sine of X where X 0-233 and return is +/-32K||
 ||$COS(x)||Cosine of X where X 0-233 and return is +/-32K||
