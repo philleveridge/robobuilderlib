@@ -56,7 +56,7 @@ newg:
 main:
 	t=h
 	for i=0 to 8
-		out (@b[i]=0)*32+(@b[i]=c)*`C+(@b[i]=h)*`H
+		out (B[i]=0)*32+(B[i]=c)*`C+(B[i]=h)*`H
 		out 32
 		if i=2 then
 			print "   0 1 2"
@@ -96,17 +96,17 @@ Code the board and then search for position in possible list
 <code language="vb">
 	print "My move ";
 	t=c
-	x=@B[0]+(4*@b[3])+(16*@b[6])+64
-	y=@B[1]+(4*@b[4])+(16*@b[7])+64
-	z=@B[2]+(4*@b[5])+(16*@b[8])+64
+	x=B[0]+(4*B[3])+(16*B[6])+64
+	y=B[1]+(4*B[4])+(16*B[7])+64
+	z=B[2]+(4*B[5])+(16*B[8])+64
 	v=0
 mm:
 	u=0
-	if @s[v]>128 then mend
-	if @s[v]=0 then newe
-	if @s[v]=x and @s[v+1]=y and @s[v+2]=z then sm
+	if S[v]>128 then mend
+	if S[v]=0 then newe
+	if S[v]=x and S[v+1]=y and S[v+2]=z then sm
 	u=1
-	if @s[v]=z and @s[v+1]=y and @s[v+2]=x then sm
+	if S[v]=z and S[v+1]=y and S[v+2]=x then sm
 	v=v+2
 mend:
 	v=v+1
@@ -119,18 +119,18 @@ mend:
 Adds code position to store
 <code language="vb">
 newe:
-	set @s[v]=x 
-	set @s[v+1]=y
-	set @s[v+2]=z
-	set @s[v+3]=0
+	S[v]=x 
+	S[v+1]=y
+	S[v+2]=z
+	S[v+3]=0
 	w=v+3
 	for m=0 to 78
 		if (m mod 10)<9 then
 			gosub cm
 			if e=0 then
-				set @s[w]=m+128
+				set S[w]=m+128
 				w=w+1
-				set @s[w] = 0
+				set S[w] = 0
 			endif
 		endif
 	next m
@@ -141,8 +141,8 @@ newe:
 <code language="vb">
 sm:
 	v=v+3
-	if @s[v]<128 then delm
-	m=@s[v]-128
+	if S[v]<128 then delm
+	m=S[v]-128
 
 	if u=0 then sme
 
@@ -173,7 +173,7 @@ Remove move from store because we lost - no use
 <code language="vb">
 delm:
 	for v=l to p-1
-		set @s[v]=@s[v+1]
+		set S[v]=S[v+1]
 	next v
 </code>
 
@@ -200,10 +200,10 @@ cm:
 	e=1
 	f=m/10
 	g=m mod 10
-	if (@B[f]<>T) or (@B[G]=t) then
+	if (B[f]<>T) or (B[G]=t) then
 		return
 	endif
-	if @b[G]=0 then
+	if B[G]=0 then
 		'move - must be straight
 		if ((t=c) and (g=f+3)) or ((t=h) and (g=f-3)) then good
 	else
@@ -221,7 +221,7 @@ good:
 Move in variable m. 63 means move from location 6 to location 3
 <code language="vb">
 mp:
-	set @b[m/10]=0
-	set @b[m%10]=t
+	B[m/10]=0
+	B[m%10]=t
 	return
 </code>
