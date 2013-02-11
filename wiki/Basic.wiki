@@ -10,7 +10,7 @@ This BASIC is a simple integer version based on Dartmouth Basic (see wiki http:/
 
 See [GettingStarted Getting started] wiki page. 
 
-For an in depth look at features  see [http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.2.2.pdf Robobuild Basic manual 2.2.2] for more details. And for example programs see :
+For an in depth look at features  see [http://code.google.com/p/robobuilderlib/downloads/detail?name=Robobuilder%20Basic%20V2.3.pdf Robobuild Basic manual 2.3] for more details. And for example programs see :
   * [SimpleDemos] or
   * [BasicDemos] or
   * [AdvancedDemos]
