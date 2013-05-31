@@ -461,7 +461,7 @@ int cmd_servo(line_t l)
 	else
 		v=v-32;
 
-	if (*p=='@') // set passive mode
+	if (*p=='@' && *(p+1)=='\0') // set passive mode
 	{
 		// set pass servo id=line.var
 		wckSetPassive(v);
@@ -627,32 +627,6 @@ int cmd_play(line_t l)
 	return 0;
 }
 
-int cmd_mtype(line_t l)
-{
-	char *p=l.text;
-	long n=0;
-	if (eval_expr(&p, &n)!=NUMBER)
-	{
-		BasicErr=3; return -1;
-	}
-	if (n<0) PP_mtype=0;
-	PP_mtype=n%4;
-	return 0;
-}
-
-int cmd_speed(line_t l)
-{
-	char *p=l.text;
-	long n=0;
-	if (eval_expr(&p, &n)!=NUMBER)
-	{
-		BasicErr=3; return -1;
-	}
-	if (speed<0) n=0;
-	speed=n%4;
-	return 0;
-}
-
 int cmd_end(line_t l)
 {
 	rprintfProgStr (PSTR("End of program\r\n")); 
@@ -792,6 +766,8 @@ int cmd_light(line_t ln)
 }
 
 extern int fmflg;
+
+
 
 int cmd_move(line_t ln)
 {
@@ -1025,6 +1001,27 @@ int cmd_inset(line_t ln)
 	{
 		base = *(p+5)=='1'?1:0;
 		rprintf("Set Base=%d\n",base);
+		return 0;
+	}
+
+	if (ln.token==SET && ((strncmp(p,"MT ",3)==0) || (strncmp(p,"SP ",3)==0)))
+	{
+		int f=(p[0]=='S');
+		p=p+3;
+		if (eval_expr(&p, &n)!=NUMBER)
+		{
+			BasicErr=3; return -1;
+		}
+		if (f)
+		{
+			if (speed<0) n=0;
+			speed=n%4;
+		}
+		else
+		{
+			if (n<0) PP_mtype=0;
+			PP_mtype=n%4;
+		}
 		return 0;
 	}
 
@@ -1985,6 +1982,63 @@ int cmd_matrix(line_t ln)
 			else
 				matzerodiag(mx);
 		}
+		if (ma =='R' && *p=='E' && *(p+1)=='P')
+		{
+			/* LET A=REP(M,c,r)
+			i
+			DIM A(2,1)
+			LIST A=2,4,5
+			MAT PRINT A
+			MAT B=REP(A,2,3)
+			MAT PRINT B  
+			*/
+
+			p+=2;		
+			if (*p=='(')
+			{
+				int x=1,y=1;
+				p++;
+				ma=*p++;
+
+				if (*p !=',') return 1;	
+				p++;			
+				eval_expr(&p, &n);
+				if (*p !=',') return 1;	
+				x=n;
+				p++;
+				eval_expr(&p, &n);	
+				y=n;
+				if (*p !=')') return 1;
+				matreplicate(mx,ma,x,y);
+			}
+		}
+
+		if (ma =='S' && *p=='U' && *(p+1)=='M')
+		{
+			/* LET A=SUM(M,[1|2])
+			i
+			DIM A(2,1)
+			LIST A=2,4,5
+			MAT PRINT A
+			MAT B=SUM(A,2)
+			MAT PRINT B  
+			*/
+
+			p+=2;		
+			if (*p=='(')
+			{
+				int x=1;
+				p++;
+				ma=*p++;
+
+				if (*p !=',') return 1;	
+				p++;			
+				eval_expr(&p, &n);
+				x=n;
+				if (*p !=')') return 1;
+				matsum(mx,ma,x);
+			}
+		}
 
 		if (*p=='*')
 		{
@@ -2153,7 +2207,7 @@ void pb2()
 
 	for (i=2; i<2+n; i++)
 	{
-		if (scene[i]<0 || scene[i]>30)  { rprintf ("invalid servo id %d\n", scene[i]); return;}
+		if (scene[i]<0 || scene[i]>30)  { rprintf ("? servo id %d\n", scene[i]); return;}
 		// wckMove(scene[i],scene[p++])
 		if (dbg>1) rprintf ("Move %d = %d\n",scene[i],scene[pbstep]); 
 		wckPosSend(scene[i], 4, scene[pbstep++]);
@@ -2200,8 +2254,8 @@ int (*cmdtab[])(line_t) = {
 	cmd_ic2o,  //I2CO
 	cmd_ic2i,  //I2CI 
 	cmd_step,  //STEP
-	cmd_speed, //SPEED
-	cmd_mtype, //MTYPE
+	cmd_dummy, //SPEED
+	cmd_dummy, //MTYPE
 	cmd_light, //LIGHTS
 	cmd_sort,  //SORT
 	cmd_fft,   //FFT

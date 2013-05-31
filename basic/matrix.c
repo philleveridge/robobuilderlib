@@ -86,7 +86,32 @@ int matcopy(char mx,char ma)
 	return 0;
 }
 
+/**********************************************************
 
+ ma (x, y) =< mx (m*x, n*y)
+**********************************************************/
+
+int matreplicate(char mx,char ma, int m, int n)
+{
+	int i,j,x,y;
+	int w=matgetw(ma);
+	int h=matgeth(ma);
+	int wx=w*m;
+	int hx=h*n;
+
+if (dbg) rprintf ("rep %c = %d [%d,%d]\n", mx,ma,m,n);
+
+	matcreate(mx, wx, hx);
+
+	for (j=0;j<h;j++)
+		for (i=0;i<w;i++)
+			for (x=0;x<m;x++)
+				for (y=0;y<n;y++) 
+				{
+					listwrite(mx, i+j*wx+y*wx+x*w, listread(ma,i+j*w));
+				}
+	return 0;
+}
 
 /**********************************************************/
 
@@ -380,6 +405,53 @@ int convolve(char ln1, char ln2)   // "@A (.) @B"
 	return 0;	
 }
 
+/**********************************************************
+: i
+DIM A(3,2)
+LIST A=6,1,2,3,4,5,6
+MAT B=SUM(A,1)
+MAT PRINT B
+MAT B=SUM(A,2)
+MAT PRINT B
+
+matrix 'A' 3x2
+  1   2   3 
+  4   5   6 
+**********************************************************/
+
+int matsum(char mx, char ma,  int mode) 
+{
+	int w=matgetw(ma);
+	int h=matgeth(ma);
+	int x,y;
+
+	if (mode==1)
+	{
+		matcreate(mx, 1, h);
+		for (y=0;y<h; y++)
+		{
+			int p=0;
+			for (x=0;x<w; x++)
+			{
+				p += listread(ma,y*w+x);
+			}				
+			listwrite(mx, y, p);
+		}
+	}
+	else
+	{
+		matcreate(mx, w,1);
+		for (x=0;x<w; x++)
+		{
+			int p=0;
+			for (y=0;y<h; y++)
+			{
+				p += listread(ma,y*w+x);
+			}				
+			listwrite(mx, x, p);
+		}
+	}
+}
 
 /**********************************************************/
 
@@ -429,3 +501,5 @@ int histogram(char ln1, int mode)   // "@A
 	}
 	return 0;
 }
+
+
