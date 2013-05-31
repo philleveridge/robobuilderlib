@@ -139,6 +139,35 @@ int fmatcopy(char ma, char mb)
 }
 
 
+/**********************************************************
+
+ ma (x, y) =< mx (m*x, n*y)
+**********************************************************/
+
+int freplicate(char mx, char ma, int m, int n)
+{
+	int i,j,x,y;
+	int w=fgetw(ma);
+	int h=fgeth(ma);
+	int wx=w*m;
+	int hx=h*n;
+
+	if (dbg) printf ("rep %c = %d [%d,%d]\n", mx,ma,m,n);
+
+	fmatrixcreate(mx, wx, hx);
+
+	float *p =fgetd(ma);
+	float *pt=fgetd(mx);
+
+	for (j=0;j<h;j++)
+		for (i=0;i<w;i++)
+			for (x=0;x<m;x++)
+				for (y=0;y<n;y++) 
+				{
+					pt[i+j*wx+y*wx+x*w] = p[i+j*w];
+				}
+	return 0;
+}
 
 float fget(char m,int w,int h)
 {

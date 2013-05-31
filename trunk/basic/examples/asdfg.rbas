@@ -11,7 +11,7 @@
 	'facts about the world
 	'''''''''''''''''''''''''''''''''''
 main:
-	list p=$zeros(64)
+	dim p(100)
 	p=0
 
 	DATA H=0,0,0

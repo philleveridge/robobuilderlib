@@ -390,6 +390,10 @@ unsigned char eval_expr(char **str, long *res)
 					if (**str !=']' )
 						break;
 
+					i=listsize(arrayname);
+					if (ct>=i) ct=i-1;
+					if (n1>ct) n1=ct;					
+
 					for (i=n1; i<=ct; i++)
 					{
 						scene[i-n1]= (int)listread(arrayname, i-base);
@@ -440,11 +444,12 @@ unsigned char eval_expr(char **str, long *res)
 
 				*str = *str + strlen_P(specials[i]);
 
-				if (i == sIR2ACT|| i == sDSIG  || i == sSQRT  || i == sSTAND ||
-					i == sZEROS || i == sABS   || i == sCOS   || i == sCVB2I ||
-					i == sSIN   || i == sNORM  || i == sSUM   || i == sSERVO ||
-					i == sROM   || i == sMIN   || i == sMAX   || i == sIMAX  ||
-					i == sGREY  || i == sTURTLE || i== sSHUF || i==sREV  || i==sSORT)
+				if (    i == sIR2ACT|| i == sDSIG  || i == sSQRT || i == sSTAND ||
+					i == sZEROS || i == sABS   || i == sCOS  || i == sCVB2I ||
+					i == sSIN   || i == sNORM  || i == sSUM  || i == sSERVO ||
+					i == sROM   || i == sMIN   || i == sMAX  || i == sIMAX  ||
+					i == sGREY  || i == sTURTLE|| i== sSHUF  || i == sREV   ||
+					i == sSORT)
 				{
 					noargs=1;
 				}
@@ -527,7 +532,7 @@ unsigned char eval_expr(char **str, long *res)
 			}
 			else
 			{
-				rprintf("eval stack error %d, %d\r\n", op, sp);
+				rprintf("Stack error %d, %d\r\n", op, sp);
 				op=0;sp=0;
 				return ERROR; 
 			}
@@ -541,7 +546,7 @@ unsigned char eval_expr(char **str, long *res)
 			}
 			else
 			{
-				rprintf("eval stack pop error %d, %d [%d,%d]\r\n", op, sp, top, tsp);
+				rprintf("Stack error %d, %d [%d,%d]\r\n", op, sp, top, tsp);
 				op=0;sp=0;
 				return ERROR;
 			}

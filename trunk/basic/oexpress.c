@@ -1411,6 +1411,48 @@ void extend(char *x)
 			}
 			printf ("MAT ZERO - syntax error @ '%c'\n", *e=='\0'?'?':*e);
 		}
+
+		if (!strcmp(tokbuff,"REP"))
+		{
+			// !MAT REP B;A;1;1
+			
+			int m1,n1,i;
+			char mx='A',ma='A';
+			if (*e != '\0')
+			{			
+				if (get_str_token(0))
+				{
+					mx=tokbuff[0];	
+
+					if (*e++ != ';')
+				        {
+				                return;
+				        }
+					ma=tokbuff[0];	
+
+					if (*e++ != ';')
+				        {
+				                return;
+				        }
+						
+					v=eval_oxpr(e);
+					m1=v.number;
+
+					if (*e++ != ';')
+				        {
+				                return;
+				        }
+
+					v=eval_oxpr(e);
+					n1=v.number;
+					freplicate(mx, ma,  m1,  n1);
+
+					return;
+				}
+	
+			}
+			printf ("MAT ZERO - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
 		return;
 	}
 

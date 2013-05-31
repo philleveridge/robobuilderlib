@@ -301,12 +301,12 @@ void listset(char ln, int ind, long v, int insrtflg)
 		if (l<0) return;
 
 		array=&listmem[lists[l]];
-		sz = len[l];
+		msz = sz = len[l];
 
-		if (l==nol-1)
-			msz=eol-lists[l];
-		else
-			msz=lists[l+1]-lists[l];
+		//if (l==nol-1)
+		//	msz=eol-lists[l];
+		//else
+		//	msz=lists[l+1]-lists[l];
 	}
 
 
@@ -540,7 +540,8 @@ void listcopy(char ln1, char ln2)
 	szA   =listsize(ln1);
 	szB   =listsize(ln2);
 
-	listcreate(ln1, szB);
+	if (szA<szB)
+		listcreate(ln1, szB);
 
 	arrayA=listarray(ln1);
 	arrayB=listarray(ln2);
