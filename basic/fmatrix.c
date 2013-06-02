@@ -128,7 +128,11 @@ int fmatcopy(char ma, char mb)
 	int i;
 	int w=fgetw(ma);
 	int h=fgeth(ma);
-	fmatrixcreate(mb,w, h);
+
+	int wb=fgetw(mb);
+	int hb=fgeth(mb);
+
+	if (wb<w || h<hb) fmatrixcreate(mb,w, h);
 	p=fgetd(mb);
 
 	if (dbg) printf ("sz=%d\n",h*w);
@@ -626,6 +630,50 @@ int fconvolve(char ln1, char ln2, char lnx)   // "@A (.) @B"
 	}
 
 	return 0;	
+}
+
+/**********************************************************/
+//
+//
+/**********************************************************/
+
+int fmatsum(char ln2, char ln1, int mode)   
+{
+	int w=fgetw(ln1);
+	int h=fgeth(ln1);
+	int mx,my;
+	float p=0.0;
+	float t=0.0;
+
+	if (mode==1 || mode==3)
+	{
+		for (my=0;my<h; my++)
+		{
+			p=0.0;
+			for (mx=0;mx<w; mx++)
+			{
+				t = fget(ln1, mx,my);
+				if (mode==2) t=t*t;
+				p += t;
+			}				
+			fset(ln2,0,my,p);
+		}
+	}
+	else if (mode==2 || mode==4)
+	{
+		for (mx=0;mx<w; mx++)
+		{
+			p=0.0;
+			for (my=0;my<h; my++)
+			{
+				t = fget(ln1, mx,my);
+				if (mode==4) t=t*t;
+				p += t;
+			}				
+			fset(ln2,mx,0,p);
+		}
+	}
+	return 0;
 }
 
 

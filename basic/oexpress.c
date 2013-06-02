@@ -1363,6 +1363,39 @@ void extend(char *x)
 			printf ("MAT HIST - syntax error @ '%c'\n", *e=='\0'?'?':*e);
 		}
 
+		if (!strcmp(tokbuff,"SUM") || !strcmp(tokbuff,"SUM2")  )
+		{
+			// !MAT SUM X;A;1
+			
+			int m=1, f=0; char mx; char ma;
+
+			if (!strcmp(tokbuff,"SUM2")) f=2;
+ 
+			if (*e != '\0')
+			{
+				if (get_str_token(0))
+				{
+					mx=tokbuff[0];
+				}
+				if (*e++ == ';')
+				{				
+					if (get_str_token(0))
+					{
+						ma=tokbuff[0];
+
+						if (*e++ == ';')
+						{	
+							v=eval_oxpr(e);	
+							m=v.number;
+							fmatsum(mx, ma, m+f)  ;
+							return;
+						}
+					}
+				}
+			}
+			printf ("MAT SUM - syntax error @ '%c'\n", *e=='\0'?'?':*e);
+		}
+
 		if (!strcmp(tokbuff,"NORM"))
 		{
 			// !MAT NORM A
