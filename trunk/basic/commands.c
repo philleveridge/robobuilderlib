@@ -2017,14 +2017,19 @@ int cmd_matrix(line_t ln)
 		{
 			/* LET A=SUM(M,[1|2])
 			i
-			DIM A(2,1)
-			LIST A=2,4,5
+			DIM A(3,4)
+			LIST A=12,1,2,3,4,5,6,7,8,9,10,11,12
 			MAT PRINT A
 			MAT B=SUM(A,2)
 			MAT PRINT B  
+			MAT c=SUM2(A,1)
+			MAT PRINT c 
 			*/
+			int f=0;
 
-			p+=2;		
+			p+=2;	
+			if (*p=='2') { p++; f=2; } // set flag for square sum
+	
 			if (*p=='(')
 			{
 				int x=1;
@@ -2036,7 +2041,7 @@ int cmd_matrix(line_t ln)
 				eval_expr(&p, &n);
 				x=n;
 				if (*p !=')') return 1;
-				matsum(mx,ma,x);
+				matsum(mx,ma,x+f);
 			}
 		}
 

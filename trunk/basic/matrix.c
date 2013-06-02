@@ -424,29 +424,34 @@ int matsum(char mx, char ma,  int mode)
 	int w=matgetw(ma);
 	int h=matgeth(ma);
 	int x,y;
+	int p=0, t=0;
 
-	if (mode==1)
+	if (mode==1 || mode==3) // sum each row
 	{
 		matcreate(mx, 1, h);
 		for (y=0;y<h; y++)
 		{
-			int p=0;
+			p=0;
 			for (x=0;x<w; x++)
 			{
-				p += listread(ma,y*w+x);
+				t = listread(ma,y*w+x);
+				if (mode==3) t=t*t;
+				p+=t;
 			}				
 			listwrite(mx, y, p);
 		}
 	}
-	else
+	else if (mode==2 || mode==4)// sum each column
 	{
 		matcreate(mx, w,1);
 		for (x=0;x<w; x++)
 		{
-			int p=0;
+			p=0;
 			for (y=0;y<h; y++)
 			{
-				p += listread(ma,y*w+x);
+				t = listread(ma,y*w+x);
+				if (mode==4) t=t*t;
+				p += t;
 			}				
 			listwrite(mx, x, p);
 		}
