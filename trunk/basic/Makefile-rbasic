@@ -4,7 +4,6 @@ include $(TOPDIR)/rules.mk
 SVN:=$(shell svnversion -n ~/Desktop/R2/svn\ src/robobuilderlib/basic  | cut -d: -f2)
 
 PKG_NAME:=rbasic
-#PKG_VERSION:=493
 PKG_VERSION:=$(SVN)
 PKG_RELEASE:=1
 
