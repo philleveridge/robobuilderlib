@@ -43,7 +43,7 @@ enum { 	sVOLT=0, sIR,
 	sSIN, sCOS, sIMAX, sHAM, sRANGE, sSIG, sDSIG,
 	sSTAND, sZEROS,
 	sMIC, sGX, sGY, sGZ, sPSD, 
-	sGREY, sTURTLE, sEVENT, sMAP, sSHUF, sSCALE, sINP, sREV, sSORT,
+	sGREY, sTURTLE, sEVENT, sMAP, sSHUF, sSCALE, sINP, sREV, sSORT, sIMIN,
 #ifdef IMAGE
 	sIMR,
 	sPLY,

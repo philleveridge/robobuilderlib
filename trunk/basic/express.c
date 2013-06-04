@@ -47,7 +47,7 @@ const  prog_char  specials[NOSPECS][7] = {
 		"RANGE", "SIG",  "DSIG",  "STAND","ZEROS",
 		"MIC",   "X",    "Y",     "Z",    "PSD", 
 		"GREY",  "TURTLE","EVENT","MAP",  "SHUF", 
-		"SCALE", "INPUT", "REV", "SORT"
+		"SCALE", "INPUT", "REV",  "SORT", "IMIN"
 #ifdef IMAGE
 		,"IMR"  //sIMR
 		,"PLY"  //sPLY
@@ -449,7 +449,7 @@ unsigned char eval_expr(char **str, long *res)
 					i == sSIN   || i == sNORM  || i == sSUM  || i == sSERVO ||
 					i == sROM   || i == sMIN   || i == sMAX  || i == sIMAX  ||
 					i == sGREY  || i == sTURTLE|| i== sSHUF  || i == sREV   ||
-					i == sSORT)
+					i == sSORT  || i == sIMIN)
 				{
 					noargs=1;
 				}

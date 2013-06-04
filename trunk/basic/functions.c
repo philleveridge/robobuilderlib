@@ -157,6 +157,19 @@ long fn_min(long v)
 	return v;
 }
 
+long fn_imin(long v)
+{
+	int lc,m;
+	listreadc(v);
+	v=scene[0];
+	m=0;
+	for (lc=0; lc<nis; lc++)
+	{
+		if (scene[lc]<(int)v) {v=(long)scene[lc]; m=lc;}
+	}
+	return m;
+}
+
 long fn_max(long v)
 {
 	// MAX(@A,[n]) 
@@ -661,7 +674,8 @@ long (*fnctab[])(long) = {
 	fn_scale,  //sSHUF
 	fn_input,  //sINP
 	fn_rev,	   //sREV
-	fn_sort	  //sSORT
+	fn_sort,  //sSORT
+	fn_imin  //sIMIN
 #ifdef IMAGE
 	,fn_imready     //sIMR
 	,fn_plyrunning  //sPLY
