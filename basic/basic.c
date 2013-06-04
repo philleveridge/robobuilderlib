@@ -1276,11 +1276,15 @@ COMMAND LINE
 
 *************************************************************************************************************/
 
+#ifndef VER
+#define VER "Basic v=$Revision$\r\nCommands: i r l c z q s V R F $\r\n"
+#endif
+
 void basic()
 {
 	int ch,i;
 
-	rprintfProgStr(PSTR("Basic v=$Revision$\r\nCommands: i r l c z q s V R F $\r\n"));
+	rprintfProgStr(PSTR(VER));
 
 	testforreset();
 

@@ -32,6 +32,7 @@ ASMFLAGS += $(CFLAGS)
 ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 
 REV = $(shell svnversion -n .)
+CFLAGS += -D VER='"Basic v=$(REV)\r\nCommands: i r l c z q s V R F $\r\n"'
 
 ## Linker flags
 LDFLAGS = $(COMMON)
