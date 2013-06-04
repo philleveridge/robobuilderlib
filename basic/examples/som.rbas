@@ -1,0 +1,24 @@
+'From page 220 : http://books.google.co.uk/books?id=jJTN8RPgyXgC&pg=PA220&source=gbs_toc_r&cad=4#v=onepage&q&f=false
+'i
+dim m(5,2)
+
+list m=10,20,60,40,40,20,30,50,70,60,80
+
+
+dim t(1,2)
+list t=2,30,40
+
+mat print m,t
+
+mat r=rep(t,5,1)
+mat print m,t,r
+
+mat v=m-t
+mat t=sum2(v,2)
+mat print t
+print $imin(@t)
+
+
+
+
+

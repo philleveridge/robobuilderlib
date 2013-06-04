@@ -1,0 +1,15 @@
+FOR x=0 TO 10
+PRINT x;" : ";
+LIST a=$ZEROS(16)
+SET @a,x,1
+PRINT @a
+NEXT x
+
+FOR x=-16 TO 16
+PRINT x;" : ";
+LIST a=$ZEROS(16)
+SET @a,8+(x/2),1
+PRINT @a
+NEXT x
+
+
