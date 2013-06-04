@@ -646,7 +646,7 @@ long (*fnctab[])(long) = {
 	fn_find,  //sFIND
 	fn_cb2i,  //sCVB2I
 	fn_ne,    //sNE
-	fn_ns,    //sNSIntro To Neural Net With Matlab 6.0
+	fn_ns,    //sNS
 	fn_max,   //sMAX
 	fn_sum,   //sSUM
 	fn_min,   //sMIN
