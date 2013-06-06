@@ -1,24 +1,31 @@
-'From page 220 : http://books.google.co.uk/books?id=jJTN8RPgyXgC&pg=PA220&source=gbs_toc_r&cad=4#v=onepage&q&f=false
-'i
+'From page 220 : http://books.google.co.uk/books?id=jJTN8RPgyXgC&pg=PA220
 dim m(5,2)
+dim t(1,2)
 
 list m=10,20,60,40,40,20,30,50,70,60,80
-
-
-dim t(1,2)
 list t=2,30,40
+a=30         'learning rate
 
 mat print m,t
 
 mat r=rep(t,5,1)
-mat print m,t,r
+mat v=m-r
+mat r=sum2(v,2)
 
-mat v=m-t
-mat t=sum2(v,2)
-mat print t
-print $imin(@t)
+i=$imin(@r)
 
+M[i]=M[i]+a*(T[0]-M[i])/100
+M[i+5]=M[i+5]+a*(T[1]-M[i+5])/100
 
+if i<4 then
+  M[i+1]=M[i+1]+a*(T[0]-M[i+1])/100
+  M[i+5+1]=M[i+5+1]+a*(T[1]-M[i+5+1])/100
+endif
 
+if i>0 then
+  M[i-1]=M[i-1]+a*(T[0]-M[i-1])/100
+  M[i+5-1]=M[i+5-1]+a*(T[1]-M[i+5-1])/100
+endif
 
+mat print m
 
