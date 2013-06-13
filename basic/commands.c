@@ -24,7 +24,6 @@
 #ifdef AVR
 #include <avr/eeprom.h> 
 #include <avr/pgmspace.h>
-
 #include "main.h"
 #include "global.h"
 #include "macro.h"

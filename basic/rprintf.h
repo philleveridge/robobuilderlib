@@ -48,6 +48,8 @@
 // needed for use of PSTR below
 #include <avr/pgmspace.h>
 
+typedef char PROGMEM 	prog_char; // added by l3v3rz
+
 // configuration
 // defining RPRINTF_SIMPLE will compile a smaller, simpler, and faster printf() function
 // defining RPRINTF_COMPLEX will compile a larger, more capable, and slower printf() function

@@ -142,17 +142,17 @@
 	#define UCR					UCSR1B
 	#define UBRRL				UBRR1L
 	#define UBRRH				UBRR1H
-	#define SIG_UART_TRANS		SIG_UART1_TRANS
-	#define SIG_UART_RECV		SIG_UART1_RECV
-	#define SIG_UART_DATA		SIG_UART1_DATA
+	#define SIG_UART_TRANS		USART1_TX_vect
+	#define SIG_UART_RECV		USART1_RX_vect
+	#define SIG_UART_DATA		USART1_UDRE_vect
 #else
 	#define UDR					UDR0
 	#define UCR					UCSR0B
 	#define UBRRL				UBRR0L
 	#define UBRRH				UBRR0H
-	#define SIG_UART_TRANS		SIG_UART0_TRANS
-	#define SIG_UART_RECV		SIG_UART0_RECV
-	#define SIG_UART_DATA		SIG_UART0_DATA
+	#define SIG_UART_TRANS		USART0_TX_vect
+	#define SIG_UART_RECV		USART0_RX_vect
+	#define SIG_UART_DATA		USART0_UDRE_vect
 #endif
 #endif
 

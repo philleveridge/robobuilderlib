@@ -3,23 +3,29 @@
 //	 
 //   2010 June l3v3rz 
 //==============================================================================
+
 #include <avr/io.h>
-
-// Standard Input/Output functions
-#include <stdio.h>
-#include "main.h"
-
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
+
+#include <stdio.h>
+
+#include "main.h"
+#include "rprintf.h"
+#include "uart.h"
 #include "macro.h"
 #include "math.h"
-#include "uart.h"
-#include "rprintf.h"
 #include "adc.h"
 #include "ir.h"
 #include "accelerometer.h"
 #include "wckmotion.h"
+
+
+
+// Standard Input/Output functions
+
+
 
 #define BR115200		7 
 #define DATA_REGISTER_EMPTY 	(1<<UDRE)

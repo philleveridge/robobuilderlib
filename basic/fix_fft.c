@@ -54,7 +54,7 @@
 #define LOG2_N_WAVE 8       /* log2(N_WAVE) */
 #define BYTE unsigned char
 
-int SinTab[] PROGMEM = {
+const int SinTab[] PROGMEM = {
 	    0,      
 	  804,  1608,  2410,  3212,  4011,  4808,  5602,  6393,
 	 7179,  7962,  8739,  9512, 10278, 11039, 11793, 12539,

@@ -3,9 +3,8 @@
 #include <avr/eeprom.h> 
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
-
-#include "uart.h"
 #include "rprintf.h"
+#include "uart.h"
 #endif
 
 #ifdef WIN32
