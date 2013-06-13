@@ -2,6 +2,7 @@
 #include <avr/eeprom.h> 
 #include <avr/pgmspace.h>
 
+#include "rprintf.h"
 #include "global.h"
 #include "main.h"
 #include "macro.h"
@@ -10,7 +11,7 @@
 #include "ir.h"
 #include "accelerometer.h"
 #include "wckmotion.h"
-#include "rprintf.h"
+
 #endif
 
 #ifdef WIN32

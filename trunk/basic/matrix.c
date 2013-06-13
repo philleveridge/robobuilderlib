@@ -16,6 +16,10 @@ int tp[10000]; //windows temp fix
 #endif
 
 #ifdef AVR
+#include <avr/io.h>
+#include <avr/eeprom.h> 
+#include <avr/pgmspace.h>
+#include <avr/interrupt.h>
 #include "rprintf.h"
 #endif
 

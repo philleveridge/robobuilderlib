@@ -4,6 +4,7 @@
 //   by l3v3rz
 //==============================================================================
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
 #include "main.h"

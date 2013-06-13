@@ -4,6 +4,8 @@
 
 #include "avrlibtypes.h"
 
+
+
 //#define			EXT_INT0_ENABLE		SET_BIT6(GICR)
 //#define			EXT_INT0_DISABLE	CLR_BIT6(GICR)
 

@@ -9,13 +9,13 @@
 //=========================================================
 
 
-unsigned char flash MotionZeroPos[16]={
+const unsigned char flash MotionZeroPos[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 125,201,163,67,108,125,48,89,184,142,89,39,124,162,211,127};
 
 
-unsigned char flash HunoBasicPose[16]={
+const unsigned char flash HunoBasicPose[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205};
@@ -26,7 +26,7 @@ unsigned char flash HunoBasicPose[16]={
 
 #define HUNOBASIC_PUNCHLEFT_NUM_SCENES 5
 #define HUNOBASIC_PUNCHLEFT_NUM_MOTORS 16
-unsigned char flash HunoBasic_PunchLeft_Torque[5][16]={
+const unsigned char flash HunoBasic_PunchLeft_Torque[5][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:0 - Data_0
@@ -35,7 +35,7 @@ unsigned char flash HunoBasic_PunchLeft_Torque[5][16]={
 {2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 },        // Idx:3 - Scene_4
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 }         // Idx:4 - Data_0
 };
-unsigned char flash HunoBasic_PunchLeft_Port[5][16]={
+const unsigned char flash HunoBasic_PunchLeft_Port[5][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,0 ,0 ,0 },        // Idx:0 - Data_0
@@ -44,25 +44,25 @@ unsigned char flash HunoBasic_PunchLeft_Port[5][16]={
 {3 ,3 ,3 ,3 ,3 ,0 ,0 ,0 ,0 ,0 ,3 ,3 ,3 ,0 ,0 ,0 },        // Idx:3 - Scene_4
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }         // Idx:4 - Data_0
 };
-unsigned char flash HunoBasic_PunchLeft_PGain[16]={
+const unsigned char flash HunoBasic_PunchLeft_PGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 40,40,40,40,40,40,40,40,40,40,20,20,20,20,20,20};
-unsigned char flash HunoBasic_PunchLeft_DGain[16]={
+const unsigned char flash HunoBasic_PunchLeft_DGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 60,60,60,60,60,60,60,60,60,60,30,30,30,30,30,30};
-unsigned char flash HunoBasic_PunchLeft_IGain[16]={
+const unsigned char flash HunoBasic_PunchLeft_IGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 };
-unsigned int flash HunoBasic_PunchLeft_Frames[5]={
+const unsigned int flash HunoBasic_PunchLeft_Frames[5]={
 1   ,8   ,1   ,5   ,15  
 };
-unsigned int flash HunoBasic_PunchLeft_TrTime[5]={
+const unsigned int flash HunoBasic_PunchLeft_TrTime[5]={
 70  ,310 ,420 ,200 ,300 
 };
-unsigned char flash HunoBasic_PunchLeft_Position[6][16]={
+const unsigned char flash HunoBasic_PunchLeft_Position[6][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},
@@ -80,7 +80,7 @@ unsigned char flash HunoBasic_PunchLeft_Position[6][16]={
 
 #define HUNOBASIC_PUNCHRIGHT_NUM_SCENES 5
 #define HUNOBASIC_PUNCHRIGHT_NUM_MOTORS 16
-unsigned char flash HunoBasic_PunchRight_Torque[5][16]={
+const unsigned char flash HunoBasic_PunchRight_Torque[5][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:0 - Data_0
@@ -89,7 +89,7 @@ unsigned char flash HunoBasic_PunchRight_Torque[5][16]={
 {2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 },        // Idx:3 - Scene_4
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 }         // Idx:4 - Data_0
 };
-unsigned char flash HunoBasic_PunchRight_Port[5][16]={
+const unsigned char flash HunoBasic_PunchRight_Port[5][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,1 ,1 ,1 },        // Idx:0 - Data_0
@@ -98,25 +98,25 @@ unsigned char flash HunoBasic_PunchRight_Port[5][16]={
 {0 ,0 ,0 ,0 ,0 ,3 ,3 ,3 ,3 ,3 ,0 ,0 ,0 ,3 ,3 ,3 },        // Idx:3 - Scene_4
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }         // Idx:4 - Data_0
 };
-unsigned char flash HunoBasic_PunchRight_PGain[16]={
+const unsigned char flash HunoBasic_PunchRight_PGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 40,40,40,40,40,40,40,40,40,40,20,20,20,20,20,20};
-unsigned char flash HunoBasic_PunchRight_DGain[16]={
+const unsigned char flash HunoBasic_PunchRight_DGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 60,60,60,60,60,60,60,60,60,60,30,30,30,30,30,30};
-unsigned char flash HunoBasic_PunchRight_IGain[16]={
+const unsigned char flash HunoBasic_PunchRight_IGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 };
-unsigned int flash HunoBasic_PunchRight_Frames[5]={
+const unsigned int flash HunoBasic_PunchRight_Frames[5]={
 1   ,8   ,1   ,5   ,15  
 };
-unsigned int flash HunoBasic_PunchRight_TrTime[5]={
+const unsigned int flash HunoBasic_PunchRight_TrTime[5]={
 70  ,310 ,420 ,200 ,300 
 };
-unsigned char flash HunoBasic_PunchRight_Position[6][16]={
+const unsigned char flash HunoBasic_PunchRight_Position[6][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},
@@ -134,7 +134,7 @@ unsigned char flash HunoBasic_PunchRight_Position[6][16]={
 
 #define HUNOBASIC_SIDEWALKLEFT_NUM_SCENES 6
 #define HUNOBASIC_SIDEWALKLEFT_NUM_MOTORS 16
-unsigned char flash HunoBasic_SidewalkLeft_Torque[6][16]={
+const unsigned char flash HunoBasic_SidewalkLeft_Torque[6][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:0 - Data_0
@@ -144,7 +144,7 @@ unsigned char flash HunoBasic_SidewalkLeft_Torque[6][16]={
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,4 ,4 ,4 ,4 ,4 ,3 },        // Idx:4 - Data
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 }         // Idx:5 - Data
 };
-unsigned char flash HunoBasic_SidewalkLeft_Port[6][16]={
+const unsigned char flash HunoBasic_SidewalkLeft_Port[6][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:0 - Data_0
@@ -154,25 +154,25 @@ unsigned char flash HunoBasic_SidewalkLeft_Port[6][16]={
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:4 - Data
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }         // Idx:5 - Data
 };
-unsigned char flash HunoBasic_SidewalkLeft_PGain[16]={
+const unsigned char flash HunoBasic_SidewalkLeft_PGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 40,40,40,40,40,40,40,40,40,40,20,20,20,20,20,20};
-unsigned char flash HunoBasic_SidewalkLeft_DGain[16]={
+const unsigned char flash HunoBasic_SidewalkLeft_DGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 60,60,60,60,60,60,60,60,60,60,30,30,30,30,30,30};
-unsigned char flash HunoBasic_SidewalkLeft_IGain[16]={
+const unsigned char flash HunoBasic_SidewalkLeft_IGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 };
-unsigned int flash HunoBasic_SidewalkLeft_Frames[6]={
+const unsigned int flash HunoBasic_SidewalkLeft_Frames[6]={
 1   ,5   ,8   ,3   ,1   ,15  
 };
-unsigned int flash HunoBasic_SidewalkLeft_TrTime[6]={
+const unsigned int flash HunoBasic_SidewalkLeft_TrTime[6]={
 70  ,150 ,310 ,250 ,120 ,300 
 };
-unsigned char flash HunoBasic_SidewalkLeft_Position[7][16]={
+const unsigned char flash HunoBasic_SidewalkLeft_Position[7][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},
@@ -191,7 +191,7 @@ unsigned char flash HunoBasic_SidewalkLeft_Position[7][16]={
 
 #define HUNOBASIC_SIDEWALKRIGHT_NUM_SCENES 6
 #define HUNOBASIC_SIDEWALKRIGHT_NUM_MOTORS 16
-unsigned char flash HunoBasic_SidewalkRight_Torque[6][16]={
+const unsigned char flash HunoBasic_SidewalkRight_Torque[6][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:0 - Data_0
@@ -201,7 +201,7 @@ unsigned char flash HunoBasic_SidewalkRight_Torque[6][16]={
 {0 ,0 ,0 ,0 ,0 ,2 ,2 ,2 ,2 ,2 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:4 - Data
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 }         // Idx:5 - Scene_4
 };
-unsigned char flash HunoBasic_SidewalkRight_Port[6][16]={
+const unsigned char flash HunoBasic_SidewalkRight_Port[6][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:0 - Data_0
@@ -211,25 +211,25 @@ unsigned char flash HunoBasic_SidewalkRight_Port[6][16]={
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:4 - Data
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }         // Idx:5 - Scene_4
 };
-unsigned char flash HunoBasic_SidewalkRight_PGain[16]={
+const unsigned char flash HunoBasic_SidewalkRight_PGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 40,40,40,40,40,40,40,40,40,40,20,20,20,20,20,20};
-unsigned char flash HunoBasic_SidewalkRight_DGain[16]={
+const unsigned char flash HunoBasic_SidewalkRight_DGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 60,60,60,60,60,60,60,60,60,60,30,30,30,30,30,30};
-unsigned char flash HunoBasic_SidewalkRight_IGain[16]={
+const unsigned char flash HunoBasic_SidewalkRight_IGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 };
-unsigned int flash HunoBasic_SidewalkRight_Frames[6]={
+const unsigned int flash HunoBasic_SidewalkRight_Frames[6]={
 1   ,5   ,8   ,3   ,1   ,15  
 };
-unsigned int flash HunoBasic_SidewalkRight_TrTime[6]={
+const unsigned int flash HunoBasic_SidewalkRight_TrTime[6]={
 70  ,150 ,310 ,200 ,120 ,300 
 };
-unsigned char flash HunoBasic_SidewalkRight_Position[7][16]={
+const unsigned char flash HunoBasic_SidewalkRight_Position[7][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},
@@ -248,7 +248,7 @@ unsigned char flash HunoBasic_SidewalkRight_Position[7][16]={
 
 #define HUNOBASIC_TURNLEFT_NUM_SCENES 6
 #define HUNOBASIC_TURNLEFT_NUM_MOTORS 16
-unsigned char flash HunoBasic_TurnLeft_Torque[6][16]={
+const unsigned char flash HunoBasic_TurnLeft_Torque[6][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:0 - Data_0
@@ -258,7 +258,7 @@ unsigned char flash HunoBasic_TurnLeft_Torque[6][16]={
 {1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:4 - Data_4
 {3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,4 ,4 ,4 ,4 ,4 ,4 }         // Idx:5 - Data_5
 };
-unsigned char flash HunoBasic_TurnLeft_Port[6][16]={
+const unsigned char flash HunoBasic_TurnLeft_Port[6][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,0 ,0 ,0 },        // Idx:0 - Data_0
@@ -268,25 +268,25 @@ unsigned char flash HunoBasic_TurnLeft_Port[6][16]={
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:4 - Data_4
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }         // Idx:5 - Data_5
 };
-unsigned char flash HunoBasic_TurnLeft_PGain[16]={
+const unsigned char flash HunoBasic_TurnLeft_PGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20};
-unsigned char flash HunoBasic_TurnLeft_DGain[16]={
+const unsigned char flash HunoBasic_TurnLeft_DGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30};
-unsigned char flash HunoBasic_TurnLeft_IGain[16]={
+const unsigned char flash HunoBasic_TurnLeft_IGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 };
-unsigned int flash HunoBasic_TurnLeft_Frames[6]={
+const unsigned int flash HunoBasic_TurnLeft_Frames[6]={
 10  ,5   ,10  ,1   ,5   ,10  
 };
-unsigned int flash HunoBasic_TurnLeft_TrTime[6]={
+const unsigned int flash HunoBasic_TurnLeft_TrTime[6]={
 200 ,200 ,400 ,120 ,200 ,400 
 };
-unsigned char flash HunoBasic_TurnLeft_Position[7][16]={
+const unsigned char flash HunoBasic_TurnLeft_Position[7][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},
@@ -305,7 +305,7 @@ unsigned char flash HunoBasic_TurnLeft_Position[7][16]={
 
 #define HUNOBASIC_TURNRIGHT_NUM_SCENES 6
 #define HUNOBASIC_TURNRIGHT_NUM_MOTORS 16
-unsigned char flash HunoBasic_TurnRight_Torque[6][16]={
+const unsigned char flash HunoBasic_TurnRight_Torque[6][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:0 - Data_0
@@ -315,7 +315,7 @@ unsigned char flash HunoBasic_TurnRight_Torque[6][16]={
 {2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:4 - Data_4
 {3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 }         // Idx:5 - Data_5
 };
-unsigned char flash HunoBasic_TurnRight_Port[6][16]={
+const unsigned char flash HunoBasic_TurnRight_Port[6][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,0 ,0 ,0 ,1 ,1 ,1 },        // Idx:0 - Data_0
@@ -325,25 +325,25 @@ unsigned char flash HunoBasic_TurnRight_Port[6][16]={
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:4 - Data_4
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }         // Idx:5 - Data_5
 };
-unsigned char flash HunoBasic_TurnRight_PGain[16]={
+const unsigned char flash HunoBasic_TurnRight_PGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20};
-unsigned char flash HunoBasic_TurnRight_DGain[16]={
+const unsigned char flash HunoBasic_TurnRight_DGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30};
-unsigned char flash HunoBasic_TurnRight_IGain[16]={
+const unsigned char flash HunoBasic_TurnRight_IGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 };
-unsigned int flash HunoBasic_TurnRight_Frames[6]={
+const unsigned int flash HunoBasic_TurnRight_Frames[6]={
 10  ,5   ,10  ,1   ,5   ,10  
 };
-unsigned int flash HunoBasic_TurnRight_TrTime[6]={
+const unsigned int flash HunoBasic_TurnRight_TrTime[6]={
 200 ,200 ,400 ,120 ,200 ,400 
 };
-unsigned char flash HunoBasic_TurnRight_Position[7][16]={
+const unsigned char flash HunoBasic_TurnRight_Position[7][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},
@@ -362,7 +362,7 @@ unsigned char flash HunoBasic_TurnRight_Position[7][16]={
 
 #define HUNOBASIC_GETUPBACK_NUM_SCENES 10
 #define HUNOBASIC_GETUPBACK_NUM_MOTORS 16
-unsigned char flash HunoBasic_GetupBack_Torque[10][16]={
+const unsigned char flash HunoBasic_GetupBack_Torque[10][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:0 - Data_0
@@ -376,7 +376,7 @@ unsigned char flash HunoBasic_GetupBack_Torque[10][16]={
 {2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:8 - Data_24
 {3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 }         // Idx:9 - Data_25
 };
-unsigned char flash HunoBasic_GetupBack_Port[10][16]={
+const unsigned char flash HunoBasic_GetupBack_Port[10][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:0 - Data_0
@@ -390,25 +390,25 @@ unsigned char flash HunoBasic_GetupBack_Port[10][16]={
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:8 - Data_24
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }         // Idx:9 - Data_25
 };
-unsigned char flash HunoBasic_GetupBack_PGain[16]={
+const unsigned char flash HunoBasic_GetupBack_PGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 40,40,40,40,40,40,40,40,40,40,30,30,30,30,30,30};
-unsigned char flash HunoBasic_GetupBack_DGain[16]={
+const unsigned char flash HunoBasic_GetupBack_DGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 60,60,60,60,60,60,60,60,60,60,50,50,50,50,50,50};
-unsigned char flash HunoBasic_GetupBack_IGain[16]={
+const unsigned char flash HunoBasic_GetupBack_IGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 };
-unsigned int flash HunoBasic_GetupBack_Frames[10]={
+const unsigned int flash HunoBasic_GetupBack_Frames[10]={
 15  ,30  ,45  ,45  ,45  ,30  ,30  ,30  ,30  ,30  
 };
-unsigned int flash HunoBasic_GetupBack_TrTime[10]={
+const unsigned int flash HunoBasic_GetupBack_TrTime[10]={
 300 ,600 ,900 ,900 ,900 ,600 ,600 ,600 ,600 ,600 
 };
-unsigned char flash HunoBasic_GetupBack_Position[11][16]={
+const unsigned char flash HunoBasic_GetupBack_Position[11][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},
@@ -431,7 +431,7 @@ unsigned char flash HunoBasic_GetupBack_Position[11][16]={
 
 #define HUNOBASIC_GETUPFRONT_NUM_SCENES 9
 #define HUNOBASIC_GETUPFRONT_NUM_MOTORS 16
-unsigned char flash HunoBasic_GetupFront_Torque[9][16]={
+const unsigned char flash HunoBasic_GetupFront_Torque[9][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:0 - Data_0
@@ -444,7 +444,7 @@ unsigned char flash HunoBasic_GetupFront_Torque[9][16]={
 {2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 },        // Idx:7 - Data_6
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 }         // Idx:8 - Data_7
 };
-unsigned char flash HunoBasic_GetupFront_Port[9][16]={
+const unsigned char flash HunoBasic_GetupFront_Port[9][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:0 - Data_0
@@ -457,25 +457,25 @@ unsigned char flash HunoBasic_GetupFront_Port[9][16]={
 {3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 },        // Idx:7 - Data_6
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }         // Idx:8 - Data_7
 };
-unsigned char flash HunoBasic_GetupFront_PGain[16]={
+const unsigned char flash HunoBasic_GetupFront_PGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 40,40,40,40,40,40,40,40,40,40,20,20,20,20,20,20};
-unsigned char flash HunoBasic_GetupFront_DGain[16]={
+const unsigned char flash HunoBasic_GetupFront_DGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 60,60,60,60,60,60,60,60,60,60,30,30,30,30,30,30};
-unsigned char flash HunoBasic_GetupFront_IGain[16]={
+const unsigned char flash HunoBasic_GetupFront_IGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 };
-unsigned int flash HunoBasic_GetupFront_Frames[9]={
+const unsigned int flash HunoBasic_GetupFront_Frames[9]={
 10  ,10  ,10  ,10  ,1   ,35  ,30  ,40  ,30  
 };
-unsigned int flash HunoBasic_GetupFront_TrTime[9]={
+const unsigned int flash HunoBasic_GetupFront_TrTime[9]={
 300 ,500 ,500 ,700 ,820 ,700 ,600 ,800 ,600 
 };
-unsigned char flash HunoBasic_GetupFront_Position[10][16]={
+const unsigned char flash HunoBasic_GetupFront_Position[10][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},
@@ -497,7 +497,7 @@ unsigned char flash HunoBasic_GetupFront_Position[10][16]={
 
 #define HUNOBASIC_WALKFORWARD_NUM_SCENES 40
 #define HUNOBASIC_WALKFORWARD_NUM_MOTORS 16
-unsigned char flash HunoBasic_WalkForward_Torque[40][16]={
+const unsigned char flash HunoBasic_WalkForward_Torque[40][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 ,3 },        // Idx:0 - 0
@@ -541,7 +541,7 @@ unsigned char flash HunoBasic_WalkForward_Torque[40][16]={
 {1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 },        // Idx:38 - 3
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 }         // Idx:39 - Data
 };
-unsigned char flash HunoBasic_WalkForward_Port[40][16]={
+const unsigned char flash HunoBasic_WalkForward_Port[40][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:0 - 0
@@ -585,29 +585,29 @@ unsigned char flash HunoBasic_WalkForward_Port[40][16]={
 {1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 },        // Idx:38 - 3
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }         // Idx:39 - Data
 };
-unsigned char flash HunoBasic_WalkForward_PGain[16]={
+const unsigned char flash HunoBasic_WalkForward_PGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 41,41,41,41,41,41,41,41,41,41,20,20,20,20,20,20};
-unsigned char flash HunoBasic_WalkForward_DGain[16]={
+const unsigned char flash HunoBasic_WalkForward_DGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 61,61,61,61,61,61,61,61,61,61,30,30,30,30,30,30};
-unsigned char flash HunoBasic_WalkForward_IGain[16]={
+const unsigned char flash HunoBasic_WalkForward_IGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 };
-unsigned int flash HunoBasic_WalkForward_Frames[40]={
+const unsigned int flash HunoBasic_WalkForward_Frames[40]={
 5   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,
 1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,
 1   ,1   ,1   ,1   ,1   ,1   ,1   ,10  ,15  
 };
-unsigned int flash HunoBasic_WalkForward_TrTime[40]={
+const unsigned int flash HunoBasic_WalkForward_TrTime[40]={
 200 ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,
 25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,
 25  ,25  ,25  ,25  ,25  ,25  ,25  ,200 ,300 
 };
-unsigned char flash HunoBasic_WalkForward_Position[41][16]={
+const unsigned char flash HunoBasic_WalkForward_Position[41][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},
@@ -660,7 +660,7 @@ unsigned char flash HunoBasic_WalkForward_Position[41][16]={
 
 #define HUNOBASIC_WALKBACKWARD_NUM_SCENES 42
 #define HUNOBASIC_WALKBACKWARD_NUM_MOTORS 16
-unsigned char flash HunoBasic_WalkBackward_Torque[42][16]={
+const unsigned char flash HunoBasic_WalkBackward_Torque[42][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 },        // Idx:0 - Data
@@ -706,7 +706,7 @@ unsigned char flash HunoBasic_WalkBackward_Torque[42][16]={
 {2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 },        // Idx:40 - Scene_40
 {4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 }         // Idx:41 - Scene_41
 };
-unsigned char flash HunoBasic_WalkBackward_Port[42][16]={
+const unsigned char flash HunoBasic_WalkBackward_Port[42][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:0 - Data
@@ -752,29 +752,29 @@ unsigned char flash HunoBasic_WalkBackward_Port[42][16]={
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },        // Idx:40 - Scene_40
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }         // Idx:41 - Scene_41
 };
-unsigned char flash HunoBasic_WalkBackward_PGain[16]={
+const unsigned char flash HunoBasic_WalkBackward_PGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 41,41,41,41,41,41,41,41,41,41,20,20,20,20,20,20};
-unsigned char flash HunoBasic_WalkBackward_DGain[16]={
+const unsigned char flash HunoBasic_WalkBackward_DGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 61,61,61,61,61,61,61,61,61,61,30,30,30,30,30,30};
-unsigned char flash HunoBasic_WalkBackward_IGain[16]={
+const unsigned char flash HunoBasic_WalkBackward_IGain[16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 };
-unsigned int flash HunoBasic_WalkBackward_Frames[42]={
+const unsigned int flash HunoBasic_WalkBackward_Frames[42]={
 5   ,20  ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,
 1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,
 1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,1   ,10  ,20  
 };
-unsigned int flash HunoBasic_WalkBackward_TrTime[42]={
+const unsigned int flash HunoBasic_WalkBackward_TrTime[42]={
 300 ,400 ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,
 25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,
 25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,25  ,400 ,400 
 };
-unsigned char flash HunoBasic_WalkBackward_Position[43][16]={
+const unsigned char flash HunoBasic_WalkBackward_Position[43][16]={
 /* ID
  0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,10,11,12,13,14,15 */
 {125,179,199,88,108,126,72,49,163,141,51,47,49,199,205,205},

@@ -1,7 +1,7 @@
 #ifdef AVR
 #include <avr/eeprom.h> 
 #include <avr/pgmspace.h>
-
+typedef char PROGMEM 	prog_char;
 #include "global.h"
 #include "main.h"
 #include "macro.h"

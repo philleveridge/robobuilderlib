@@ -1,9 +1,9 @@
 
 // Standard Input/Output functions
 #include <stdio.h>
-
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
+
 #include "global.h"
 #include "macro.h"
 #include "math.h"

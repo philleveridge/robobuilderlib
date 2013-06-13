@@ -21,28 +21,28 @@
 //----------------------------------------------------------
 #define LSHOOT_NUM_OF_SCENES 6
 #define LSHOOT_NUM_OF_WCKS 16
-unsigned char flash LSHOOT_RuntimePGain[16]={
+const unsigned char flash LSHOOT_RuntimePGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
 };
-unsigned char flash LSHOOT_RuntimeDGain[16]={
+const unsigned char flash LSHOOT_RuntimeDGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30
 };
-unsigned char flash LSHOOT_RuntimeIGain[16]={
+const unsigned char flash LSHOOT_RuntimeIGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
-unsigned int flash LSHOOT_Frames[6]={
+const unsigned int flash LSHOOT_Frames[6]={
 	    1,    1,    1,    1,    1,    1
 };
-unsigned int flash LSHOOT_TrTime[6]={
+const unsigned int flash LSHOOT_TrTime[6]={
 	   20,   20,  320,   20,  320,   20
 };
-unsigned char flash LSHOOT_Position[7][16]={
+const unsigned char flash LSHOOT_Position[7][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 },
@@ -53,7 +53,7 @@ unsigned char flash LSHOOT_Position[7][16]={
 	{ 101,129,203, 42, 85,120, 36, 81,180,123,130, 49, 76,207,199,228 },	// Idx:4 - Scene_3
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 } 	// Idx:5 - Scene_0
 };
-unsigned char flash LSHOOT_Torque[6][16]={
+const unsigned char flash LSHOOT_Torque[6][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 },	// Idx:0 - Scene_0
@@ -63,7 +63,7 @@ unsigned char flash LSHOOT_Torque[6][16]={
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:4 - Scene_3
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 } 	// Idx:5 - Scene_0
 };
-unsigned char flash LSHOOT_Port[6][16]={
+const unsigned char flash LSHOOT_Port[6][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:0 - Scene_0
@@ -79,28 +79,28 @@ unsigned char flash LSHOOT_Port[6][16]={
 //----------------------------------------------------------
 #define RSHOOT_NUM_OF_SCENES 6
 #define RSHOOT_NUM_OF_WCKS 16
-unsigned char flash RSHOOT_RuntimePGain[16]={
+const unsigned char flash RSHOOT_RuntimePGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
 };
-unsigned char flash RSHOOT_RuntimeDGain[16]={
+const unsigned char flash RSHOOT_RuntimeDGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30
 };
-unsigned char flash RSHOOT_RuntimeIGain[16]={
+const unsigned char flash RSHOOT_RuntimeIGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
-unsigned int flash RSHOOT_Frames[6]={
+const unsigned int flash RSHOOT_Frames[6]={
 	    1,    1,    1,    1,    1,   10
 };
-unsigned int flash RSHOOT_TrTime[6]={
+const unsigned int flash RSHOOT_TrTime[6]={
 	   20,   20,  320,   20,  420,  220
 };
-unsigned char flash RSHOOT_Position[7][16]={
+const unsigned char flash RSHOOT_Position[7][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 },
@@ -111,7 +111,7 @@ unsigned char flash RSHOOT_Position[7][16]={
 	{ 131,196,182, 79,128,150,122, 45,208,164, 43, 53, 80,120,203,178 },	// Idx:4 - Scene_2
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 } 	// Idx:5 - Scene_0
 };
-unsigned char flash RSHOOT_Torque[6][16]={
+const unsigned char flash RSHOOT_Torque[6][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 },	// Idx:0 - Scene_0
@@ -121,7 +121,7 @@ unsigned char flash RSHOOT_Torque[6][16]={
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:4 - Scene_2
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 } 	// Idx:5 - Scene_0
 };
-unsigned char flash RSHOOT_Port[6][16]={
+const unsigned char flash RSHOOT_Port[6][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:0 - Scene_0
@@ -137,28 +137,28 @@ unsigned char flash RSHOOT_Port[6][16]={
 //----------------------------------------------------------
 #define LSIDEWALK_NUM_OF_SCENES 4
 #define LSIDEWALK_NUM_OF_WCKS 16
-unsigned char flash LSIDEWALK_RuntimePGain[16]={
+const unsigned char flash LSIDEWALK_RuntimePGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 20, 20, 20, 20, 20, 20
 };
-unsigned char flash LSIDEWALK_RuntimeDGain[16]={
+const unsigned char flash LSIDEWALK_RuntimeDGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 30, 30, 30, 30, 30, 30
 };
-unsigned char flash LSIDEWALK_RuntimeIGain[16]={
+const unsigned char flash LSIDEWALK_RuntimeIGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
-unsigned int flash LSIDEWALK_Frames[4]={
+const unsigned int flash LSIDEWALK_Frames[4]={
 	    5,    1,    1,    3
 };
-unsigned int flash LSIDEWALK_TrTime[4]={
+const unsigned int flash LSIDEWALK_TrTime[4]={
 	  100,  220,  100,   60
 };
-unsigned char flash LSIDEWALK_Position[5][16]={
+const unsigned char flash LSIDEWALK_Position[5][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{ 125,168,199, 85,108,126, 83, 47,167,143, 51, 47, 49,199,205,205 },
@@ -167,7 +167,7 @@ unsigned char flash LSIDEWALK_Position[5][16]={
 	{ 126,150,222, 92,107,125, 98, 27,159,144, 79, 44, 40,166,206,208 },	// Idx:2 - S_4
 	{ 125,165,199, 85,108,126, 85, 47,167,143, 51, 47, 49,199,205,205 } 	// Idx:3 - S_5
 };
-unsigned char flash LSIDEWALK_Torque[4][16]={
+const unsigned char flash LSIDEWALK_Torque[4][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 },	// Idx:0 - S_2
@@ -175,7 +175,7 @@ unsigned char flash LSIDEWALK_Torque[4][16]={
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  4,  4,  4,  4,  3 },	// Idx:2 - S_4
 	{   4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4 } 	// Idx:3 - S_5
 };
-unsigned char flash LSIDEWALK_Port[4][16]={
+const unsigned char flash LSIDEWALK_Port[4][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:0 - S_2
@@ -189,28 +189,28 @@ unsigned char flash LSIDEWALK_Port[4][16]={
 //----------------------------------------------------------
 #define RSIDEWALK_NUM_OF_SCENES 4
 #define RSIDEWALK_NUM_OF_WCKS 16
-unsigned char flash RSIDEWALK_RuntimePGain[16]={
+const unsigned char flash RSIDEWALK_RuntimePGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 20, 20, 20, 20, 20, 20
 };
-unsigned char flash RSIDEWALK_RuntimeDGain[16]={
+const unsigned char flash RSIDEWALK_RuntimeDGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 30, 30, 30, 30, 30, 30
 };
-unsigned char flash RSIDEWALK_RuntimeIGain[16]={
+const unsigned char flash RSIDEWALK_RuntimeIGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
-unsigned int flash RSIDEWALK_Frames[4]={
+const unsigned int flash RSIDEWALK_Frames[4]={
 	    5,    1,    1,    3
 };
-unsigned int flash RSIDEWALK_TrTime[4]={
+const unsigned int flash RSIDEWALK_TrTime[4]={
 	  100,  220,  100,   60
 };
-unsigned char flash RSIDEWALK_Position[5][16]={
+const const unsigned char flash RSIDEWALK_Position[5][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{ 125,165,199, 85,108,126, 87, 47,167,143, 51, 47, 49,199,205,205 },
@@ -219,7 +219,7 @@ unsigned char flash RSIDEWALK_Position[5][16]={
 	{ 121,154,222, 95, 93,125, 94, 32,156,144, 79, 44, 40,166,206,208 },	// Idx:2 - S_4
 	{ 125,167,199, 85,108,126, 84, 47,167,143, 51, 47, 49,199,205,205 } 	// Idx:3 - S_5
 };
-unsigned char flash RSIDEWALK_Torque[4][16]={
+const unsigned char flash RSIDEWALK_Torque[4][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 },	// Idx:0 - S_2
@@ -227,7 +227,7 @@ unsigned char flash RSIDEWALK_Torque[4][16]={
 	{   0,  0,  0,  0,  0,  2,  2,  2,  2,  2,  4,  4,  4,  4,  4,  4 },	// Idx:2 - S_4
 	{   4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4 } 	// Idx:3 - S_5
 };
-unsigned char flash RSIDEWALK_Port[4][16]={
+const unsigned char flash RSIDEWALK_Port[4][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:0 - S_2
@@ -241,28 +241,28 @@ unsigned char flash RSIDEWALK_Port[4][16]={
 //----------------------------------------------------------
 #define STANDUPF_NUM_OF_SCENES 5
 #define STANDUPF_NUM_OF_WCKS 16
-unsigned char flash STANDUPF_RuntimePGain[16]={
+const unsigned char flash STANDUPF_RuntimePGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
 };
-unsigned char flash STANDUPF_RuntimeDGain[16]={
+const unsigned char flash STANDUPF_RuntimeDGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30
 };
-unsigned char flash STANDUPF_RuntimeIGain[16]={
+const unsigned char flash STANDUPF_RuntimeIGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
-unsigned int flash STANDUPF_Frames[5]={
+const unsigned int flash STANDUPF_Frames[5]={
 	    1,    1,    1,   10,   10
 };
-unsigned int flash STANDUPF_TrTime[5]={
+const unsigned int flash STANDUPF_TrTime[5]={
 	   20,  520,  320,  300,  520
 };
-unsigned char flash STANDUPF_Position[6][16]={
+const unsigned char flash STANDUPF_Position[6][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 },
@@ -272,7 +272,7 @@ unsigned char flash STANDUPF_Position[6][16]={
 	{ 125,185,249,130,108,124, 67,  1,124,145, 45, 65, 69,201,189,175 },	// Idx:3 - Scene_4
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 } 	// Idx:4 - Scene_0
 };
-unsigned char flash STANDUPF_Torque[5][16]={
+const unsigned char flash STANDUPF_Torque[5][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 },	// Idx:0 - Scene_0
@@ -281,7 +281,7 @@ unsigned char flash STANDUPF_Torque[5][16]={
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:3 - Scene_4
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 } 	// Idx:4 - Scene_0
 };
-unsigned char flash STANDUPF_Port[5][16]={
+const unsigned char flash STANDUPF_Port[5][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:0 - Scene_0
@@ -296,28 +296,28 @@ unsigned char flash STANDUPF_Port[5][16]={
 //----------------------------------------------------------
 #define STANDUPR_NUM_OF_SCENES 5
 #define STANDUPR_NUM_OF_WCKS 16
-unsigned char flash STANDUPR_RuntimePGain[16]={
+const unsigned char flash STANDUPR_RuntimePGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
 };
-unsigned char flash STANDUPR_RuntimeDGain[16]={
+const unsigned char flash STANDUPR_RuntimeDGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30
 };
-unsigned char flash STANDUPR_RuntimeIGain[16]={
+const unsigned char flash STANDUPR_RuntimeIGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
-unsigned int flash STANDUPR_Frames[5]={
+const unsigned int flash STANDUPR_Frames[5]={
 	    1,    1,    1,    1,   30
 };
-unsigned int flash STANDUPR_TrTime[5]={
+const unsigned int flash STANDUPR_TrTime[5]={
 	   20,  220,  420,  350,  600
 };
-unsigned char flash STANDUPR_Position[6][16]={
+const unsigned char flash STANDUPR_Position[6][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 },
@@ -327,7 +327,7 @@ unsigned char flash STANDUPR_Position[6][16]={
 	{ 116, 89,237, 81,104,132,160, 16,173,146,  1,210,119,254, 39,121 },	// Idx:3 - Scene_3
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 } 	// Idx:4 - Scene_0
 };
-unsigned char flash STANDUPR_Torque[5][16]={
+const unsigned char flash STANDUPR_Torque[5][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 },	// Idx:0 - Scene_0
@@ -336,7 +336,7 @@ unsigned char flash STANDUPR_Torque[5][16]={
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:3 - Scene_3
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 } 	// Idx:4 - Scene_0
 };
-unsigned char flash STANDUPR_Port[5][16]={
+const unsigned char flash STANDUPR_Port[5][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:0 - Scene_0
@@ -351,28 +351,28 @@ unsigned char flash STANDUPR_Port[5][16]={
 //----------------------------------------------------------
 #define HUNODEMO_SITDOWN_NUM_OF_SCENES 4
 #define HUNODEMO_SITDOWN_NUM_OF_WCKS 16
-unsigned char flash HUNODEMO_SITDOWN_RuntimePGain[16]={
+const unsigned char flash HUNODEMO_SITDOWN_RuntimePGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
 };
-unsigned char flash HUNODEMO_SITDOWN_RuntimeDGain[16]={
+const unsigned char flash HUNODEMO_SITDOWN_RuntimeDGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30
 };
-unsigned char flash HUNODEMO_SITDOWN_RuntimeIGain[16]={
+const unsigned char flash HUNODEMO_SITDOWN_RuntimeIGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
-unsigned int flash HUNODEMO_SITDOWN_Frames[4]={
-	   10,   40,   10,   40
+const unsigned int flash HUNODEMO_SITDOWN_Frames[4]={
+ 	   10,   40,   10,   40
 };
-unsigned int flash HUNODEMO_SITDOWN_TrTime[4]={
+const unsigned int flash HUNODEMO_SITDOWN_TrTime[4]={
 	  500, 1000, 2000, 1000
 };
-unsigned char flash HUNODEMO_SITDOWN_Position[5][16]={
+const unsigned char flash HUNODEMO_SITDOWN_Position[5][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 },
@@ -381,7 +381,7 @@ unsigned char flash HUNODEMO_SITDOWN_Position[5][16]={
 	{ 125,147,247,106,108,126,102,  4,145,141, 51, 47, 49,199,205,205 },	// Idx:2 - Data
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 } 	// Idx:3 - Scene_3
 };
-unsigned char flash HUNODEMO_SITDOWN_Torque[4][16]={
+const unsigned char flash HUNODEMO_SITDOWN_Torque[4][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 },	// Idx:0 - Scene_0
@@ -389,7 +389,7 @@ unsigned char flash HUNODEMO_SITDOWN_Torque[4][16]={
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:2 - Data
 	{   4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4 } 	// Idx:3 - Scene_3
 };
-unsigned char flash HUNODEMO_SITDOWN_Port[4][16]={
+const unsigned char flash HUNODEMO_SITDOWN_Port[4][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:0 - Scene_0
@@ -403,28 +403,28 @@ unsigned char flash HUNODEMO_SITDOWN_Port[4][16]={
 //----------------------------------------------------------
 #define HUNODEMO_HI_NUM_OF_SCENES 5
 #define HUNODEMO_HI_NUM_OF_WCKS 16
-unsigned char flash HUNODEMO_HI_RuntimePGain[16]={
+const unsigned char flash HUNODEMO_HI_RuntimePGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
 };
-unsigned char flash HUNODEMO_HI_RuntimeDGain[16]={
+const unsigned char flash HUNODEMO_HI_RuntimeDGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30
 };
-unsigned char flash HUNODEMO_HI_RuntimeIGain[16]={
+const unsigned char flash HUNODEMO_HI_RuntimeIGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
-unsigned int flash HUNODEMO_HI_Frames[5]={
+const unsigned int flash HUNODEMO_HI_Frames[5]={
 	   10,   40,   10,   10,   40
 };
-unsigned int flash HUNODEMO_HI_TrTime[5]={
+const unsigned int flash HUNODEMO_HI_TrTime[5]={
 	  500, 1000,  500,  500, 1000
 };
-unsigned char flash HUNODEMO_HI_Position[6][16]={
+const unsigned char flash HUNODEMO_HI_Position[6][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 },
@@ -434,7 +434,7 @@ unsigned char flash HUNODEMO_HI_Position[6][16]={
 	{ 125,179,199, 88,108,126, 72, 49,163,141,187, 58, 46,199,205,205 },	// Idx:3 - Scene_1
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 } 	// Idx:4 - Scene_4
 };
-unsigned char flash HUNODEMO_HI_Torque[5][16]={
+const unsigned char flash HUNODEMO_HI_Torque[5][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 },	// Idx:0 - Scene_0
@@ -443,7 +443,7 @@ unsigned char flash HUNODEMO_HI_Torque[5][16]={
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2 },	// Idx:3 - Scene_1
 	{   4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4 } 	// Idx:4 - Scene_4
 };
-unsigned char flash HUNODEMO_HI_Port[5][16]={
+const unsigned char flash HUNODEMO_HI_Port[5][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:0 - Scene_0
@@ -458,28 +458,28 @@ unsigned char flash HUNODEMO_HI_Port[5][16]={
 //----------------------------------------------------------
 #define HUNODEMO_KICKLEFTFRONTTURN_NUM_OF_SCENES 12
 #define HUNODEMO_KICKLEFTFRONTTURN_NUM_OF_WCKS 16
-unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_RuntimePGain[16]={
+const unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_RuntimePGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20
 };
-unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_RuntimeDGain[16]={
+const unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_RuntimeDGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30
 };
-unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_RuntimeIGain[16]={
+const unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_RuntimeIGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
-unsigned int flash HUNODEMO_KICKLEFTFRONTTURN_Frames[12]={
+const unsigned int flash HUNODEMO_KICKLEFTFRONTTURN_Frames[12]={
 	   40,   10,   20,   20,    1,    1,   10,   10,   25,   20,   20,   30
 };
-unsigned int flash HUNODEMO_KICKLEFTFRONTTURN_TrTime[12]={
+const unsigned int flash HUNODEMO_KICKLEFTFRONTTURN_TrTime[12]={
 	  900,  200,  400,  400,  120,  520,  400,  400,  500,  400,  400,  600
 };
-unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_Position[13][16]={
+const unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_Position[13][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 },
@@ -496,7 +496,7 @@ unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_Position[13][16]={
 	{ 123,155,248,118,106,129, 95,  4,135,143, 52, 50, 49,219,194,213 },	// Idx:10 - Data_10
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 } 	// Idx:11 - Data_11
 };
-unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_Torque[12][16]={
+const unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_Torque[12][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4 },	// Idx:0 - Data_0
@@ -512,7 +512,7 @@ unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_Torque[12][16]={
 	{   4,  4,  4,  3,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4 },	// Idx:10 - Data_10
 	{   4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4 } 	// Idx:11 - Data_11
 };
-unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_Port[12][16]={
+const unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_Port[12][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:0 - Data_0
@@ -534,32 +534,32 @@ unsigned char flash HUNODEMO_KICKLEFTFRONTTURN_Port[12][16]={
 //----------------------------------------------------------
 #define HANDSTANDS1_NUM_OF_SCENES 40
 #define HANDSTANDS1_NUM_OF_WCKS 16
-unsigned char flash HANDSTANDS1_RuntimePGain[16]={
+const unsigned char flash HANDSTANDS1_RuntimePGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 20, 20, 20, 20, 20, 20
 };
-unsigned char flash HANDSTANDS1_RuntimeDGain[16]={
+const unsigned char flash HANDSTANDS1_RuntimeDGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 30, 30, 30, 30, 30, 30
 };
-unsigned char flash HANDSTANDS1_RuntimeIGain[16]={
+const unsigned char flash HANDSTANDS1_RuntimeIGain[16]={
 	/* ID
 	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
-unsigned int flash HANDSTANDS1_Frames[40]={
+const unsigned int flash HANDSTANDS1_Frames[40]={
 	   20,   20,   20,   20,   20,   20,   20,    1,    1,   10,   40,   15,   15,    5,   50,   50,
 	   50,    1,   45,   45,   10,   10,   10,   10,   45,   10,   10,   10,   10,   45,   80,
 	   30,   15,   15,   15,   15,   15,   15,   15,   15
 };
-unsigned int flash HANDSTANDS1_TrTime[40]={
+const unsigned int flash HANDSTANDS1_TrTime[40]={
 	  900,  900,  900,  900,  900,  900,  900,  520,  520,  500, 1600,  600,  600, 2100, 1020, 1020,
 	 1020, 2020,  900,  900,  500,  500,  500,  500,  900,  500,  500,  500,  500,  900, 1600,
 	 1600,  600,  600,  600,  600,  600,  600,  600,  600
 };
-unsigned char flash HANDSTANDS1_Position[41][16]={
+const unsigned char flash HANDSTANDS1_Position[41][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 },
@@ -604,7 +604,7 @@ unsigned char flash HANDSTANDS1_Position[41][16]={
 	{ 123,166,223, 94,106,125, 81, 35,162,141,143, 36, 89,116,203,167 },	// Idx:38 - Data_24
 	{ 125,179,199, 88,108,126, 72, 49,163,141, 51, 47, 49,199,205,205 } 	// Idx:39 - Data_25
 };
-unsigned char flash HANDSTANDS1_Torque[40][16]={
+const unsigned char flash HANDSTANDS1_Torque[40][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4 },	// Idx:0 - Data_0
@@ -648,7 +648,7 @@ unsigned char flash HANDSTANDS1_Torque[40][16]={
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  4,  4,  4,  4,  4,  4 },	// Idx:38 - Data_24
 	{   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  4,  4,  4,  4,  4,  4 } 	// Idx:39 - Data_25
 };
-unsigned char flash HANDSTANDS1_Port[40][16]={
+const unsigned char flash HANDSTANDS1_Port[40][16]={
 	/* ID
 	    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 */
 	{   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },	// Idx:0 - Data_0
