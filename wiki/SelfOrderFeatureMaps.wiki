@@ -4,13 +4,22 @@
 
 Based on algorithm in book - see from page 220 : http://books.google.co.uk/books?id=jJTN8RPgyXgC&pg=PA220
 
+Uses new matrix features (available from build 739)
+
+{{{
+MAT REP   - replicates a matrix
+MAT SUM   - sums either columns or rows of a matrix
+MAT SUM2  - sums square of either columns or rows of a matrix
+$IMIN(@X) - This finds the index of the minimum value in a list X
+}}}
+
 = Details =
 
 Example run - note the speed (23ms), this is running directly on the RBC using integer matrix commands to do the maths.
 
 A= learning rate 
 T= input values
-M= Intitial weights
+M= Initial weights
 
 {{{
 : l
@@ -47,5 +56,6 @@ matrix 'M' 5x2
  23  51  40  40  20 
  33  47  70  60  80 
 End
+Elapsed Time 00:00-023
+: 
 }}}
-
