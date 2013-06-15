@@ -19,6 +19,7 @@ Latest demos (most/all require BasicIDE - [BasicClient] for details on the IDE) 
 
   * [AutoAssocNets Auto-associative Network (ANN) demo - using matrices]
   * [HopfieldNetwork Hopfiled Network demo - using matrices]
+  * [SelfOrderFeatureMaps] Integer example of SOMs
   * [neuron1 Neural Network demo (XOR problem)]
   * [Backprop Back Propagation] learning using float point matrix
 
