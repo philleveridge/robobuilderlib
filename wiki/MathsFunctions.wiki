@@ -4,7 +4,7 @@
 
 Simple integer functions. Use angle 0-255 to represent 0 - 2Pi
 
-Values will be +/- 32
+Values will be +/- 32768
 
 = Details =
 
