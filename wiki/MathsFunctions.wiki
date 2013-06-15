@@ -38,7 +38,7 @@ Run Program
 }}}
 
 More complex demo generating 16 values 
-
+Using initial value of A=25 B=50, C=0
 
 {{{
 List Program
@@ -67,5 +67,3 @@ Run Program
                                  *
                                           *
 }}}
-
-
