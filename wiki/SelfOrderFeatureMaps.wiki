@@ -1,0 +1,51 @@
+#summary Self Order Feature Maps
+
+= Introduction =
+
+Based on algorithm in book - see from page 220 : http://books.google.co.uk/books?id=jJTN8RPgyXgC&pg=PA220
+
+= Details =
+
+Example run - note the speed (23ms), this is running directly on the RBC using integer matrix commands to do the maths.
+
+A= learning rate 
+T= input values
+M= Intitial weights
+
+{{{
+: l
+List Program
+5 MAT DIM M(5,2)
+8 MAT DIM T(1,2)
+11 LIST M = 10,20,60,40,40,20,30,50,70,60,80
+14 LIST T = 2,30,40
+17 LET A = 30
+20 MAT PRINT M,T
+23 MAT R=REP(T,5,1)
+26 MAT V=M-R
+29 MAT R=SUM2(V,2)
+32 LET I = $IMIN(@R)
+35 LET M[I]=M[I]+A*(T[0]-M[I])/100
+38 LET M[I+5]=M[I+5]+A*(T[1]-M[I+5])/100
+41 IF I<4 THEN 44 ELSE 53
+44 LET M[I+1]=M[I+1]+A*(T[0]-M[I+1])/100
+47 LET M[I+5+1]=M[I+5+1]+A*(T[1]-M[I+5+1])/100
+53 IF I>0 THEN 56 ELSE 65
+56 LET M[I-1]=M[I-1]+A*(T[0]-M[I-1])/100
+59 LET M[I+5-1]=M[I+5-1]+A*(T[1]-M[I+5-1])/100
+65 MAT PRINT M
+: 
+: r
+Run Program 
+matrix 'M' 5x2
+ 20  60  40  40  20 
+ 30  50  70  60  80 
+matrix 'T' 1x2
+ 30 
+ 40 
+matrix 'M' 5x2
+ 23  51  40  40  20 
+ 33  47  70  60  80 
+End
+}}}
+
