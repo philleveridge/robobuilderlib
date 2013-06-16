@@ -46,6 +46,7 @@ New Matrix
 fMatrix newmatrix(int c, int r)
 {
 	fMatrix n;
+
 	printf ("New Matrix\n");
 	n.h=r;
 	n.w=c;
@@ -53,13 +54,9 @@ fMatrix newmatrix(int c, int r)
 
 	//allocate space
 
-	if (fs+r*c<MATSIZE)
-	{
-		n.fstore = &fdata[fs];
-		fm=fm+1;
-		fs=fs+r*c;
-	}
-	else
+	n.fstore = (float *)malloc(r*c*sizeof(float));
+
+	if (n.fstore==0)
 	{
 		printf ("out of space %d (%d)\n",fs,MATSIZE);
 	}
@@ -67,38 +64,88 @@ fMatrix newmatrix(int c, int r)
 	return n;
 }
 
-fMatrix fmatcp(fMatrix A)
+int delmatrix(fMatrix *m)
+{
+	printf ("Del Matrix\n");
+	m->h=0;
+	m->w=0;
+	free(m->fstore);
+	return 0;
+}
+
+fMatrix fmatcp(fMatrix *A)
 {
 	fMatrix n;
 	int i;
-	int w=A.w;
-	int h=A.h;
+	int w=A->w;
+	int h=A->h;
 
 	n = newmatrix(w, h);
 
 	if (dbg) printf ("sz=%d\n",h*w);
 
   	for (i=0; i<h*w; i++)
-		n.fstore[i]=A.fstore[i];
+		n.fstore[i]=A->fstore[i];
 
 	return n;
 }
 
-int fmatprint2(fMatrix A)
+int fmatprint2(fMatrix *A)
 {
 	int i,j;
-	printf ("Matrix %dx%d\n", A.w, A.h);
+	printf ("Matrix %dx%d\n", A->w, A->h);
 
-	for (j=0; j<A.h;j++)
+	for (j=0; j<A->h;j++)
 	{
-		for (i=0; i<A.w; i++)
+		for (i=0; i<A->w; i++)
 		{
-			printf ("%3f ", A.fstore[i+j*A.w]);
+			printf ("%3f ", A->fstore[i+j*A->w]);
 		}
 		printf ("\n");
 	}
 	return 0;
 }
+
+float fget2(fMatrix *M, int c, int r)
+{
+	if (c>=0 && r>=0 && c<M->w && c<M->h && M->fstore!=0)
+		return  M->fstore[c+r*M->w];
+	else
+		return 0.0;
+}
+
+
+fMatrix fadd2(fMatrix *A, fMatrix *B, char op)   // "@X = @A + @B"
+{
+	int rx,ry, ha,wa,wb,hb;
+
+	fMatrix R;
+	R.h=0;
+	R.w=0;
+
+	wa=A->w;
+	ha=A->h;
+	wb=B->w;
+	hb=B->h;
+
+	if (wa!=wb || ha!=hb)
+		return R;
+
+	R = newmatrix(wa,ha);
+
+	if (op=='+')
+	{
+		for (ry=0; ry<ha; ry++)
+		{
+			for (rx=0; rx<wa; rx++)
+			{
+				R.fstore[rx+ry*wa] = fget2(A,rx,ry) + fget2(B,rx,ry);  
+			}
+		}
+	}
+	return R;
+}
+
 
 
 /**********************************************************
