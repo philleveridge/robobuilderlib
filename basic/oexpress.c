@@ -75,6 +75,11 @@ extern int  dbg;
 extern void output_grey1(int sz);
 extern int *frame;
 
+/* new matrix functions */
+
+fMatrix readmatrix(char *s);
+fMatrix newmatrix(int c, int r);
+
 #define iswhite(c)   (c == ' ' || c == '\t')
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
 #define isnumber(c)  (c >= '0' && c <= '9')
@@ -271,7 +276,7 @@ int getOP(char *str)
 	return -1;
 }
 
-int get_token() 
+int get_token(int flg) 
 {
 	int ty=DELI;
 	tb=0;
@@ -289,6 +294,7 @@ int get_token()
     if (*e == '"')
     {
         char *p=tmpstr;
+	if (flg) return DELI;
         e++;
         while (*e != '"')
     	{
@@ -299,12 +305,28 @@ int get_token()
 	return STRNG;
     }
 
+    if (*e == '[')
+    {
+        char *p=tmpstr;
+	if (flg) return DELI;
+        e++;
+        while (*e != ']')
+    	{
+		*p++=*e++;
+	}
+        e++;
+	*p='\0';
+	return MLIST;
+    }
+
+
 	if (isnumdot(*e) || (*e=='-' && isnumdot(*(e+1))) )
 	{
 		int r=NUMI;
 		int sgn=1;
 		double dn=0.1;
 		tnum=0;
+		if (flg) return DELI;
 		if (*e=='-') { e++; sgn=-1; }
 		while (isnumdot(*e))
 		{
@@ -331,7 +353,7 @@ int get_token()
 	}
 
 	if (isdelim(*e))
-	{
+	{		
 		if (*e=='<' && *(e+1)=='>')
 		{
 			tokbuff[tb++]=*e++;
@@ -407,6 +429,7 @@ tOBJ eval_oxpr(char *s)
 	int op=NA;
 	int lf=1;
 	int tk=0;
+	int gnf=0;
 
 	r.type=EMPTY;
 	strncpy(exprbuff,s,MAXSTRING-1);
@@ -414,65 +437,83 @@ tOBJ eval_oxpr(char *s)
 
 	while (lf)
 	{
-		tk = get_token();
-		switch (tk)
+		tk = get_token(gnf);
+
+		if (gnf==0 || (tk==OPR))
 		{
-		case ALPHA:
-			r = get(tokbuff);
-			push(r);
-			break;
-		case STRNG:
-			r.type=STR;
-			r.string = newstring(tmpstr);
-			push(r);
-			break;
-		case NUMI:
-			r.type   = INTGR;
-			r.number = tnum;
-			push(r);
-			break;
-		case NUMF:
-			r.type   = FLOAT;
-			r.floatpoint = tfloat;
-			push(r);
-			break;
-		case OPR:
-			op = getOP(tokbuff);
-			if (oplist[op].nop==0 && oplist[op].func != NULL)
+			switch (tk)
 			{
-				(*oplist[op].func)();
+			case ALPHA:
+				r = get(tokbuff);
+				push(r);
+				gnf=1;
+				break;
+			case STRNG:
+				r.type=STR;
+				r.string = newstring(tmpstr);
+				push(r);
+				gnf=1;
+				break;
+			case NUMI:
+				r.type   = INTGR;
+				r.number = tnum;
+				push(r);
+				gnf=1;
+				break;
+			case NUMF:
+				r.type   = FLOAT;
+				r.floatpoint = tfloat;
+				push(r);
+				gnf=1;
+				break;
+			case MLIST:
+				r.type   = FMAT2;
+				r.fmat2 = readmatrix(tmpstr);
+				push(r);	
+				gnf=1;		
 				continue;
-			}
-			else
-			if (oop>0 && (oplist[op].type == CBR || oplist[op].type==COMMA))
-			{
-				int i=stackop[oop-1];
-				while (oplist[i].type != OBR && oplist[i].type != COMMA)
+			case OPR:
+				op = getOP(tokbuff);
+				if (oplist[op].nop==0 && oplist[op].func != NULL)
 				{
-					//stackprint();
-					reduce();
-					i=stackop[oop-1];
+					(*oplist[op].func)();
+					continue;
 				}
+				else
+				if (oop>0 && (oplist[op].type == CBR || oplist[op].type==COMMA))
+				{
+					int i=stackop[oop-1];
+					while (oplist[i].type != OBR && oplist[i].type != COMMA)
+					{
+						//stackprint();
+						reduce();
+						i=stackop[oop-1];
+					}
+					continue;
+				}
+				else
+				if (oop>0)
+				{
+					int i = stackop[oop-1];
+					if ((oplist[i].type != OBR) && (oplist[op].level<=oplist[i].level) )
+					{
+						reduce();
+					}
+				}
+				stackop[oop++]=op;
+				gnf=0;
+				break;
+			case DELI:
+				lf=0;
 				continue;
+
 			}
-			else
-			if (oop>0)
-			{
-				int i = stackop[oop-1];
-				if ((oplist[i].type != OBR) && (oplist[op].level<=oplist[i].level) )
-				{
-					reduce();
-				}
-			}
-			stackop[oop++]=op;
+		}
+		else
+		{
 			break;
-		case DELI:
-			lf=0; 
-			continue;
 		}
 	}
-
-
 
 	while (oop>0)
 	{
@@ -496,6 +537,51 @@ tOBJ eval_oxpr(char *s)
 		clear();
 	}
 	return pop();
+}
+
+float tofloat(tOBJ v);
+
+/*
+i
+!LET MA=[1.0 2.0;3.0 4.0]
+!PRINT MA
+*/
+
+fMatrix readmatrix(char *s)
+{
+	fMatrix m;
+	float ts[10000];
+	tOBJ v;
+	float f;
+	int i=0;
+	int j=0;
+	int c=0;
+
+	e=s;
+
+	printf("LIST=%s\n", e);
+
+	while (*e != 0)
+	{
+		v=eval_oxpr(e);	
+		ts[c] = tofloat(v);
+
+		if (dbg) printf ("[%d,%d] = %f  (%s)\n", i,j,ts[c], e);
+
+		if (*e==';') { j++; i=0; e++; } else {i++;}
+
+		c++;
+	}
+
+	//create matrix
+
+	m = newmatrix(i, j+1);
+	
+	//copy in ts[0-c];
+
+	for (i=0; i<c; i++) m.fstore[i]=ts[i];
+
+	return m;
 }
 
 void printtype(tOBJ r)
@@ -534,6 +620,10 @@ void printtype(tOBJ r)
     else if (r.type == FMAT)
     {
 	fmatprint(r.fmat);	 
+    }
+    else if (r.type == FMAT2)
+    {
+	fmatprint2(r.fmat2);	 
     }
     else    
     {               
@@ -973,7 +1063,7 @@ tOBJ print(tOBJ r)
 
 int get_str_token(char *s)
 {
-	int tk = get_token();
+	int tk = get_token(0);
 	
 	if (s==(char *)0 && tk==ALPHA)
 		return 1;
@@ -985,7 +1075,7 @@ int get_str_token(char *s)
 
 int get_integer()
 {
-	int tk = get_token();
+	int tk = get_token(0);
 	
 	if (tk==NUMI)
 		return tnum;
@@ -994,7 +1084,7 @@ int get_integer()
 
 int get_opr_token(unsigned char op)
 {
-	int tk = get_token();
+	int tk = get_token(1);
 	if (tk==OPR && oplist[getOP(tokbuff)].type==op)
 		return 1;
 	return 0;
@@ -1644,7 +1734,7 @@ void extend(char *x)
 			else
 			{
 				int i;
-				int tk = get_token();
+				int tk = get_token(0);
 
 				if (tk !=STRNG || *e++ != ';')
 				{

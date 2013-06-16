@@ -37,7 +37,75 @@ static int initflag=1;
 
 
 
-/**********************************************************/
+/**********************************************************
+
+New Matrix 
+
+**********************************************************/
+
+fMatrix newmatrix(int c, int r)
+{
+	fMatrix n;
+	printf ("New Matrix\n");
+	n.h=r;
+	n.w=c;
+	n.fstore = 0;
+
+	//allocate space
+
+	if (fs+r*c<MATSIZE)
+	{
+		n.fstore = &fdata[fs];
+		fm=fm+1;
+		fs=fs+r*c;
+	}
+	else
+	{
+		printf ("out of space %d (%d)\n",fs,MATSIZE);
+	}
+
+	return n;
+}
+
+fMatrix fmatcp(fMatrix A)
+{
+	fMatrix n;
+	int i;
+	int w=A.w;
+	int h=A.h;
+
+	n = newmatrix(w, h);
+
+	if (dbg) printf ("sz=%d\n",h*w);
+
+  	for (i=0; i<h*w; i++)
+		n.fstore[i]=A.fstore[i];
+
+	return n;
+}
+
+int fmatprint2(fMatrix A)
+{
+	int i,j;
+	printf ("Matrix %dx%d\n", A.w, A.h);
+
+	for (j=0; j<A.h;j++)
+	{
+		for (i=0; i<A.w; i++)
+		{
+			printf ("%3f ", A.fstore[i+j*A.w]);
+		}
+		printf ("\n");
+	}
+	return 0;
+}
+
+
+/**********************************************************
+
+OLD style matrix functions
+
+**********************************************************/
 
 void initmatrix()
 {
