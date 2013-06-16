@@ -118,8 +118,8 @@ Functions an variables can be used in an expression, for example LET A=$X would 
 ||$NORM||   ||
 ||$HAM(@b,@b|| Hamming distance between too list (i.e. no. of exact matches)  ||
 ||$SUM(@n)|| return sum of element values in array n    ||
-||$SIN(x)||Sine of X where X 0-233 and return is +/-32K||
-||$COS(x)||Cosine of X where X 0-233 and return is +/-32K||
+||$SIN(x)||Sine of X where X 0-255 and return is +/-32K||
+||$COS(x)||Cosine of X where X 0-255 and return is +/-32K||
 ||$RANGE(a,b,c)||return b < a < c ||
 ||$STAND(x)||return an array of positions related to stand  ||
 ||$ZEROS(x)||return an array of zeros  ||
