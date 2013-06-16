@@ -9,7 +9,7 @@ Values will be +/- 32768
 = Details =
 
 {{{
-$SIN(X) - SIne of Angle X
+$SIN(X) - Sine of Angle X
 $COS(X) - Cosine of angle X
 }}}
 
