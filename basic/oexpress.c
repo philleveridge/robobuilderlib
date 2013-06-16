@@ -79,6 +79,8 @@ extern int *frame;
 
 fMatrix readmatrix(char *s);
 fMatrix newmatrix(int c, int r);
+fMatrix fadd2(fMatrix *A, fMatrix *B, char op);  
+int     fmatprint2(fMatrix *A);
 
 #define iswhite(c)   (c == ' ' || c == '\t')
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
@@ -278,47 +280,45 @@ int getOP(char *str)
 
 int get_token(int flg) 
 {
-	int ty=DELI;
 	tb=0;
-    while (iswhite(*e))     // space or tab
-    {
-        e++;
-    }
-
-    // check for end of expression
-    if (*e == '\0')
-    {
-        return DELI;
-    }
-
-    if (*e == '"')
-    {
-        char *p=tmpstr;
-	if (flg) return DELI;
-        e++;
-        while (*e != '"')
-    	{
-		*p++=*e++;
+	while (iswhite(*e))     // space or tab
+	{
+		e++;
 	}
-        e++;
-	*p='\0';
-	return STRNG;
-    }
 
-    if (*e == '[')
-    {
-        char *p=tmpstr;
-	if (flg) return DELI;
-        e++;
-        while (*e != ']')
-    	{
-		*p++=*e++;
+	// check for end of expression
+	if (*e == '\0')
+	{
+		return DELI;
 	}
-        e++;
-	*p='\0';
-	return MLIST;
-    }
 
+	if (*e == '"')
+	{
+		char *p=tmpstr;
+		if (flg) return DELI;
+		e++;
+		while (*e != '"')
+		{
+			*p++=*e++;
+		}
+		e++;
+		*p='\0';
+		return STRNG;
+	}
+
+	if (*e == '[')
+	{
+		char *p=tmpstr;
+		if (flg) return DELI;
+		e++;
+		while (*e != ']')
+		{
+			*p++=*e++;
+		}
+		e++;
+		*p='\0';
+		return MLIST;
+	}
 
 	if (isnumdot(*e) || (*e=='-' && isnumdot(*(e+1))) )
 	{
@@ -384,8 +384,7 @@ int get_token(int flg)
 		else
 			return OPR;
 	}
-
-	return ty;
+	return DELI;
 }
 
 
@@ -623,7 +622,7 @@ void printtype(tOBJ r)
     }
     else if (r.type == FMAT2)
     {
-	fmatprint2(r.fmat2);	 
+	fmatprint2(&r.fmat2);	 
     }
     else    
     {               
@@ -709,6 +708,12 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	{
 		r.type=STR;
 		r.string = newstring(strcat(o1.string,o2.string));
+	}
+
+	if (o1.type==FMAT2 && o2.type==FMAT2 && op==PLUS)
+	{
+		r.type=FMAT2;	
+		r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '+') ;	
 	}
 	return r;
 }
