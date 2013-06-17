@@ -208,6 +208,8 @@ int oop=0;
 
 int push(tOBJ a)
 {
+if (dbg) printf ("PUSH %d\n", a.type);
+
 	if (sop<MAXSTACK-1)
 	{
 		stackobj[sop++] = a;
@@ -226,6 +228,9 @@ tOBJ pop()
 		e=stackobj[sop-1];
 		sop--;
 	}
+
+if (dbg) printf ("POP %d\n", e.type);
+
 	return e;
 }
 
@@ -465,12 +470,18 @@ tOBJ eval_oxpr(char *s)
 				push(r);
 				gnf=1;
 				break;
-			case MLIST:
+			case MLIST: 
+				{
+				int toop=oop;
+				oop=0;
 				r.type   = FMAT2;
 				r.fmat2 = readmatrix(tmpstr);
+				oop=toop;
 				push(r);	
-				gnf=1;		
+				gnf=1;	
+					
 				continue;
+				}
 			case OPR:
 				op = getOP(tokbuff);
 				if (oplist[op].nop==0 && oplist[op].func != NULL)
@@ -516,10 +527,11 @@ tOBJ eval_oxpr(char *s)
 
 	while (oop>0)
 	{
+		if (dbg) printf("Reduce\n");
 		reduce();
 	}
 
-	while (oop==0 && stacksize()>1)
+/*	while (oop==0 && stacksize()>1)
 	{
 		tOBJ a,b;
 		int op=getOP("+");
@@ -535,6 +547,7 @@ tOBJ eval_oxpr(char *s)
 		stackprint();
 		clear();
 	}
+*/
 	return pop();
 }
 
@@ -544,17 +557,25 @@ float tofloat(tOBJ v);
 i
 !LET MA=[1.0 2.0;3.0 4.0]
 !PRINT MA
+
+!let mx=[1.0 2.0;3.0 4.0]+[2.0 3.6;2.7 1.2]
+!print mx
 */
 
 fMatrix readmatrix(char *s)
 {
 	fMatrix m;
 	float ts[10000];
+	char *t;
+	char savebuff[MAXSTRING];
 	tOBJ v;
 	float f;
 	int i=0;
 	int j=0;
 	int c=0;
+
+	strncpy(savebuff, exprbuff, MAXSTRING);
+	t=e;
 
 	e=s;
 
@@ -579,6 +600,9 @@ fMatrix readmatrix(char *s)
 	//copy in ts[0-c];
 
 	for (i=0; i<c; i++) m.fstore[i]=ts[i];
+
+	strncpy(exprbuff, savebuff, MAXSTRING);
+	e=t;
 
 	return m;
 }
@@ -636,7 +660,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	tOBJ r;
 	r.type=EMPTY;
 
-	// print(o1); rprintfStr(" "); print(o2); rprintf(" %d\n", op); //debug info
+	if (dbg) {printf("math op : %d %d %d\n", o1.type, op, o2.type); } //debug info
 
 	if (o1.type==INTGR && o2.type==INTGR)
 	{
