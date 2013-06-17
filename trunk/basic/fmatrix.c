@@ -73,7 +73,7 @@ int delmatrix(fMatrix *m)
 	return 0;
 }
 
-fMatrix fmatcp(fMatrix *A)
+fMatrix fmatcp(fMatrix *A) // clone
 {
 	fMatrix n;
 	int i;
@@ -114,6 +114,11 @@ float fget2(fMatrix *M, int c, int r)
 		return 0.0;
 }
 
+float fset2(fMatrix *M, int c, int r, float v)
+{
+	if (c>=0 && r>=0 && c<M->w && c<M->h && M->fstore!=0)
+		M->fstore[c+r*M->w] =v;
+}
 
 fMatrix fadd2(fMatrix *A, fMatrix *B, char op)   // "@X = @A + @B"
 {
@@ -488,7 +493,7 @@ T(A) = 1 4
 *******************************/
 
 
-int ftranspose(char ln1, char lnx)   // @A^T"
+int ftranspose(char ln1, char lnx)  
 {
 	int w=fgetw(ln1);
 	int h=fgeth(ln1);
