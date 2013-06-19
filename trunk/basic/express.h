@@ -48,7 +48,9 @@ typedef struct fmat {
 
 typedef struct object {
         int   type;
-        union { int	q;
+	unsigned char cnt;
+        union { 
+		int	q;
 		float   floatpoint; 
                 int     number; 
                 char    *string;

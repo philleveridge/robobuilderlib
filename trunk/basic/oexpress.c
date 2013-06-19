@@ -81,6 +81,7 @@ fMatrix readmatrix(char *s);
 fMatrix newmatrix(int c, int r);
 fMatrix fadd2(fMatrix *A, fMatrix *B, char op);  
 int     fmatprint2(fMatrix *A);
+fMatrix fmultiply2(fMatrix *A,fMatrix *B)  ; 
 
 #define iswhite(c)   (c == ' ' || c == '\t')
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
@@ -137,6 +138,7 @@ void opsd ();
 void omax ();
 void omat ();
 void oprint ();
+void otrn ();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -170,6 +172,7 @@ tOP oplist[] = {
 	{"ACCY", 40, NA,    0, oacy},  //const
 	{"ACCZ", 40, NA,    0, oacz},  //const
 	{"ABS",  40, NA,    1, oabs},  //function single arg
+	{"TRN",  40, NA,    1, otrn},  //function single arg
 	{"RND",  40, NA,    0, ornd},  //in-const
 	{"MAX",  40, NA,    2, omax},   //function two args
 	{"CELL", 40, NA,    3, omat},   //function two args
@@ -205,6 +208,16 @@ int sop=0;
 
 unsigned char stackop[MAXSTACK];
 int oop=0;
+
+
+int freeobj(tOBJ *b)
+{
+	if (b->type==FMAT2)
+	{
+		if (b->cnt==0) delmatrix(&b->fmat2);
+	}
+	return 0;
+}
 
 int push(tOBJ a)
 {
@@ -395,7 +408,7 @@ int get_token(int flg)
 
 void reduce()
 {
-	tOBJ a,b;
+	tOBJ a,b, c;
 	int i;
 
 	if (oop<=0)
@@ -407,8 +420,10 @@ void reduce()
 	{
 		b = pop();
 		a = pop();
-		a = omath(a, b, oplist[i].type);
-		push(a);
+		c = omath(a, b, oplist[i].type);
+		push(c);
+		freeobj(&a);
+		freeobj(&b);
 	}
 	
 	if (oplist[i].nop==1 && oplist[i].func == NULL)
@@ -476,6 +491,7 @@ tOBJ eval_oxpr(char *s)
 				oop=0;
 				r.type   = FMAT2;
 				r.fmat2 = readmatrix(tmpstr);
+				r.cnt=0;
 				oop=toop;
 				push(r);	
 				gnf=1;	
@@ -555,11 +571,21 @@ float tofloat(tOBJ v);
 
 /*
 i
-!LET MA=[1.0 2.0;3.0 4.0]
-!PRINT MA
+!LET MC=[2.0 3.6;2.7 1.2]
 
 !let mx=[1.0 2.0;3.0 4.0]+[2.0 3.6;2.7 1.2]
 !print mx
+
+!let ms=mx+mc
+!print ms
+
+!print [1.0 2.0;3.0 4.0]*[2.0 3.6;2.7 1.2]
+
+!print trn([1.0 2.0 3.0 4.0])
+!print trn([1.0 2.0;3.0 4.0])
+
+!PRINT [1.0 2.0;3.0 4.0]*[1.0 2.0;3.0; 4.0]
+!PRINT [1.0 2.0;3.0 4.0]*[1.0 2.0;3.0 4.0]
 */
 
 fMatrix readmatrix(char *s)
@@ -579,7 +605,7 @@ fMatrix readmatrix(char *s)
 
 	e=s;
 
-	printf("LIST=%s\n", e);
+	if (dbg) printf("LIST=%s\n", e);
 
 	while (*e != 0)
 	{
@@ -591,6 +617,13 @@ fMatrix readmatrix(char *s)
 		if (*e==';') { j++; i=0; e++; } else {i++;}
 
 		c++;
+	}
+
+	if (c != i*(j+1))
+	{
+		printf ("Bad matrix defintion ?\n");
+		m.w=0;m.h=0;m.fstore=0;
+		return m;
 	}
 
 	//create matrix
@@ -739,6 +772,17 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		r.type=FMAT2;	
 		r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '+') ;	
 	}
+
+	if (o1.type==FMAT2 && o2.type==FMAT2 && op==MULT)
+	{
+		r.type=FMAT2;	
+		r.fmat2 = fmultiply2(&o1.fmat2,&o2.fmat2) ;	
+		if (r.fmat2.w*r.fmat2.h == 0)
+		{
+			r.type=EMPTY;
+		}
+	}
+
 	return r;
 }
 
@@ -807,10 +851,13 @@ int set(char *name, tOBJ r)
 		return 1;
 	}
 
+	if (r.type==FMAT2) r.cnt++;
+
 	while (n<nov)
 	{
 		if (strcmp(p,name)==0)
 		{
+			freeobj(&varobj[n]);
 			varobj[n]=r;
 			return 1;
 		}
@@ -820,6 +867,7 @@ int set(char *name, tOBJ r)
 	if (nov<50)
 	{
 		varobj[nov++]=r;
+
 		strcpy(p,name);
 		p=p+strlen(p)+1;
 		*p='\0';
@@ -829,6 +877,23 @@ int set(char *name, tOBJ r)
 		return -1;
 }
 
+fMatrix ftranspose2(fMatrix *A)  ;
+
+void otrn()
+{
+	tOBJ r,a;
+	r.type=FLOAT;
+	r.floatpoint=0.0;
+	a=pop();
+	if (a.type==FMAT2)
+	{
+		r.type = FMAT2;
+		r.fmat2 = ftranspose2(&a.fmat2); 
+	}
+
+	push(r);
+	return ;
+}
 
 void osin()
 {
