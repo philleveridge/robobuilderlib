@@ -82,6 +82,8 @@ fMatrix newmatrix(int c, int r);
 fMatrix fadd2(fMatrix *A, fMatrix *B, char op);  
 int     fmatprint2(fMatrix *A);
 fMatrix fmultiply2(fMatrix *A,fMatrix *B)  ; 
+float   fget2(fMatrix *M, int c, int r);
+float   fset2(fMatrix *M, int c, int r, float v);
 
 #define iswhite(c)   (c == ' ' || c == '\t')
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
@@ -1010,10 +1012,16 @@ void osig()
 	return ;
 }
 /*
-> !MAT DEF A=1;3
-> !MAT LET A=1.0;2.0;3.0
-> !PRINT CELL("A",0,1)
+!MAT DEF A=1;3
+!MAT LET A=1.0;2.0;3.0
+!PRINT CELL("A",0,1)
 2.000000
+
+!LET MA=[1.0 2.0;3.0 4.0]
+!print cell(ma,1,1)
+
+!PRINT DSIG(MA)
+
 */
 void omat() 
 {
@@ -1029,6 +1037,14 @@ void omat()
 	{
 		r.floatpoint = fget(m.string[0],col,row);
 	}
+
+	if (m.type==FMAT2) 
+	{
+		//
+		printf ("cell=%d %d\n", col, row);
+		r.floatpoint = fget2(&m.fmat,col,row);
+	}
+
 	push(r);
 	return ;
 }
@@ -1045,6 +1061,23 @@ void odsig()
 	{
 		r.floatpoint=a.floatpoint*(1-a.floatpoint);
 	}
+
+	if (a.type==FMAT2)
+	{
+		r.type=FMAT2;
+		// create new matrix
+		// tbd
+		for (int i=0; i<a.fmat2.h; i++)
+		{
+			for (int j=0; j<a.fmat2.w; j++)
+			{
+				float f = fget2(&(a.fmat2),j,i); 
+				printf ("%d %d %f %f\n", j, i, f, f*(1-f)); 
+				//set here
+			}
+		}			
+	}
+
 	push(r);
 	return ;
 }
