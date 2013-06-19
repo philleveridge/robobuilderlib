@@ -47,7 +47,7 @@ fMatrix newmatrix(int c, int r)
 {
 	fMatrix n;
 
-	printf ("New Matrix\n");
+	if (dbg) printf ("New Matrix %d,%d\n",c,r);
 	n.h=r;
 	n.w=c;
 	n.fstore = 0;
@@ -66,9 +66,13 @@ fMatrix newmatrix(int c, int r)
 
 int delmatrix(fMatrix *m)
 {
-	printf ("Del Matrix\n");
+	if (dbg) printf ("Del Matrix [%d,%d]\n", m->w, m->h);
+
+	if (m->h<=0 || m->w<=0 || m->fstore==0)
+		return 0;
+
 	m->h=0;
-	m->w=0;
+	m->w=0;	
 	free(m->fstore);
 	return 0;
 }
@@ -150,6 +154,71 @@ fMatrix fadd2(fMatrix *A, fMatrix *B, char op)   // "@X = @A + @B"
 	}
 	return R;
 }
+
+fMatrix ftranspose2(fMatrix *A)  
+{
+	int w=A->w;
+	int h=A->h;
+	int mx,my;
+	fMatrix R;
+
+	if (dbg) printf ("transpose %c,%c\n",w,h);
+
+	R = newmatrix(h, w);
+
+	for (my=0; my<h; my++)
+	{
+		for (mx=0; mx<w; mx++)
+		{
+			R.fstore[mx*h+my] = A->fstore[mx+my*w];
+		}
+	}
+	return R;
+}
+
+
+fMatrix fmultiply2(fMatrix *A,fMatrix *B)   
+{
+	int m,rx,ry, ha,wa,hb,wb;
+	fMatrix R; 
+
+	wa=A->w;
+	ha=A->h;
+	wb=B->w;
+	hb=B->h;
+
+	if (wa != hb) 
+	{
+		printf ("Bad Matrix size (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
+		R.w=0; R.h=0; R.fstore=0;
+		return R; //bad array size
+	}
+
+	R = newmatrix(wb, ha);
+
+	for (ry=0; ry<ha; ry++)
+	{
+		for (rx=0; rx<wb; rx++)
+		{
+			R.fstore[rx+ry*wb] = 0.0f;
+			for (m=0; m<hb; m++)
+			{
+				//tp[rx+ry*wb] += fget(ln1,m,ry) * fget(ln2,rx,m);  
+				R.fstore[rx+ry*wb] += A->fstore[m+ry*wa] * B->fstore[rx+m*wb];
+			}
+		}
+	}
+
+	for (ry=0; ry<ha; ry++)
+	{
+		for (rx=0; rx<wb; rx++)
+		{
+			//fset(lnx,rx, ry, tp[rx*ha+ry]);	
+		}
+	}
+	return R;
+}
+
 
 
 
