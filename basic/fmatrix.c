@@ -60,6 +60,10 @@ fMatrix newmatrix(int c, int r)
 	{
 		printf ("out of space %d (%d)\n",fs,MATSIZE);
 	}
+	else
+	{
+		for (int i=0; i<r*c; i++) n.fstore[i]=0.0;
+	}
 
 	return n;
 }
@@ -90,6 +94,27 @@ fMatrix fmatcp(fMatrix *A) // clone
 
   	for (i=0; i<h*w; i++)
 		n.fstore[i]=A->fstore[i];
+
+	return n;
+}
+
+fMatrix fmatrshp(fMatrix *A, int c, int r) //clone &  resize
+{
+	fMatrix n;
+	int i, j;
+	int w=A->w;
+	int h=A->h;
+
+	n = newmatrix(c, r);
+
+  	for (i=0; i<r; i++)
+		for (j=0; j<c; j++)
+		{
+			if (i<h && j<w)
+				n.fstore[j+i*c]=A->fstore[j+i*w];
+			else
+				n.fstore[j+i*c]=0.0;
+		}
 
 	return n;
 }
@@ -130,7 +155,7 @@ float fset2(fMatrix *M, int c, int r, float v)
 		M->fstore[c+r*M->w] =v;
 }
 
-fMatrix fadd2(fMatrix *A, fMatrix *B, char op)   // "@X = @A + @B"
+fMatrix fadd2(fMatrix *A, fMatrix *B, char op)  
 {
 	int rx,ry, ha,wa,wb,hb;
 
@@ -224,6 +249,80 @@ fMatrix fmultiply2(fMatrix *A,fMatrix *B)
 	}
 	return R;
 }
+
+fMatrix freplicate2(fMatrix *A, int m, int n)
+{
+	fMatrix R;
+ 	int i,j,x,y;
+	int w=A->w;
+	int h=A->h;
+	int wx=w*m;
+	int hx=h*n;
+
+	if (dbg) printf ("rep [%d,%d]\n", m,n);
+
+	R = newmatrix(wx, hx);
+
+	float *p =A->fstore;
+	float *pt=R.fstore;
+
+	for (j=0;j<h;j++)
+		for (i=0;i<w;i++)
+			for (x=0;x<m;x++)
+				for (y=0;y<n;y++) 
+				{
+					pt[i+j*wx+y*wx+x*w] = p[i+j*w];
+				}
+	return R;
+}
+
+
+fMatrix fmatsum2(fMatrix *A, int mode)   
+{	
+	fMatrix R;
+	int w=A->w;
+	int h=A->h;
+	int mx,my;
+	float p=0.0;
+	float t=0.0;
+
+
+
+	if (mode==1 || mode==3)
+	{
+		R = newmatrix(1, h);  
+
+		for (my=0;my<h; my++)
+		{
+			p=0.0;
+			for (mx=0;mx<w; mx++)
+			{
+				t = fget2(A, mx,my);
+				if (mode==2) t=t*t;
+				p += t;
+			}				
+			fset2(&R,0,my,p);
+		}
+	}
+	else if (mode==2 || mode==4)
+	{
+		R = newmatrix(w, 1);
+
+		for (mx=0;mx<w; mx++)
+		{
+			p=0.0;
+			for (my=0;my<h; my++)
+			{
+				t = fget2(A, mx,my);
+				if (mode==4) t=t*t;
+				p += t;
+			}				
+			fset2(&R,mx,0,p);
+		}
+	}
+	return R;
+}
+
 
 
 

@@ -136,6 +136,13 @@ void omax ();
 void omat ();
 void oprint ();
 void otrn ();
+void oapply ();
+void orshp ();
+void orep ();
+void ozero ();
+void oeye ();
+void ovsum ();
+void ohsum ();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -169,10 +176,16 @@ tOP oplist[] = {
 	{"ACCY", 40, NA,    0, oacy},  //const
 	{"ACCZ", 40, NA,    0, oacz},  //const
 	{"ABS",  40, NA,    1, oabs},  //function single arg
-	{"TRN",  40, NA,    1, otrn},  //function single arg
+	{"TRN",  40, NA,    1, otrn},  //function single arg    <fMatrix>
 	{"RND",  40, NA,    0, ornd},  //in-const
 	{"MAX",  40, NA,    2, omax},   //function two args
-	{"CELL", 40, NA,    3, omat},   //function two args
+	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
+	{"RSHP", 40, NA,    3, orshp},   //function three args  <fMatrix, int, int>
+	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
+	{"ZERO", 40, NA,    2, ozero},   //function two args  <fint, int>
+	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
+	{"HSUM",  40, NA,   1, ohsum},   //function two args   <fMatrix>
+	{"VSUM",  40, NA,   1, ovsum},   //function two args   <fMatrix>
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -1015,15 +1028,7 @@ void osqrt()
 	return ;
 }
 
-void osig()
-{
-	//binary signmoid function
-	tOBJ r;
-	r.type=FLOAT;
-	r.floatpoint=1/(1+exp(-tofloat(pop())));
-	push(r);
-	return ;
-}
+
 /*
 !MAT DEF A=1;3
 !MAT LET A=1.0;2.0;3.0
@@ -1034,6 +1039,8 @@ void osig()
 !print cell(ma,1,1)
 
 !PRINT DSIG(MA)
+
+!print apply(ma, "expr")
 
 */
 void omat() 
@@ -1056,6 +1063,71 @@ void omat()
 		r.floatpoint = fget2(&m.fmat,col,row);
 	}
 
+	push(r);
+	return ;
+}
+
+void osig()
+{
+	//binary signmoid function
+	tOBJ r, a;
+
+	a=pop();
+
+	if (a.type==FMAT2)
+	{
+		r.type=FMAT2;
+		// create new matrix
+		r.fmat2=fmatcp(&a.fmat2);
+		for (int i=0; i<a.fmat2.h*a.fmat2.w; i++)
+		{
+			float f= a.fmat2.fstore[i];
+			r.fmat2.fstore[i] =1/(1+exp(-f));
+		}			
+	}
+	else
+	{
+		r.type=FLOAT;
+		r.floatpoint=1/(1+exp(-tofloat(a)));
+	}
+
+	push(r);
+
+	return ;
+}
+
+fMatrix fmatsum2(fMatrix *A, int mode) ;
+ 
+void ohsum()
+{
+	//binary signmoid function
+	tOBJ r, a;
+	r.type=EMPTY;
+	a=pop();
+
+	if (a.type==FMAT2)
+	{
+		r.type=FMAT2;
+		// create new matrix
+		r.fmat2=fmatsum2(&a.fmat2, 1);	
+	}
+	push(r);
+	return ;
+}
+
+void ovsum()
+{
+	//binary signmoid function
+	tOBJ r, a;
+	r.type=EMPTY;
+	a=pop();
+
+	if (a.type==FMAT2)
+	{
+		r.type=FMAT2;
+		// create new matrix
+		r.fmat2=fmatsum2(&a.fmat2, 2);	
+	}
 	push(r);
 	return ;
 }
@@ -1087,6 +1159,94 @@ void odsig()
 
 	push(r);
 	return ;
+}
+
+void oapply()
+{
+	tOBJ r,a,b;
+	r.type=EMPTY;
+	a=pop();
+	b=pop();
+
+	push(r);
+	return ;
+}
+
+fMatrix fmatrshp(fMatrix *A, int c, int r) ;
+
+void orshp()
+{	// RSHP(M,x,y)
+	tOBJ r,m;
+	int row,col;
+	r.type=EMPTY;
+
+	row=toint(pop());
+	col=toint(pop());
+
+	m=pop();
+	if (m.type==FMAT2)
+	{
+		r.type=FMAT2;
+		r.fmat2 = fmatrshp(&m.fmat2, col,row);
+	}
+	push(r);
+	return ;
+}
+
+
+fMatrix freplicate2(fMatrix *A, int m, int n);
+
+void orep ()
+{	// REP(M,x,y)
+	tOBJ r,m;
+	int row,col;
+	r.type=EMPTY;
+
+	row=toint(pop());
+	col=toint(pop());
+
+	m=pop();
+	if (m.type==FMAT2)
+	{
+		r.type=FMAT2;
+		r.fmat2 = freplicate2(&m.fmat2, col,row);
+	}
+	push(r);
+}
+
+
+void ozero ()
+{
+	tOBJ r;
+	int row,col;
+	r.type=EMPTY;
+
+	row=toint(pop());
+	col=toint(pop());
+
+	r.type=FMAT2;
+	r.fmat2 = newmatrix(col, row);
+	push(r);
+}
+
+void oeye ()
+{
+	tOBJ r;
+	int row,col;
+	r.type=EMPTY;
+
+	row=toint(pop());
+	col=toint(pop());
+
+	r.type=FMAT2;
+	r.fmat2 = newmatrix(col, row);
+		
+	for (int i=0; i<col; i++)
+	{
+		if (i<row) 
+			r.fmat2.fstore[i+i*col] = 1.0;
+	}
+	push(r);
 }
 
 void opsd()

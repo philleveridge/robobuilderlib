@@ -240,6 +240,12 @@ unsigned char eval_expr(char **str, long *res)
 			continue;
 		}
 
+		if (c>='A' && c<='Z' && **str>='A' && **str<='Z') // 
+		{
+			c='$';
+			(*str)--;
+		}
+
 		if (c>='A' && c<='Z' && **str=='[')
 		{
 			c='@';
@@ -431,6 +437,15 @@ unsigned char eval_expr(char **str, long *res)
 				n1=0;
 				sgn=1;
 				tmp=0;
+
+				if (**str=='F' && *(*str+1) =='N')
+				{
+					// user defined function
+					// DEF FNA(x,y) = <expr>
+					// TBD
+					return -1;
+ 				}
+
 				for (i=0; i<NOSPECS; i++)
 				{
 					if (!strncmp_P(*str, specials[i], strlen_P(specials[i])))
@@ -447,7 +462,7 @@ unsigned char eval_expr(char **str, long *res)
 					i == sZEROS || i == sABS   || i == sCOS  || i == sCVB2I ||
 					i == sSIN   || i == sNORM  || i == sSUM  || i == sSERVO ||
 					i == sROM   || i == sMIN   || i == sMAX  || i == sIMAX  ||
-					i == sGREY  || i == sTURTLE|| i== sSHUF  || i == sREV   ||
+					i == sGREY  || i == sTURTLE|| i == sSHUF  || i == sREV   ||
 					i == sSORT  || i == sIMIN)
 				{
 					noargs=1;
