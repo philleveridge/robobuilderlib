@@ -112,7 +112,7 @@ int fmatprint2(fMatrix *A)
 
 float fget2(fMatrix *M, int c, int r)
 {
-	if (c>=0 && r>=0 && c<M->w && c<M->h && M->fstore!=0)
+	if (c>=0 && r>=0 && c<M->w && r<M->h && M->fstore!=0)
 	{
 		//printf ("ok- %d, %d %f\n", M->w, M->h, M->fstore[c+r*M->w]);
 		return  M->fstore[c+r*(M->w)];
@@ -126,7 +126,7 @@ float fget2(fMatrix *M, int c, int r)
 
 float fset2(fMatrix *M, int c, int r, float v)
 {
-	if (c>=0 && r>=0 && c<M->w && c<M->h && M->fstore!=0)
+	if (c>=0 && r>=0 && c<M->w && r<M->h && M->fstore!=0)
 		M->fstore[c+r*M->w] =v;
 }
 

@@ -41,12 +41,6 @@ extern int   fimportf		(char m, char m2, float rd);
 extern int   fmatnorm		(char ln1);
 extern int   fmatcopy		(char ma, char mb);
 
-//matrix.c matrix fuctions 
-extern void matzero	(char ln1, int a, int b, int c, int d) ;
-extern void transpose	(char ln1) ;  				// @A^T"
-extern void multiply	(char ln1, char ln2, char lnx);   	// "@X = @A * @B"//
-extern void convolve	(char ln1, char ln2);   		// "@A (.) @B"
-extern void histogram	(char ln1, int mode);   		// "@A 
 
 //cmap.c functions
 extern void showImage	(int n);
@@ -84,6 +78,7 @@ int     fmatprint2(fMatrix *A);
 fMatrix fmultiply2(fMatrix *A,fMatrix *B)  ; 
 float   fget2(fMatrix *M, int c, int r);
 float   fset2(fMatrix *M, int c, int r, float v);
+fMatrix fmatcp(fMatrix *A); // clone
 
 #define iswhite(c)   (c == ' ' || c == '\t')
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
@@ -317,7 +312,7 @@ int get_token(int flg)
 		char *p=tmpstr;
 		if (flg) return DELI;
 		e++;
-		while (*e != '"')
+		while (*e != '"' && *e !='\0')
 		{
 			*p++=*e++;
 		}
@@ -331,7 +326,7 @@ int get_token(int flg)
 		char *p=tmpstr;
 		if (flg) return DELI;
 		e++;
-		while (*e != ']')
+		while (*e != ']' && *e !='\0')
 		{
 			*p++=*e++;
 		}
@@ -430,7 +425,7 @@ void reduce()
 	
 	if (oplist[i].nop==1 && oplist[i].func == NULL)
 	{
-		//
+		return;
 	}
 
 	if (oplist[i].func != NULL)
@@ -438,6 +433,7 @@ void reduce()
 		if(oplist[i].nop>stacksize())
 		{
 			rprintf("Insuffcient parameters\n");
+			stackprint();
 		}
 		else
 			(*oplist[i].func)();
@@ -497,11 +493,11 @@ tOBJ eval_oxpr(char *s)
 				oop=toop;
 				push(r);	
 				gnf=1;	
-					
-				continue;
+				break;	
 				}
 			case OPR:
 				op = getOP(tokbuff);
+
 				if (oplist[op].nop==0 && oplist[op].func != NULL)
 				{
 					(*oplist[op].func)();
@@ -513,10 +509,10 @@ tOBJ eval_oxpr(char *s)
 					int i=stackop[oop-1];
 					while (oplist[i].type != OBR && oplist[i].type != COMMA)
 					{
-						//stackprint();
 						reduce();
 						i=stackop[oop-1];
 					}
+					gnf=0;
 					continue;
 				}
 				else
@@ -545,11 +541,11 @@ tOBJ eval_oxpr(char *s)
 
 	while (oop>0)
 	{
-		if (dbg) printf("Reduce\n");
+		if (dbg) printf("Reduce %d \n",oop);
 		reduce();
 	}
 
-/*	while (oop==0 && stacksize()>1)
+	while (oop==0 && stacksize()>1)
 	{
 		tOBJ a,b;
 		int op=getOP("+");
@@ -565,7 +561,6 @@ tOBJ eval_oxpr(char *s)
 		stackprint();
 		clear();
 	}
-*/
 	return pop();
 }
 
@@ -588,6 +583,8 @@ i
 
 !PRINT [1.0 2.0;3.0 4.0]*[1.0 2.0;3.0; 4.0]
 !PRINT [1.0 2.0;3.0 4.0]*[1.0 2.0;3.0 4.0]
+
+!PRINT [1.0 2.0;3.0 4.0]*0.2
 */
 
 fMatrix readmatrix(char *s)
@@ -773,6 +770,22 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	{
 		r.type=FMAT2;	
 		r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '+') ;	
+	}
+
+	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==PLUS)
+	{
+		r.type=FMAT2;	
+		r.fmat2 = fmatcp(&o1.fmat2);
+		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
+			r.fmat2.fstore[i] += tofloat(o2);	
+	}
+
+	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==MULT)
+	{
+		r.type=FMAT2;	
+		r.fmat2 = fmatcp(&o1.fmat2);
+		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
+			r.fmat2.fstore[i] = r.fmat2.fstore[i] * tofloat(o2);	
 	}
 
 	if (o1.type==FMAT2 && o2.type==FMAT2 && op==MULT)
@@ -1040,8 +1053,6 @@ void omat()
 
 	if (m.type==FMAT2) 
 	{
-		//
-		printf ("cell=%d %d\n", col, row);
 		r.floatpoint = fget2(&m.fmat,col,row);
 	}
 
@@ -1066,15 +1077,11 @@ void odsig()
 	{
 		r.type=FMAT2;
 		// create new matrix
-		// tbd
-		for (int i=0; i<a.fmat2.h; i++)
+		r.fmat2=fmatcp(&a.fmat2);
+		for (int i=0; i<a.fmat2.h*a.fmat2.w; i++)
 		{
-			for (int j=0; j<a.fmat2.w; j++)
-			{
-				float f = fget2(&(a.fmat2),j,i); 
-				printf ("%d %d %f %f\n", j, i, f, f*(1-f)); 
-				//set here
-			}
+			float f= a.fmat2.fstore[i];
+			r.fmat2.fstore[i] = f*(1-f);
 		}			
 	}
 

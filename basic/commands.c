@@ -497,7 +497,7 @@ int cmd_list(line_t l)
 				setvar(*p-'A',  eswap( getvar(*p-'A'),--i));
 				p++;
 			}
-			return;
+			return 0;
 		}
 		//stack un-assign
 		if (l.text[0]=='#')
@@ -509,7 +509,7 @@ int cmd_list(line_t l)
 				setvar(*p-'A',epop());
 				p--;
 			}
-			return;
+			return 0;
 		}
 		//stack values
 		if (l.text[0]=='^')
@@ -525,7 +525,7 @@ int cmd_list(line_t l)
 				if (*p!=',') break;
 				p++;
 			}
-			return;
+			return 0;
 		}
 
 		//new lists
@@ -939,7 +939,7 @@ int cmd_delsel(line_t ln)
 	{
 		p++;
 		an=*p;
-		if (an != '!' && ( an<'A' || an>'Z')  || *(p+1) != ',')
+		if ((an != '!') && ( an<'A' || an>'Z')  || (*(p+1) != ','))
 		{
 			BasicErr=3; return 0;
 		}

@@ -20,10 +20,6 @@
 #include "functions.h"
 #include "lists.h"
 
-extern int dbg;
-extern int speed;
-extern int BasicErr;
-extern BYTE cpos[];  // for motor-neuron support
 
 int fsimple_network(int noi, int noo, int nl1, int nl2, int nl3, int flg)
 {
