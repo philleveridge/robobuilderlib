@@ -54,8 +54,6 @@ const  prog_char  specials[NOSPECS][7] = {
 #endif
 };
 
-
-extern void readtext(int ln, unsigned char *b);
 extern char *strchr(const char *, char);
 
 char arrayname;
@@ -144,6 +142,7 @@ long eswap(long n, int i)
 	{
 		rprintfProgStr(PSTR("eval stack error\n"));
 		op=0;sp=0;
+		return (long)0;
 	}
 }
 
@@ -512,6 +511,7 @@ unsigned char eval_expr(char **str, long *res)
 		default:
 			done=1;
 			(*str)--;
+			break;
 		}
 	}
 

@@ -7,13 +7,13 @@ enum {STRING, NUMBER, ARRAY, ERROR, CONDITION } ;
 #define MAX_DEPTH  500
 #endif
 
-#ifdef LINUX
+#ifdef LINUX | IMAGE
 #define MAX_DEPTH  500
 #endif
 
-#ifdef IMAGE
-#define MAX_DEPTH  500
-#endif
+//#ifdef IMAGE
+//#define MAX_DEPTH  500
+//#endif
 
 #ifdef AVR
 #define MAX_DEPTH  25

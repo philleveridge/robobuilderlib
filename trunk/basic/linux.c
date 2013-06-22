@@ -24,6 +24,15 @@ int imready=0;
 struct termio savetty;
 struct termio newtty;  /* terminal with changed mode */
 
+
+#ifdef ECLIPSE
+
+int uartGetByte() { return getchar(); }
+void sigcatch() {}
+void initIO() {}
+
+#else
+
 int uartGetByte() {
 	char buf[1];
     if (read(0, buf, 1)>0)
@@ -33,6 +42,7 @@ int uartGetByte() {
     }
     return -1;
 }
+
 
 
 /* interrupt handler on ctrl-C */
@@ -67,6 +77,8 @@ void initIO()
   oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
   fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
 }
+
+#endif
 
 //int  PP_mtype=4;
 
@@ -148,8 +160,8 @@ int Sqrt(int x)
 
 /* priotf  */
 
-void rprintfStrLen(char *p, int s, int l)	{int i; for (i=0; i<l; i++) putchar(*(p+i));}
-void rprintfCRLF()							{printf ("\n");}
+void rprintfStrLen(char *p, int s, int l)	{int i; for (i=0; i<l; i++) putchar(*(p+i));fflush(stdout);}
+void rprintfCRLF()							{printf ("\n");fflush(stdout);}
 void rprintfStr(char *z)					{printf ("%s", z); fflush(stdout);}
 void rprintfChar(char c)					{putchar (c); fflush(stdout);}
 
@@ -463,9 +475,11 @@ void main(int argc, char *argv[])
 	fclose(pid);
 #endif
 
+#ifndef ECLIPSE
+	printf ("initiate timer\n");
 	pthread_t pth;	// this is our thread identifier
-
 	pthread_create(&pth,NULL,monitor_proc,"TIMER0");
+#endif
 
 	initsocket(sf);
 	initIO();        // requires timer     
@@ -480,9 +494,11 @@ void main(int argc, char *argv[])
 	else
 		basic();
 
+
+#ifndef ECLIPSE
 	pthread_join(pth,NULL);
-	
 	sigcatch() ;
+#endif
 }
 
 

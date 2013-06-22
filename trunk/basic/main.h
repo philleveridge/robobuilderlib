@@ -1,6 +1,8 @@
 //==============================================================================
 // include file for main.c
 //==============================================================================
+#ifndef MAIN_H
+#define MAIN_H
 
 #include "avrlibtypes.h"
 
@@ -67,3 +69,5 @@ extern volatile BYTE	gTx0Cnt;					// UART0 transmit length
 extern volatile BYTE	gRx0Cnt;					// UART0 receive length
 extern volatile BYTE	gTx0BufIdx;					// UART0 transmit pointer
 extern volatile BYTE	gRx0Buf[RX0_BUF_SIZE];		// UART0 receive buffer
+
+#endif

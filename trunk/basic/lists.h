@@ -4,16 +4,16 @@
 
 #ifdef WIN32
 //Bigger for MATRIX processing support
-#define SCENESZ 10000   //8K
+#define SCENESZ 10000
 #define MAXLIST 26 
-#define LISTMEM 65536  //64K
+#define LISTMEM 65536
 #endif
 
 #ifdef IMAGE
 //Bigger for image processing support
-#define SCENESZ 10000   //8K
+#define SCENESZ 10000
 #define MAXLIST 26 
-#define LISTMEM 65536  //64K
+#define LISTMEM 65536
 #endif
 
 #ifdef AVR

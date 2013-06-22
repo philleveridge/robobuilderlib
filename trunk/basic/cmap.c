@@ -193,7 +193,7 @@ int add_color(char *s, int r, int g, int b, int min)
 		if (strcmp(s,color[i].name)==0)
 		{
 			printf ("Colour already exists - try Clr colors\n");
-			return;
+			return -1;
 		}
 	}
 
