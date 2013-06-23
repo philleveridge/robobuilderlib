@@ -19,29 +19,6 @@
 #include "functions.h"
 #include "lists.h"
 
-
-// new float matrices
-
-extern int   fmatrixcreate	(char m, int w, int h);
-extern float fget		(char m,int w,int h);
-extern int   fgetw		(char m);
-extern int   fgeth		(char m);
-extern int   fset		(char m,int w,int h, float v);
-extern int   fmatzero		(char m, int a, int b, int c, int d);
-extern int   fmatzerodiag	(char m) ;
-extern int   fmatprint		(char m);
-extern int   ftranspose		(char m, char lnx);
-extern int   fmultiply		(char m, char ln2, char lnx);
-extern int   fhistogram		(char m, int mode);
-extern int   fconvolve		(char m, char ln2, char lnx);
-extern int   fadd		(char m, char m2, char lnx, char op);
-extern int   fsize		(char m, int p);
-extern int   fimport		(char m, char m2);
-extern int   fimportf		(char m, char m2, float rd);
-extern int   fmatnorm		(char ln1);
-extern int   fmatcopy		(char ma, char mb);
-
-
 //cmap.c functions
 extern void showImage	(int n);
 extern void clear_colors();
@@ -55,9 +32,6 @@ extern int  loadJpg     (char* Name);
 extern void output_frame(int sz);
 
 
-// The new expression parser
-// work in progress
-//
 
 extern void sigcatch();
 extern int  matrixload(int n, char *s);
@@ -79,13 +53,24 @@ fMatrix fmultiply2(fMatrix *A,fMatrix *B)  ;
 float   fget2(fMatrix *M, int c, int r);
 float   fset2(fMatrix *M, int c, int r, float v);
 fMatrix fmatcp(fMatrix *A); // clone
+fMatrix ftranspose2(fMatrix *A)  ;
+fMatrix fmatrshp(fMatrix *A, int c, int r) ;
+fMatrix freplicate2(fMatrix *A, int m, int n);
+fMatrix fconvolve2(fMatrix *A, fMatrix *B)  ;
+fMatrix fimport2(char m2, int c, int r);
+fMatrix fmatsum2(fMatrix *A, int mode) ;
+
+// The new expression parser
+// work in progress
+//
+
 
 #define iswhite(c)   (c == ' ' || c == '\t')
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
 #define isnumber(c)  (c >= '0' && c <= '9')
 
 #define isdelim(c)  (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<'  || c == '>'  \
-                    || c == '^' || c == '(' || c == ')' || c == ',' || c == '='  || c == '$')
+                    || c == '^' || c == '(' || c == ')' || c == ',' || c == '='  || c == '$' || c=='@')
 
 #define isalpha(c)  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_')
 
@@ -161,6 +146,7 @@ tOP oplist[] = {
 	{"(",    50, OBR,   1, NULL},
 	{")",    50, CBR,   1, NULL},
 	{",",    50, COMMA, 1, NULL},
+	{"@",    20, PROD,  1, NULL},
 	{"AND",  8,  LAND,  2, NULL},
 	{"OR",   8,  LOR,   2, NULL},
 	{"SIN",  40, NA,    1, osin},  //function single arg
@@ -205,14 +191,21 @@ tOBJ print(tOBJ r);
 char strings[MAXSTRING], *estr=&strings[0];
 char *newstring(char *s)
 {
-	char *r=estr;
-	if (estr-&strings[0]>MAXSTRING-1)
-		return 0;
-	strcpy(estr, s);
-	estr=estr+strlen(s);
-	*estr++='\0';
+	char *r;
+	int n=strlen(s);
+	if (dbg) printf ("New String [%d]\n",n);
+	r=(char *)malloc(n*sizeof(char));
+	strcpy(r, s);
 	return r;
 }
+
+void delstring(char *s)
+{
+	if (dbg) printf ("Del String \n");
+	free(s);
+}
+
+
 
 /**********************************************************/
 /*  stack                                                 */
@@ -231,6 +224,12 @@ int freeobj(tOBJ *b)
 	{
 		if (b->cnt==0) delmatrix(&b->fmat2);
 	}
+
+	if (b->type==STRING)
+	{
+		if (b->cnt==0) delstring(&b->string);
+	}
+
 	return 0;
 }
 
@@ -392,7 +391,14 @@ int get_token(int flg)
 			tokbuff[tb++]=*e++;
 		}
 
-		tokbuff[tb++]=*e++;
+		if (*e== '.' && *(e+1)=='*')
+		{
+			tokbuff[tb++]='@';
+			e+=2;
+		}
+		else
+			tokbuff[tb++]=*e++;
+
 		tokbuff[tb]=0;
 
 		if (getOP(tokbuff)<0)
@@ -694,10 +700,6 @@ void printtype(tOBJ r)
     {
         rprintfStr("FUNCTION");   
     }
-    else if (r.type == FMAT)
-    {
-	fmatprint(r.fmat);	 
-    }
     else if (r.type == FMAT2)
     {
 	fmatprint2(&r.fmat2);	 
@@ -788,10 +790,13 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		r.string = newstring(strcat(o1.string,o2.string));
 	}
 
-	if (o1.type==FMAT2 && o2.type==FMAT2 && op==PLUS)
+	if (o1.type==FMAT2 && o2.type==FMAT2 && (op==PLUS || op==MINUS || op==DIVD || op==PROD))
 	{
 		r.type=FMAT2;	
-		r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '+') ;	
+		if (op==PLUS)  r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '+') ;
+		if (op==MINUS) r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '-') ;	
+		if (op==DIVD)  r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '/') ;	
+		if (op==PROD)  r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '*') ;		
 	}
 
 	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==PLUS)
@@ -912,24 +917,6 @@ int set(char *name, tOBJ r)
 	}
 	else
 		return -1;
-}
-
-fMatrix ftranspose2(fMatrix *A)  ;
-
-void otrn()
-{
-	tOBJ r,a;
-	r.type=FLOAT;
-	r.floatpoint=0.0;
-	a=pop();
-	if (a.type==FMAT2)
-	{
-		r.type = FMAT2;
-		r.fmat2 = ftranspose2(&a.fmat2); 
-	}
-
-	push(r);
-	return ;
 }
 
 void osin()
@@ -1062,10 +1049,6 @@ void omat()
 	row=toint(pop());
 	col=toint(pop());
 	m=pop();
-	if (m.type==STR) 
-	{
-		r.floatpoint = fget(m.string[0],col,row);
-	}
 
 	if (m.type==FMAT2) 
 	{
@@ -1105,7 +1088,6 @@ void osig()
 	return ;
 }
 
-fMatrix fmatsum2(fMatrix *A, int mode) ;
  
 void ohsum()
 {
@@ -1220,7 +1202,21 @@ void oapply()
 	return ;
 }
 
-fMatrix fmatrshp(fMatrix *A, int c, int r) ;
+void otrn()
+{
+	tOBJ r,a;
+	r.type=FLOAT;
+	r.floatpoint=0.0;
+	a=pop();
+	if (a.type==FMAT2)
+	{
+		r.type = FMAT2;
+		r.fmat2 = ftranspose2(&a.fmat2); 
+	}
+
+	push(r);
+	return ;
+}
 
 void orshp()
 {	// RSHP(M,x,y)
@@ -1241,8 +1237,6 @@ void orshp()
 	return ;
 }
 
-
-fMatrix freplicate2(fMatrix *A, int m, int n);
 
 void orep ()
 {	// REP(M,x,y)
@@ -1297,7 +1291,6 @@ void oeye ()
 	push(r);
 }
 
-fMatrix fconvolve2(fMatrix *A, fMatrix *B)  ;
 void oconv ()
 {
 	tOBJ r, a, b;
@@ -1314,8 +1307,6 @@ void oconv ()
 		
 	push(r);
 }
-
-fMatrix   fimport2(char m2, int c, int r);
 
 void oimp ()
 {
@@ -1385,20 +1376,6 @@ void ornd()
 	return;
 }
 
-void oprint()
-{
-	int i=stacksize();
-	while (i>0)
-	{
-		print(peek(--i));
-		rprintfStr(" ");
-	}
-	rprintfCRLF();
-	clear();
-	return;
-}
-
-
 void omax()
 {
 	tOBJ r,a;
@@ -1415,9 +1392,33 @@ void omax()
 		if (a.floatpoint>r.floatpoint) r=a;
 	}
 
+	if (a.type==FMAT2)
+	{
+		r.type=FLOAT;
+		r.floatpoint=a.fmat2.fstore[0];
+		for (int i=1; i<a.fmat2.h*a.fmat2.w; i++)
+			if (a.fmat2.fstore[i]>r.floatpoint) r.floatpoint= a.fmat2.fstore[i];
+	}
+
 	push(r);
 	return;
 }
+
+
+void oprint()
+{
+	int i=stacksize();
+	while (i>0)
+	{
+		print(peek(--i));
+		rprintfStr(" ");
+	}
+	rprintfCRLF();
+	clear();
+	return;
+}
+
+
 
 tOBJ print(tOBJ r)
 {
@@ -1512,117 +1513,6 @@ void brainf(char *s)
 
 static int  intf=1;
 
-void mexpress(char m)
-{
-	tOBJ v;
-	
-	int i=0, j=0;
-	int w=fsize(m,0);
-	int h=fsize(m,1);
-
-	if (*e == '@')
-	{
-		//!MAT LET A=@B
-		char im;
-		e++;
-		im=*e++;
-
-		fimport(m,im);
-		return;
-	}
-
-	if (*e >= 'A' && *e <='Z' && *(e+1)==';')
-	{
-		//!MAT LET A=B;1.0
-		char im=*e;
-		e+=2;
-		v=eval_oxpr(e);		
-		fimportf(m, im, tofloat(v));
-		return;
-	}
-
-	if (*e >= 'A' && *e <='Z')
-	{
-		//!MAT LET A=B+C
-		char op,mb;
-		char ma=*e++;
-
-		if (*e==0)
-		{
-			fmatcopy(ma, m);
-			return;
-		}
-
-		while (*e != 0)
-		{
-			op=*e++;
-
-			if (op == '^')
-			{
-				// transpose
-				ftranspose(ma,m);
-				ma=m;
-				continue;
-			}
-
-			if (get_str_token(0))
-			{
-				mb=tokbuff[0];
-
-				if (*e=='^')
-				{
-					ftranspose(mb,mb); //this overwrites
-					e++;
-				}
-				
-				if (op == '*')
-				{
-					// mult
-					fmultiply(ma,mb,m);
-				}
-				else
-				if (op == '+' || op == '-' || op  == '.' || op == '/')
-				{
-					if (op=='.') op='*';
-					fadd(ma,mb,m,op);
-				}
-				else
-				if (op == '#')
-				{
-					//convolve
-					fconvolve(ma, mb, m) ;
-				}
-				else
-				{
-					printf("? invalid MAT op %c\n", op);
-					return;
-				}
-				ma=m;
-			}
-		}
-		return;
-	}
-
-
-	while (*e != 0)
-	{
-		v=eval_oxpr(e);	
-		fset(m,i,j,tofloat(v));
-		if (++i == w)
-		{
-			i=0; j++;
-		}
-		if (j==h)
-			return;
-
-		if (*e != ';')
-		{
-			printf ("Incorrect args [%c] (%d,%d) %d ?\n",*e,i,j,h*w);
-			return;
-		}
-		e++;
-	}
-}
 
 void extend(char *x)
 {
@@ -1759,254 +1649,6 @@ void extend(char *x)
 			v=get("DFN");
 			matrixstore(val, v.string);
 		}
-
-		if (!strcmp(tokbuff,"DEF"))
-		{
-			// !MAT DEF A;1;2
-			char m; int w; int h;
-			if (*e != '\0')
-			{
-				if (get_str_token(0))
-				{					
-					m=tokbuff[0];
-					if (*e++ == '=')
-					{
-						v=eval_oxpr(e);	
-						w=v.number;
-						if (*e++ == ';')
-						{
-							v=eval_oxpr(e);	
-							h=v.number;
-							if (dbg) printf ("Create matrix '%c' %dx%d\n", m,w,h);
-							fmatrixcreate(m,w,h);
-							return;
-						}
-					}
-				}
-			}
-			printf ("MAT DEF - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
-
-		if (!strcmp(tokbuff,"PRIN"))
-		{
-			char m;
-			while (*e != '\0')
-			{
-				if (get_str_token(0))
-				{
-					m=tokbuff[0];
-					fmatprint(m);
-					if (*e == ';') e++;	
-				}
-				else
-				{
-					printf ("MAT PRINT - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-					return;
-				}
-			}
-			return;
-		}
-
-		if (!strcmp(tokbuff,"LET"))
-		{
-			//!MAT LET X=1.3,1.2 .....
-			char m;
-			if (*e != '\0')
-			{
-				if (get_str_token(0))
-				{					
-					m=tokbuff[0];
-
-					if (*e++ == '=')
-					{
-						mexpress(m);
-					}
-				}
-			}					
-		}
-
-		if (!strcmp(tokbuff,"APPL"))
-		{
-			//!MAT APPLY X=1.2*ME .....
-			char *t, m;
-			if (*e != '\0')
-			{
-				if (get_str_token(0))
-				{					
-					m=tokbuff[0];
-					if (*e++ == '=')
-					{
-						int i=0, j=0;
-						int w=fsize(m,0);
-						int h=fsize(m,1);
-						v.type=FLOAT;
-						t=e; 
-						for (i=0; i<w; i++)
-						{
-							for (j=0;j<h; j++)
-							{
-								v.floatpoint = fget(m,i,j);
-								set("ME",v);
-								v.floatpoint = (float)j;
-								set("MR",v);
-								v.floatpoint = (float)i;
-								set("MC",v);
-								e=t;
-								v=eval_oxpr(e);
-								fset(m,i,j,tofloat(v));
-							}
-						}
-					}
-				}
-			}					
-		}
-
-		if (!strcmp(tokbuff,"HIST"))
-		{
-			// !MAT HIST 1;A
-			
-			int m=1; char ma='A';
-			if (*e != '\0')
-			{
-				v=eval_oxpr(e);	
-				m=v.number;
-				if (*e++ == ';')
-				{				
-					if (get_str_token(0))
-					{
-						ma=tokbuff[0];
-						fhistogram(ma, m);
-						return;
-					}
-				}
-			}
-			printf ("MAT HIST - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
-
-		if (!strcmp(tokbuff,"SUM") || !strcmp(tokbuff,"SUM2")  )
-		{
-			// !MAT SUM X;A;1
-			
-			int m=1, f=0; char mx; char ma;
-
-			if (!strcmp(tokbuff,"SUM2")) f=2;
- 
-			if (*e != '\0')
-			{
-				if (get_str_token(0))
-				{
-					mx=tokbuff[0];
-				}
-				if (*e++ == ';')
-				{				
-					if (get_str_token(0))
-					{
-						ma=tokbuff[0];
-
-						if (*e++ == ';')
-						{	
-							v=eval_oxpr(e);	
-							m=v.number;
-							fmatsum(mx, ma, m+f)  ;
-							return;
-						}
-					}
-				}
-			}
-			printf ("MAT SUM - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
-
-		if (!strcmp(tokbuff,"NORM"))
-		{
-			// !MAT NORM A
-			char ma='A';
-			if (*e != '\0')
-			{			
-				if (get_str_token(0))
-				{
-					ma=tokbuff[0];
-					fmatnorm(ma);
-				}
-			}
-		}
-
-
-		if (!strcmp(tokbuff,"ZERO"))
-		{
-			// !MAT ZERO A;1;1;2;2 or !MAT ZERO A
-			
-			int a[4],i;
-			char ma='A';
-			if (*e != '\0')
-			{			
-				if (get_str_token(0))
-				{
-					ma=tokbuff[0];
- 					if (*e != ';')
-				        {
-				                //MAT ZERO A -> set diagnalo to zero
-				                fmatzerodiag(ma);
-				                return;
-				        }
-
-					for (i=0; i<4; i++)
-					{
-						if (i<3 && *e != ';')
-							return;
-						e++;
-						v=eval_oxpr(e);
-						a[i]=v.number;
-					}
-					fmatzero(ma,a[0],a[1],a[2],a[3]);
-					return;
-				}
-	
-			}
-			printf ("MAT ZERO - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
-
-		if (!strcmp(tokbuff,"REP"))
-		{
-			// !MAT REP B;A;1;1
-			
-			int m1,n1,i;
-			char mx='A',ma='A';
-			if (*e != '\0')
-			{			
-				if (get_str_token(0))
-				{
-					mx=tokbuff[0];	
-
-					if (*e++ != ';')
-				        {
-				                return;
-				        }
-					ma=tokbuff[0];	
-
-					if (*e++ != ';')
-				        {
-				                return;
-				        }
-						
-					v=eval_oxpr(e);
-					m1=v.number;
-
-					if (*e++ != ';')
-				        {
-				                return;
-				        }
-
-					v=eval_oxpr(e);
-					n1=v.number;
-					freplicate(mx, ma,  m1,  n1);
-
-					return;
-				}
-	
-			}
-			printf ("MAT ZERO - syntax error @ '%c'\n", *e=='\0'?'?':*e);
-		}
-		return;
 	}
 
 #ifdef IMAGE
