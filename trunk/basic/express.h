@@ -56,7 +56,6 @@ typedef struct object {
                 char    *string;
                 void    *cell;
                 void    *func;
-		char    fmat;
 		fMatrix fmat2;
                 };
 } tOBJ;
@@ -69,8 +68,8 @@ typedef struct cell {
 typedef tOBJ (*PFP)(tCELLp);
 
 enum  TOKTYP	{NUMI, NUMF, DELI, ALPHA, OPR, STRNG, MLIST};
-enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ, COMMA};
-enum  TYPE	{SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT, FMAT2};
+enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ, COMMA, PROD};
+enum  TYPE	{SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2};
 
 tOBJ eval_oxpr(char *s);
 
