@@ -139,6 +139,9 @@ tOP oplist[] = {
 	{"-",    10, MINUS, 2, NULL},
 	{"/",    20, DIVD,  2, NULL},
 	{"*",    20, MULT,  2, NULL},
+	{".*",   20, PROD,  2, NULL},
+	{"AND",  8,  LAND,  2, NULL},
+	{"OR",   8,  LOR,   2, NULL},
 	{"<",    5,  LT,    2, NULL},
 	{">",    5,  GT,    2, NULL},
 	{"=",    5,  EQL,   2, NULL},
@@ -146,9 +149,6 @@ tOP oplist[] = {
 	{"(",    50, OBR,   1, NULL},
 	{")",    50, CBR,   1, NULL},
 	{",",    50, COMMA, 1, NULL},
-	{"@",    20, PROD,  1, NULL},
-	{"AND",  8,  LAND,  2, NULL},
-	{"OR",   8,  LOR,   2, NULL},
 	{"SIN",  40, NA,    1, osin},  //function single arg
 	{"COS",  40, NA,    1, ocos},  //function single arg
 	{"TAN",  40, NA,    1, otan},  //function single arg
@@ -235,7 +235,7 @@ int freeobj(tOBJ *b)
 
 int push(tOBJ a)
 {
-if (dbg)  { printf ("PUSH %d\n", a.type); }
+	if (dbg)  { printf ("PUSH %d\n", a.type); }
 
 	if (sop<MAXSTACK-1)
 	{
@@ -256,7 +256,7 @@ tOBJ pop()
 		sop--;
 	}
 
-if (dbg) { printf ("POP %d\n", e.type);}
+	if (dbg) { printf ("POP %d\n", e.type);}
 
 	return e;
 }
@@ -352,6 +352,15 @@ int get_token(int flg)
 		return MLIST;
 	}
 
+	if (*e== '.' && *(e+1)=='*')
+	{		
+		tokbuff[tb++]='.';
+		tokbuff[tb++]='*';
+		tokbuff[tb]=0;
+		e+=2;
+		return OPR;
+	}
+
 	if (isnumdot(*e) || (*e=='-' && isnumdot(*(e+1))) )
 	{
 		int r=NUMI;
@@ -390,15 +399,7 @@ int get_token(int flg)
 		{
 			tokbuff[tb++]=*e++;
 		}
-
-		if (*e== '.' && *(e+1)=='*')
-		{
-			tokbuff[tb++]='@';
-			e+=2;
-		}
-		else
-			tokbuff[tb++]=*e++;
-
+		tokbuff[tb++]=*e++;
 		tokbuff[tb]=0;
 
 		if (getOP(tokbuff)<0)
@@ -1608,23 +1609,6 @@ void extend(char *x)
 	}
 
 	e=x;
-	if (get_str_token("PRIN")==1)
-	{
-		while (*e!='\0')
-		{
-			v=eval_oxpr(e);
-			print(v);
-			if (*e!=';') 
-			{
-				rprintfCRLF();
-			}
-			else
-				e++;
-		}
-		return;
-	}
-
-	e=x;
 	if (get_str_token("MAT")==1)
 	{
 		if (get_str_token("LOAD")==1)
@@ -1895,6 +1879,23 @@ void extend(char *x)
 		rprintfStr("No such option?\n");
 		return;
 	}
+
+	e=x;
+	if (get_str_token("PRIN")==1)
+	{
+		while (*e!='\0')
+		{
+			v=eval_oxpr(e);
+			print(v);
+			if (*e!=';') 
+			{
+				rprintfCRLF();
+			}
+			else
+				e++;
+		}
+		return;
+	}
 #endif
 
 #ifdef LINUX
@@ -1905,7 +1906,10 @@ void extend(char *x)
 	}
 #endif
 
-	rprintfStr("No match ?\n");
+	e=x;
+	v=eval_oxpr(e);
+	print(v);
+	rprintfCRLF();
 }
 
 void testeval()
