@@ -143,6 +143,8 @@ void ozero ();
 void oeye ();
 void ovsum ();
 void ohsum ();
+void oconv ();
+void oimp ();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -184,8 +186,11 @@ tOP oplist[] = {
 	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
 	{"ZERO", 40, NA,    2, ozero},   //function two args  <fint, int>
 	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
-	{"HSUM",  40, NA,   1, ohsum},   //function two args   <fMatrix>
-	{"VSUM",  40, NA,   1, ovsum},   //function two args   <fMatrix>
+	{"HSUM", 40, NA,   1, ohsum},   //function two args   <fMatrix>
+	{"VSUM", 40, NA,   1, ovsum},   //function two args   <fMatrix>
+	{"APPL", 40, NA,   2, oapply},   //function two args   <fMatrix>
+	{"CONV", 40, NA,   2, oconv},   //function two args   <fMatrix>
+	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -231,7 +236,7 @@ int freeobj(tOBJ *b)
 
 int push(tOBJ a)
 {
-if (dbg) printf ("PUSH %d\n", a.type);
+if (dbg)  { printf ("PUSH %d\n", a.type); }
 
 	if (sop<MAXSTACK-1)
 	{
@@ -252,7 +257,7 @@ tOBJ pop()
 		sop--;
 	}
 
-if (dbg) printf ("POP %d\n", e.type);
+if (dbg) { printf ("POP %d\n", e.type);}
 
 	return e;
 }
@@ -469,7 +474,7 @@ tOBJ eval_oxpr(char *s)
 	{
 		tk = get_token(gnf);
 
-		if (gnf==0 || (tk==OPR))
+		if (gnf==0 || (tk==OPR) || (tk==DELI))
 		{
 			switch (tk)
 			{
@@ -542,6 +547,7 @@ tOBJ eval_oxpr(char *s)
 				break;
 			case DELI:
 				lf=0;
+				gnf=0;
 				continue;
 
 			}
@@ -557,7 +563,7 @@ tOBJ eval_oxpr(char *s)
 		if (dbg) printf("Reduce %d \n",oop);
 		reduce();
 	}
-
+/*
 	while (oop==0 && stacksize()>1)
 	{
 		tOBJ a,b;
@@ -574,6 +580,7 @@ tOBJ eval_oxpr(char *s)
 		stackprint();
 		clear();
 	}
+*/
 	return pop();
 }
 
@@ -612,7 +619,9 @@ fMatrix readmatrix(char *s)
 	int j=0;
 	int c=0;
 
-	strncpy(savebuff, exprbuff, MAXSTRING);
+	int toop;
+
+	strncpy(savebuff, exprbuff, MAXSTRING); toop=oop;
 	t=e;
 
 	e=s;
@@ -646,7 +655,7 @@ fMatrix readmatrix(char *s)
 
 	for (i=0; i<c; i++) m.fstore[i]=ts[i];
 
-	strncpy(exprbuff, savebuff, MAXSTRING);
+	strncpy(exprbuff, savebuff, MAXSTRING); oop=toop;
 	e=t;
 
 	return m;
@@ -1060,7 +1069,7 @@ void omat()
 
 	if (m.type==FMAT2) 
 	{
-		r.floatpoint = fget2(&m.fmat,col,row);
+		r.floatpoint = fget2(&(m.fmat2),col,row);
 	}
 
 	push(r);
@@ -1163,10 +1172,49 @@ void odsig()
 
 void oapply()
 {
-	tOBJ r,a,b;
+	//apply (<matrix>, <string>)
+	tOBJ r,a,b, v;
+	int i=0, j=0, w, h;
+	char *expr;
+
 	r.type=EMPTY;
 	a=pop();
 	b=pop();
+
+	if (a.type !=STR && b.type != FMAT2)
+	{
+		return;
+	}
+
+	r.type=FMAT2;
+	// create new matrix
+	r.fmat2=fmatcp(&b.fmat2);
+
+	w=b.fmat2.w;
+	h=b.fmat2.h;
+
+	v.type=FLOAT;
+
+	expr = a.string;
+
+	if (dbg) printf ("Apply - %s\n", expr);
+	
+	for (i=0; i<w; i++)
+	{
+		for (j=0;j<h; j++)
+		{
+			v.floatpoint = fget2(&b.fmat2,i,j);
+			set("ME",v);
+			v.floatpoint = (float)j;
+			set("MR",v);
+			v.floatpoint = (float)i;
+			set("MC",v);
+			//e=t;
+			v=eval_oxpr(expr);
+			fset2(&r.fmat2,i,j,tofloat(v));
+		}
+	}
+
 
 	push(r);
 	return ;
@@ -1246,6 +1294,45 @@ void oeye ()
 		if (i<row) 
 			r.fmat2.fstore[i+i*col] = 1.0;
 	}
+	push(r);
+}
+
+fMatrix fconvolve2(fMatrix *A, fMatrix *B)  ;
+void oconv ()
+{
+	tOBJ r, a, b;
+
+	r.type=EMPTY;
+
+	b=pop(); a=pop();
+
+	if (a.type != FMAT2 && b.type!=FMAT2)
+		return;
+
+	r.type=FMAT2;
+	r.fmat2=fconvolve2(&a.fmat2,&b.fmat2) ;
+		
+	push(r);
+}
+
+fMatrix   fimport2(char m2, int c, int r);
+
+void oimp ()
+{
+	//IMP("A",2,2);
+
+	tOBJ r, a, b, c;
+
+	r.type=EMPTY;
+
+	c=pop(); b=pop(); a=pop();
+
+	if (a.type != STR)
+		return;
+
+	r.type=FMAT2;
+	r.fmat2=fimport2(*(a.string), toint(b), toint(c)) ;
+		
 	push(r);
 }
 
@@ -1559,12 +1646,61 @@ void extend(char *x)
 		{	
 			char var[5];
 			strncpy(var,tokbuff, 5);
-			if (get_opr_token(EQL)==1)
+			int tk = get_token(1);	
+			if (tk==OPR && oplist[getOP(tokbuff)].type==EQL)
 			{
 				v=eval_oxpr(e);
 				set(var,v);
 				return;
-			}	
+			}
+			if (tk==OPR && oplist[getOP(tokbuff)].type==OBR)
+			{
+				/*
+				!LET MX=[1 2 3]
+				!LET MX(2,0)=5
+				!PRINT MX
+				*/
+				int c,r;
+				float f;
+				tOBJ R;
+
+				char *t;
+				t=strchr(e,',');
+				if (t==NULL) return;
+				*t='\0';
+				t++;
+
+				v=eval_oxpr(e);	
+				c=toint(v);
+				e=t;
+				t=strchr(e,')');
+				if (t==NULL) return;
+				*t='\0';
+				t++;
+
+				//printf ("DBG e=%s\n",e);
+
+				v=eval_oxpr(e);	
+				r=toint(v);
+
+				e=t;
+				t=strchr(e,'=');
+				if (t==NULL) return;
+				*t='\0';
+				e=t+1;
+
+				//printf ("DBG e=%s\n",e);
+				v=eval_oxpr(e); 
+
+				f=tofloat(v);
+				R=get(var);
+				if (R.type == FMAT2)
+				{
+					if (dbg) printf ("DBG var=%s %d,%d, %f\n",var,c,r,f);
+					fset2(&R.fmat2,c,r,f);
+				}
+				return;
+			}
 		}
 	}
 

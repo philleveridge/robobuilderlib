@@ -324,7 +324,107 @@ fMatrix fmatsum2(fMatrix *A, int mode)
 }
 
 
+fMatrix fconvolve2(fMatrix *A, fMatrix *B)  
+{	
+	fMatrix R;
+	int w=A->w;
+	int h=A->h;
+	int mx,my;
 
+	float f;
+
+	int szB=(B->w)*(B->h);	
+
+	R = newmatrix(w, h);  
+
+	if (szB==9) // 3x3 kernel
+	{
+		for (my=0;my<h; my++)
+		{
+			for (mx=0;mx<w; mx++)
+			{
+				float p=0.0f;
+
+				p += fget2(A,mx-1,my-1)*fget2(B,0,0);
+				p += fget2(A,mx,my-1)  *fget2(B,1,0);
+				p += fget2(A,mx+1,my-1)*fget2(B,2,0);
+
+				p += fget2(A,mx-1,my)  *fget2(B,0,1);
+				p += fget2(A,mx,my)    *fget2(B,1,1);
+				p += fget2(A,mx+1,my)  *fget2(B,2,1);
+
+				p += fget2(A,mx-1,my+1)*fget2(B,0,2);
+				p += fget2(A,mx,my+1)  *fget2(B,1,2);
+				p += fget2(A,mx+1,my+1)*fget2(B,2,2);
+
+				fset2(&R,mx,my,abs((int)p));
+			}
+		}
+	}
+	
+	if (szB==2 && B->w==2 ) // 2x1 kernel
+	{
+		for (my=0;my<h; my++)
+		{
+			for (mx=0;mx<w; mx++)
+			{
+				fset2(&R,mx,my, abs(fget2(A,mx,my)*fget2(B,0,0) 
+					+ fget2(A,mx+1,my)*fget2(B,1,0)));
+			}
+		}
+	}
+
+	if (szB==2 && B->w==1 ) //  1x2 kernel
+	{
+		for (my=0;my<h; my++)
+		{
+			for (mx=0;mx<w; mx++)
+			{
+				fset2(&R,mx,my,abs(fget2(A,mx,my)*fget2(B,0,0) + fget2(A,mx,my+1)*fget2(B,0,1)));
+			}
+		}
+	}
+
+	if (szB==4) // 2x2 kernel
+	{
+		for (my=0;my<h; my++)
+		{
+			for (mx=0;mx<w; mx++)
+			{
+				int p=0; //tbd
+			}
+		}
+	}
+
+	return R;	
+}
+
+fMatrix   fimport2(char m2, int c, int r)
+{
+	fMatrix R;
+	int i, j, n=0;
+	R = newmatrix(c, r); 
+
+	for (i=0; i<r; i++)
+	{
+		for (j=0; j<c; j++)
+			fset2(&R, j, i, (float)listread(m2,n++));
+	}
+	return R;
+}	
+
+fMatrix fmatzerodiag2(fMatrix *A)   
+{	
+	fMatrix R;
+	int i, h=A->h;
+	R = newmatrix(A->w, h);  
+
+	for (i=0; i<h; i++)
+	{
+		fset2(&R,i,i,0.0f);
+	}
+	return R;
+}
 
 
 /**********************************************************
