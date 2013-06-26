@@ -405,11 +405,38 @@ fMatrix fmatzerodiag2(fMatrix *A)
 {	
 	fMatrix R;
 	int i, h=A->h;
-	R = newmatrix(A->w, h);  
-
+	R = fmatcp(A); // clone
 	for (i=0; i<h; i++)
 	{
 		fset2(&R,i,i,0.0f);
+	}
+	return R;
+}
+
+fMatrix fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)   
+{	
+	fMatrix R;
+	int i, h=A->h;
+	int j, w=A->w;
+	R = fmatcp(A); // clone
+	if (c1<0) c1=0;
+	if (c2<0) c2=0;
+	if (c1>c2) c1=c2;
+	if (c1>=w) c1=w-1;
+	if (c2>=w) c2=w-1;
+
+	if (r1<0) r1=0;
+	if (r2<0) r2=0;
+	if (r1>r2) r1=r2;
+	if (r1>=h) r1=h-1;
+	if (r2>=h) r2=h-1;
+
+	for (i=r1; i<r2; i++)
+	{
+		for (i=c1; i<c2; i++)
+		{
+			fset2(&R,j,i,0.0f);
+		}
 	}
 	return R;
 }

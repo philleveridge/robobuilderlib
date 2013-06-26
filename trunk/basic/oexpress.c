@@ -59,6 +59,8 @@ fMatrix freplicate2(fMatrix *A, int m, int n);
 fMatrix fconvolve2(fMatrix *A, fMatrix *B)  ;
 fMatrix fimport2(char m2, int c, int r);
 fMatrix fmatsum2(fMatrix *A, int mode) ;
+fMatrix fmatzerodiag2(fMatrix *A)   ;
+fMatrix fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)   ;
 
 // The new expression parser
 // work in progress
@@ -130,6 +132,9 @@ void ovsum ();
 void ohsum ();
 void oconv ();
 void oimp ();
+void ocond();
+void ozerob();
+void ozerod();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -140,6 +145,7 @@ tOP oplist[] = {
 	{"/",    20, DIVD,  2, NULL},
 	{"*",    20, MULT,  2, NULL},
 	{".*",   20, PROD,  2, NULL},
+	{".^",   20, POWR,  2, NULL},
 	{"AND",  8,  LAND,  2, NULL},
 	{"OR",   8,  LOR,   2, NULL},
 	{"<",    5,  LT,    2, NULL},
@@ -152,31 +158,34 @@ tOP oplist[] = {
 	{"SIN",  40, NA,    1, osin},  //function single arg
 	{"COS",  40, NA,    1, ocos},  //function single arg
 	{"TAN",  40, NA,    1, otan},  //function single arg
-	{"ATAN", 40, NA,    1, oatan},  //function single arg
-	{"ACOS", 40, NA,    1, oacos},  //function single arg
+	{"ATAN", 40, NA,    1, oatan}, //function single arg
+	{"ACOS", 40, NA,    1, oacos}, //function single arg
 	{"LOG",  40, NA,    1, olog},  //function single arg
 	{"EXP",  40, NA,    1, oexp},  //function single arg
-	{"SQRT", 40, NA,    1, osqrt},  //function single arg
+	{"SQRT", 40, NA,    1, osqrt}, //function single arg
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
-	{"DSIG", 40, NA,    1, odsig},  //sigmoid functon
+	{"DSIG", 40, NA,    1, odsig}, //sigmoid functon
 	{"PSD",  40, NA,    0, opsd},  //const
 	{"ACCX", 40, NA,    0, oacx},  //const
 	{"ACCY", 40, NA,    0, oacy},  //const
 	{"ACCZ", 40, NA,    0, oacz},  //const
 	{"ABS",  40, NA,    1, oabs},  //function single arg
-	{"TRN",  40, NA,    1, otrn},  //function single arg    <fMatrix>
 	{"RND",  40, NA,    0, ornd},  //in-const
 	{"MAX",  40, NA,    2, omax},   //function two args
+	{"TRN",  40, NA,    1, otrn},  //function single arg    <fMatrix>
 	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
-	{"RSHP", 40, NA,    3, orshp},   //function three args  <fMatrix, int, int>
+	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
 	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
-	{"ZERO", 40, NA,    2, ozero},   //function two args  <fint, int>
+	{"ZERO", 40, NA,    2, ozero},  //function two args  <fint, int>
 	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
-	{"HSUM", 40, NA,   1, ohsum},   //function two args   <fMatrix>
-	{"VSUM", 40, NA,   1, ovsum},   //function two args   <fMatrix>
-	{"APPL", 40, NA,   2, oapply},   //function two args   <fMatrix>
-	{"CONV", 40, NA,   2, oconv},   //function two args   <fMatrix>
+	{"HSUM", 40, NA,    1, ohsum},  //function two args   <fMatrix>
+	{"VSUM", 40, NA,    1, ovsum},  //function two args   <fMatrix>
+	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
+	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
 	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
+	{"COND", 40, NA,    5, ocond},  //function four args   <fmatrix>, <min>, <max> <value>
+	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
+	{"ZERD", 40, NA,    1, ozerod}, //function 1 args   <fmatrix>
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -295,6 +304,9 @@ int stacksize()
 	return sop;
 }
 
+
+/**********************************************************/
+/*  Parser functions                                      */
 /**********************************************************/
 
 int getOP(char *str)
@@ -352,10 +364,10 @@ int get_token(int flg)
 		return MLIST;
 	}
 
-	if (*e== '.' && *(e+1)=='*')
+	if (*e== '.' && ((*(e+1)=='*') || (*(e+1)=='^')))
 	{		
 		tokbuff[tb++]='.';
-		tokbuff[tb++]='*';
+		tokbuff[tb++]=*(e+1);
 		tokbuff[tb]=0;
 		e+=2;
 		return OPR;
@@ -668,6 +680,10 @@ fMatrix readmatrix(char *s)
 	return m;
 }
 
+/**********************************************************/
+/*  print and formating                                   */
+/**********************************************************/
+
 void printtype(tOBJ r)
 {
     if (r.type == INTGR)
@@ -712,10 +728,109 @@ void printtype(tOBJ r)
     return;
 }
 
+/**********************************************************/
+/*  Access variables (read/write)                         */
+/**********************************************************/
+
+tOBJ get(char *name)
+{
+	int i=0;
+	char *p=varname;
+	tOBJ r;
+	r.type=EMPTY;
+
+	if (strlen(name)==1 && isalpha(*name)) //backwards compat
+	{
+		r.type=INTGR;
+		r.number=getvar(*name-'A');
+		return r;
+	}
+	while (i<nov)
+	{
+		if (strcmp(p,name)==0)
+		{
+			return varobj[i];
+		}
+		p=p+strlen(p)+1;
+		i++;
+	}
+	return r;
+}
+
+int set(char *name, tOBJ r)
+{
+	int n = 0;
+	char *p=varname;
+
+	if (strlen(name)==1 && isalpha(*name)) //backwards compat
+	{
+		if (r.type==INTGR)
+			setvar(*name-'A',r.number);
+		if (r.type==FLOAT)
+			setvar(*name-'A',(long)r.floatpoint);
+		if (r.type==EMPTY)
+			setvar(*name-'A',0);
+		return 1;
+	}
+
+	if (r.type==FMAT2) r.cnt++;
+
+	while (n<nov)
+	{
+		if (strcmp(p,name)==0)
+		{
+			freeobj(&varobj[n]);
+			varobj[n]=r;
+			return 1;
+		}
+		p=p+strlen(p)+1;
+		n++;
+	}
+	if (nov<50)
+	{
+		varobj[nov++]=r;
+
+		strcpy(p,name);
+		p=p+strlen(p)+1;
+		*p='\0';
+		return 0; //added
+	}
+	else
+		return -1;
+}
+
+/**********************************************************/
+/*  maths functions                                       */
+/**********************************************************/
+
+float tofloat(tOBJ v)
+{
+	float f=0.0;
+	if (v.type==FLOAT)
+		f=v.floatpoint;
+	else
+	if (v.type==INTGR)
+		f=(float)v.number;
+
+	return f;
+}
+
+int toint(tOBJ v)
+{
+	int f=0;
+	if (v.type==FLOAT)
+		f=(int)v.floatpoint;
+	else
+	if (v.type==INTGR)
+		f=v.number;
+	return f;
+}
+
 tOBJ omath(tOBJ o1, tOBJ o2, int op)
 {
 	tOBJ r;
 	r.type=EMPTY;
+
 
 	if (dbg) {printf("math op : %d %d %d\n", o1.type, op, o2.type); } //debug info
 
@@ -808,12 +923,36 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.fmat2.fstore[i] += tofloat(o2);	
 	}
 
+	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==POWR)
+	{
+		r.type=FMAT2;	
+		r.fmat2 = fmatcp(&o1.fmat2);
+		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
+			r.fmat2.fstore[i] = pow(r.fmat2.fstore[i],tofloat(o2));	
+	}
+
 	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==MULT)
 	{
 		r.type=FMAT2;	
 		r.fmat2 = fmatcp(&o1.fmat2);
 		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
 			r.fmat2.fstore[i] = r.fmat2.fstore[i] * tofloat(o2);	
+	}
+
+	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==DIVD)
+	{
+		r.type=FMAT2;	
+		r.fmat2 = fmatcp(&o1.fmat2);
+		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
+			r.fmat2.fstore[i] /= tofloat(o2);	
+	}
+
+	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==MINUS)
+	{
+		r.type=FMAT2;	
+		r.fmat2 = fmatcp(&o1.fmat2);
+		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
+			r.fmat2.fstore[i] -= tofloat(o2);	
 	}
 
 	if (o1.type==FMAT2 && o2.type==FMAT2 && op==MULT)
@@ -827,97 +966,6 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	}
 
 	return r;
-}
-
-
-float tofloat(tOBJ v)
-{
-	float f=0.0;
-	if (v.type==FLOAT)
-		f=v.floatpoint;
-	else
-	if (v.type==INTGR)
-		f=(float)v.number;
-
-	return f;
-}
-
-int toint(tOBJ v)
-{
-	int f=0;
-	if (v.type==FLOAT)
-		f=(int)v.floatpoint;
-	else
-	if (v.type==INTGR)
-		f=v.number;
-	return f;
-}
-
-tOBJ get(char *name)
-{
-	int i=0;
-	char *p=varname;
-	tOBJ r;
-	r.type=EMPTY;
-
-	if (strlen(name)==1 && isalpha(*name)) //backwards compat
-	{
-		r.type=INTGR;
-		r.number=getvar(*name-'A');
-		return r;
-	}
-	while (i<nov)
-	{
-		if (strcmp(p,name)==0)
-		{
-			return varobj[i];
-		}
-		p=p+strlen(p)+1;
-		i++;
-	}
-	return r;
-}
-
-int set(char *name, tOBJ r)
-{
-	int n = 0;
-	char *p=varname;
-
-	if (strlen(name)==1 && isalpha(*name)) //backwards compat
-	{
-		if (r.type==INTGR)
-			setvar(*name-'A',r.number);
-		if (r.type==FLOAT)
-			setvar(*name-'A',(long)r.floatpoint);
-		if (r.type==EMPTY)
-			setvar(*name-'A',0);
-		return 1;
-	}
-
-	if (r.type==FMAT2) r.cnt++;
-
-	while (n<nov)
-	{
-		if (strcmp(p,name)==0)
-		{
-			freeobj(&varobj[n]);
-			varobj[n]=r;
-			return 1;
-		}
-		p=p+strlen(p)+1;
-		n++;
-	}
-	if (nov<50)
-	{
-		varobj[nov++]=r;
-
-		strcpy(p,name);
-		p=p+strlen(p)+1;
-		*p='\0';
-		return 0; //added
-	}
-	else
-		return -1;
 }
 
 void osin()
@@ -999,9 +1047,24 @@ void oatan()
 
 void oabs()
 {
-	tOBJ r;
-	r.type=FLOAT;
-	r.floatpoint=fabs(tofloat(pop()));
+	tOBJ a,r;
+	a = pop();
+	r.type=EMPTY;
+
+	if (a.type==FMAT2)
+	{
+		r.type = FMAT2;	
+		r.fmat2 = fmatcp(&a.fmat2);
+		for (int i=0; i<a.fmat2.w*a.fmat2.h; i++)
+		{
+			r.fmat2.fstore[i] = fabs(r.fmat2.fstore[i]);
+		}
+	}
+	else
+	{
+		r.type=FLOAT;
+		r.floatpoint=fabs(tofloat(a));
+	}
 	push(r);
 	return ;
 }
@@ -1025,7 +1088,9 @@ void osqrt()
 	return ;
 }
 
-
+/**********************************************************/
+/*  matrix function (loating point)                       */
+/**********************************************************/
 /*
 !MAT DEF A=1;3
 !MAT LET A=1.0;2.0;3.0
@@ -1309,6 +1374,66 @@ void oconv ()
 	push(r);
 }
 
+void ocond()
+{
+	// COND (Matrix,lv, uv, nv1, nv2)
+	tOBJ r, a, b, c;
+	float lv=0,uv=0,nv1=0,nv2=0;
+	nv2 = tofloat(pop());
+	nv1 = tofloat(pop());
+	uv = tofloat(pop());
+	lv = tofloat(pop());
+	a = pop();
+	r.type=EMPTY;
+	push(r);
+	if (a.type==FMAT2)
+	{
+		r.type = FMAT2;	
+		r.fmat2 = fmatcp(&a.fmat2); // clone
+		for (int i=0; i<a.fmat2.w*a.fmat2.h; i++)
+		{
+			if (r.fmat2.fstore[i]>= lv && r.fmat2.fstore[i]<= uv)
+				r.fmat2.fstore[i] = nv1;
+			else
+				r.fmat2.fstore[i] = nv2;
+		}
+	}
+	push(r);
+}
+
+void ozerob()
+{
+	// ZER (Matrix,c1,r1,c2,r2)
+	tOBJ r, a;
+	int c1=0,c2=0,r1=0,r2=0;
+	r2 = toint(pop());
+	c2 = toint(pop());
+	r1 = toint(pop());
+	c1 = toint(pop());
+	a = pop();
+	r.type=EMPTY;
+	if (a.type==FMAT2)
+	{
+		r.type = FMAT2;	
+		r.fmat2 =fmatzeroregion(&a.fmat2, c1, r1, c2, r2)   ;
+	}
+	push(r);
+}
+
+void ozerod()
+{	
+	// ZERD (Matrix)
+	tOBJ r, a;
+	a=pop();
+	r.type=EMPTY;
+	if (a.type==FMAT2)
+	{
+		r.type = FMAT2;
+		r.fmat2 = fmatzerodiag2(&a.fmat2) ;
+	}
+	push(r);
+}
+
 void oimp ()
 {
 	//IMP("A",2,2);
@@ -1327,6 +1452,10 @@ void oimp ()
 		
 	push(r);
 }
+
+/**********************************************************/
+/*  Access sensors                                        */
+/**********************************************************/
 
 void opsd()
 {
@@ -1510,6 +1639,8 @@ void brainf(char *s)
 
 /***********************************************************************
 
+Extended input
+
 ************************************************************************/
 
 static int  intf=1;
@@ -1526,7 +1657,7 @@ void extend(char *x)
 		v.type=STR;   v.string    ="data.txt"; set("DFN", v);
 		v.type=STR;   v.string    ="test.jpg"; set("IFN", v);
 		
-		//seed the RNG
+		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
 	}
 

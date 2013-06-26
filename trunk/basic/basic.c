@@ -229,10 +229,17 @@ int token_match(prog_char list[][7], char **p_line, int n)
 	} 
 }
 
+#ifdef LINUX
+#define HB 10
+	char histbuff[HB][100];
+	int hbfc=0;
+#endif
+
 int readLine(char *line)
 {
 	int ch=0,pch;
 	int qf=1;
+	int cf=0;
 	int lf=0;
 	char *start=line;
 	
@@ -245,12 +252,36 @@ int readLine(char *line)
 
 		while ((ch = uartGetByte())<0) ;
 
+		if (ch=='\'') // comment ignore rest of line
+		{
+			rprintfChar(ch);
+			*line='\0'; 
+			while (ch != 13)
+			{
+				while ((ch = uartGetByte())<0) ;
+				rprintfChar(ch);
+			}
+			rprintf("\r\n");	
+			break;		
+		}
+
 		if (start==line && ch=='=' ) //recover last line
 		{
+#ifdef LINUX
+			if (hbfc>0) 
+			{
+				rprintfStr(histbuff[hbfc-1]);
+				strcpy(start,histbuff[hbfc-1]);
+				line = start+strlen(histbuff[hbfc-1]);
+			}
+			hbfc--;
+			continue;
+#else
 			rprintfStr(line);
 			while (*line++!=0);
 			line--;
 			continue;
+#endif
 		}
 
 		if (lf==1)
@@ -267,6 +298,12 @@ int readLine(char *line)
 		if (ch=='`') {lf=1;rprintfChar(ch);continue;}
 
 		if (ch==9) ch=' ';
+
+		if (ch=='~' && start==line)
+		{
+			dbg=(++dbg)%4;
+			if (dbg) rprintfProgStr(PSTR("DEBUG ON\n")); else rprintfProgStr(PSTR("DEBUG OFF\n"));
+		}
 				
 		if (ch==13 || (start==line && ch=='.') )
 		{
@@ -276,6 +313,26 @@ int readLine(char *line)
 			rprintf("\r\n");	
 			break;
 		}
+#ifdef LINUX
+if (dbg) printf ("[%d]",ch);
+
+		if (ch==18)
+		{
+			readservos(0);
+			if (nos>0) {
+				char buf[80];
+				sprintf(buf, "MOVE @{%d,%d", nos,cpos[0]); 
+				for (int i=1; i<nos; i++) 
+					sprintf(buf+strlen(buf),",%d",cpos[i]); 
+				sprintf(buf+strlen(buf),"}"); 
+				rprintfStr(buf);
+				strcpy(line,buf);
+				line += strlen(buf);
+				*line='\0';
+				continue;
+			}
+		}
+#endif
 
 		if (qf && ch==' ' && pch==' ')
 			continue;
@@ -295,7 +352,9 @@ int readLine(char *line)
 			if (line>start) 
 			{
 				line--;
-				rprintfChar(ch);
+				rprintfChar(8);
+				rprintfChar(32);
+				rprintfChar(8);
 			}
 		}
 		else
@@ -307,6 +366,13 @@ int readLine(char *line)
 			}
 		}
 	}
+#ifdef LINUX
+	if (strlen(start)>0)
+	{
+		strcpy(histbuff[hbfc%HB],start);
+		hbfc=(hbfc+1)%HB;
+	}
+#endif
 	return (line-start);
 }
 
@@ -1423,9 +1489,9 @@ void basic()
 			rprintf ("%d servos connected\r\n", readservos(0));
 			rprintf ("%d lines stored\r\n", findend());
 			rprintfProgStr(PSTR("Uptime: ")); uptime(); rprintfCRLF ();
-			if (ch=='Q' && nos>=0) {
-				rprintf("%d", cpos[0]); 
-				for (i=1; i<nos; i++) rprintf(", %d",cpos[i]); 
+			if (ch=='Q' && nos>0) {
+				rprintf("MOVE @{%d,%d", nos,cpos[0]); 
+				for (i=1; i<nos; i++) rprintf(",%d",cpos[i]); 
 				rprintfCRLF();
 			}
 			break;
