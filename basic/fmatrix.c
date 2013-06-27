@@ -433,7 +433,7 @@ fMatrix fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)
 
 	for (i=r1; i<r2; i++)
 	{
-		for (i=c1; i<c2; i++)
+		for (j=c1; j<c2; j++)
 		{
 			fset2(&R,j,i,0.0f);
 		}
