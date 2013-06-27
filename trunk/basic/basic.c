@@ -235,6 +235,8 @@ int token_match(prog_char list[][7], char **p_line, int n)
 	int hbfc=0;
 #endif
 
+
+
 int readLine(char *line)
 {
 	int ch=0,pch;
@@ -302,7 +304,10 @@ int readLine(char *line)
 		if (ch=='~' && start==line)
 		{
 			dbg=(++dbg)%4;
-			if (dbg) rprintfProgStr(PSTR("DEBUG ON\n")); else rprintfProgStr(PSTR("DEBUG OFF\n"));
+			rprintfStr ("DEBUG ");
+			if (dbg) rprintfProgStr(PSTR("ON")); else rprintfProgStr(PSTR("OFF"));
+			rprintfStr ("\n> ");
+			continue;
 		}
 				
 		if (ch==13 || (start==line && ch=='.') )
@@ -314,7 +319,7 @@ int readLine(char *line)
 			break;
 		}
 #ifdef LINUX
-if (dbg) printf ("[%d]",ch);
+// printf ("[%d]",ch);
 
 		if (ch==18)
 		{

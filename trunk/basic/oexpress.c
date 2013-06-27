@@ -185,7 +185,7 @@ tOP oplist[] = {
 	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
 	{"COND", 40, NA,    5, ocond},  //function four args   <fmatrix>, <min>, <max> <value>
 	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
-	{"ZERD", 40, NA,    1, ozerod}, //function 1 args   <fmatrix>
+	{"ZERD", 40, NA,    1, ozerod} //function 1 args   <fmatrix>
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -214,6 +214,14 @@ void delstring(char *s)
 	free(s);
 }
 
+tOBJ makestring(char *s)
+{
+	tOBJ r;
+	r.type=STR;
+	r.string = newstring(s);
+	r.cnt=0;
+	return r;
+}
 
 
 /**********************************************************/
@@ -234,9 +242,9 @@ int freeobj(tOBJ *b)
 		if (b->cnt==0) delmatrix(&b->fmat2);
 	}
 
-	if (b->type==STRING)
+	if (b->type==STR)
 	{
-		if (b->cnt==0) delstring(&b->string);
+		if (b->cnt==0) delstring(b->string);
 	}
 
 	return 0;
@@ -373,6 +381,13 @@ int get_token(int flg)
 		return OPR;
 	}
 
+	if (flg && *e=='-')
+	{
+		tokbuff[tb++]=*e++;
+		tokbuff[tb]=0;
+		return OPR;
+	}
+
 	if (isnumdot(*e) || (*e=='-' && isnumdot(*(e+1))) )
 	{
 		int r=NUMI;
@@ -500,11 +515,15 @@ tOBJ eval_oxpr(char *s)
 			case ALPHA:
 				r = get(tokbuff);
 				push(r);
+				if (r.type==EMPTY)
+				{
+					printf ("Error - bad syntax `%s'\n", tokbuff);
+					return r;
+				}
 				gnf=1;
 				break;
 			case STRNG:
-				r.type=STR;
-				r.string = newstring(tmpstr);
+				r=makestring(tmpstr);
 				push(r);
 				gnf=1;
 				break;
@@ -647,14 +666,37 @@ fMatrix readmatrix(char *s)
 
 	if (dbg) printf("LIST=%s\n", e);
 
-	while (*e != 0)
+	while (e==0 || *e != 0)
 	{
+//printf ("[%s]\n", e);
+		char *p=strchr(e, ' ');
+		
+		if (p !=0)
+		{
+			*p='\0';
+			p++;
+		}
+
 		v=eval_oxpr(e);	
 		ts[c] = tofloat(v);
 
+		if (*e==';')
+		{
+			//
+			j++; i=0; e++; c++;
+			v=eval_oxpr(e);	
+			ts[c] = tofloat(v);
+		}
+
+		if (p!=0) e=p;
+
 		if (dbg) printf ("[%d,%d] = %f  (%s)\n", i,j,ts[c], e);
 
+		while (*e==' ') e++; 
+
 		if (*e==';') { j++; i=0; e++; } else {i++;}
+
+		while (*e==' ') e++; 
 
 		c++;
 	}
@@ -902,8 +944,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 
 	if (o1.type==STR || o2.type==STR)
 	{
-		r.type=STR;
-		r.string = newstring(strcat(o1.string,o2.string));
+		r= makestring(strcat(o1.string,o2.string));
 	}
 
 	if (o1.type==FMAT2 && o2.type==FMAT2 && (op==PLUS || op==MINUS || op==DIVD || op==PROD))
@@ -1654,8 +1695,8 @@ void extend(char *x)
 	if (intf) { // set up defaults
 		intf=0; 
 		v.type=FLOAT; v.floatpoint=3.1415926;  set("PI", v);
-		v.type=STR;   v.string    ="data.txt"; set("DFN", v);
-		v.type=STR;   v.string    ="test.jpg"; set("IFN", v);
+		set("DFN", makestring("data.txt"));
+		set("IFN", makestring("test.jpg"));
 		
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
@@ -2008,6 +2049,7 @@ void extend(char *x)
 		}
 
 		rprintfStr("No such option?\n");
+		freeobj(&v);
 		return;
 	}
 
@@ -2017,14 +2059,30 @@ void extend(char *x)
 		while (*e!='\0')
 		{
 			v=eval_oxpr(e);
-			print(v);
-			if (*e!=';') 
+			if (*e==',') 
 			{
-				rprintfCRLF();
+				print(v);
+				rprintf(" ");
+
+			}
+			else if (*e==';') 
+			{
+				print(v);
+				e++;
+			}
+			else if (*e!='\0') 
+			{
+				printf ("synatx error at '%c'\n", *e);
+				return;
 			}
 			else
-				e++;
+			{
+				print(v);
+				rprintfCRLF();
+			}
+			
 		}
+		freeobj(&v);
 		return;
 	}
 #endif
@@ -2041,18 +2099,9 @@ void extend(char *x)
 	v=eval_oxpr(e);
 	print(v);
 	rprintfCRLF();
+
+	freeobj(&v);
 }
 
-void testeval()
-{
-	while (1)
-	{
-		readLine(exprbuff);
-		if (exprbuff[0]=='.') break;
-
-		extend(exprbuff);
-
-	}
-}
 
 
