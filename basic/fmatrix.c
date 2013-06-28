@@ -168,8 +168,13 @@ fMatrix fadd2(fMatrix *A, fMatrix *B, char op)
 	wb=B->w;
 	hb=B->h;
 
+	if (dbg) printf ("matrix add (%c)\n",op);
+
 	if (wa!=wb || ha!=hb)
+	{
+		printf ("error size must match (%d,%d) - (%d,%d)\n", wa,ha,wb,hb);
 		return R;
+	}
 
 	R = newmatrix(wa,ha);
 
@@ -193,7 +198,7 @@ fMatrix ftranspose2(fMatrix *A)
 	int mx,my;
 	fMatrix R;
 
-	if (dbg) printf ("transpose %c,%c\n",w,h);
+	if (dbg) printf ("transpose %d,%d\n",w,h);
 
 	R = newmatrix(h, w);
 
