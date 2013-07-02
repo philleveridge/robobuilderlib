@@ -218,10 +218,7 @@ Assuming a gripper is connected to Servo 18 this function will slowly close the 
 Grippers available from Ipswich Robotics : 
 
 <a href="http://www.shapeways.com/model/55863/gripper_left.html">
-<img src="http://www.shapeways.com/openfilens/55863/photos/photo6622.jpg" width="200" height="150">
-
-[http://www.shapeways.com/model/55863/gripper_left.html Left gripper] or 
-[http://www.shapeways.com/model/55864/gripper___right.html Right gripper]
+<img src="http://images1.sw-cdn.net/model/picture/674x501_55863_92184_1338413385.jpg" width="200" height="150">
 
 ===20) Reading PF1 and PF2===
 
