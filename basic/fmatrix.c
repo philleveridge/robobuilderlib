@@ -149,7 +149,7 @@ float fget2(fMatrix *M, int c, int r)
 	}
 }
 
-float fset2(fMatrix *M, int c, int r, float v)
+void fset2(fMatrix *M, int c, int r, float v)
 {
 	if (c>=0 && r>=0 && c<M->w && r<M->h && M->fstore!=0)
 		M->fstore[c+r*M->w] =v;
