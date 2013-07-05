@@ -46,7 +46,7 @@ New Matrix
 fMatrix newmatrix(int c, int r)
 {
 	fMatrix n;
-
+	int i;
 	if (dbg) printf ("New Matrix %d,%d\n",c,r);
 	n.h=r;
 	n.w=c;
@@ -62,7 +62,7 @@ fMatrix newmatrix(int c, int r)
 	}
 	else
 	{
-		for (int i=0; i<r*c; i++) n.fstore[i]=0.0;
+		for (i=0; i<r*c; i++) n.fstore[i]=0.0;
 	}
 
 	return n;
@@ -255,13 +255,14 @@ fMatrix freplicate2(fMatrix *A, int m, int n)
 	int h=A->h;
 	int wx=w*m;
 	int hx=h*n;
+	float *p,*pt;
 
 	if (dbg) printf ("rep [%d,%d]\n", m,n);
 
 	R = newmatrix(wx, hx);
 
-	float *p =A->fstore;
-	float *pt=R.fstore;
+	p =A->fstore;
+	pt=R.fstore;
 
 	for (j=0;j<h;j++)
 		for (i=0;i<w;i++)

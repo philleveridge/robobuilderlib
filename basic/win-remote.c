@@ -235,7 +235,7 @@ void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
 void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
 {
 	char CheckSum;
-	if (!remote) return 0;
+	if (!remote) return ;
 
 
 	CheckSum = (Data1^Data2^Data3^Data4)&0x7f;
@@ -250,7 +250,7 @@ void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
 void wckWriteIO(unsigned char ServoID, unsigned char IO)
 {
 	DBO(printf ("LINUX: Servo write IO %d=%d\n", ServoID, IO); )
-	if (!remote) return 0;
+	if (!remote) return ;
 
     //pthread_mutex_lock( &cs_mutex );
 
@@ -267,7 +267,7 @@ void wckWriteIO(unsigned char ServoID, unsigned char IO)
 void  I2C_read    (int addr, int ocnt, BYTE * outbuff, int icnt, BYTE * inbuff)
 {
 	printf ("LINR: I2C read %d\n", addr);
-	if (!remote) return 0;
+	if (!remote) return ;
 	//tbc
 	//wckReadPos(30,13) + addr + nbytes +[bytes]
 	//response cnt [buf]
@@ -431,7 +431,7 @@ extern int z_value,y_value,x_value,gDistance;
 	   response[0]=0;
 	   response[1]=0;
 
-	   if (!remote) return;
+	   if (!remote) return -1;
 
 	   writebyte(0xFF);
 	   id = (5 << 5 | (id % 31));

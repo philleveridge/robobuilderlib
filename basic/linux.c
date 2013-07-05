@@ -479,10 +479,12 @@ void main(int argc, char *argv[])
 	printf ("initiate timer\n");
 	pthread_t pth;	// this is our thread identifier
 	pthread_create(&pth,NULL,monitor_proc,"TIMER0");
-#endif
+
 
 	initsocket(sf);
-	initIO();        // requires timer     
+	initIO();        // requires timer
+
+#endif
 	initfirmware();
 	basic_zero();
 

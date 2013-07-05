@@ -1497,6 +1497,7 @@ void basic()
 			if (ch=='Q' && nos>0) {
 				rprintf("MOVE @{%d,%d", nos,cpos[0]); 
 				for (i=1; i<nos; i++) rprintf(",%d",cpos[i]); 
+				rprintfProgStr(PSTR("},10,1000"));
 				rprintfCRLF();
 			}
 			break;

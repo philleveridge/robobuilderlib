@@ -479,7 +479,7 @@ void PSD_off(void)
 		int i = 0;
 		int CheckSum = 0;
 
-	if (!remote) return 0;
+	if (!remote) return ;
 
 		pthread_mutex_lock( &cs_mutex );
 
