@@ -600,48 +600,50 @@ tOBJ eval_oxpr(char *s)
 				break;	
 				}
 			case OPR:
-				op = getOP(tokbuff);
-printf ("OPR %d\n", op);
-				if (oplist[op].nop==0 && oplist[op].func != NULL)
 				{
-printf ("1 -OPR %d\n", op);
-
-					(*oplist[op].func)();
-					continue;
-				}
-				else
-				if (oop>0 && (oplist[op].type == CBR || oplist[op].type==COMMA))
-				{
-					int t=oplist[op].type;
-					int i=stackop[oop-1];
-printf ("2 -OPR %d %d %d\n", oop,i,t);
-
-					while (oplist[i].type != OBR && oplist[i].type != COMMA)
+					op = getOP(tokbuff);
+//	printf ("OPR %d\n", op);
+					if (oplist[op].nop==0 && oplist[op].func != NULL)
 					{
-printf ("4 -OPR %d\n", oop);
-						if (oop==0) break;
-						reduce();
-						i=stackop[oop-1];
+//	printf ("1 -OPR %d\n", op);
+
+						(*oplist[op].func)();
+						continue;
+					}
+					else
+					if (oop>0 && (oplist[op].type == CBR || oplist[op].type==COMMA))
+					{
+						int t=oplist[op].type;
+						int i=stackop[oop-1];
+//	printf ("2 -OPR %d %d %d\n", oop,i,t);
+
+						while (oplist[i].type != OBR && oplist[i].type != COMMA)
+						{
+//	printf ("4 -OPR %d\n", oop);
+							if (oop==0) break;
+							reduce();
+							i=stackop[oop-1];
 				
+						}
+//	printf ("3 -OPR %d\n", oop);
+						if  ((t==CBR) && (oplist[i].type== OBR) )
+							reduce();
+						gnf=0;
+						continue;
 					}
-printf ("3 -OPR %d\n", oop);
-					if  ((t==OPR) && (oplist[i].type== OBR) )
-						reduce();
-					gnf=0;
-					continue;
-				}
-				else
-				if (oop>0)
-				{
-					int i = stackop[oop-1];
-printf ("5 -OPR %d\n", oop);
-					if ((oplist[i].type != OBR) && (oplist[op].level<=oplist[i].level) )
+					else
+					if (oop>0)
 					{
-						reduce();
+						int i = stackop[oop-1];
+//	printf ("5 -OPR %d\n", oop);
+						if ((oplist[i].type != OBR) && (oplist[op].level<=oplist[i].level) )
+						{
+							reduce();
+						}
 					}
+					stackop[oop++]=op;
+					gnf=0;
 				}
-				stackop[oop++]=op;
-				gnf=0;
 				break;
 			case DELI:
 				lf=0;
@@ -660,27 +662,9 @@ printf ("5 -OPR %d\n", oop);
 		if (dbg) printf("Reduce %d \n",oop);
 		reduce();
 	}
-/*
-	while (oop==0 && stacksize()>1)
-	{
-		tOBJ a,b;
-		int op=getOP("+");
-		b = pop();
-		a = pop();
-		a = omath(a, b, oplist[op].type );
-		push(a);
-	}
-
-	if (stacksize()>1)
-	{
-		printf("Suntax error - too many on stack\n");
-		stackprint();
-		clear();
-	}
-*/
 	return pop();
 }
-
+ 
 
 /*
 i
@@ -710,7 +694,6 @@ fMatrix readmatrix(char *s)
 	char *t;
 	char savebuff[MAXSTRING];
 	tOBJ v;
-	float f;
 	int i=0;
 	int j=0;
 	int c=0;
@@ -907,6 +890,7 @@ int set(char *name, tOBJ r)
 tOBJ omath(tOBJ o1, tOBJ o2, int op)
 {
 	tOBJ r;
+	int i;
 	r.type=EMPTY;
 
 
@@ -996,7 +980,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	{
 		r.type=FMAT2;	
 		r.fmat2 = fmatcp(&o1.fmat2);
-		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
+		for (i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
 			r.fmat2.fstore[i] += tofloat(o2);	
 	}
 
@@ -1004,7 +988,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	{
 		r.type=FMAT2;	
 		r.fmat2 = fmatcp(&o1.fmat2);
-		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
+		for (i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
 			r.fmat2.fstore[i] = pow(r.fmat2.fstore[i],tofloat(o2));	
 	}
 
@@ -1012,7 +996,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	{
 		r.type=FMAT2;	
 		r.fmat2 = fmatcp(&o1.fmat2);
-		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
+		for (i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
 			r.fmat2.fstore[i] = r.fmat2.fstore[i] * tofloat(o2);	
 	}
 
@@ -1020,7 +1004,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	{
 		r.type=FMAT2;	
 		r.fmat2 = fmatcp(&o1.fmat2);
-		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
+		for (i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
 			r.fmat2.fstore[i] /= tofloat(o2);	
 	}
 
@@ -1028,7 +1012,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	{
 		r.type=FMAT2;	
 		r.fmat2 = fmatcp(&o1.fmat2);
-		for (int i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
+		for (i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
 			r.fmat2.fstore[i] -= tofloat(o2);	
 	}
 
@@ -1125,6 +1109,7 @@ void oatan()
 void oabs()
 {
 	tOBJ a,r;
+	int i;
 	a = pop();
 	r.type=EMPTY;
 
@@ -1132,7 +1117,7 @@ void oabs()
 	{
 		r.type = FMAT2;	
 		r.fmat2 = fmatcp(&a.fmat2);
-		for (int i=0; i<a.fmat2.w*a.fmat2.h; i++)
+		for (i=0; i<a.fmat2.w*a.fmat2.h; i++)
 		{
 			r.fmat2.fstore[i] = fabs(r.fmat2.fstore[i]);
 		}
@@ -1197,7 +1182,7 @@ void osig()
 {
 	//binary signmoid function
 	tOBJ r, a;
-
+	int i;
 	a=pop();
 
 	if (a.type==FMAT2)
@@ -1205,7 +1190,7 @@ void osig()
 		r.type=FMAT2;
 		// create new matrix
 		r.fmat2=fmatcp(&a.fmat2);
-		for (int i=0; i<a.fmat2.h*a.fmat2.w; i++)
+		for (i=0; i<a.fmat2.h*a.fmat2.w; i++)
 		{
 			float f= a.fmat2.fstore[i];
 			r.fmat2.fstore[i] =1/(1+exp(-f));
@@ -1259,6 +1244,8 @@ void odsig()
 {
 	//derivative binary sigmoid
 	tOBJ r,a;
+
+	int i;
 	r=makefloat(0.0);
 	a=pop();
 
@@ -1272,7 +1259,7 @@ void odsig()
 		r.type=FMAT2;
 		// create new matrix
 		r.fmat2=fmatcp(&a.fmat2);
-		for (int i=0; i<a.fmat2.h*a.fmat2.w; i++)
+		for (i=0; i<a.fmat2.h*a.fmat2.w; i++)
 		{
 			float f= a.fmat2.fstore[i];
 			r.fmat2.fstore[i] = f*(1-f);
@@ -1404,6 +1391,7 @@ void ozero ()
 void oeye ()
 {
 	tOBJ r;
+	int i;
 	int row,col;
 	r.type=EMPTY;
 
@@ -1413,7 +1401,7 @@ void oeye ()
 	r.type=FMAT2;
 	r.fmat2 = newmatrix(col, row);
 		
-	for (int i=0; i<col; i++)
+	for (i=0; i<col; i++)
 	{
 		if (i<row) 
 			r.fmat2.fstore[i+i*col] = 1.0;
@@ -1442,6 +1430,7 @@ void ocond()
 {
 	// COND (Matrix,lv, uv, nv1, nv2)
 	tOBJ r, a, b, c;
+	int i;
 	float lv=0,uv=0,nv1=0,nv2=0;
 	nv2 = tofloat(pop());
 	nv1 = tofloat(pop());
@@ -1454,7 +1443,7 @@ void ocond()
 	{
 		r.type = FMAT2;	
 		r.fmat2 = fmatcp(&a.fmat2); // clone
-		for (int i=0; i<a.fmat2.w*a.fmat2.h; i++)
+		for (i=0; i<a.fmat2.w*a.fmat2.h; i++)
 		{
 			if (r.fmat2.fstore[i]>= lv && r.fmat2.fstore[i]<= uv)
 				r.fmat2.fstore[i] = nv1;
@@ -1573,6 +1562,7 @@ void ornd()
 void omax()
 {
 	tOBJ r,a;
+	int i;
 	r=pop();
 	a=pop();
 
@@ -1590,7 +1580,7 @@ void omax()
 	{
 		r.type=FLOAT;
 		r.floatpoint=a.fmat2.fstore[0];
-		for (int i=1; i<a.fmat2.h*a.fmat2.w; i++)
+		for (i=1; i<a.fmat2.h*a.fmat2.w; i++)
 			if (a.fmat2.fstore[i]>r.floatpoint) r.floatpoint= a.fmat2.fstore[i];
 	}
 
@@ -1731,8 +1721,9 @@ void extend(char *x)
 		if (get_str_token(NULL)==1)
 		{	
 			char var[5];
+			int tk;
 			strncpy(var,tokbuff, 5);
-			int tk = get_token(1);	
+			tk = get_token(1);	
 			if (tk==OPR && oplist[getOP(tokbuff)].type==EQL)
 			{
 				v=eval_oxpr(e);
@@ -2075,6 +2066,7 @@ void extend(char *x)
 		freeobj(&v);
 		return;
 	}
+#endif
 
 	e=x;
 	if (get_str_token("PRIN")==1)
@@ -2108,7 +2100,7 @@ void extend(char *x)
 		freeobj(&v);
 		return;
 	}
-#endif
+
 
 #ifdef LINUX
 	e=x;
