@@ -140,52 +140,52 @@ tOBJ get(char *name);
 int  set(char *name, tOBJ r);
 
 tOP oplist[] = { 
-	{"+",    10, PLUS,  2, NULL},
+/* 0 */	{"+",    10, PLUS,  2, NULL},
 	{"-",    10, MINUS, 2, NULL},
 	{"/",    20, DIVD,  2, NULL},
 	{"*",    20, MULT,  2, NULL},
 	{".*",   20, PROD,  2, NULL},
-	{".^",   20, POWR,  2, NULL},
+/* 5 */	{".^",   20, POWR,  2, NULL},
 	{"AND",  8,  LAND,  2, NULL},
 	{"OR",   8,  LOR,   2, NULL},
 	{"<",    5,  LT,    2, NULL},
 	{">",    5,  GT,    2, NULL},
-	{"=",    5,  EQL,   2, NULL},
+/*10 */	{"=",    5,  EQL,   2, NULL},
 	{"<>",   5,  NEQ,   2, NULL},
 	{"(",    50, OBR,   1, NULL},
 	{")",    50, CBR,   1, NULL},
 	{",",    50, COMMA, 1, NULL},
-	{"SIN",  40, NA,    1, osin},  //function single arg
+/*15 */	{"SIN",  40, NA,    1, osin},  //function single arg
 	{"COS",  40, NA,    1, ocos},  //function single arg
 	{"TAN",  40, NA,    1, otan},  //function single arg
 	{"ATAN", 40, NA,    1, oatan}, //function single arg
 	{"ACOS", 40, NA,    1, oacos}, //function single arg
-	{"LOG",  40, NA,    1, olog},  //function single arg
+/*20 */	{"LOG",  40, NA,    1, olog},  //function single arg
 	{"EXP",  40, NA,    1, oexp},  //function single arg
 	{"SQRT", 40, NA,    1, osqrt}, //function single arg
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
 	{"DSIG", 40, NA,    1, odsig}, //sigmoid functon
-	{"PSD",  40, NA,    0, opsd},  //const
+/*25 */	{"PSD",  40, NA,    0, opsd},  //const
 	{"ACCX", 40, NA,    0, oacx},  //const
 	{"ACCY", 40, NA,    0, oacy},  //const
 	{"ACCZ", 40, NA,    0, oacz},  //const
 	{"ABS",  40, NA,    1, oabs},  //function single arg
-	{"RND",  40, NA,    0, ornd},  //in-const
+/*30 */	{"RND",  40, NA,    0, ornd},  //in-const
 	{"MAX",  40, NA,    2, omax},   //function two args
-	{"TRN",  40, NA,    1, otrn},  //function single arg    <fMatrix>
+	{"TRN",  40, NA,    1, otrn},   //function single arg    <fMatrix>
 	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
 	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
-	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
+/*35 */	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
 	{"ZERO", 40, NA,    2, ozero},  //function two args  <fint, int>
 	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
 	{"HSUM", 40, NA,    1, ohsum},  //function two args   <fMatrix>
 	{"VSUM", 40, NA,    1, ovsum},  //function two args   <fMatrix>
-	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
+/*40 */	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
 	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
 	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
 	{"COND", 40, NA,    5, ocond},  //function four args   <fmatrix>, <min>, <max> <value>
 	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
-	{"ZERD", 40, NA,    1, ozerod} //function 1 args   <fmatrix>
+/*45 */	{"ZERD", 40, NA,    1, ozerod}  //function 1 args   <fmatrix>
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -194,8 +194,6 @@ tOBJ print(tOBJ r);
 /**********************************************************/
 /*  strings                                              */
 /**********************************************************/
-
-
 
 char strings[MAXSTRING], *estr=&strings[0];
 char *newstring(char *s)
@@ -223,6 +221,56 @@ tOBJ makestring(char *s)
 	return r;
 }
 
+/**********************************************************/
+/*  float   and integers                                  */
+/**********************************************************/
+
+tOBJ makefloat(float f)
+{	
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=f;
+	return r;
+}
+
+tOBJ makefloati(int i)
+{	
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=(float)i;
+	return r;
+}
+
+float tofloat(tOBJ v)
+{
+	float f=0.0;
+	if (v.type==FLOAT)
+		f=v.floatpoint;
+	else
+	if (v.type==INTGR)
+		f=(float)v.number;
+
+	return f;
+}
+
+tOBJ makeint(int i)
+{	
+	tOBJ r;
+	r.type=INTGR;
+	r.number=i;
+	return r;
+}
+
+int toint(tOBJ v)
+{
+	int f=0;
+	if (v.type==FLOAT)
+		f=(int)v.floatpoint;
+	else
+	if (v.type==INTGR)
+		f=v.number;
+	return f;
+}
 
 /**********************************************************/
 /*  stack                                                 */
@@ -252,7 +300,7 @@ int freeobj(tOBJ *b)
 
 int push(tOBJ a)
 {
-	if (dbg)  { printf ("PUSH %d\n", a.type); }
+	if (dbg)  { printf ("PUSH %d = ", a.type); print(a); printf("\n"); }
 
 	if (sop<MAXSTACK-1)
 	{
@@ -273,7 +321,7 @@ tOBJ pop()
 		sop--;
 	}
 
-	if (dbg) { printf ("POP %d\n", e.type);}
+	if (dbg) { printf ("POP %d = ", e.type);  print(e); printf("\n"); }
 
 	return e;
 }
@@ -484,7 +532,7 @@ void reduce()
 	{
 		if(oplist[i].nop>stacksize())
 		{
-			rprintf("Insuffcient parameters\n");
+			rprintf("Insuffcient parameters need %d but only have %d\n", oplist[i].nop, stacksize());
 			stackprint();
 		}
 		else
@@ -553,21 +601,32 @@ tOBJ eval_oxpr(char *s)
 				}
 			case OPR:
 				op = getOP(tokbuff);
-
+printf ("OPR %d\n", op);
 				if (oplist[op].nop==0 && oplist[op].func != NULL)
 				{
+printf ("1 -OPR %d\n", op);
+
 					(*oplist[op].func)();
 					continue;
 				}
 				else
 				if (oop>0 && (oplist[op].type == CBR || oplist[op].type==COMMA))
 				{
+					int t=oplist[op].type;
 					int i=stackop[oop-1];
+printf ("2 -OPR %d %d %d\n", oop,i,t);
+
 					while (oplist[i].type != OBR && oplist[i].type != COMMA)
 					{
+printf ("4 -OPR %d\n", oop);
+						if (oop==0) break;
 						reduce();
 						i=stackop[oop-1];
+				
 					}
+printf ("3 -OPR %d\n", oop);
+					if  ((t==OPR) && (oplist[i].type== OBR) )
+						reduce();
 					gnf=0;
 					continue;
 				}
@@ -575,6 +634,7 @@ tOBJ eval_oxpr(char *s)
 				if (oop>0)
 				{
 					int i = stackop[oop-1];
+printf ("5 -OPR %d\n", oop);
 					if ((oplist[i].type != OBR) && (oplist[op].level<=oplist[i].level) )
 					{
 						reduce();
@@ -587,7 +647,6 @@ tOBJ eval_oxpr(char *s)
 				lf=0;
 				gnf=0;
 				continue;
-
 			}
 		}
 		else
@@ -622,7 +681,6 @@ tOBJ eval_oxpr(char *s)
 	return pop();
 }
 
-float tofloat(tOBJ v);
 
 /*
 i
@@ -659,7 +717,8 @@ fMatrix readmatrix(char *s)
 
 	int toop;
 
-	strncpy(savebuff, exprbuff, MAXSTRING); toop=oop;
+	strncpy(savebuff, exprbuff, MAXSTRING); 
+	toop=oop;
 	t=e;
 
 	e=s;
@@ -844,29 +903,6 @@ int set(char *name, tOBJ r)
 /**********************************************************/
 /*  maths functions                                       */
 /**********************************************************/
-
-float tofloat(tOBJ v)
-{
-	float f=0.0;
-	if (v.type==FLOAT)
-		f=v.floatpoint;
-	else
-	if (v.type==INTGR)
-		f=(float)v.number;
-
-	return f;
-}
-
-int toint(tOBJ v)
-{
-	int f=0;
-	if (v.type==FLOAT)
-		f=(int)v.floatpoint;
-	else
-	if (v.type==INTGR)
-		f=v.number;
-	return f;
-}
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op)
 {
@@ -1133,26 +1169,17 @@ void osqrt()
 /*  matrix function (loating point)                       */
 /**********************************************************/
 /*
-!MAT DEF A=1;3
-!MAT LET A=1.0;2.0;3.0
-!PRINT CELL("A",0,1)
-2.000000
-
 !LET MA=[1.0 2.0;3.0 4.0]
 !print cell(ma,1,1)
-
 !PRINT DSIG(MA)
-
 !print apply(ma, "expr")
-
 */
 void omat() 
 {
 	//binary signmoid function
 	tOBJ r,m;
 	int row,col;
-	r.type=FLOAT;
-	r.floatpoint=0.0;
+	r=makefloat(0.0);
 	row=toint(pop());
 	col=toint(pop());
 	m=pop();
@@ -1189,9 +1216,7 @@ void osig()
 		r.type=FLOAT;
 		r.floatpoint=1/(1+exp(-tofloat(a)));
 	}
-
 	push(r);
-
 	return ;
 }
 
@@ -1234,8 +1259,7 @@ void odsig()
 {
 	//derivative binary sigmoid
 	tOBJ r,a;
-	r.type=FLOAT;
-	r.floatpoint=0.0;
+	r=makefloat(0.0);
 	a=pop();
 
 	if (a.type==FLOAT)
@@ -1312,8 +1336,7 @@ void oapply()
 void otrn()
 {
 	tOBJ r,a;
-	r.type=FLOAT;
-	r.floatpoint=0.0;
+	r=makefloat(0.0);
 	a=pop();
 	if (a.type==FMAT2)
 	{
@@ -1694,7 +1717,7 @@ void extend(char *x)
 
 	if (intf) { // set up defaults
 		intf=0; 
-		v.type=FLOAT; v.floatpoint=3.1415926;  set("PI", v);
+		set("PI",  makefloat (3.1415926));
 		set("DFN", makestring("data.txt"));
 		set("IFN", makestring("test.jpg"));
 		
