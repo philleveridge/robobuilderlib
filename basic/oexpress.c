@@ -602,11 +602,9 @@ tOBJ eval_oxpr(char *s)
 			case OPR:
 				{
 					op = getOP(tokbuff);
-//	printf ("OPR %d\n", op);
+
 					if (oplist[op].nop==0 && oplist[op].func != NULL)
 					{
-//	printf ("1 -OPR %d\n", op);
-
 						(*oplist[op].func)();
 						continue;
 					}
@@ -615,17 +613,14 @@ tOBJ eval_oxpr(char *s)
 					{
 						int t=oplist[op].type;
 						int i=stackop[oop-1];
-//	printf ("2 -OPR %d %d %d\n", oop,i,t);
 
 						while (oplist[i].type != OBR && oplist[i].type != COMMA)
 						{
-//	printf ("4 -OPR %d\n", oop);
 							if (oop==0) break;
 							reduce();
 							i=stackop[oop-1];
 				
 						}
-//	printf ("3 -OPR %d\n", oop);
 						if  ((t==CBR) && (oplist[i].type== OBR) )
 							reduce();
 						gnf=0;
@@ -635,7 +630,6 @@ tOBJ eval_oxpr(char *s)
 					if (oop>0)
 					{
 						int i = stackop[oop-1];
-//	printf ("5 -OPR %d\n", oop);
 						if ((oplist[i].type != OBR) && (oplist[op].level<=oplist[i].level) )
 						{
 							reduce();
