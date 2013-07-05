@@ -398,7 +398,7 @@ int convolve(char ln1, char ln2)   // "@A (.) @B"
 
 
 				if (my<h-1) 
-					p += arrayA[my*w+mx+w]*arrayB[1] + arrayA[(my+1)*w+mx+1]*arrayB[2];
+					p += arrayA[(my+1)*w+mx]*arrayB[2] + arrayA[(my+1)*w+mx+1]*arrayB[3];
 
 
 				scene[my*w+mx]=abs(p);  

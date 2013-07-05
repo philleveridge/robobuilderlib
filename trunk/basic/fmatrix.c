@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 #include "win.h"
-int tp[10000]; //windows temp fix
 #endif
 
 #ifdef LINUX
@@ -11,8 +10,6 @@ int tp[10000]; //windows temp fix
 #include <string.h>
 #include <math.h>
 #include "linux.h"
-
-//#define NULL (void *)0
 #endif
 
 
@@ -21,25 +18,15 @@ int tp[10000]; //windows temp fix
 #include "lists.h"
 
 int abs(int);
-
 extern int  dbg;
-
-#define MATSIZE   10000
-
-fMatrix fmstore[26];
-float  fdata   [MATSIZE];
 
 int fm=0;
 int fs=0;
-static int initflag=1;
-
-/**********************************************************/
-
 
 
 /**********************************************************
 
-New Matrix 
+Floating point Matrix library
 
 **********************************************************/
 
@@ -58,7 +45,7 @@ fMatrix newmatrix(int c, int r)
 
 	if (n.fstore==0)
 	{
-		printf ("out of space %d (%d)\n",fs,MATSIZE);
+		printf ("out of space  (%d)\n",fs);
 	}
 	else
 	{
@@ -239,7 +226,6 @@ fMatrix fmultiply2(fMatrix *A,fMatrix *B)
 			R.fstore[rx+ry*wb] = 0.0f;
 			for (m=0; m<hb; m++)
 			{
-				//tp[rx+ry*wb] += fget(ln1,m,ry) * fget(ln2,rx,m);  
 				R.fstore[rx+ry*wb] += A->fstore[m+ry*wa] * B->fstore[rx+m*wb];
 			}
 		}
@@ -385,7 +371,15 @@ fMatrix fconvolve2(fMatrix *A, fMatrix *B)
 		{
 			for (mx=0;mx<w; mx++)
 			{
-				int p=0; //tbd
+				float p=0.0f;
+
+				if (mx<w-1) 
+					p += fget2(A,mx,my)*fget2(B,0,0) + fget2(A,mx+1,my)*fget2(B,1,0);
+
+				if (my<h-1) 
+					p += fget2(A,mx+1,my)*fget2(B,0,1) + fget2(A,mx+1,my+1)*fget2(B,1,1);
+
+				fset2(&R,mx,my,p);
 			}
 		}
 	}
