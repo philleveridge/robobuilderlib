@@ -1299,11 +1299,10 @@ void oapply()
 		{
 			v.floatpoint = fget2(&b.fmat2,i,j);
 			set("ME",v);
-			v.floatpoint = (float)j;
-			set("MR",v);
-			v.floatpoint = (float)i;
-			set("MC",v);
-			//e=t;
+			//v.floatpoint = (float)j;
+			//set("ME_R",v);
+			//v.floatpoint = (float)i;
+			//set("ME_C",v);
 			v=eval_oxpr(expr);
 			fset2(&r.fmat2,i,j,tofloat(v));
 		}
