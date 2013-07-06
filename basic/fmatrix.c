@@ -131,7 +131,7 @@ float fget2(fMatrix *M, int c, int r)
 	}
 	else
 	{
-		printf ("err- %d, %d\n", M->w, M->h);
+		if (dbg) printf ("err- %d, %d\n", M->w, M->h);
 		return 0.0;
 	}
 }
@@ -159,8 +159,8 @@ fMatrix fadd2(fMatrix *A, fMatrix *B, char op)
 
 	if (wa!=wb || ha!=hb)
 	{
-		printf ("error size must match (%d,%d) - (%d,%d)\n", wa,ha,wb,hb);
-		return R;
+		if (dbg) printf ("size does not match (%d,%d) - (%d,%d)\n", wa,ha,wb,hb);
+		//return R;
 	}
 
 	R = newmatrix(wa,ha);
