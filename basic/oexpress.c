@@ -72,7 +72,7 @@ fMatrix fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)   ;
 #define isnumber(c)  (c >= '0' && c <= '9')
 
 #define isdelim(c)  (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<'  || c == '>'  \
-                    || c == '^' || c == '(' || c == ')' || c == ',' || c == '='  || c == '$' || c=='@')
+                    || c == '^' || c == '(' || c == ')' || c == ',' || c == '='  || c == '$' || c=='@' || c=='{' || c== '}')
 
 #define isalpha(c)  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_')
 
@@ -126,6 +126,7 @@ void otrn ();
 void oapply ();
 void orshp ();
 void orep ();
+
 void ozero ();
 void oeye ();
 void ovsum ();
@@ -135,6 +136,9 @@ void oimp ();
 void ocond();
 void ozerob();
 void ozerod();
+
+void ocar ();
+void ocdr ();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -185,17 +189,60 @@ tOP oplist[] = {
 	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
 	{"COND", 40, NA,    5, ocond},  //function four args   <fmatrix>, <min>, <max> <value>
 	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
-/*45 */	{"ZERD", 40, NA,    1, ozerod}  //function 1 args   <fmatrix>
+/*45 */	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
+	{"CAR",  40, NA,    1, ocar},  //function single arg
+	{"CDR",  40, NA,    1, ocdr}  //function single arg
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
 tOBJ print(tOBJ r);
 
+
+/**********************************************************/
+/*  CELLS                                              */
+/**********************************************************/
+int freeobj(tOBJ *b);
+
+tOBJ emptyObj()
+{
+	tOBJ r;
+	r.type=EMPTY;
+	return r;
+}
+
+tCELLp newCell()
+{
+	if (dbg) printf ("New CELL\n");	
+	return (tCELLp)malloc(sizeof(tCELL));
+}
+
+void delCell(tCELLp p)
+{
+	if (dbg) printf ("Delete CELL\n");	
+	freeobj(&p->head);
+	if (p->tail !=NULL) delCell((tCELLp)p->tail);
+	free(p);
+}
+
+tOBJ makeCell()
+{
+	tOBJ r; tCELLp p;
+	r.type=CELL;
+	p = newCell();
+	p->head=emptyObj();
+	p->tail=0;
+	r.cell=p;
+	r.cnt=0;
+	return r;
+}
+
+tOBJ readcells();
+
 /**********************************************************/
 /*  strings                                              */
 /**********************************************************/
 
-char strings[MAXSTRING], *estr=&strings[0];
+//char strings[MAXSTRING], *estr=&strings[0];
 char *newstring(char *s)
 {
 	char *r;
@@ -203,6 +250,14 @@ char *newstring(char *s)
 	if (dbg) printf ("New String [%d]\n",n);
 	r=(char *)malloc(n*sizeof(char));
 	strcpy(r, s);
+	return r;
+}
+
+char *newstring1(int n)
+{
+	char *r;
+	if (dbg) printf ("New String [%d]\n",n);
+	r=(char *)malloc(n*sizeof(char));
 	return r;
 }
 
@@ -293,6 +348,11 @@ int freeobj(tOBJ *b)
 	if (b->type==STR)
 	{
 		if (b->cnt==0) delstring(b->string);
+	}
+
+	if (b->type==CELL)
+	{
+		if (b->cnt==0) delCell(b->cell);
 	}
 
 	return 0;
@@ -404,6 +464,11 @@ int get_token(int flg)
 		e++;
 		*p='\0';
 		return STRNG;
+	}
+
+	if (*e == '{')
+	{
+		return CLIST;
 	}
 
 	if (*e == '[')
@@ -587,6 +652,11 @@ tOBJ eval_oxpr(char *s)
 				push(r);
 				gnf=1;
 				break;
+			case CLIST:
+				r = readcells();
+				push(r);
+				gnf=1;
+				break;
 			case MLIST: 
 				{
 				int toop=oop;
@@ -658,7 +728,67 @@ tOBJ eval_oxpr(char *s)
 	}
 	return pop();
 }
+
+/* CELLS - linked list of objects
+i
+!{1 2 3}
+!{"list" "of" "things"}
+
+!{1 {2 4} 2 3 {4 {2}}} 'tbd
+
+*/
  
+
+tOBJ readcells()
+{
+	int tf=1;
+	tOBJ r= makeCell();
+	tCELLp top = (tCELLp)r.cell; 
+	tCELLp prv = (tCELLp)0;
+	e++;
+
+	while (tf)
+	{
+		int tk = get_token(0);	
+		tCELLp next;
+
+		switch (tk)
+		{
+		case ALPHA:
+			break;
+		case STRNG:
+			top->head = makestring(tmpstr);
+			break;
+		case NUMI:
+			top->head = makeint(tnum);
+			break;
+		case NUMF:
+			top->head = makefloat(tfloat);
+			break;
+		case CLIST:
+			top->head = readcells();
+			break;
+		case DELI:
+			if (strcmp(tokbuff,"}")!=0)
+			{
+				printf ("Invalid character [%s]\n",tokbuff);
+			}
+			prv->tail=0;
+			tf=0;
+			break;
+		}
+
+		if (tf)
+		{
+			next=newCell();
+			next->head=emptyObj();
+			top->tail=next;	
+			prv=top;
+			top=next;
+		}
+	}
+	return r;
+}
 
 /*
 i
@@ -799,12 +929,49 @@ void printtype(tOBJ r)
     {
 	fmatprint2(&r.fmat2);	 
     }
-    else    
+    else  if (r.type == CELL)
+    {
+	if (r.q) rprintfStr("'");
+
+	if (r.cell != NULL)
+	{
+		rprintfStr("CELL");	
+	}
+	else
+	{
+		rprintfStr("null");
+	}
+    }  
+    else
     {               
         rprintfStr("? error - type\n");   
     }
     return;
 }
+
+tOBJ print(tOBJ r)
+{
+    if (r.type == CELL)
+    {
+        struct cell  *c = r.cell;
+        rprintfStr("{");  
+        print(c->head);
+                
+        while (c->tail != (void *)0)
+        {
+                c=c->tail;
+                rprintfStr(" ");
+                print(c->head);
+        }
+        rprintfStr("}");
+    }
+    else
+    {
+		printtype(r);
+    }
+    return r;
+}
+
 
 /**********************************************************/
 /*  Access variables (read/write)                         */
@@ -851,7 +1018,7 @@ int set(char *name, tOBJ r)
 		return 1;
 	}
 
-	if (r.type==FMAT2) r.cnt++;
+	if (r.type==FMAT2 || r.type==STR || r.type==CELL) r.cnt++;
 
 	while (n<nov)
 	{
@@ -958,7 +1125,12 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 
 	if (o1.type==STR || o2.type==STR)
 	{
-		r= makestring(strcat(o1.string,o2.string));
+		int n=strlen(o1.string)+strlen(o2.string)+1;
+		char *s=newstring1(n);
+		strcat(s,o1.string);
+		strcat(s,o2.string);
+		r.type=STR;
+		r.string=s;
 	}
 
 	if (o1.type==FMAT2 && o2.type==FMAT2 && (op==PLUS || op==MINUS || op==DIVD || op==PROD))
@@ -1500,6 +1672,38 @@ void oimp ()
 }
 
 /**********************************************************/
+/*  List functions                                       */
+/**********************************************************/
+
+void ocar ()
+{
+	tOBJ r,a;
+	a=pop();
+	r.type=EMPTY;
+	if (a.type==CELL)
+	{
+		tCELLp p= a.cell;
+		r=p->head;
+	}
+	push(r);
+	return;
+}
+void ocdr ()
+{
+	tOBJ r,a;
+	r.type=EMPTY;
+	a=pop();
+	if (a.type==CELL)
+	{		
+		tCELLp p= a.cell;
+		r.type=CELL;
+		r.cell=p->tail;
+	}
+	push(r);
+	return;
+}
+
+/**********************************************************/
 /*  Access sensors                                        */
 /**********************************************************/
 
@@ -1593,31 +1797,6 @@ void oprint()
 	rprintfCRLF();
 	clear();
 	return;
-}
-
-
-
-tOBJ print(tOBJ r)
-{
-    if (r.type == CELL)
-    {
-        struct cell  *c = r.cell;
-        rprintfStr("(");  
-        print(c->head);
-                
-        while (c->tail != (void *)0)
-        {
-                c=c->tail;
-                rprintfStr(" ");
-                print(c->head);
-        }
-        rprintfStr(")");
-    }
-    else
-    {
-		printtype(r);
-    }
-    return r;
 }
 
 int get_str_token(char *s)
@@ -2091,6 +2270,46 @@ void extend(char *x)
 			
 		}
 		freeobj(&v);
+		return;
+	}
+
+	e=x;
+	if (get_str_token("WHOS")==1)
+	{
+		//display all variables and types
+		char *p=varname;
+		int i=0;
+		while (i<nov)
+		{
+			tOBJ r =varobj[i];
+			char *st="";
+
+			switch (r.type)
+			{  
+			case INTGR: st="Int"; break;
+
+			case FLOAT: st="Float"; break;
+
+			case STR: st="String"; break;
+
+			case FMAT2: st="Matrix"; break;
+
+			case CELL: st="List"; break;
+
+			case SYM: break;
+
+			case BOOLN: break;
+
+			case EMPTY: break;
+
+			case FUNC: break;
+			}
+			printf("%7s - %s",p,st);
+			p=p+strlen(p)+1;
+			i++;
+			printf("\n");
+		}
+
 		return;
 	}
 
