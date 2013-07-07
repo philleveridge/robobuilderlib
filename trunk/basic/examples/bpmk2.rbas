@@ -1,0 +1,44 @@
+i
+print "Step 1&3) set up"
+!let mw=[-1.0 1.0 2.0 -1.0]
+!let mx=[0.6 0.8 0.0 1.0]
+!let mv=[2.0 1.0 0.0 ;1.0 2.0 2.0 ;0.0 3.0 1.0 ;0.0 0.0 -1.0]
+
+!print mw;mx;mv
+
+print "Feed forward"
+print "Step 4) input layer"
+!let mr=sig(mx*mv)
+!mr
+
+print "Step 5) hidden layer"
+!let ms=[0 0 0 1]+mr
+!let my=sig(mw*trn(ms))
+!my
+
+print "back propagate"
+print "Step 6) output layer"
+
+!let err=0.9
+!let my=apply(my, "(ERR-ME)*DSIG(ME)")
+!my
+
+print "Step 7) hidden layer"
+!let mg=my*mw
+!let mt=dsig(ms)
+!let mz=mg.*mt
+!mz
+
+print "Step  8) update weights"
+!let alp=0.3
+!let mp = TRN(MX)*MZ*alp
+
+!let mv=RSHP(MP,3,4)+MV
+print "new weights"
+!mv
+
+!let mr=my*mr*0.3
+!let mw=mw+mr
+!print mw
+
+
