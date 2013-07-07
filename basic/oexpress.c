@@ -121,7 +121,6 @@ void odsig ();
 void opsd ();
 void omax ();
 void omat ();
-void oprint ();
 void otrn ();
 void oapply ();
 void orshp ();
@@ -139,6 +138,8 @@ void ozerod();
 
 void ocar ();
 void ocdr ();
+void otype ();
+void olen ();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -191,7 +192,9 @@ tOP oplist[] = {
 	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
 /*45 */	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
 	{"CAR",  40, NA,    1, ocar},  //function single arg
-	{"CDR",  40, NA,    1, ocdr}  //function single arg
+	{"CDR",  40, NA,    1, ocdr},  //function single arg
+	{"TYPE", 40, NA,    1, otype},  //function single arg
+	{"LEN",  40, NA,    1, olen}  //function single arg
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -1044,6 +1047,7 @@ int set(char *name, tOBJ r)
 		return -1;
 }
 
+
 /**********************************************************/
 /*  maths functions                                       */
 /**********************************************************/
@@ -1703,6 +1707,42 @@ void ocdr ()
 	return;
 }
 
+void otype ()
+{
+	tOBJ r,a;
+	a=pop();
+	r=makeint(a.type);
+	push(r);
+	return;
+}
+
+void olen ()
+{
+	tOBJ r,a;
+	a=pop();
+	r=makeint(0);
+
+	if (a.type==STR)
+		r=makeint(strlen(a.string));
+
+	if (a.type==CELL)
+	{
+		int n=1;
+		
+		tCELLp p= a.cell;
+		while (p->tail !=0)
+		{
+			n++;
+			p=p->tail;
+		}
+		r=makeint(n);
+	}
+	push(r);
+	return;
+}
+
+
+
 /**********************************************************/
 /*  Access sensors                                        */
 /**********************************************************/
@@ -1786,48 +1826,6 @@ void omax()
 }
 
 
-void oprint()
-{
-	int i=stacksize();
-	while (i>0)
-	{
-		print(peek(--i));
-		rprintfStr(" ");
-	}
-	rprintfCRLF();
-	clear();
-	return;
-}
-
-int get_str_token(char *s)
-{
-	int tk = get_token(0);
-	
-	if (s==(char *)0 && tk==ALPHA)
-		return 1;
-
-	if (tk==ALPHA && !strcmp(tokbuff,s))
-		return 1;
-	return 0;
-}
-
-int get_integer()
-{
-	int tk = get_token(0);
-	
-	if (tk==NUMI)
-		return tnum;
-	return 0;
-}
-
-int get_opr_token(unsigned char op)
-{
-	int tk = get_token(1);
-	if (tk==OPR && oplist[getOP(tokbuff)].type==op)
-		return 1;
-	return 0;
-}
-
 /***********************************************************************
 
 !BF "++++++++++[>+++++++>++++++++++>+++>+<<<<-]+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>."
@@ -1870,6 +1868,19 @@ Extended input
 ************************************************************************/
 
 static int  intf=1;
+
+int get_str_token(char *s)
+{
+	int tk = get_token(0);
+	
+	if (s==(char *)0 && tk==ALPHA)
+		return 1;
+
+	if (tk==ALPHA && !strcmp(tokbuff,s))
+		return 1;
+	return 0;
+}
+
 
 
 void extend(char *x)
@@ -2309,10 +2320,8 @@ void extend(char *x)
 			i++;
 			printf("\n");
 		}
-
 		return;
 	}
-
 
 #ifdef LINUX
 	e=x;
