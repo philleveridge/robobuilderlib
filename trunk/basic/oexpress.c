@@ -140,6 +140,9 @@ void ocar ();
 void ocdr ();
 void otype ();
 void olen ();
+void oapp ();
+void olist ();
+void ocons ();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -194,6 +197,9 @@ tOP oplist[] = {
 	{"CAR",  40, NA,    1, ocar},  //function single arg
 	{"CDR",  40, NA,    1, ocdr},  //function single arg
 	{"TYPE", 40, NA,    1, otype},  //function single arg
+	{"APPD", 40, NA,    1, oapp},  //function single arg
+	{"LIST", 40, NA,    1, olist},  //function single arg
+	{"CONS", 40, NA,    1, ocons},  //function single arg
 	{"LEN",  40, NA,    1, olen}  //function single arg
 };
 
@@ -1718,6 +1724,7 @@ void otype ()
 
 void olen ()
 {
+	//!LEN {1 2 3} -> 3
 	tOBJ r,a;
 	a=pop();
 	r=makeint(0);
@@ -1727,21 +1734,105 @@ void olen ()
 
 	if (a.type==CELL)
 	{
-		int n=1;
+		int n=0;
 		
 		tCELLp p= a.cell;
-		while (p->tail !=0)
+		do
 		{
 			n++;
 			p=p->tail;
 		}
+		while (p!= NULL);
 		r=makeint(n);
 	}
 	push(r);
 	return;
 }
 
+void olist ()
+{	
+	//!LIST {1 2 3} -> {{1 2 3}}
+	tOBJ r,a;
+	a=pop();
+	r.type=EMPTY;
+	if (a.type==CELL)
+	{
+		tCELLp n;
+		r=makeCell();
+		n=r.cell;
+		n->head=a;
+		n->tail = NULL;
+	}	
+	push(r);
+	return;
+}
 
+void ocons ()
+{
+	//!CONS {1 {2 3}} -> {1 2 3}
+	tOBJ r,a;
+	r.type=EMPTY;
+	a=pop();
+	if (a.type==CELL)
+	{
+		tCELLp n,p=a.cell;
+		tOBJ a = p->head;
+		tOBJ b = p->tail->head;
+		if (b.type==CELL)
+		{
+			r=makeCell();
+			n=r.cell;
+			n->head=a;
+			n->tail = (tCELLp)(b.cell);
+		}
+	}
+	push(r);
+	return;
+}
+
+void oapp ()
+{
+	//!APPD {{1 2} {3 4}} -> {1 2 3 4}
+	tOBJ n, r,a;
+	a=pop();
+	r.type=EMPTY;
+	if (a.type==CELL)
+	{
+		r=makeCell();
+		n=r;
+		tCELLp p= a.cell;
+		do
+		{
+			tOBJ h=p->head;
+			if (h.type != CELL)
+			{
+				printf("not a list?\n");
+				break;
+			}
+			tCELLp l=h.cell;
+			do //add each elemnt to list
+			{
+				tCELLp z=n.cell;
+				z->head=l->head;
+				l=l->tail;
+				if (l!=NULL || p->tail != NULL) 
+				{
+					n=makeCell();
+					z->tail=n.cell;	
+				}
+				else
+				{
+					z->tail=NULL;
+				}
+			}
+			while (l != NULL);		
+			p=p->tail;
+		}
+		while (p !=NULL);
+	}	
+	push(r);
+	return;
+}
 
 /**********************************************************/
 /*  Access sensors                                        */
