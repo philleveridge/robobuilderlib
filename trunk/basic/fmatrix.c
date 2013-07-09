@@ -171,7 +171,15 @@ fMatrix fadd2(fMatrix *A, fMatrix *B, char op)
 		{
 			if (op=='+') R.fstore[rx+ry*wa] = fget2(A,rx,ry) + fget2(B,rx,ry);  
 			if (op=='-') R.fstore[rx+ry*wa] = fget2(A,rx,ry) - fget2(B,rx,ry);  
-			if (op=='/') R.fstore[rx+ry*wa] = fget2(A,rx,ry) / fget2(B,rx,ry);  
+			if (op=='/') 
+			{
+				float n= fget2(B,rx,ry);
+				if (n != 0.0)
+					R.fstore[rx+ry*wa] = fget2(A,rx,ry) / n;  
+				else
+					R.fstore[rx+ry*wa] = 0.0; //error
+				
+			}
 			if (op=='*') R.fstore[rx+ry*wa] = fget2(A,rx,ry) * fget2(B,rx,ry);  
 		}
 	}

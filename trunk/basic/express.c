@@ -184,11 +184,17 @@ unsigned char eval_expr(char **str, long *res)
 	int i;
         int sgn=0;
 
+	while (**str==' ') (*str)++; //ignore leading w/s
+
 #ifdef PARSE
 	if (**str=='!')
 	{
 		tOBJ v;
+		char *cp;
 		(*str)++;
+		cp=strchr(*str, '!');
+		if (cp != 0) *cp='\0';
+		if (dbg > 1) printf ("E=[%s]\n", *str);
 		v=eval_oxpr(*str);
 		if (v.type==INTGR)
 			n1=v.number;
@@ -196,11 +202,14 @@ unsigned char eval_expr(char **str, long *res)
 			n1=(int)v.floatpoint;
 		else n1=0;
 		*res=n1;
-		while (**str!='\0') (*str)++;
+		if (cp !=0) 
+			*str=cp+1;
+		else 
+			while (**str!='\0') 
+				(*str)++;
 		return NUMBER;
 	}
 #endif
-
 
 	if (dbg>1) {
 		rprintf("Eval =%s\n", *str); 
