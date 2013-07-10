@@ -148,6 +148,7 @@ void onull();
 void omemb();
 void oatom();
 void oasso();
+void oexec();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -217,7 +218,8 @@ tOP oplist[] = {
 	{"NULL",  40, NA,   1, onull},  //function single arg
 	{"MEMB",  40, NA,   1, omemb},  //function single arg
 	{"ASSN",  40, NA,   1, oasso},  //function single arg
-	{"ATOM",  40, NA,   1, oatom}  //function single arg
+	{"ATOM",  40, NA,   1, oatom},  //function single arg
+	{"EXEC",  40, NA,   1, oexec}  //function single arg
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -822,6 +824,7 @@ tOBJ readcells()
 		switch (tk)
 		{
 		case ALPHA:
+			top->head = get(tokbuff);
 			break;
 		case STRNG:
 			top->head = makestring(tmpstr);
@@ -834,6 +837,15 @@ tOBJ readcells()
 			break;
 		case CLIST:
 			top->head = readcells();
+			break;
+		case OPR:
+			{
+				tOBJ o;
+				int op = getOP(tokbuff);
+				o.type=FUNC;
+				o.func=oplist[op].func;
+				top->head = o;
+			}
 			break;
 		case DELI:
 			if (strcmp(tokbuff,"}")!=0)
@@ -1794,9 +1806,8 @@ tOBJ callfn(void (*fp)(), tOBJ a)
 
 void ocar ()
 {
-	tOBJ r,a;
-	a=pop();
-	r.type=EMPTY;
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
 	if (a.type==CELL)
 	{
 		r=((tCELLp)(a.cell))->head;
@@ -1806,9 +1817,8 @@ void ocar ()
 }
 void ocdr ()
 {
-	tOBJ r,a;
-	r.type=EMPTY;
-	a=pop();
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
 	if (a.type==CELL)
 	{		
 		tCELLp p= a.cell;
@@ -1824,9 +1834,8 @@ void ocdr ()
 
 void otype ()
 {
-	tOBJ r,a;
-	a=pop();
-	r=makeint(a.type);
+	tOBJ a=pop();
+	tOBJ r=makeint(a.type);
 	push(r);
 	return;
 }
@@ -1834,9 +1843,8 @@ void otype ()
 void olen ()
 {
 	//!LEN {1 2 3} -> 3
-	tOBJ r,a;
-	a=pop();
-	r=makeint(0);
+	tOBJ a=pop();
+	tOBJ r=makeint(0);
 
 	if (a.type==STR)
 		r=makeint(strlen(a.string));
@@ -1862,9 +1870,8 @@ void olen ()
 void olist ()
 {	
 	//!LIST {1 2 3} -> {{1 2 3}}
-	tOBJ r,a;
-	a=pop();
-	r=makeCell();
+	tOBJ r=makeCell();
+	tOBJ a=pop();
 	((tCELLp)(r.cell))->head=a;
 	((tCELLp)(r.cell))->tail = NULL;	
 	push(r);
@@ -1939,9 +1946,8 @@ void oapp ()
 void olast()
 {
 	//!LAST {1 {2 3}} -> {2 3}
-	tOBJ r,a;
-	r.type=EMPTY;
-	a=pop();
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
 	if (a.type==CELL)
 	{		
 		tCELLp n=NULL,p= a.cell;
@@ -1959,10 +1965,8 @@ void olast()
 
 void osubst()
 {
-	//!SUBS { 1 2 {1 2 3}} -> {2 2 3}
-	tOBJ r,a;
-	r.type=EMPTY;
-	a=pop();
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
 	if (a.type==CELL)
 	{
 		tCELLp n=NULL,m=NULL,p= a.cell;
@@ -2006,9 +2010,8 @@ void osubst()
 void orev()
 {
 	//!REV {1 2 3} -> {3 2 1}
-	tOBJ r,a;
-	r.type=EMPTY;
-	a=pop();
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
 	if (a.type==CELL)
 	{
 		tCELLp n=NULL,p= a.cell;
@@ -2039,19 +2042,12 @@ void orev()
 void onull()
 {
 	//!NULL {} -> 1
-	tOBJ r,a;
-	r=makeint(0);	
-	a=pop();
-	if (a.type==EMPTY)
-	{
-		r = makeint(1);
-	}
-	if (a.type==CELL)
-	{
-		tCELLp p= a.cell;
-		if (p==NULL) r = makeint(1);	
-		else if (p->head.type==EMPTY) r= makeint(1);
-	}	
+	tOBJ r=makeint(0);	
+	tOBJ a=pop();
+	if ((a.type==EMPTY) 
+	|| (a.type==CELL && ((a.cell==NULL || ((tCELLp)(a.cell))->head.type==EMPTY)) )
+	|| (a.type==STR  && (a.string==NULL || *(a.string)=='\0')))	
+		r = makeint(1);		
 	push(r);
 	return;
 }
@@ -2059,24 +2055,21 @@ void onull()
 void omemb()
 {
 	//!MEMB {2 {2 3}} -> 1
-	tOBJ r,a;
-	int fl=0;
-	r=makeint(0);	
-	a=pop();
+	tOBJ a=pop();
 	if (a.type==CELL)
 	{
 		tCELLp p= a.cell;
 		tOBJ f,l,z;
 
 		f = p->head;
-		if (p->tail==NULL) {push (r);return r;}
+		if (p->tail==NULL) {push (makeint(0)); return;}
 		p=p->tail;
 
 		l = p->head;
 		if (l.type!=CELL)
 		{
 			printf ("? not a list");
-			push(r);
+			push(makeint(0));
 			return ;
 		}
 		p=l.cell;
@@ -2084,30 +2077,22 @@ void omemb()
 		do {	
 			if (compareObj(p->head, f))
 			{
-				r=makeint(1);	
-				push(r);
+				push(makeint(1));
 				return;
 			}	
 			p=p->tail;
 		}	
 		while (p!=NULL);
 	}
-	r=makeint(fl);	
-	push(r);
+	push(makeint(0));
 	return;
 }
 
 void oatom()
 {
 	//!ATOM 1 -> 1
-	tOBJ r,a;
-	r=makeint(1);
-	a=pop();
-	if (a.type==CELL)
-	{
-		r=makeint(0);
-	}	
-	push(r);
+	tOBJ a=pop();	
+	push(makeint(a.type==CELL));
 	return;
 }
 
@@ -2144,6 +2129,22 @@ void oasso()
 			t=callfn(onull,lst);	// loop lst not null			
 		}
 		while (t.number==0); 			
+	}	
+	push(r);
+	return;
+}
+
+void oexec()
+{
+	//> !EXEC {CAR {1 2}}
+	//1
+
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
+	if (a.type==CELL && ((tCELLp)(a.cell))->head.type==FUNC)
+	{
+		tOBJ x = ((tCELLp)(a.cell))->tail->head;
+		r = callfn(((tCELLp)(a.cell))->head.func,x);
 	}	
 	push(r);
 	return;
