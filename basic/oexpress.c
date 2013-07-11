@@ -128,6 +128,8 @@ void ozero ();
 void oeye ();
 void ovsum ();
 void ohsum ();
+void ovsum2 ();
+void ohsum2 ();
 void oconv ();
 void oimp ();
 void ocond();
@@ -149,6 +151,8 @@ void omemb();
 void oatom();
 void oasso();
 void oexec();
+void opr();
+void oset();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -158,19 +162,18 @@ tOP oplist[] = {
 	{"-",    10, MINUS, 2, NULL},
 	{"/",    20, DIVD,  2, NULL},
 	{"*",    20, MULT,  2, NULL},
-	{".*",   20, PROD,  2, NULL},
-/* 5 */	{".^",   20, POWR,  2, NULL},
+/* 5 */	{".*",   20, PROD,  2, NULL},
+	{".^",   20, POWR,  2, NULL},
 	{"AND",  8,  LAND,  2, NULL},
 	{"OR",   8,  LOR,   2, NULL},
-	{"<",    5,  LT,    2, NULL},
+/*10 */	{"<",    5,  LT,    2, NULL},
 	{">",    5,  GT,    2, NULL},
-/*10 */	{"=",    5,  EQL,   2, NULL},
+	{"=",    5,  EQL,   2, NULL},
 	{"<>",   5,  NEQ,   2, NULL},
 	{"(",    50, OBR,   1, NULL},
 	{")",    50, CBR,   1, NULL},
 	{",",    50, COMMA, 1, NULL},
-
-/*15 */	{"SIN",  40, NA,    1, osin},  //function single arg
+	{"SIN",  40, NA,    1, osin},  //function single arg
 	{"COS",  40, NA,    1, ocos},  //function single arg
 	{"TAN",  40, NA,    1, otan},  //function single arg
 	{"ATAN", 40, NA,    1, oatan}, //function single arg
@@ -179,34 +182,35 @@ tOP oplist[] = {
 	{"EXP",  40, NA,    1, oexp},  //function single arg
 	{"SQRT", 40, NA,    1, osqrt}, //function single arg
 	{"ABS",  40, NA,    1, oabs},  //function single arg
-/*30 */	{"RND",  40, NA,    0, ornd},  //in-const
+	{"RND",  40, NA,    0, ornd},  //in-const
 	{"MAX",  40, NA,    2, omax},   //function two args
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
 	{"DSIG", 40, NA,    1, odsig}, //sigmoid functon
-
-/*25 */	{"PSD",  40, NA,    0, opsd},  //const
+	{"PSD",  40, NA,    0, opsd},  //const
 	{"ACCX", 40, NA,    0, oacx},  //const
-	{"ACCY", 40, NA,    0, oacy},  //const
+/*30 */	{"ACCY", 40, NA,    0, oacy},  //const
 	{"ACCZ", 40, NA,    0, oacz},  //const
-
+//MATRIX BASED
 	{"TRN",  40, NA,    1, otrn},   //function single arg    <fMatrix>
 	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
 	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
-/*35 */	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
+	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
 	{"ZERO", 40, NA,    2, ozero},  //function two args  <fint, int>
 	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
-	{"HSUM", 40, NA,    1, ohsum},  //function two args   <fMatrix>
-	{"VSUM", 40, NA,    1, ovsum},  //function two args   <fMatrix>
-/*40 */	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
+	{"HSUM", 40, NA,    1, ohsum},  //function <fMatrix>
+	{"VSUM", 40, NA,    1, ovsum},  //function <fMatrix>
+/*40 */	{"H2SM", 40, NA,    1, ohsum2},  //function <fMatrix>
+	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
+	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
 	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
 	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
 	{"COND", 40, NA,    5, ocond},  //function four args   <fmatrix>, <min>, <max> <value>
 	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
-/*45 */	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
-
+	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
+//LIST BASED
 	{"CAR",  40, NA,    1, ocar},  //function single arg
 	{"CDR",  40, NA,    1, ocdr},  //function single arg
-	{"TYPE", 40, NA,    1, otype},  //function single arg
+/*50 */	{"TYPE", 40, NA,    1, otype},  //function single arg
 	{"APPD", 40, NA,    1, oapp},  //function single arg
 	{"LIST", 40, NA,    1, olist},  //function single arg
 	{"CONS", 40, NA,    1, ocons},  //function single arg
@@ -214,12 +218,13 @@ tOP oplist[] = {
 	{"SUBS", 40, NA,    1, osubst},  //function single arg
 	{"LAST", 40, NA,    1, olast},  //function single arg
 	{"REV",  40, NA,    1, orev},  //function single arg
-
 	{"NULL",  40, NA,   1, onull},  //function single arg
 	{"MEMB",  40, NA,   1, omemb},  //function single arg
-	{"ASSN",  40, NA,   1, oasso},  //function single arg
+/*60 */	{"ASSN",  40, NA,   1, oasso},  //function single arg
 	{"ATOM",  40, NA,   1, oatom},  //function single arg
-	{"EXEC",  40, NA,   1, oexec}  //function single arg
+	{"EXEC",  40, NA,   1, oexec},  //function single arg
+	{"SET",   40, NA,   1, oset}, //function single arg
+	{"PR",    40, NA,   1, opr}  //function single arg
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -1496,15 +1501,12 @@ void osig()
  
 void ohsum()
 {
-	//binary signmoid function
-	tOBJ r, a;
-	r.type=EMPTY;
-	a=pop();
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
 
 	if (a.type==FMAT2)
 	{
 		r.type=FMAT2;
-		// create new matrix
 		r.fmat2=fmatsum2(&a.fmat2, 1);	
 	}
 	push(r);
@@ -1513,16 +1515,41 @@ void ohsum()
 
 void ovsum()
 {
-	//binary signmoid function
-	tOBJ r, a;
-	r.type=EMPTY;
-	a=pop();
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
 
 	if (a.type==FMAT2)
 	{
 		r.type=FMAT2;
-		// create new matrix
 		r.fmat2=fmatsum2(&a.fmat2, 2);	
+	}
+	push(r);
+	return ;
+}
+
+void ohsum2()
+{
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
+
+	if (a.type==FMAT2)
+	{
+		r.type=FMAT2;
+		r.fmat2=fmatsum2(&a.fmat2, 3);	
+	}
+	push(r);
+	return ;
+}
+
+void ovsum2()
+{
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
+
+	if (a.type==FMAT2)
+	{
+		r.type=FMAT2;
+		r.fmat2=fmatsum2(&a.fmat2, 4);	
 	}
 	push(r);
 	return ;
@@ -2145,6 +2172,36 @@ void oexec()
 	{
 		tOBJ x = ((tCELLp)(a.cell))->tail->head;
 		r = callfn(((tCELLp)(a.cell))->head.func,x);
+	}	
+	push(r);
+	return;
+}
+
+void opr()
+{
+	//> !PR 1
+	//1
+	tOBJ a=pop();
+	print(a);	
+	push(a);
+	return;
+}
+
+void oset()
+{
+	//> !SET {"A" 2}
+	//2
+
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
+	if (a.type==CELL)
+	{
+		tOBJ name = callfn(ocar,a);
+		tOBJ value = callfn(ocar, callfn(ocdr,a));
+
+		if (name.type==STR)
+			set(name.string, value);
+		r=value;
 	}	
 	push(r);
 	return;
