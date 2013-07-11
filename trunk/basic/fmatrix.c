@@ -288,7 +288,7 @@ fMatrix fmatsum2(fMatrix *A, int mode)
 			for (mx=0;mx<w; mx++)
 			{
 				t = fget2(A, mx,my);
-				if (mode==2) t=t*t;
+				if (mode==3) t=t*t;
 				p += t;
 			}				
 			fset2(&R,0,my,p);
