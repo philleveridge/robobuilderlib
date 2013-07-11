@@ -1934,18 +1934,19 @@ void oapp ()
 
 	if (a.type==CELL)
 	{
+		tCELLp p= a.cell;
 		r=makeCell();
 		n=r;
-		tCELLp p= a.cell;
 		do
 		{
 			tOBJ h=p->head;
+			tCELLp l;
 			if (h.type != CELL)
 			{
 				printf("not a list?\n");
 				break;
 			}
-			tCELLp l=h.cell;
+			l=h.cell;
 			do //add each elemnt to list
 			{
 				tCELLp z=n.cell;
@@ -2079,6 +2080,14 @@ void onull()
 	return;
 }
 
+void oatom()
+{
+	//!ATOM 1 -> 1
+	tOBJ a=pop();	
+	push(makeint(a.type==CELL));
+	return;
+}
+
 void omemb()
 {
 	//!MEMB {2 {2 3}} -> 1
@@ -2115,13 +2124,6 @@ void omemb()
 	return;
 }
 
-void oatom()
-{
-	//!ATOM 1 -> 1
-	tOBJ a=pop();	
-	push(makeint(a.type==CELL));
-	return;
-}
 
 void oasso()
 {
@@ -2136,6 +2138,7 @@ void oasso()
 		tCELLp p = a.cell;
 		tOBJ key = p->head;	
 		tOBJ lst = (p->tail)->head;
+		tOBJ t;
 
 		if (lst.type != CELL)
 		{
@@ -2143,7 +2146,7 @@ void oasso()
 			push(r);
 			return;
 		}
-		tOBJ t;
+
 		do {
 			tOBJ pair = callfn(ocar, lst);
 			tOBJ n = callfn(ocar, pair);
