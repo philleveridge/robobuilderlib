@@ -153,6 +153,7 @@ void oasso();
 void oexec();
 void opr();
 void oset();
+void oserv();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -224,6 +225,7 @@ tOP oplist[] = {
 	{"ATOM",  40, NA,   1, oatom},  //function single arg
 	{"EXEC",  40, NA,   1, oexec},  //function single arg
 	{"SET",   40, NA,   1, oset}, //function single arg
+	{"SERV",  40, NA,  1, oserv}, //function single arg
 	{"PR",    40, NA,   1, opr}  //function single arg
 };
 
@@ -357,6 +359,7 @@ tOBJ cloneObj(tOBJ z)
 	return r;
 }
 
+
 tOBJ readcells();
 
 /**********************************************************/
@@ -408,6 +411,72 @@ int toint(tOBJ v)
 	if (v.type==INTGR)
 		f=v.number;
 	return f;
+}
+
+tOBJ cnvtInttoList(int an, int *array)
+{
+	tOBJ c,r,n,top;
+	tCELLp t;
+	int i;
+
+	if (an<=0) return emptyObj();
+	top=makeCell();
+	r=top;
+	((tCELLp)(r.cell))->head = makeint(array[0]);
+
+	for (i=1; i<an; i++)
+	{
+		n=makeCell();
+		((tCELLp)(n.cell))->head = makeint(array[i]);
+		((tCELLp)(r.cell))->tail = n.cell;
+		r=n;
+	}
+	((tCELLp)(n.cell))->tail = 0;
+	return top;
+}
+
+tOBJ cnvtBytetoList(int an, BYTE *array)
+{
+	tOBJ c,r,n,top;
+	tCELLp t;
+	int i;
+
+	if (an<=0) return emptyObj();
+	top=makeCell();
+	r=top;
+	((tCELLp)(r.cell))->head = makeint((int)array[0]);
+
+	for (i=1; i<an; i++)
+	{
+		n=makeCell();
+		((tCELLp)(n.cell))->head = makeint((int)array[i]);
+		((tCELLp)(r.cell))->tail = n.cell;
+		r=n;
+	}
+	((tCELLp)(n.cell))->tail = 0;
+	return top;
+}
+
+tOBJ cnvtFloattoList(int an, float *array)
+{
+	tOBJ c,r,n,top;
+	tCELLp t;
+	int i;
+
+	if (an<=0) return emptyObj();
+	top=makeCell();
+	r=top;
+	((tCELLp)(r.cell))->head = makefloat(array[0]);
+
+	for (i=1; i<an; i++)
+	{
+		n=makeCell();
+		((tCELLp)(n.cell))->head = makefloat(array[i]);
+		((tCELLp)(r.cell))->tail = n.cell;
+		r=n;
+	}
+	((tCELLp)(n.cell))->tail = 0;
+	return top;
 }
 
 /**********************************************************/
@@ -2135,10 +2204,8 @@ void oasso()
 	tOBJ a=pop();
 	if (a.type==CELL)
 	{
-		tCELLp p = a.cell;
-		tOBJ key = p->head;	
-		tOBJ lst = (p->tail)->head;
-		tOBJ t;
+		tOBJ key = callfn(ocar, a);
+		tOBJ lst = callfn(ocar, callfn(ocdr, a));
 
 		if (lst.type != CELL)
 		{
@@ -2155,10 +2222,9 @@ void oasso()
 				push(pair);
 				return;				
 			}
-			lst=callfn(ocdr, lst); 	// lst=cdr lst
-			t=callfn(onull,lst);	// loop lst not null			
+			lst=callfn(ocdr, lst); 	// lst=cdr lst		
 		}
-		while (t.number==0); 			
+		while (callfn(onull,lst).number==0); 			
 	}	
 	push(r);
 	return;
@@ -2206,6 +2272,18 @@ void oset()
 			set(name.string, value);
 		r=value;
 	}	
+	push(r);
+	return;
+}
+
+extern BYTE cpos[];
+extern BYTE	nos;
+
+void oserv()
+{
+	//> !SERV
+	tOBJ r;
+	r=cnvtBytetoList(nos, cpos);	
 	push(r);
 	return;
 }
