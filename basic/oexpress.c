@@ -154,6 +154,7 @@ void oexec();
 void opr();
 void oset();
 void oserv();
+void onth();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -225,7 +226,8 @@ tOP oplist[] = {
 	{"ATOM",  40, NA,   1, oatom},  //function single arg
 	{"EXEC",  40, NA,   1, oexec},  //function single arg
 	{"SET",   40, NA,   1, oset}, //function single arg
-	{"SERV",  40, NA,  1, oserv}, //function single arg
+	{"SERV",  40, NA,  0, oserv}, //function single arg
+	{"NTH",   40, NA,   1, onth}, //function single arg
 	{"PR",    40, NA,   1, opr}  //function single arg
 };
 
@@ -2285,6 +2287,32 @@ void oserv()
 	tOBJ r;
 	r=cnvtBytetoList(nos, cpos);	
 	push(r);
+	return;
+}
+
+void onth()
+{
+	//!nth {0 {"one" "two" "three"}}
+	//!nth {5 {"one" "two" "three"}}
+	tOBJ a=pop();
+	tOBJ indx = callfn(ocar,a);
+	if (indx.type==INTGR)
+	{
+		tOBJ lst = callfn(ocar,callfn(ocdr,a));
+		if (lst.type == CELL)
+		{
+			int cnt=indx.number;
+			while (cnt>0)	
+			{
+				lst = callfn(ocdr,lst);
+				cnt--;
+			}
+			push(callfn(ocar,lst));
+			return;
+		}
+	}
+	
+	push(emptyObj());
 	return;
 }
 
