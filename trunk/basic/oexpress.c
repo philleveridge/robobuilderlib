@@ -101,6 +101,7 @@ typedef struct ops {
 		void	(*func)();
 } tOP, *tOPp;
 
+tOBJ callfn(void (*fp)(), tOBJ a);
 void osin ();
 void ocos ();
 void otan ();
@@ -153,8 +154,10 @@ void oasso();
 void oexec();
 void opr();
 void oset();
+void oget();
 void oserv();
 void onth();
+void opose();
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -226,7 +229,9 @@ tOP oplist[] = {
 	{"ATOM",  40, NA,   1, oatom},  //function single arg
 	{"EXEC",  40, NA,   1, oexec},  //function single arg
 	{"SET",   40, NA,   1, oset}, //function single arg
+	{"GET",   40, NA,   1, oget}, //function single arg
 	{"SERV",  40, NA,  0, oserv}, //function single arg
+	{"POSE",  40, NA,  1, opose}, //function single arg
 	{"NTH",   40, NA,   1, onth}, //function single arg
 	{"PR",    40, NA,   1, opr}  //function single arg
 };
@@ -1145,6 +1150,16 @@ tOBJ get(char *name)
 		r.number=getvar(*name-'A');
 		return r;
 	}
+
+	if (strlen(name)==2 && *name=='@' && isalpha(*(name+1))) //backwards compat
+	{
+		char ln=*(name+1);
+		int an=listsize(ln);
+		int *array=listarray(ln);
+		r = cnvtInttoList(an, array);
+		return r;
+	}
+
 	while (i<nov)
 	{
 		if (strcmp(p,name)==0)
@@ -1170,6 +1185,25 @@ int set(char *name, tOBJ r)
 			setvar(*name-'A',(long)r.floatpoint);
 		if (r.type==EMPTY)
 			setvar(*name-'A',0);
+		return 1;
+	}
+
+	if (strlen(name)==2 && *name=='@' && isalpha(*(name+1))) //backwards compat
+	{
+		char ln=*(name+1);
+		if (r.type==CELL)
+		{
+			char ln=*(name+1);
+			int an=listsize(ln);
+			int *array=listarray(ln);
+			int cnt=0;
+			while (cnt<an && callfn(onull,r).number==0)
+			{
+				array[cnt++] = toint(callfn(ocar,r));
+				r=callfn(ocdr, r); 
+			}
+	
+		}
 		return 1;
 	}
 
@@ -1512,6 +1546,44 @@ void osqrt()
 	r.floatpoint=sqrt(tofloat(pop()));
 	push(r);
 	return ;
+}
+
+void ornd()
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=(float)rand()/RAND_MAX;
+	push(r);
+	return;
+}
+
+void omax()
+{
+	tOBJ r,a;
+	int i;
+	r=pop();
+	a=pop();
+
+	if (r.type==INTGR && a.type==INTGR)
+	{
+		if (a.number>r.number) r=a;
+	}
+		
+	if (r.type==FLOAT && a.type==FLOAT)
+	{
+		if (a.floatpoint>r.floatpoint) r=a;
+	}
+
+	if (a.type==FMAT2)
+	{
+		r.type=FLOAT;
+		r.floatpoint=a.fmat2.fstore[0];
+		for (i=1; i<a.fmat2.h*a.fmat2.w; i++)
+			if (a.fmat2.fstore[i]>r.floatpoint) r.floatpoint= a.fmat2.fstore[i];
+	}
+
+	push(r);
+	return;
 }
 
 /**********************************************************/
@@ -2161,35 +2233,34 @@ void oatom()
 
 void omemb()
 {
+
 	//!MEMB {2 {2 3}} -> 1
+	//!MEMB {4 {2 3}} -> 0
 	tOBJ a=pop();
 	if (a.type==CELL)
 	{
-		tCELLp p= a.cell;
-		tOBJ f,l,z;
+		tOBJ key = callfn(ocar, a);
+		tOBJ lst = callfn(ocar, callfn(ocdr, a));
+		tOBJ mem;
 
-		f = p->head;
-		if (p->tail==NULL) {push (makeint(0)); return;}
-		p=p->tail;
-
-		l = p->head;
-		if (l.type!=CELL)
+		if (lst.type != CELL)
 		{
-			printf ("? not a list");
+			printf ("Not a list\n");
 			push(makeint(0));
-			return ;
+			return;
 		}
-		p=l.cell;
 
-		do {	
-			if (compareObj(p->head, f))
+		do
+		{
+			mem = callfn(ocar, lst);
+			if (compareObj(mem, key))
 			{
 				push(makeint(1));
 				return;
-			}	
-			p=p->tail;
-		}	
-		while (p!=NULL);
+			}
+			lst=callfn(ocdr, lst); 	// lst=cdr lst				
+		}
+		while (callfn(onull,lst).number==0); 	
 	}
 	push(makeint(0));
 	return;
@@ -2278,17 +2349,28 @@ void oset()
 	return;
 }
 
-extern BYTE cpos[];
-extern BYTE	nos;
-
-void oserv()
+void oget()
 {
-	//> !SERV
-	tOBJ r;
-	r=cnvtBytetoList(nos, cpos);	
+	//> !GET {"A"}
+	//2
+
+	tOBJ r=emptyObj();
+	tOBJ a=pop();
+	if (a.type==CELL)
+	{
+		tOBJ name = callfn(ocar,a);
+
+		if (name.type==STR)
+			r = get(name.string);
+	}
+	if (a.type==STR)
+	{
+		r = get(a.string);
+	}	
 	push(r);
 	return;
 }
+
 
 void onth()
 {
@@ -2316,6 +2398,59 @@ void onth()
 	return;
 }
 
+
+
+/**********************************************************/
+/* SERVO routines                                        */
+/**********************************************************/
+
+extern BYTE cpos[];
+extern BYTE	nos;
+
+
+void oserv()
+{
+	//> !SERV
+	tOBJ r;
+	readservos();
+	r=cnvtBytetoList(nos, cpos);	
+	push(r);
+	return;
+}
+
+int cnvtListtoByte(tOBJ lst, int an, BYTE *array)
+{
+	int cnt=0;
+	if (lst.type != CELL) return 0;
+	while (cnt<an && callfn(onull,lst).number==0)
+	{
+		array[cnt++] = toint(callfn(ocar,lst));
+		lst=callfn(ocdr, lst); 
+	}
+	
+	return cnt;
+}
+
+void opose()
+{
+	//> !POSE {1 2 3 4}
+	tOBJ a=pop();
+	BYTE sp[32];
+	int nb,i;
+	int speed=4, tm=1000, fm=10, fmflg=0;
+
+	if ((nb=cnvtListtoByte(a, 32, sp)))
+	{
+		for (i=0; i<nb; i++)
+		{
+			if (dbg) printf ("%d\n", sp[i]);
+		}
+		if (!dbg) PlayPose(tm, fm, speed, sp, (fmflg==0)?nb:0);
+		fmflg=1;
+	}
+	push(emptyObj());
+	return;
+}
 
 /**********************************************************/
 /*  Access sensors                                        */
@@ -2361,43 +2496,7 @@ void oacz()
 	return;
 }
 
-void ornd()
-{
-	tOBJ r;
-	r.type=FLOAT;
-	r.floatpoint=(float)rand()/RAND_MAX;
-	push(r);
-	return;
-}
 
-void omax()
-{
-	tOBJ r,a;
-	int i;
-	r=pop();
-	a=pop();
-
-	if (r.type==INTGR && a.type==INTGR)
-	{
-		if (a.number>r.number) r=a;
-	}
-		
-	if (r.type==FLOAT && a.type==FLOAT)
-	{
-		if (a.floatpoint>r.floatpoint) r=a;
-	}
-
-	if (a.type==FMAT2)
-	{
-		r.type=FLOAT;
-		r.floatpoint=a.fmat2.fstore[0];
-		for (i=1; i<a.fmat2.h*a.fmat2.w; i++)
-			if (a.fmat2.fstore[i]>r.floatpoint) r.floatpoint= a.fmat2.fstore[i];
-	}
-
-	push(r);
-	return;
-}
 
 
 /***********************************************************************
@@ -2425,7 +2524,7 @@ void brainf(char *s)
 		case '<' : if (ptr>=array)      ptr--; 		break;
 		case '+' : (*ptr)++; 				break;
 		case '-' : (*ptr)--; 				break;
-		case '.' : printf("%c",*ptr); *op++=*ptr;			break;
+		case '.' : printf("%c",*ptr); *op++=*ptr;	break;
 		case ',' : *ptr = getchar(); 			break;
 		case '[' : if (*ptr==0) while (*s!=']') s++; 	break;
 		case ']' : while (*s!='[') s--; s--;		break;
