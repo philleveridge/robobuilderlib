@@ -158,6 +158,15 @@ void oget();
 void oserv();
 void onth();
 void opose();
+void owhs();
+void oexit();
+void obf();
+
+void omatr();// {"LOAD" "STOR"}
+void oimg(); // {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
+
+void oprt();
+void olet(); 
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -230,10 +239,21 @@ tOP oplist[] = {
 	{"EXEC",  40, NA,   1, oexec},  //function single arg
 	{"SET",   40, NA,   1, oset}, //function single arg
 	{"GET",   40, NA,   1, oget}, //function single arg
-	{"SERV",  40, NA,  0, oserv}, //function single arg
-	{"POSE",  40, NA,  1, opose}, //function single arg
+	{"SERV",  40, NA,   0, oserv}, //function single arg
+	{"POSE",  40, NA,   1, opose}, //function single arg
 	{"NTH",   40, NA,   1, onth}, //function single arg
-	{"PR",    40, NA,   1, opr}  //function single arg
+	{"PR",    40, NA,   1, opr},   //function single arg
+	{"WHOS",  40, NA,   0, owhs},
+	{"BF",    40, NA,   1, obf},
+	{"MAT",   40, NA,   2, omatr},// {"LOAD" "STOR"}
+	{"EXIT",  40, NA,   0, oexit}
+ 
+/* TBD - move all to function
+	{"LET",     40, NA,  0, olet},
+	{"IMAG",    40, NA,  1, oimg}, // {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
+	{"PRIN",    40, NA,  1, oprt},
+*/
+
 };
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
@@ -950,6 +970,25 @@ tOBJ readcells()
 	return r;
 }
 
+tOBJ stringtocells(char *s)
+{
+	tOBJ r=emptyObj();
+	char savebuff[MAXSTRING];
+	int toop;
+	char *t;
+	strncpy(savebuff, exprbuff, MAXSTRING); 
+	toop=oop;
+	t=s;
+
+	e=s;
+	r = readcells();
+
+	strncpy(exprbuff, savebuff, MAXSTRING); 
+	oop=toop;
+	e=t;
+	return r;
+}
+
 /*
 i
 !LET MC=[2.0 3.6;2.7 1.2]
@@ -1232,6 +1271,47 @@ int set(char *name, tOBJ r)
 	else
 		return -1;
 }
+
+void owhs()
+{
+	//display all variables and types
+	//!WHOS
+	char *p=varname;
+	int i=0;
+	while (i<nov)
+	{
+		tOBJ r =varobj[i];
+		char *st="";
+
+		switch (r.type)
+		{  
+		case INTGR: st="Int"; break;
+
+		case FLOAT: st="Float"; break;
+
+		case STR: st="String"; break;
+
+		case FMAT2: st="Matrix"; break;
+
+		case CELL: st="List"; break;
+
+		case SYM: break;
+
+		case BOOLN: break;
+
+		case EMPTY: break;
+
+		case FUNC: break;
+		}
+		printf("%7s - %s",p,st);
+		p=p+strlen(p)+1;
+		i++;
+		printf("\n");
+	}
+	push(emptyObj());
+	return ;
+}
+
 
 
 /**********************************************************/
@@ -2496,7 +2576,12 @@ void oacz()
 	return;
 }
 
-
+void oexit()
+{
+#ifdef LINUX
+	sigcatch();
+#endif
+}
 
 
 /***********************************************************************
@@ -2534,11 +2619,66 @@ void brainf(char *s)
 	*op=0;
 }
 
+void obf()
+{
+	tOBJ v=pop();
+	//brainf("++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.");
+
+	if (v.type==STR)
+		brainf(v.string);
+	else
+		printf("need a string argument");
+
+	push(emptyObj());
+	return;
+}
+
+
+
 /***********************************************************************
 
 Extended input
 
 ************************************************************************/
+
+void omatr()
+{
+	tOBJ n=pop();
+	tOBJ v=pop();
+	int val;
+	// {"LOAD" "STOR"}
+	if (v.type==STR && n.type==INTGR)
+	{
+		if (!strcmp(v.string,"LOAD"))
+		{
+			val=toint(n);
+			v=get("DFN");
+			matrixload(val, v.string);
+		}
+		if (!strcmp(v.string,"STOR"))
+		{
+			val=toint(n);
+			v=get("DFN");
+			matrixstore(val, v.string);
+		}
+	}
+	push(emptyObj());
+	return;
+}
+void oimg()
+{
+	//!IMG {"command" {parameters}}
+	//comand : {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
+	
+	tOBJ v=pop();
+	tOBJ cmd = callfn(ocar,v);
+	if (cmd.type == STR)
+	{
+		//tOBJ l = stringtocells("");
+	}
+	push(emptyObj());
+	return;
+}
 
 static int  intf=1;
 
@@ -2634,46 +2774,6 @@ void extend(char *x)
 				}
 				return;
 			}
-		}
-	}
-
-	e=x;
-	if (get_str_token("BF")==1)
-	{
-		//brainf("++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.");
-
-		v=eval_oxpr(e);
-		if (v.type==STR)
-			brainf(v.string);
-		else
-			printf("need a string argument");
-		return;
-	}
-
-	e=x;
-	if (get_str_token("MAT")==1)
-	{
-		if (get_str_token("LOAD")==1)
-		{
-			if (*e != '\0')
-				v=eval_oxpr(e);
-			else
-				v.number=128;
-			val=v.number;
-			v=get("DFN");
-			matrixload(val, v.string);
-		}
-
-		if (!strcmp(tokbuff,"STOR"))
-		{
-			if (*e != '\0')
-				v=eval_oxpr(e);
-			else
-				v.number=nis;
-
-			val=v.number;
-			v=get("DFN");
-			matrixstore(val, v.string);
 		}
 	}
 
@@ -2956,53 +3056,6 @@ void extend(char *x)
 		freeobj(&v);
 		return;
 	}
-
-	e=x;
-	if (get_str_token("WHOS")==1)
-	{
-		//display all variables and types
-		char *p=varname;
-		int i=0;
-		while (i<nov)
-		{
-			tOBJ r =varobj[i];
-			char *st="";
-
-			switch (r.type)
-			{  
-			case INTGR: st="Int"; break;
-
-			case FLOAT: st="Float"; break;
-
-			case STR: st="String"; break;
-
-			case FMAT2: st="Matrix"; break;
-
-			case CELL: st="List"; break;
-
-			case SYM: break;
-
-			case BOOLN: break;
-
-			case EMPTY: break;
-
-			case FUNC: break;
-			}
-			printf("%7s - %s",p,st);
-			p=p+strlen(p)+1;
-			i++;
-			printf("\n");
-		}
-		return;
-	}
-
-#ifdef LINUX
-	e=x;
-	if (get_str_token("EXIT")==1)
-	{
-		sigcatch();
-	}
-#endif
 
 	e=x;
 	v=eval_oxpr(e);
