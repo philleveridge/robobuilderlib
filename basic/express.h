@@ -55,7 +55,8 @@ typedef struct object {
                 int     number; 
                 char    *string;
                 void    *cell;
-                void    *func;
+                //void    *func;
+		struct object	(*func)(struct object);
 		fMatrix fmat2;
                 };
 } tOBJ;
