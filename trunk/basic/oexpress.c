@@ -98,75 +98,74 @@ typedef struct ops {
 		int		level;
 		unsigned char type;
 		int		nop;
-		void	(*func)();
+		tOBJ	(*func)(tOBJ);
 } tOP, *tOPp;
 
-tOBJ callfn(void (*fp)(), tOBJ a);
-void osin ();
-void ocos ();
-void otan ();
-void osqrt();
-void olog ();
-void oexp ();
-void oacos();
-void oatan();
-void oabs ();
-void oacx ();
-void oacy ();
-void oacz ();
-void osig ();
-void ornd ();
-void odsig ();
-void opsd ();
-void omax ();
-void omat ();
-void otrn ();
-void oapply ();
-void orshp ();
-void orep ();
+tOBJ osin ();
+tOBJ ocos(tOBJ  r);
+tOBJ otan(tOBJ  r);
+tOBJ osqrt(tOBJ  r);
+tOBJ olog(tOBJ  r);
+tOBJ oexp(tOBJ  r);
+tOBJ oacos(tOBJ  r);
+tOBJ oatan(tOBJ  r);
+tOBJ oabs(tOBJ  r);
+tOBJ oacx(tOBJ  r);
+tOBJ oacy(tOBJ  r);
+tOBJ oacz(tOBJ  r);
+tOBJ osig(tOBJ  r);
+tOBJ ornd(tOBJ  r);
+tOBJ odsig(tOBJ  r);
+tOBJ opsd(tOBJ  r);
+tOBJ omax(tOBJ  r);
+tOBJ omat(tOBJ  r);
+tOBJ otrn(tOBJ  r);
+tOBJ oapply(tOBJ  r);
+tOBJ orshp(tOBJ  r);
+tOBJ orep(tOBJ  r);
 
-void ozero ();
-void oeye ();
-void ovsum ();
-void ohsum ();
-void ovsum2 ();
-void ohsum2 ();
-void oconv ();
-void oimp ();
-void ocond();
-void ozerob();
-void ozerod();
+tOBJ ozero(tOBJ  r);
+tOBJ oeye(tOBJ  r);
+tOBJ ovsum(tOBJ  r);
+tOBJ ohsum(tOBJ  r);
+tOBJ ovsum2(tOBJ  r);
+tOBJ ohsum2(tOBJ  r);
+tOBJ oconv(tOBJ  r);
+tOBJ oimp(tOBJ  r);
+tOBJ ocond(tOBJ  r);
+tOBJ ozerob(tOBJ  r);
+tOBJ ozerod(tOBJ  r);
 
-void ocar ();
-void ocdr ();
-void otype ();
-void olen ();
-void oapp ();
-void olist ();
-void ocons ();
-void olast();
-void osubst();
-void orev();
-void onull();
-void omemb();
-void oatom();
-void oasso();
-void oexec();
-void opr();
-void oset();
-void oget();
-void oserv();
-void onth();
-void opose();
-void owhs();
-void oexit();
-void obf();
+tOBJ ocar(tOBJ  r);
+tOBJ ocdr(tOBJ  r);
+tOBJ otype(tOBJ  r);
+tOBJ olen(tOBJ  r);
+tOBJ oapp(tOBJ  r);
+tOBJ olist(tOBJ  r);
+tOBJ ocons(tOBJ  r);
+tOBJ olast(tOBJ  r);
+tOBJ osubst(tOBJ  r);
+tOBJ orev(tOBJ  r);
+tOBJ onull(tOBJ  r);
+tOBJ omemb(tOBJ  r);
+tOBJ oatom(tOBJ  r);
+tOBJ oasso(tOBJ  r);
+tOBJ oexec(tOBJ  r);
+tOBJ opr(tOBJ  r);
+tOBJ oset(tOBJ  r);
+tOBJ oget(tOBJ  r);
+tOBJ oserv(tOBJ  r);
+tOBJ onth(tOBJ  r);
+tOBJ opose(tOBJ  r);
+tOBJ owhs(tOBJ  r);
+tOBJ oexit(tOBJ  r);
+tOBJ obf(tOBJ  r);
 
-void omatr();// {"LOAD" "STOR"}
-void oimg(); // {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
+tOBJ omatr(tOBJ  r);// {"LOAD" "STOR"}
+tOBJ oimg(tOBJ  r); // {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
 
-void oprt();
-void olet(); 
+tOBJ oprt(tOBJ  r);
+tOBJ olet(tOBJ  r); 
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -778,7 +777,9 @@ void reduce()
 			stackprint();
 		}
 		else
-			(*oplist[i].func)();
+		{
+			push((*oplist[i].func)(pop()));
+		}
 	}
 }
 
@@ -847,7 +848,7 @@ tOBJ eval_oxpr(char *s)
 
 					if (oplist[op].nop==0 && oplist[op].func != NULL)
 					{
-						(*oplist[op].func)();
+						push((*oplist[op].func)(emptyObj()));
 						continue;
 					}
 					else
@@ -1236,10 +1237,10 @@ int set(char *name, tOBJ r)
 			int an=listsize(ln);
 			int *array=listarray(ln);
 			int cnt=0;
-			while (cnt<an && callfn(onull,r).number==0)
+			while (cnt<an && onull(r).number==0)
 			{
-				array[cnt++] = toint(callfn(ocar,r));
-				r=callfn(ocdr, r); 
+				array[cnt++] = toint(ocar(r));
+				r=ocdr(r); 
 			}
 	
 		}
@@ -1272,7 +1273,7 @@ int set(char *name, tOBJ r)
 		return -1;
 }
 
-void owhs()
+tOBJ owhs(tOBJ r)
 {
 	//display all variables and types
 	//!WHOS
@@ -1308,8 +1309,7 @@ void owhs()
 		i++;
 		printf("\n");
 	}
-	push(emptyObj());
-	return ;
+	return emptyObj();
 }
 
 
@@ -1507,12 +1507,11 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	return r;
 }
 
-void osin()
+tOBJ osin(tOBJ a)
 {
-	tOBJ r,a;
+	tOBJ r;
 	r.type=FLOAT;
 	r.floatpoint=0.0;
-	a=pop();
 	if (a.type==INTGR)
 	{
 		r.type = INTGR;
@@ -1523,16 +1522,14 @@ void osin()
 	{
 		r.floatpoint=sin(a.floatpoint);
 	}
-	push(r);
-	return ;
+	return r;
 }
 
-void ocos()
+tOBJ ocos(tOBJ a)
 {
-	tOBJ r,a;
+	tOBJ r;
 	r.type=FLOAT;
 	r.floatpoint=0.0;
-	a=pop();
 	if (a.type==INTGR)
 	{
 		r.type = INTGR;
@@ -1543,52 +1540,46 @@ void ocos()
 	{
 		r.floatpoint=cos(a.floatpoint);
 	}
-	push(r);
-	return ;
+	return r;
 }
 
-void otan()
+tOBJ otan(tOBJ a)
 {
 	tOBJ r;
 	r.type=FLOAT;
-	r.floatpoint=tan(tofloat(pop()));
-	push(r);
-	return ;
+	r.floatpoint=tan(tofloat(a));
+	return r;
 }
 
-void olog()
+tOBJ olog(tOBJ a)
 {
 	tOBJ r;
 	r.type=FLOAT;
-	r.floatpoint=log(tofloat(pop()));
-	push(r);
-	return ;
+	r.floatpoint=log(tofloat(a));
+	return r;
 }
 
-void oacos()
+tOBJ oacos(tOBJ a)
 {
 	tOBJ r;
 	r.type=FLOAT;
-	r.floatpoint=acos(tofloat(pop()));
-	push(r);
-	return ;
+	r.floatpoint=acos(tofloat(a));
+	return r;
 }
 
 
-void oatan()
+tOBJ oatan(tOBJ a)
 {
 	tOBJ r;
 	r.type=FLOAT;
-	r.floatpoint=atan(tofloat(pop()));
-	push(r);
-	return ;
+	r.floatpoint=atan(tofloat(a));
+	return r;
 }
 
-void oabs()
+tOBJ oabs(tOBJ a)
 {
-	tOBJ a,r;
+	tOBJ r;
 	int i;
-	a = pop();
 	r.type=EMPTY;
 
 	if (a.type==FMAT2)
@@ -1605,44 +1596,38 @@ void oabs()
 		r.type=FLOAT;
 		r.floatpoint=fabs(tofloat(a));
 	}
-	push(r);
-	return ;
+	return r;
 }
 
-void oexp()
+tOBJ oexp(tOBJ a)
 {
 	tOBJ r;
 	r.type=FLOAT;
 	r.floatpoint=exp(tofloat(pop()));
-	push(r);
-	return ;
+	return r;
 }
 
-void osqrt()
+tOBJ osqrt(tOBJ a)
 {
 	//binary signmoid function
 	tOBJ r;
 	r.type=FLOAT;
 	r.floatpoint=sqrt(tofloat(pop()));
-	push(r);
-	return ;
+	return r;
 }
 
-void ornd()
+tOBJ ornd(tOBJ a)
 {
 	tOBJ r;
 	r.type=FLOAT;
 	r.floatpoint=(float)rand()/RAND_MAX;
-	push(r);
-	return;
+	return r;
 }
 
-void omax()
+tOBJ omax(tOBJ a)
 {
-	tOBJ r,a;
+	tOBJ r=pop();
 	int i;
-	r=pop();
-	a=pop();
 
 	if (r.type==INTGR && a.type==INTGR)
 	{
@@ -1662,8 +1647,7 @@ void omax()
 			if (a.fmat2.fstore[i]>r.floatpoint) r.floatpoint= a.fmat2.fstore[i];
 	}
 
-	push(r);
-	return;
+	return r;
 }
 
 /**********************************************************/
@@ -1675,13 +1659,13 @@ void omax()
 !PRINT DSIG(MA)
 !print apply(ma, "expr")
 */
-void omat() 
+tOBJ omat(tOBJ a) 
 {
 	//binary signmoid function
 	tOBJ r,m;
 	int row,col;
 	r=makefloat(0.0);
-	row=toint(pop());
+	row=toint(a);
 	col=toint(pop());
 	m=pop();
 
@@ -1690,16 +1674,14 @@ void omat()
 		r.floatpoint = fget2(&(m.fmat2),col,row);
 	}
 
-	push(r);
-	return ;
+	return r;
 }
 
-void osig()
+tOBJ osig(tOBJ a)
 {
 	//binary signmoid function
-	tOBJ r, a;
+	tOBJ r;
 	int i;
-	a=pop();
 
 	if (a.type==FMAT2)
 	{
@@ -1717,75 +1699,65 @@ void osig()
 		r.type=FLOAT;
 		r.floatpoint=1/(1+exp(-tofloat(a)));
 	}
-	push(r);
-	return ;
+	return r;
 }
 
  
-void ohsum()
+tOBJ ohsum(tOBJ a)
 {
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 
 	if (a.type==FMAT2)
 	{
 		r.type=FMAT2;
 		r.fmat2=fmatsum2(&a.fmat2, 1);	
 	}
-	push(r);
-	return ;
+	return r;
 }
 
-void ovsum()
+tOBJ ovsum(tOBJ a)
 {
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 
 	if (a.type==FMAT2)
 	{
 		r.type=FMAT2;
 		r.fmat2=fmatsum2(&a.fmat2, 2);	
 	}
-	push(r);
-	return ;
+	return r;
 }
 
-void ohsum2()
+tOBJ ohsum2(tOBJ a)
 {
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 
 	if (a.type==FMAT2)
 	{
 		r.type=FMAT2;
 		r.fmat2=fmatsum2(&a.fmat2, 3);	
 	}
-	push(r);
-	return ;
+	return r;
 }
 
-void ovsum2()
+tOBJ ovsum2(tOBJ a)
 {
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 
 	if (a.type==FMAT2)
 	{
 		r.type=FMAT2;
 		r.fmat2=fmatsum2(&a.fmat2, 4);	
 	}
-	push(r);
-	return ;
+	return r;
 }
 
-void odsig()
+tOBJ odsig(tOBJ a)
 {
 	//derivative binary sigmoid
-	tOBJ r,a;
+	tOBJ r;
 
 	int i;
 	r=makefloat(0.0);
-	a=pop();
 
 	if (a.type==FLOAT)
 	{
@@ -1804,19 +1776,17 @@ void odsig()
 		}			
 	}
 
-	push(r);
-	return ;
+	return r;
 }
 
-void oapply()
+tOBJ oapply(tOBJ a)
 {
 	//apply (<matrix>, <string>)
-	tOBJ r,a,b, v;
+	tOBJ r,b, v;
 	int i=0, j=0, w, h;
 	char *expr;
 
 	r.type=EMPTY;
-	a=pop();
 	b=pop();
 
 	if (a.type !=STR && b.type != FMAT2)
@@ -1853,32 +1823,29 @@ void oapply()
 	}
 
 
-	push(r);
-	return ;
+	return r;
 }
 
-void otrn()
+tOBJ otrn(tOBJ a)
 {
-	tOBJ r,a;
+	tOBJ r;
 	r=makefloat(0.0);
-	a=pop();
 	if (a.type==FMAT2)
 	{
 		r.type = FMAT2;
 		r.fmat2 = ftranspose2(&a.fmat2); 
 	}
 
-	push(r);
-	return ;
+	return r;
 }
 
-void orshp()
+tOBJ orshp(tOBJ a)
 {	// RSHP(M,x,y)
 	tOBJ r,m;
 	int row,col;
 	r.type=EMPTY;
 
-	row=toint(pop());
+	row=toint(a);
 	col=toint(pop());
 
 	m=pop();
@@ -1887,18 +1854,17 @@ void orshp()
 		r.type=FMAT2;
 		r.fmat2 = fmatrshp(&m.fmat2, col,row);
 	}
-	push(r);
-	return ;
+	return r;
 }
 
 
-void orep ()
+tOBJ orep (tOBJ a)
 {	// REP(M,x,y)
 	tOBJ r,m;
 	int row,col;
 	r.type=EMPTY;
 
-	row=toint(pop());
+	row=toint(a);
 	col=toint(pop());
 
 	m=pop();
@@ -1907,32 +1873,32 @@ void orep ()
 		r.type=FMAT2;
 		r.fmat2 = freplicate2(&m.fmat2, col,row);
 	}
-	push(r);
+	return r;
 }
 
 
-void ozero ()
+tOBJ ozero (tOBJ a)
 {
 	tOBJ r;
 	int row,col;
 	r.type=EMPTY;
 
-	row=toint(pop());
+	row=toint(a);
 	col=toint(pop());
 
 	r.type=FMAT2;
 	r.fmat2 = newmatrix(col, row);
-	push(r);
+	return r;
 }
 
-void oeye ()
+tOBJ oeye (tOBJ a)
 {
 	tOBJ r;
 	int i;
 	int row,col;
 	r.type=EMPTY;
 
-	row=toint(pop());
+	row=toint(a);
 	col=toint(pop());
 
 	r.type=FMAT2;
@@ -1943,16 +1909,16 @@ void oeye ()
 		if (i<row) 
 			r.fmat2.fstore[i+i*col] = 1.0;
 	}
-	push(r);
+	return r;
 }
 
-void oconv ()
+tOBJ oconv (tOBJ b)
 {
-	tOBJ r, a, b;
+	tOBJ r, a;
 
 	r.type=EMPTY;
 
-	b=pop(); a=pop();
+	a=pop();
 
 	if (a.type != FMAT2 && b.type!=FMAT2)
 		return;
@@ -1960,16 +1926,16 @@ void oconv ()
 	r.type=FMAT2;
 	r.fmat2=fconvolve2(&a.fmat2,&b.fmat2) ;
 		
-	push(r);
+	return r;
 }
 
-void ocond()
+tOBJ ocond(tOBJ a)
 {
 	// COND (Matrix,lv, uv, nv1, nv2)
-	tOBJ r, a, b, c;
+	tOBJ r, b, c;
 	int i;
 	float lv=0,uv=0,nv1=0,nv2=0;
-	nv2 = tofloat(pop());
+	nv2 = tofloat(a);
 	nv1 = tofloat(pop());
 	uv = tofloat(pop());
 	lv = tofloat(pop());
@@ -1988,15 +1954,15 @@ void ocond()
 				r.fmat2.fstore[i] = nv2;
 		}
 	}
-	push(r);
+	return r;
 }
 
-void ozerob()
+tOBJ ozerob(tOBJ a)
 {
 	// ZER (Matrix,c1,r1,c2,r2)
-	tOBJ r, a;
+	tOBJ r;
 	int c1=0,c2=0,r1=0,r2=0;
-	r2 = toint(pop());
+	r2 = toint(a);
 	c2 = toint(pop());
 	r1 = toint(pop());
 	c1 = toint(pop());
@@ -2007,68 +1973,58 @@ void ozerob()
 		r.type = FMAT2;	
 		r.fmat2 =fmatzeroregion(&a.fmat2, c1, r1, c2, r2)   ;
 	}
-	push(r);
+	return r;
 }
 
-void ozerod()
+tOBJ ozerod(tOBJ a)
 {	
 	// ZERD (Matrix)
-	tOBJ r, a;
-	a=pop();
+	tOBJ r;
 	r.type=EMPTY;
 	if (a.type==FMAT2)
 	{
 		r.type = FMAT2;
 		r.fmat2 = fmatzerodiag2(&a.fmat2) ;
 	}
-	push(r);
+	return r;
 }
 
-void oimp ()
+tOBJ oimp (tOBJ c)
 {
 	//IMP("A",2,2);
 
-	tOBJ r, a, b, c;
+	tOBJ r, a, b;
 
 	r.type=EMPTY;
 
-	c=pop(); b=pop(); a=pop();
+	b=pop(); a=pop();
 
 	if (a.type != STR)
-		return;
+		return r;
 
 	r.type=FMAT2;
 	r.fmat2=fimport2(*(a.string), toint(b), toint(c)) ;
 		
-	push(r);
+	return r;
 }
 
 /**********************************************************/
 /*  List functions                                       */
 /**********************************************************/
 
-tOBJ callfn(void (*fp)(), tOBJ a)
-{
-	push(a);
-	(*fp)(); 	//call function
-	return pop();
-}
 
-void ocar ()
+tOBJ ocar (tOBJ a)
 {
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 	if (a.type==CELL)
 	{
 		r=((tCELLp)(a.cell))->head;
 	}
-	push(r);
-	return;
+	return r;
 }
-void ocdr ()
+tOBJ ocdr (tOBJ a)
 {
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 	if (a.type==CELL)
 	{		
 		tCELLp p= a.cell;
@@ -2078,22 +2034,18 @@ void ocdr ()
 			r.cell=p->tail;
 		}
 	}
-	push(r);
-	return;
+	return r;
 }
 
-void otype ()
+tOBJ otype (tOBJ a)
 {
-	tOBJ a=pop();
 	tOBJ r=makeint(a.type);
-	push(r);
-	return;
+	return r;
 }
 
-void olen ()
+tOBJ olen (tOBJ a)
 {
 	//!LEN {1 2 3} -> 3
-	tOBJ a=pop();
 	tOBJ r=makeint(0);
 
 	if (a.type==STR)
@@ -2113,22 +2065,19 @@ void olen ()
 		while (p!= NULL);
 		r=makeint(n);
 	}
-	push(r);
-	return;
+	return r;
 }
 
-void olist ()
+tOBJ olist (tOBJ a)
 {	
 	//!LIST {1 2 3} -> {{1 2 3}}
 	tOBJ r=makeCell();
-	tOBJ a=pop();
 	((tCELLp)(r.cell))->head=a;
 	((tCELLp)(r.cell))->tail = NULL;	
-	push(r);
-	return;
+	return r;
 }
 
-void ocons ()
+tOBJ ocons (tOBJ a)
 {
 	//!CONS {1 {2 3}} -> {1 2 3}
 	tOBJ r=emptyObj();
@@ -2144,15 +2093,13 @@ void ocons ()
 			((tCELLp)(r.cell))->tail = (tCELLp)(b.cell);
 		}
 	}
-	push(r);
-	return;
+	return r;
 }
 
-void oapp ()
+tOBJ oapp (tOBJ a)
 {
 	//!APPD {{1 2} {3 4}} -> {1 2 3 4}
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 	tOBJ n;
 
 	if (a.type==CELL)
@@ -2190,15 +2137,13 @@ void oapp ()
 		}
 		while (p !=NULL);
 	}	
-	push(r);
-	return;
+	return r;
 }
 
-void olast()
+tOBJ olast(tOBJ a)
 {
 	//!LAST {1 {2 3}} -> {2 3}
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 	if (a.type==CELL)
 	{		
 		tCELLp n=NULL,p= a.cell;
@@ -2210,14 +2155,12 @@ void olast()
 		}
 		if (n!=NULL) r=n->head;
 	}	
-	push(r);
-	return;
+	return r;
 }
 
-void osubst()
+tOBJ osubst(tOBJ a)
 {
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 	if (a.type==CELL)
 	{
 		tCELLp n=NULL,m=NULL,p= a.cell;
@@ -2234,8 +2177,7 @@ void osubst()
 		if (l.type!=CELL)
 		{
 			printf ("? not a list");
-			push(r);
-			return ;
+			return r;
 		}
 		p=l.cell;
 
@@ -2254,15 +2196,35 @@ void osubst()
 		}	
 		while (p!=NULL);	
 	}	
-	push(r);
-	return;
+	return r;
 }
 
-void orev()
+tOBJ orev2(tOBJ a)
 {
 	//!REV {1 2 3} -> {3 2 1}
+/*
+(defun good-reverse (lst)
+       (labels ((rev (lst acc)
+                         (if (null lst)
+                                acc
+                               (defun good-reverse (lst)
+       (labels ((rev (lst acc)
+                         (if (null lst)
+                                acc
+                                (rev (cdr lst) (cons (car lst) acc)))))
+          (rev lst nil))) (rev (cdr lst) (cons (car lst) acc)))))
+          (rev lst nil)))
+*/
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
+	if (a.type==CELL)
+	{
+	}	
+	return r;
+}
+
+tOBJ orev(tOBJ a)
+{
+	tOBJ r=emptyObj();
 	if (a.type==CELL)
 	{
 		tCELLp n=NULL,p= a.cell;
@@ -2286,164 +2248,142 @@ void orev()
 		} 
 		r=z;		
 	}	
-	push(r);
-	return;
+	return r;
 }
 
-void onull()
+tOBJ onull(tOBJ a)
 {
 	//!NULL {} -> 1
 	tOBJ r=makeint(0);	
-	tOBJ a=pop();
 	if ((a.type==EMPTY) 
 	|| (a.type==CELL && ((a.cell==NULL || ((tCELLp)(a.cell))->head.type==EMPTY)) )
 	|| (a.type==STR  && (a.string==NULL || *(a.string)=='\0')))	
 		r = makeint(1);		
-	push(r);
-	return;
+	return r;
 }
 
-void oatom()
+tOBJ oatom(tOBJ a)
 {
 	//!ATOM 1 -> 1
-	tOBJ a=pop();	
-	push(makeint(a.type==CELL));
-	return;
+	return (makeint(a.type==CELL));
 }
 
-void omemb()
+tOBJ omemb(tOBJ a)
 {
-
 	//!MEMB {2 {2 3}} -> 1
 	//!MEMB {4 {2 3}} -> 0
-	tOBJ a=pop();
 	if (a.type==CELL)
 	{
-		tOBJ key = callfn(ocar, a);
-		tOBJ lst = callfn(ocar, callfn(ocdr, a));
+		tOBJ key = ocar(a);
+		tOBJ lst = ocar(ocdr(a));
 		tOBJ mem;
 
 		if (lst.type != CELL)
 		{
 			printf ("Not a list\n");
-			push(makeint(0));
-			return;
+			return makeint(0);
 		}
 
 		do
 		{
-			mem = callfn(ocar, lst);
+			mem = ocar(lst);
 			if (compareObj(mem, key))
 			{
-				push(makeint(1));
-				return;
+				return makeint(1);
 			}
-			lst=callfn(ocdr, lst); 	// lst=cdr lst				
+			lst=ocdr(lst); 	// lst=cdr lst				
 		}
-		while (callfn(onull,lst).number==0); 	
+		while (onull(lst).number==0); 	
 	}
-	push(makeint(0));
-	return;
+	return makeint(0);
 }
 
 
-void oasso()
+tOBJ oasso(tOBJ a)
 {
 	//!ASSN {1 {{1 2} {2 3} {3 4}}} -> {1 2}
 	//!ASSN {2 {{1 2} {2 3} {3 4}}} -> {2 3}
 	//!ASSN {7 {{1 2} {2 3} {3 4}}} -> NIL
 
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 	if (a.type==CELL)
 	{
-		tOBJ key = callfn(ocar, a);
-		tOBJ lst = callfn(ocar, callfn(ocdr, a));
+		tOBJ key = ocar(a);
+		tOBJ lst = ocar(ocdr(a));
 
 		if (lst.type != CELL)
 		{
 			printf ("Not a list\n");
-			push(r);
-			return;
+			return r;
 		}
 
 		do {
-			tOBJ pair = callfn(ocar, lst);
-			tOBJ n = callfn(ocar, pair);
+			tOBJ pair = ocar(lst);
+			tOBJ n = ocar(pair);
 			if (compareObj(key,n))  // if car pair = key
 			{
-				push(pair);
-				return;				
+				return pair;				
 			}
-			lst=callfn(ocdr, lst); 	// lst=cdr lst		
+			lst=ocdr(lst); 	// lst=cdr lst		
 		}
-		while (callfn(onull,lst).number==0); 			
+		while (onull(lst).number==0); 			
 	}	
-	push(r);
-	return;
+	return r;
 }
 
-void oexec()
+tOBJ oexec(tOBJ a)
 {
 	//> !EXEC {CAR {1 2}}
 	//1
-
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 	if (a.type==CELL && ((tCELLp)(a.cell))->head.type==FUNC)
 	{
-		r=callfn(callfn(ocar,a).func, callfn(ocar,callfn(ocdr,a)));
+		r = (*ocar(a).func)(ocar(ocdr(a)));
 	}	
-	push(r);
-	return;
+	return r;
 }
 
-void opr()
+tOBJ opr(tOBJ a)
 {
 	//> !PR 1
 	//1
-	tOBJ a=pop();
 	print(a);	
-	push(a);
-	return;
+	return a;
 }
 
-void oset()
+tOBJ oset(tOBJ a)
 {
 	//> !SET {"A" 2 "B" 3}
 	//2
 
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 	tOBJ value=r;
 	if (a.type==CELL)
 	{
 		while(1) {
-			tOBJ name = callfn(ocar,a);
+			tOBJ name = ocar(a);
 			if (name.type==EMPTY) break;
 			if (name.type==STR)
 			{
-				value = callfn(ocar, callfn(ocdr,a));
+				value = ocar(ocdr(a));
 				set(name.string, value);
 			}
-			a = callfn(ocdr, callfn(ocdr,a));
+			a = ocdr(ocdr(a));
 		}
 		r=value;
 	}	
-	push(r);
-	return;
+	return r;
 }
 
-void oget()
+tOBJ oget(tOBJ a)
 {
 	//> !GET {"A"}
 	//2
 
 	tOBJ r=emptyObj();
-	tOBJ a=pop();
 	if (a.type==CELL)
 	{
-		tOBJ name = callfn(ocar,a);
+		tOBJ name = ocar(a);
 
 		if (name.type==STR)
 			r = get(name.string);
@@ -2452,35 +2392,32 @@ void oget()
 	{
 		r = get(a.string);
 	}	
-	push(r);
-	return;
+	return r;
 }
 
 
-void onth()
+tOBJ onth(tOBJ a)
 {
 	//!nth {0 {"one" "two" "three"}}
 	//!nth {5 {"one" "two" "three"}}
-	tOBJ a=pop();
-	tOBJ indx = callfn(ocar,a);
+	tOBJ indx = ocar(a);
 	if (indx.type==INTGR)
 	{
-		tOBJ lst = callfn(ocar,callfn(ocdr,a));
+		tOBJ lst = ocar(ocdr(a));
 		if (lst.type == CELL)
 		{
 			int cnt=indx.number;
 			while (cnt>0)	
 			{
-				lst = callfn(ocdr,lst);
+				lst = ocdr(lst);
 				cnt--;
 			}
-			push(callfn(ocar,lst));
-			return;
+			return ocar(lst);
 		}
 	}
 	
-	push(emptyObj());
-	return;
+
+	return emptyObj();
 }
 
 
@@ -2493,33 +2430,31 @@ extern BYTE cpos[];
 extern BYTE	nos;
 
 
-void oserv()
+tOBJ oserv(tOBJ a)
 {
 	//> !SERV
 	tOBJ r;
 	readservos();
 	r=cnvtBytetoList(nos, cpos);	
-	push(r);
-	return;
+	return r;
 }
 
 int cnvtListtoByte(tOBJ lst, int an, BYTE *array)
 {
 	int cnt=0;
 	if (lst.type != CELL) return 0;
-	while (cnt<an && callfn(onull,lst).number==0)
+	while (cnt<an && onull(lst).number==0)
 	{
-		array[cnt++] = toint(callfn(ocar,lst));
-		lst=callfn(ocdr, lst); 
+		array[cnt++] = toint(ocar(lst));
+		lst=ocdr(lst); 
 	}
 	
 	return cnt;
 }
 
-void opose()
+tOBJ opose(tOBJ a)
 {
 	//> !POSE {1 2 3 4}
-	tOBJ a=pop();
 	BYTE sp[32];
 	int nb,i;
 	int speed=4, tm=1000, fm=10, fmflg=0;
@@ -2533,55 +2468,50 @@ void opose()
 		if (!dbg) PlayPose(tm, fm, speed, sp, (fmflg==0)?nb:0);
 		fmflg=1;
 	}
-	push(emptyObj());
-	return;
+	return emptyObj();
 }
 
 /**********************************************************/
 /*  Access sensors                                        */
 /**********************************************************/
 
-void opsd()
+tOBJ opsd(tOBJ a)
 {
 	tOBJ r;
 	Get_AD_PSD();
 	r.type=INTGR;
 	r.number=gDistance;
-	push(r);
-	return;
+	return r;
 }
 
-void oacx()
+tOBJ oacx(tOBJ a)
 {
 	tOBJ r;
 	Acc_GetData();
 	r.type=INTGR;
 	r.number=x_value;
-	push(r);
-	return;
+	return r;
 }
 
-void oacy()
+tOBJ oacy(tOBJ a)
 {
 	tOBJ r;
 	Acc_GetData();
 	r.type=INTGR;
 	r.number=y_value;
-	push(r);
-	return;
+	return r;
 }
 
-void oacz()
+tOBJ oacz(tOBJ a)
 {
 	tOBJ r;
 	Acc_GetData();
 	r.type=INTGR;
 	r.number=z_value;
-	push(r);
-	return;
+	return r;
 }
 
-void oexit()
+tOBJ oexit(tOBJ a)
 {
 #ifdef LINUX
 	sigcatch();
@@ -2624,16 +2554,14 @@ void brainf(char *s)
 	*op=0;
 }
 
-void obf()
+tOBJ obf(tOBJ v)
 {
-	tOBJ v=pop();
 	if (v.type==STR)
 		brainf(v.string);
 	else
 		printf("need a string argument");
 
-	push(emptyObj());
-	return;
+	return (emptyObj());
 }
 
 
@@ -2644,7 +2572,7 @@ Extended input
 
 ************************************************************************/
 
-void omatr()
+tOBJ omatr(tOBJ a)
 {
 	tOBJ n=pop();
 	tOBJ v=pop();
@@ -2665,22 +2593,19 @@ void omatr()
 			matrixstore(val, v.string);
 		}
 	}
-	push(emptyObj());
-	return;
+	return (emptyObj());
 }
-void oimg()
+tOBJ oimg(tOBJ v)
 {
 	//!IMG {"command" {parameters}}
 	//comand : {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
 	
-	tOBJ v=pop();
-	tOBJ cmd = callfn(ocar,v);
+	tOBJ cmd = ocar(v);
 	if (cmd.type == STR)
 	{
 		//tOBJ l = stringtocells("");
 	}
-	push(emptyObj());
-	return;
+	return (emptyObj());
 }
 
 static int  intf=1;
