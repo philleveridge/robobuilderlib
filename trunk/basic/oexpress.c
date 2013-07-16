@@ -2392,8 +2392,7 @@ void oexec()
 	tOBJ a=pop();
 	if (a.type==CELL && ((tCELLp)(a.cell))->head.type==FUNC)
 	{
-		tOBJ x = ((tCELLp)(a.cell))->tail->head;
-		r = callfn(((tCELLp)(a.cell))->head.func,x);
+		r=callfn(callfn(ocar,a).func, callfn(ocar,callfn(ocdr,a)));
 	}	
 	push(r);
 	return;
@@ -2411,18 +2410,24 @@ void opr()
 
 void oset()
 {
-	//> !SET {"A" 2}
+	//> !SET {"A" 2 "B" 3}
 	//2
 
 	tOBJ r=emptyObj();
 	tOBJ a=pop();
+	tOBJ value=r;
 	if (a.type==CELL)
 	{
-		tOBJ name = callfn(ocar,a);
-		tOBJ value = callfn(ocar, callfn(ocdr,a));
-
-		if (name.type==STR)
-			set(name.string, value);
+		while(1) {
+			tOBJ name = callfn(ocar,a);
+			if (name.type==EMPTY) break;
+			if (name.type==STR)
+			{
+				value = callfn(ocar, callfn(ocdr,a));
+				set(name.string, value);
+			}
+			a = callfn(ocdr, callfn(ocdr,a));
+		}
 		r=value;
 	}	
 	push(r);
@@ -2622,8 +2627,6 @@ void brainf(char *s)
 void obf()
 {
 	tOBJ v=pop();
-	//brainf("++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.");
-
 	if (v.type==STR)
 		brainf(v.string);
 	else
