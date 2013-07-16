@@ -346,6 +346,18 @@ tOBJ makeCell()
 	return r;
 }
 
+tOBJ makeCell2(tOBJ a, tCELLp b)
+{
+	tOBJ r; tCELLp p;
+	r.type=CELL;
+	p = newCell();
+	p->head=a;  //clone ?
+	p->tail=b;
+	r.cell=p;
+	r.cnt=0;
+	return r;
+}
+
 tCELLp cloneCell(tCELLp p)
 {
 	tCELLp t,r=newCell();
@@ -441,8 +453,7 @@ int toint(tOBJ v)
 
 tOBJ cnvtInttoList(int an, int *array)
 {
-	tOBJ c,r,n,top;
-	tCELLp t;
+	tOBJ r,n,top;
 	int i;
 
 	if (an<=0) return emptyObj();
@@ -463,8 +474,7 @@ tOBJ cnvtInttoList(int an, int *array)
 
 tOBJ cnvtBytetoList(int an, BYTE *array)
 {
-	tOBJ c,r,n,top;
-	tCELLp t;
+	tOBJ r,n,top;
 	int i;
 
 	if (an<=0) return emptyObj();
@@ -485,8 +495,7 @@ tOBJ cnvtBytetoList(int an, BYTE *array)
 
 tOBJ cnvtFloattoList(int an, float *array)
 {
-	tOBJ c,r,n,top;
-	tCELLp t;
+	tOBJ r,n,top;
 	int i;
 
 	if (an<=0) return emptyObj();
@@ -1230,7 +1239,6 @@ int set(char *name, tOBJ r)
 
 	if (strlen(name)==2 && *name=='@' && isalpha(*(name+1))) //backwards compat
 	{
-		char ln=*(name+1);
 		if (r.type==CELL)
 		{
 			char ln=*(name+1);
@@ -1791,7 +1799,7 @@ tOBJ oapply(tOBJ a)
 
 	if (a.type !=STR && b.type != FMAT2)
 	{
-		return;
+		return r;
 	}
 
 	r.type=FMAT2;
@@ -1921,7 +1929,7 @@ tOBJ oconv (tOBJ b)
 	a=pop();
 
 	if (a.type != FMAT2 && b.type!=FMAT2)
-		return;
+		return r;
 
 	r.type=FMAT2;
 	r.fmat2=fconvolve2(&a.fmat2,&b.fmat2) ;
@@ -1932,7 +1940,7 @@ tOBJ oconv (tOBJ b)
 tOBJ ocond(tOBJ a)
 {
 	// COND (Matrix,lv, uv, nv1, nv2)
-	tOBJ r, b, c;
+	tOBJ r;
 	int i;
 	float lv=0,uv=0,nv1=0,nv2=0;
 	nv2 = tofloat(a);
@@ -1941,7 +1949,6 @@ tOBJ ocond(tOBJ a)
 	lv = tofloat(pop());
 	a = pop();
 	r.type=EMPTY;
-	push(r);
 	if (a.type==FMAT2)
 	{
 		r.type = FMAT2;	
@@ -2077,15 +2084,14 @@ tOBJ olist (tOBJ a)
 	return r;
 }
 
-tOBJ ocons (tOBJ a)
+tOBJ ocons (tOBJ n)
 {
 	//!CONS {1 {2 3}} -> {1 2 3}
 	tOBJ r=emptyObj();
-	tOBJ n=pop();
 	if (n.type==CELL)
 	{
-		tOBJ a = ((tCELLp)(n.cell))->head;
-		tOBJ b = ((tCELLp)(n.cell))->tail->head;
+		tOBJ a = ocar(n);
+		tOBJ b = ocar(ocdr(n));
 		if (b.type==CELL)
 		{
 			r=makeCell();
@@ -2199,31 +2205,30 @@ tOBJ osubst(tOBJ a)
 	return r;
 }
 
-tOBJ orev2(tOBJ a)
+tOBJ orev2(tOBJ lst)
 {
 	//!REV {1 2 3} -> {3 2 1}
 /*
-(defun good-reverse (lst)
+
+       (defun good-reverse (lst)
        (labels ((rev (lst acc)
-                         (if (null lst)
-                                acc
-                               (defun good-reverse (lst)
-       (labels ((rev (lst acc)
-                         (if (null lst)
-                                acc
-                                (rev (cdr lst) (cons (car lst) acc)))))
+        (if (null lst)
+          acc
+          (rev (cdr lst) (cons (car lst) acc)))))
           (rev lst nil))) (rev (cdr lst) (cons (car lst) acc)))))
           (rev lst nil)))
 */
 	tOBJ r=emptyObj();
-	if (a.type==CELL)
+	if (onull(lst).number==0)
 	{
+		
 	}	
 	return r;
 }
 
 tOBJ orev(tOBJ a)
 {
+	//!REV {1 2 3} -> {3 2 1}
 	tOBJ r=emptyObj();
 	if (a.type==CELL)
 	{
