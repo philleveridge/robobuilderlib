@@ -315,7 +315,7 @@ int compareObj(tOBJ a, tOBJ b)
 	//SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2};
 	if (a.type == INTGR) return a.number==b.number;
 	if (a.type == FLOAT) return a.floatpoint==b.floatpoint;
-	if (a.type == STR)   return strcmp(a.string,b.string)==0;
+	if (a.type == STR)   return !strcmp(a.string,b.string);
 	if (a.type == EMPTY) return 1;
 	return 0;
 }
@@ -513,6 +513,88 @@ tOBJ cnvtFloattoList(int an, float *array)
 	((tCELLp)(n.cell))->tail = 0;
 	return top;
 }
+
+/**********************************************************/
+/*  Dictionary                                            */
+/**********************************************************/
+
+
+Dict newdict()
+{
+	Dict n;
+	n.sz=100;
+	n.ip=0;
+	n.db = malloc(n.sz*sizeof(Kvp));
+	return n;
+}
+
+tOBJ makedict()
+{
+	tOBJ r=emptyObj();
+	Dict f=newdict();
+	r.type=DICT;
+	r.dict=&f;
+	return r;
+}
+
+int dict_add(Dict *d, char *key, tOBJ value)
+{
+	if (d->ip <d->sz-1)
+	{
+		strncpy(d->db[d->ip].key , key,32);
+		d->db[d->ip].value = value; // should be clone;
+		(d->ip)++;
+	}	
+	return 0;
+}	
+
+int dict_find(Dict *d, char *key)
+{
+	int i=0;
+	while (i<d->ip)
+	{
+		if (strcmp(key, d->db[i].key)==0)
+		{
+			return i;
+		}
+		i++;
+	}
+	return -1;
+}
+
+int dict_contains(Dict *d, char *key)
+{
+	return dict_find(d, key)>=0;
+}
+
+tOBJ dict_getk(Dict *d, char *key)
+{
+	int i=dict_find(d, key);
+
+	if (i>=0) return d->db[i].value;
+	return emptyObj();
+}
+
+tOBJ dict_get(Dict *d, int indx)
+{
+	if (indx >=0 && indx <d->ip)
+		return d->db[indx].value;
+	return emptyObj();
+}
+
+
+int dict_update(Dict *d, char *key, tOBJ value)
+{
+	int i=dict_find(d, key);
+	if (i>=0) 
+	{
+		d->db[i].value = value; // clone it?
+		return 1;
+	}
+	return 0;
+}
+
+
 
 /**********************************************************/
 /*  stack                                                 */
@@ -1181,17 +1263,29 @@ tOBJ print(tOBJ r)
     return r;
 }
 
-
 /**********************************************************/
 /*  Access variables (read/write)                         */
 /**********************************************************/
+
+tOBJ env;
+int eif=0;
+
+tOBJ initEnv()
+{
+	if (eif==0) {
+		env = makedict();
+	}
+}
+
+tOBJ findEnv(char *name, tOBJ env)
+{
+	return dict_getk((Dict *)(env.dict), name);
+}
 
 tOBJ get(char *name)
 {
 	int i=0;
 	char *p=varname;
-	tOBJ r;
-	r.type=EMPTY;
 
 	if (strlen(name)==1 && isalpha(*name)) //backwards compat
 	{
@@ -1209,16 +1303,7 @@ tOBJ get(char *name)
 		return r;
 	}
 
-	while (i<nov)
-	{
-		if (strcmp(p,name)==0)
-		{
-			return varobj[i];
-		}
-		p=p+strlen(p)+1;
-		i++;
-	}
-	return r;
+	return dict_getk((Dict *)(env.dict), name);
 }
 
 int set(char *name, tOBJ r)
@@ -1257,28 +1342,16 @@ int set(char *name, tOBJ r)
 
 	if (r.type==FMAT2 || r.type==STR || r.type==CELL) r.cnt++;
 
-	while (n<nov)
-	{
-		if (strcmp(p,name)==0)
-		{
-			freeobj(&varobj[n]);
-			varobj[n]=r;
-			return 1;
-		}
-		p=p+strlen(p)+1;
-		n++;
-	}
-	if (nov<50)
-	{
-		varobj[nov++]=r;
 
-		strcpy(p,name);
-		p=p+strlen(p)+1;
-		*p='\0';
-		return 0; //added
+	if (dict_contains((Dict *)(env.dict), name))
+	{
+		n = dict_update((Dict *)(env.dict), name, r);
 	}
 	else
-		return -1;
+	{
+		n = dict_add((Dict *)(env.dict), name, r);
+	}
+	return n;
 }
 
 tOBJ owhs(tOBJ r)
@@ -2078,9 +2151,7 @@ tOBJ olen (tOBJ a)
 tOBJ olist (tOBJ a)
 {	
 	//!LIST {1 2 3} -> {{1 2 3}}
-	tOBJ r=makeCell();
-	((tCELLp)(r.cell))->head=a;
-	((tCELLp)(r.cell))->tail = NULL;	
+	tOBJ r=makeCell2(a, NULL);	
 	return r;
 }
 
@@ -2094,9 +2165,7 @@ tOBJ ocons (tOBJ n)
 		tOBJ b = ocar(ocdr(n));
 		if (b.type==CELL)
 		{
-			r=makeCell();
-			((tCELLp)(r.cell))->head=a;
-			((tCELLp)(r.cell))->tail = (tCELLp)(b.cell);
+			r=makeCell2(a, b.cell);
 		}
 	}
 	return r;
@@ -2166,6 +2235,9 @@ tOBJ olast(tOBJ a)
 
 tOBJ osubst(tOBJ a)
 {
+	//!SUBS {1 2 {1 2 3}}
+	//{2 2 3}
+
 	tOBJ r=emptyObj();
 	if (a.type==CELL)
 	{
@@ -2174,10 +2246,10 @@ tOBJ osubst(tOBJ a)
 		int fl=0;
 
 		f = p->head;
-		if (p->tail==NULL) {push (r);return r;}
+		if (p->tail==NULL) {return r;}
 		p=p->tail;
 		t = p->head;
-		if (p->tail==NULL) {push (r);return r;}
+		if (p->tail==NULL) {return r;}
 		p=p->tail;
 		l = p->head;
 		if (l.type!=CELL)
@@ -2232,23 +2304,15 @@ tOBJ orev(tOBJ a)
 	tOBJ r=emptyObj();
 	if (a.type==CELL)
 	{
-		tCELLp n=NULL,p= a.cell;
-		tCELLp t;
+		tCELLp p=a.cell;
 		tOBJ z;
 
-		z=makeCell();	
-		t=z.cell;
-		t->head=p->head;
-		t->tail=NULL;
+		z=makeCell2(p->head, NULL);	
 		p=p->tail;
 
 		while (p != NULL)
 		{
-			n=t;
-			z=makeCell();
-			t=z.cell;
-			t->head = p->head;
-			t->tail = n;
+			z=makeCell2(p->head,z.cell);
 			p=p->tail;
 		} 
 		r=z;		
@@ -2325,8 +2389,9 @@ tOBJ oasso(tOBJ a)
 		do {
 			tOBJ pair = ocar(lst);
 			tOBJ n = ocar(pair);
+
 			if (compareObj(key,n))  // if car pair = key
-			{
+			{	
 				return pair;				
 			}
 			lst=ocdr(lst); 	// lst=cdr lst		
@@ -2420,8 +2485,6 @@ tOBJ onth(tOBJ a)
 			return ocar(lst);
 		}
 	}
-	
-
 	return emptyObj();
 }
 
@@ -2642,6 +2705,9 @@ void extend(char *x)
 		
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
+
+		//set up glnal environment
+		initEnv();
 	}
 
 	e=x;
