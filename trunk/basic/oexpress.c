@@ -78,12 +78,6 @@ fMatrix fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)   ;
 #define MAXSTACK 50
 #define MAXSTRING 1024
 
-
-char varname[256];
-tOBJ varobj[50];
-int nov=0;
-
-
 char exprbuff[MAXSTRING];
 char *e;
 char tokbuff[5];
@@ -464,14 +458,12 @@ tOBJ cnvtInttoList(int an, int *array)
 	int i;
 
 	if (an<=0) return emptyObj();
-	top=makeCell();
+	top=makeCell2( makeint(array[0]), NULL);
 	r=top;
-	((tCELLp)(r.cell))->head = makeint(array[0]);
 
 	for (i=1; i<an; i++)
 	{
-		n=makeCell();
-		((tCELLp)(n.cell))->head = makeint(array[i]);
+		n=makeCell2(makeint(array[i]), NULL);
 		((tCELLp)(r.cell))->tail = n.cell;
 		r=n;
 	}
@@ -485,14 +477,12 @@ tOBJ cnvtBytetoList(int an, BYTE *array)
 	int i;
 
 	if (an<=0) return emptyObj();
-	top=makeCell();
+	top=makeCell2( makeint(array[0]), NULL);
 	r=top;
-	((tCELLp)(r.cell))->head = makeint((int)array[0]);
 
 	for (i=1; i<an; i++)
 	{
-		n=makeCell();
-		((tCELLp)(n.cell))->head = makeint((int)array[i]);
+		n=makeCell(makeint((int)array[i]), NULL);
 		((tCELLp)(r.cell))->tail = n.cell;
 		r=n;
 	}
@@ -506,14 +496,12 @@ tOBJ cnvtFloattoList(int an, float *array)
 	int i;
 
 	if (an<=0) return emptyObj();
-	top=makeCell();
+	top=makeCell2(makefloat(array[0]), NULL);
 	r=top;
-	((tCELLp)(r.cell))->head = makefloat(array[0]);
 
 	for (i=1; i<an; i++)
 	{
-		n=makeCell();
-		((tCELLp)(n.cell))->head = makefloat(array[i]);
+		n=makeCell2(makefloat(array[i]), NULL);
 		((tCELLp)(r.cell))->tail = n.cell;
 		r=n;
 	}
@@ -609,6 +597,7 @@ int dict_update(Dict *d, char *key, tOBJ value)
 		d->db[i].value = value; // clone it?
 		return 1;
 	}
+	dict_add(d, key, value);
 	return 0;
 }
 
@@ -1394,15 +1383,7 @@ int set(char *name, tOBJ r)
 
 	if (r.type==FMAT2 || r.type==STR || r.type==CELL || r.type==DICT ) r.cnt++;
 
-
-	if (dict_contains((Dict *)(env.dict), name))
-	{
-		n = dict_update((Dict *)(env.dict), name, r);
-	}
-	else
-	{
-		n = dict_add((Dict *)(env.dict), name, r);
-	}
+	n = dict_update((Dict *)(env.dict), name, r);
 	return n;
 }
 
@@ -2297,28 +2278,6 @@ tOBJ osubst(tOBJ a)
 	}	
 	return r;
 }
-
-tOBJ orev2(tOBJ lst)
-{
-	//!REV {1 2 3} -> {3 2 1}
-/*
-
-       (defun good-reverse (lst)
-       (labels ((rev (lst acc)
-        (if (null lst)
-          acc
-          (rev (cdr lst) (cons (car lst) acc)))))
-          (rev lst nil))) (rev (cdr lst) (cons (car lst) acc)))))
-          (rev lst nil)))
-*/
-	tOBJ r=emptyObj();
-	if (onull(lst).number==0)
-	{
-		
-	}	
-	return r;
-}
-
 tOBJ orev(tOBJ a)
 {
 	//!REV {1 2 3} -> {3 2 1}
@@ -2444,20 +2403,41 @@ tOBJ opr(tOBJ a)
 
 tOBJ oset(tOBJ a)
 {
-	//> !SET {"A" 2 "B" 3}
-	//2
-
+/*
+!SET {"A" 2 "B" 3}
+PRINT A,B
+!LET EN=DICT {{"a" 1} {"b" 2.3}}
+!GET {EN "b"}
+!SET {EN "b" 2.9}
+*/
 	tOBJ r=emptyObj();
-	tOBJ value=r;
+	tOBJ env=emptyObj();
+	tOBJ name;
+	tOBJ value;
+
 	if (a.type==CELL)
 	{
 		while(1) {
-			tOBJ name = ocar(a);
+			name = ocar(a);
+			if (name.type ==DICT)
+			{
+				env= name;
+				name = ocar(ocdr(a));
+				a = ocdr(a);
+			}
+
 			if (name.type==EMPTY) break;
 			if (name.type==STR)
 			{
 				value = ocar(ocdr(a));
-				set(name.string, value);
+				if (env.type==EMPTY)
+				{
+					set(name.string, value);
+				}
+				else
+				{
+					dict_update(env.dict, name.string, value);
+				}
 			}
 			a = ocdr(ocdr(a));
 		}
@@ -2469,8 +2449,6 @@ tOBJ oset(tOBJ a)
 tOBJ oget(tOBJ a)
 {
 	//> !GET {"A"}
-	//2
-
 	tOBJ r=emptyObj();
 	if (a.type==CELL)
 	{
@@ -2478,6 +2456,14 @@ tOBJ oget(tOBJ a)
 
 		if (name.type==STR)
 			r = get(name.string);
+
+		if (name.type==DICT)
+		{
+			tOBJ env = name;
+			name = ocar(ocdr(a));
+			if (name.type==STR)
+				r = dict_getk(env.dict, name.string);
+		}	
 	}
 	if (a.type==STR)
 	{
@@ -2622,9 +2608,7 @@ tOBJ osave(tOBJ  r)
 
 tOBJ odict(tOBJ  lst)
 {
-	//!DICT {{1 2} {2 3} {4 5}}
 	//!DICT {{"a" 2} {"b" 3} {"c" 4}}
-
 	tOBJ r;
 	if (lst.type==CELL)
 	{
@@ -3120,7 +3104,6 @@ void extend(char *x)
 	v=eval_oxpr(e);
 	print(v);
 	rprintfCRLF();
-
 	freeobj(&v);
 }
 
