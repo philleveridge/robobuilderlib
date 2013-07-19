@@ -161,6 +161,10 @@ tOBJ owhs(tOBJ  r);
 tOBJ oexit(tOBJ  r);
 tOBJ obf(tOBJ  r);
 
+tOBJ oload(tOBJ  r);
+tOBJ osave(tOBJ  r);
+tOBJ odict(tOBJ  r);
+
 tOBJ omatr(tOBJ  r);// {"LOAD" "STOR"}
 tOBJ oimg(tOBJ  r); // {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
 
@@ -244,7 +248,10 @@ tOP oplist[] = {
 	{"PR",    40, NA,   1, opr},   //function single arg
 	{"WHOS",  40, NA,   0, owhs},
 	{"BF",    40, NA,   1, obf},
-	{"MAT",   40, NA,   2, omatr},// {"LOAD" "STOR"}
+	{"MAT",   40, NA,   2, omatr},// 
+	{"DICT",  40, NA,   1, odict},// 
+	{"LOAD",  40, NA,   1, oload},//
+	{"SAVE",  40, NA,   1, osave},//
 	{"EXIT",  40, NA,   0, oexit}
  
 /* TBD - move all to function
@@ -519,38 +526,49 @@ tOBJ cnvtFloattoList(int an, float *array)
 /**********************************************************/
 
 
-Dict newdict()
+Dict * newdict()
 {
-	Dict n;
-	n.sz=100;
-	n.ip=0;
-	n.db = malloc(n.sz*sizeof(Kvp));
+	if (dbg) printf ("New dictionary\n");
+	Dict *n = (Dict *)malloc(sizeof(Dict));
+	n->sz=100;
+	n->ip=0;
+	n->db = (Kvp *)malloc((n->sz) * sizeof(Kvp));
 	return n;
+}
+
+int deldict(Dict *x)
+{
+	if (dbg) printf ("Delete dictionary\n");
+	return 0;
 }
 
 tOBJ makedict()
 {
 	tOBJ r=emptyObj();
-	Dict f=newdict();
+	Dict *f=newdict();
 	r.type=DICT;
-	r.dict=&f;
+	r.dict=f;
 	return r;
 }
 
 int dict_add(Dict *d, char *key, tOBJ value)
 {
-	if (d->ip <d->sz-1)
+	if(dbg) printf ("Add %d %d\n", d->ip, d->sz);
+
+	if ((d->ip) < (d->sz-1))
 	{
-		strncpy(d->db[d->ip].key , key,32);
+		char *cp = d->db[d->ip].key;
+		strncpy(cp, key, 32);
 		d->db[d->ip].value = value; // should be clone;
 		(d->ip)++;
-	}	
+	}
 	return 0;
 }	
 
 int dict_find(Dict *d, char *key)
 {
 	int i=0;
+
 	while (i<d->ip)
 	{
 		if (strcmp(key, d->db[i].key)==0)
@@ -594,6 +612,43 @@ int dict_update(Dict *d, char *key, tOBJ value)
 	return 0;
 }
 
+int dict_print(Dict *d)
+{
+	int i=0;
+
+	while (i<d->ip)
+	{
+		char *st="";
+
+		switch (d->db[i].value.type)
+		{  
+		case INTGR: st="Int   "; break;
+
+		case FLOAT: st="Float "; break;
+
+		case STR:   st="String"; break;
+
+		case FMAT2: st="Matrix"; break;
+
+		case CELL:  st="List  "; break;
+
+		case SYM:   break;
+
+		case BOOLN: break;
+
+		case EMPTY: st="Empty  "; break;
+
+		case FUNC:  break;
+		}
+
+		printf ("%7s [%s] ", d->db[i].key, st );
+		print (d->db[i].value);
+		printf ("\n");
+		i++;
+	}
+	return 0;
+}
+
 
 
 /**********************************************************/
@@ -613,17 +668,18 @@ int freeobj(tOBJ *b)
 	{
 		if (b->cnt==0) delmatrix(&b->fmat2);
 	}
-
 	if (b->type==STR)
 	{
 		if (b->cnt==0) delstring(b->string);
 	}
-
 	if (b->type==CELL)
 	{
 		if (b->cnt==0) delCell(b->cell);
 	}
-
+	if (b->type==DICT)
+	{
+		if (b->cnt==0) deldict(b->dict);
+	}
 	return 0;
 }
 
@@ -1220,6 +1276,10 @@ void printtype(tOBJ r)
     {
 	fmatprint2(&r.fmat2);	 
     }
+    else  if (r.type == DICT)
+    {
+	dict_print(r.dict);
+    }
     else  if (r.type == CELL)
     {
 	if (r.q) rprintfStr("'");
@@ -1277,15 +1337,9 @@ tOBJ initEnv()
 	}
 }
 
-tOBJ findEnv(char *name, tOBJ env)
-{
-	return dict_getk((Dict *)(env.dict), name);
-}
-
 tOBJ get(char *name)
 {
-	int i=0;
-	char *p=varname;
+	tOBJ r;
 
 	if (strlen(name)==1 && isalpha(*name)) //backwards compat
 	{
@@ -1309,8 +1363,6 @@ tOBJ get(char *name)
 int set(char *name, tOBJ r)
 {
 	int n = 0;
-	char *p=varname;
-
 	if (strlen(name)==1 && isalpha(*name)) //backwards compat
 	{
 		if (r.type==INTGR)
@@ -1340,7 +1392,7 @@ int set(char *name, tOBJ r)
 		return 1;
 	}
 
-	if (r.type==FMAT2 || r.type==STR || r.type==CELL) r.cnt++;
+	if (r.type==FMAT2 || r.type==STR || r.type==CELL || r.type==DICT ) r.cnt++;
 
 
 	if (dict_contains((Dict *)(env.dict), name))
@@ -1358,38 +1410,7 @@ tOBJ owhs(tOBJ r)
 {
 	//display all variables and types
 	//!WHOS
-	char *p=varname;
-	int i=0;
-	while (i<nov)
-	{
-		tOBJ r =varobj[i];
-		char *st="";
-
-		switch (r.type)
-		{  
-		case INTGR: st="Int"; break;
-
-		case FLOAT: st="Float"; break;
-
-		case STR: st="String"; break;
-
-		case FMAT2: st="Matrix"; break;
-
-		case CELL: st="List"; break;
-
-		case SYM: break;
-
-		case BOOLN: break;
-
-		case EMPTY: break;
-
-		case FUNC: break;
-		}
-		printf("%7s - %s",p,st);
-		p=p+strlen(p)+1;
-		i++;
-		printf("\n");
-	}
+	dict_print(env.dict);
 	return emptyObj();
 }
 
@@ -2587,6 +2608,44 @@ tOBJ oexit(tOBJ a)
 }
 
 
+tOBJ oload(tOBJ  r)
+{
+	//!LOAD "fn"
+	return r;
+}
+
+tOBJ osave(tOBJ  r)
+{
+	//!SAVE "fn"
+	return r;
+}
+
+tOBJ odict(tOBJ  lst)
+{
+	//!DICT {{1 2} {2 3} {4 5}}
+	//!DICT {{"a" 2} {"b" 3} {"c" 4}}
+
+	tOBJ r;
+	if (lst.type==CELL)
+	{
+		r = makedict();
+		do {
+			tOBJ pair = ocar(lst);
+			tOBJ n = ocar(pair);
+			tOBJ v = ocar(ocdr(pair));
+
+			if (n.type==STR)
+				dict_add(r.dict, n.string, v);
+
+			lst=ocdr(lst); 	// lst=cdr lst		
+		}
+		while (onull(lst).number==0); 	
+		return r;		
+	}	
+	return emptyObj();
+}
+
+
 /***********************************************************************
 
 !BF "++++++++++[>+++++++>++++++++++>+++>+<<<<-]+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>."
@@ -2695,19 +2754,20 @@ int get_str_token(char *s)
 void extend(char *x)
 {
 	tOBJ v,file;
-	int val;
 
-	if (intf) { // set up defaults
+	if (intf) 
+	{ 	// set up defaults
 		intf=0; 
+
+		//set up glnal environment
+		initEnv();
+
 		set("PI",  makefloat (3.1415926));
 		set("DFN", makestring("data.txt"));
 		set("IFN", makestring("test.jpg"));
 		
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
-
-		//set up glnal environment
-		initEnv();
 	}
 
 	e=x;
