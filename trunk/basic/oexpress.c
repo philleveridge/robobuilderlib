@@ -165,6 +165,8 @@ tOBJ oimg(tOBJ  r); // {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "S
 tOBJ oprt(tOBJ  r);
 tOBJ olet(tOBJ  r); 
 tOBJ odefn(tOBJ  r); 
+tOBJ odo(tOBJ  r); 
+tOBJ oqt(tOBJ  r); 
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -242,13 +244,14 @@ tOP oplist[] = {
 	{"NTH",   40, NA,   1, onth}, //function single arg
 	{"PR",    40, NA,   1, opr},   //function single arg
 	{"WHOS",  40, NA,   0, owhs},
-	{"BF",    40, NA,   1, obf},
+/*70 */	{"BF",    40, NA,   1, obf},
 	{"MAT",   40, NA,   2, omatr},// 
 	{"DICT",  40, NA,   1, odict},// 
 	{"LOAD",  40, NA,   1, oload},//
 	{"SAVE",  40, NA,   1, osave},//
-	{"DO",    40, NA,   1, oexec},//
+	{"DO",    40, NA,   1, odo},//
 	{"DEFN",  40, NA,   1, odefn},//
+	{"QT",    40, NA,   1, oqt},//
 	{"EXIT",  40, NA,   0, oexit}
  
 /* TBD - move all to function
@@ -625,11 +628,13 @@ int dict_print(Dict *d)
 
 		case CELL:  st="List  "; break;
 
-		case SYM:   break;
+		case SYM:   st="Symbol"; break;
 
-		case BOOLN: break;
+		case LAMBDA:st="Lambda"; break;
 
-		case EMPTY: st="Empty  "; break;
+		case BOOLN: st="bool   ";break;
+
+		case EMPTY: st="Empty  ";break;
 
 		case FUNC:  break;
 		}
@@ -1260,6 +1265,10 @@ void printtype(tOBJ r)
     else if (r.type == EMPTY)
     {
         rprintfStr("NIL");
+    }
+    else if (r.type == LAMBDA)
+    {
+        rprintfStr("LAMBDA");   
     }
     else if (r.type == FUNC)
     {
@@ -2600,8 +2609,8 @@ tOBJ oexec(tOBJ a)
 
 tOBJ odo(tOBJ a)
 {
-	//> !DO {{ } { } { }}
-	//1
+	//!DO {{PR 1} {CAR {1 2 3}} {PR 2}}
+
 	tOBJ x;
 	tOBJ r=emptyObj();
 	if (a.type==CELL)
@@ -2609,7 +2618,7 @@ tOBJ odo(tOBJ a)
 		do {
 		x = ocar(a);
 		r = oexec(x);
-		a = ocar(ocdr(a))
+		a = ocdr(a);
 		} while (onull(a).number==0);
 	}	
 	return r;
@@ -2628,10 +2637,25 @@ tOBJ osave(tOBJ  r)
 	return r;
 }
 
+tOBJ oqt(tOBJ  r)
+{
+	//!QT {}
+	return r;
+}
+
+tOBJ callfn(tOBJ  r)
+{
+	print(r);
+	return emptyObj();
+}
+
 tOBJ odefn(tOBJ  r)
 {
 	//!DEFN {"fn" {args} {body}}
-
+	tOBJ fn   = ocar(r);
+	tOBJ bdy  = ocdr(r);
+	bdy.type = LAMBDA;
+	set(fn.string, bdy);
 	return r;
 }
 
