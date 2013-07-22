@@ -164,6 +164,7 @@ tOBJ oimg(tOBJ  r); // {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "S
 
 tOBJ oprt(tOBJ  r);
 tOBJ olet(tOBJ  r); 
+tOBJ odefn(tOBJ  r); 
 
 tOBJ get(char *name);
 int  set(char *name, tOBJ r);
@@ -246,6 +247,8 @@ tOP oplist[] = {
 	{"DICT",  40, NA,   1, odict},// 
 	{"LOAD",  40, NA,   1, oload},//
 	{"SAVE",  40, NA,   1, osave},//
+	{"DO",    40, NA,   1, oexec},//
+	{"DEFN",  40, NA,   1, odefn},//
 	{"EXIT",  40, NA,   0, oexit}
  
 /* TBD - move all to function
@@ -516,8 +519,9 @@ tOBJ cnvtFloattoList(int an, float *array)
 
 Dict * newdict()
 {
+	Dict *n;
 	if (dbg) printf ("New dictionary\n");
-	Dict *n = (Dict *)malloc(sizeof(Dict));
+	n = (Dict *)malloc(sizeof(Dict));
 	n->sz=100;
 	n->ip=0;
 	n->db = (Kvp *)malloc((n->sz) * sizeof(Kvp));
@@ -2381,17 +2385,6 @@ tOBJ oasso(tOBJ a)
 	return r;
 }
 
-tOBJ oexec(tOBJ a)
-{
-	//> !EXEC {CAR {1 2}}
-	//1
-	tOBJ r=emptyObj();
-	if (a.type==CELL && ((tCELLp)(a.cell))->head.type==FUNC)
-	{
-		r = (*ocar(a).func)(ocar(ocdr(a)));
-	}	
-	return r;
-}
 
 tOBJ opr(tOBJ a)
 {
@@ -2593,6 +2586,35 @@ tOBJ oexit(tOBJ a)
 #endif
 }
 
+tOBJ oexec(tOBJ a)
+{
+	//> !EXEC {CAR {1 2}}
+	//1
+	tOBJ r=emptyObj();
+	if (a.type==CELL && ((tCELLp)(a.cell))->head.type==FUNC)
+	{
+		r = (*ocar(a).func)(ocar(ocdr(a)));
+	}	
+	return r;
+}
+
+tOBJ odo(tOBJ a)
+{
+	//> !DO {{ } { } { }}
+	//1
+	tOBJ x;
+	tOBJ r=emptyObj();
+	if (a.type==CELL)
+	{
+		do {
+		x = ocar(a);
+		r = oexec(x);
+		a = ocar(ocdr(a))
+		} while (onull(a).number==0);
+	}	
+	return r;
+}
+
 
 tOBJ oload(tOBJ  r)
 {
@@ -2603,6 +2625,13 @@ tOBJ oload(tOBJ  r)
 tOBJ osave(tOBJ  r)
 {
 	//!SAVE "fn"
+	return r;
+}
+
+tOBJ odefn(tOBJ  r)
+{
+	//!DEFN {"fn" {args} {body}}
+
 	return r;
 }
 
