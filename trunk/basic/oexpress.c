@@ -393,7 +393,7 @@ tOBJ cloneObj(tOBJ z)
 	{
 		r.string = newstring(z.string);
 	}
-	if (r.type==CELL)
+	if (r.type==CELL || r.type==LAMBDA)
 	{
 		r.cell = cloneCell(z.cell);
 	}
@@ -554,7 +554,7 @@ int dict_add(Dict *d, char *key, tOBJ value)
 	{
 		char *cp = d->db[d->ip].key;
 		strncpy(cp, key, 32);
-		d->db[d->ip].value = value; // should be clone;
+		d->db[d->ip].value = value; //cloneObj(value); // should be clone;
 		(d->ip)++;
 	}
 	return 0;
@@ -601,7 +601,7 @@ int dict_update(Dict *d, char *key, tOBJ value)
 	int i=dict_find(d, key);
 	if (i>=0) 
 	{
-		d->db[i].value = value; // clone it?
+		d->db[i].value = value; cloneObj(value); // clone it?
 		return 1;
 	}
 	dict_add(d, key, value);
@@ -1394,7 +1394,7 @@ int set(char *name, tOBJ r)
 		return 1;
 	}
 
-	if (r.type==FMAT2 || r.type==STR || r.type==CELL || r.type==DICT ) r.cnt++;
+	if (r.type==FMAT2 || r.type==STR || r.type==CELL || r.type==DICT || r.type==LAMBDA) r.cnt++;
 
 	n = dict_update((Dict *)(env.dict), name, r);
 	return n;
@@ -2595,14 +2595,50 @@ tOBJ oexit(tOBJ a)
 #endif
 }
 
+tOBJ callfn(tOBJ  r, tOBJ x)
+{
+	tOBJ fn   = r;
+printf ("lambda\n");
+printf ("fn=");  print(fn);  printf("\n");
+fn.type=CELL;
+printf ("fn=");  print(fn);  printf("\n");
+
+//printf ("bdy="); print(bdy); printf("\n");
+printf ("pms="); print(x);   printf("\n");
+
+//	r = odo(bdy);
+	return r;
+}
+
+tOBJ odefn(tOBJ  r)
+{
+/*   !DEFN {"n" {args} {body}}
+i
+!DEFN {"FM" {x} {PR x}}
+!EXEC {FM {1}}
+*/
+	tOBJ fn   = ocar(r);
+	tOBJ fbdy  = ocdr(r);
+
+	//fbdy.type = LAMBDA;
+print(fbdy); printf(" ..bdy\n");
+
+	set(fn.string, fbdy);
+	return r;
+}
+
 tOBJ oexec(tOBJ a)
 {
 	//> !EXEC {CAR {1 2}}
-	//1
+	//EXEC {FM {1}}
 	tOBJ r=emptyObj();
 	if (a.type==CELL && ((tCELLp)(a.cell))->head.type==FUNC)
 	{
 		r = (*ocar(a).func)(ocar(ocdr(a)));
+	}
+	if (a.type==CELL && ((tCELLp)(a.cell))->head.type==LAMBDA)
+	{
+		r = callfn(ocar(a),ocdr(a));
 	}	
 	return r;
 }
@@ -2643,21 +2679,7 @@ tOBJ oqt(tOBJ  r)
 	return r;
 }
 
-tOBJ callfn(tOBJ  r)
-{
-	print(r);
-	return emptyObj();
-}
 
-tOBJ odefn(tOBJ  r)
-{
-	//!DEFN {"fn" {args} {body}}
-	tOBJ fn   = ocar(r);
-	tOBJ bdy  = ocdr(r);
-	bdy.type = LAMBDA;
-	set(fn.string, bdy);
-	return r;
-}
 
 tOBJ odict(tOBJ  lst)
 {
@@ -2759,6 +2781,7 @@ tOBJ omatr(tOBJ a)
 	}
 	return (emptyObj());
 }
+
 tOBJ oimg(tOBJ v)
 {
 	//!IMG {"command" {parameters}}
