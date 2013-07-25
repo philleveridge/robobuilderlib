@@ -1071,7 +1071,8 @@ tOBJ readcells()
 		switch (tk)
 		{
 		case ALPHA:
-			top->head = get(tokbuff);
+			//top->head = get(tokbuff);
+			top->head = makestring(tokbuff);
 			break;
 		case STRNG:
 			top->head = makestring(tmpstr);
@@ -2451,12 +2452,13 @@ PRINT A,B
 tOBJ oget(tOBJ a)
 {
 	//> !GET {"A"}
+	//> !GET {A}
 	tOBJ r=emptyObj();
 	if (a.type==CELL)
 	{
 		tOBJ name = ocar(a);
 
-		if (name.type==STR)
+		if (name.type==STR )
 			r = get(name.string);
 
 		if (name.type==DICT)
@@ -2595,18 +2597,16 @@ tOBJ oexit(tOBJ a)
 #endif
 }
 
-tOBJ callfn(tOBJ  r, tOBJ x)
+tOBJ callfn(tOBJ  fn, tOBJ x)
 {
-	tOBJ fn   = r;
-printf ("lambda\n");
-printf ("fn=");  print(fn);  printf("\n");
-fn.type=CELL;
-printf ("fn=");  print(fn);  printf("\n");
-
-//printf ("bdy="); print(bdy); printf("\n");
-printf ("pms="); print(x);   printf("\n");
-
-//	r = odo(bdy);
+	tOBJ r, arg, body;
+	if (dbg) printf ("lambda\n");
+	fn.type=CELL;
+	arg=ocar(fn);
+	body=ocdr(fn);
+	//bind ags and params
+	//arg {"X"} pms {0}
+	r = odo(body);
 	return r;
 }
 
@@ -2619,12 +2619,9 @@ i
 */
 	tOBJ fn   = ocar(r);
 	tOBJ fbdy  = ocdr(r);
-
-	//fbdy.type = LAMBDA;
-print(fbdy); printf(" ..bdy\n");
-
+	fbdy.type = LAMBDA;
 	set(fn.string, fbdy);
-	return r;
+	return emptyObj();
 }
 
 tOBJ oexec(tOBJ a)
