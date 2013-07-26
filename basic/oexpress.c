@@ -275,7 +275,7 @@ char *newstring(char *s)
 	char *r;
 	int n=strlen(s);
 	if (dbg) printf ("New String [%d]\n",n);
-	r=(char *)malloc(n*sizeof(char));
+	r=(char *)malloc(n*sizeof(char)+1);
 	strcpy(r, s);
 	return r;
 }
@@ -284,7 +284,7 @@ char *newstring1(int n)
 {
 	char *r;
 	if (dbg) printf ("New String [%d]\n",n);
-	r=(char *)malloc(n*sizeof(char));
+	r=(char *)malloc(n*sizeof(char)+1);
 	return r;
 }
 
@@ -335,7 +335,7 @@ tCELLp newCell()
 
 void delCell(tCELLp p)
 {
-	if (dbg) printf ("Delete CELL\n");	
+	if (dbg) ; printf ("Delete CELL\n");	
 	freeobj(&p->head);
 	if (p->tail !=NULL) delCell((tCELLp)p->tail);
 	free(p);
@@ -353,24 +353,29 @@ tOBJ makeCell()
 	return r;
 }
 
+
+tOBJ cloneObj(tOBJ z);
+
 tOBJ makeCell2(tOBJ a, tCELLp b)
 {
 	tOBJ r; tCELLp p;
 	r.type=CELL;
 	p = newCell();
-	p->head=a;  //clone ?
+	p->head=cloneObj(a);  //clone ?
 	p->tail=b;
 	r.cell=p;
 	r.cnt=0;
 	return r;
 }
 
+
 tCELLp cloneCell(tCELLp p)
 {
-	tCELLp t,r=newCell();
+	tCELLp top, t,r=newCell();
+	top=r;
 	while (p!=NULL)
 	{
-		r->head =p->head;  //cloneObj??
+		r->head =cloneObj(p->head);  //cloneObj??
 		p=p->tail;
 		t=r;
 		if (p!=NULL)
@@ -382,7 +387,7 @@ tCELLp cloneCell(tCELLp p)
 			t->tail=NULL;
 	}
 		
-	return r;
+	return top;
 }
 
 tOBJ cloneObj(tOBJ z)
@@ -395,7 +400,7 @@ tOBJ cloneObj(tOBJ z)
 	}
 	if (r.type==CELL || r.type==LAMBDA)
 	{
-		r.cell = cloneCell(z.cell);
+		r.cell = cloneCell((tCELLp)z.cell);
 	}
 	if (r.type==FMAT2)
 	{
@@ -548,13 +553,22 @@ tOBJ makedict()
 
 int dict_add(Dict *d, char *key, tOBJ value)
 {
+	tOBJ t1,t2;
+
 	if(dbg) printf ("Add %d %d\n", d->ip, d->sz);
 
 	if ((d->ip) < (d->sz-1))
 	{
 		char *cp = d->db[d->ip].key;
 		strncpy(cp, key, 32);
-		d->db[d->ip].value = value; //cloneObj(value); // should be clone;
+
+		//print(value);printf (" ... ");
+
+		t1 = cloneObj(value);
+
+		//print(t1);printf (" ...\n ");
+
+		d->db[d->ip].value = t1; // should be clone;
 		(d->ip)++;
 	}
 	return 0;
@@ -601,7 +615,7 @@ int dict_update(Dict *d, char *key, tOBJ value)
 	int i=dict_find(d, key);
 	if (i>=0) 
 	{
-		d->db[i].value = value; cloneObj(value); // clone it?
+		d->db[i].value = cloneObj(value); // clone it?
 		return 1;
 	}
 	dict_add(d, key, value);
@@ -612,11 +626,14 @@ int dict_print(Dict *d)
 {
 	int i=0;
 
+
 	while (i<d->ip)
 	{
+		tOBJ t;
 		char *st="";
+		t = d->db[i].value;
 
-		switch (d->db[i].value.type)
+		switch (t.type)
 		{  
 		case INTGR: st="Int   "; break;
 
@@ -640,7 +657,16 @@ int dict_print(Dict *d)
 		}
 
 		printf ("%7s [%s] ", d->db[i].key, st );
-		print (d->db[i].value);
+
+		if (t.type==LAMBDA)
+		{
+			t.type=CELL;
+			print(t);
+		}
+		else
+		{
+			print (d->db[i].value);
+		}
 		printf ("\n");
 		i++;
 	}
@@ -1073,6 +1099,7 @@ tOBJ readcells()
 		case ALPHA:
 			//top->head = get(tokbuff);
 			top->head = makestring(tokbuff);
+			top->head.type=SYM;
 			break;
 		case STRNG:
 			top->head = makestring(tmpstr);
@@ -1250,7 +1277,7 @@ void printtype(tOBJ r)
     }
     else if (r.type == STR)
     {
-            rprintfStr(r.string);
+            rprintf("\"%s\"", r.string);
     }
     else if (r.type == SYM)
     {
@@ -1324,6 +1351,12 @@ tOBJ print(tOBJ r)
 		printtype(r);
     }
     return r;
+}
+
+tOBJ println(tOBJ r)
+{
+	print(r); printf("\n");
+	return r;
 }
 
 /**********************************************************/
@@ -2400,8 +2433,18 @@ tOBJ opr(tOBJ a)
 {
 	//> !PR 1
 	//1
-	print(a);	
-	return a;
+	tOBJ t=emptyObj();
+	while (onull(a).number==0 && a.type==CELL)
+	{
+		t=ocar(a);
+		print(t);
+		a=ocdr(a);
+	}
+	if (onull(a).number==0)
+	{
+		t=print(a);
+	}
+	return t;
 }
 
 tOBJ oset(tOBJ a)
@@ -2458,7 +2501,7 @@ tOBJ oget(tOBJ a)
 	{
 		tOBJ name = ocar(a);
 
-		if (name.type==STR )
+		if (name.type==SYM )
 			r = get(name.string);
 
 		if (name.type==DICT)
@@ -2469,7 +2512,7 @@ tOBJ oget(tOBJ a)
 				r = dict_getk(env.dict, name.string);
 		}	
 	}
-	if (a.type==STR)
+	if (a.type==SYM)
 	{
 		r = get(a.string);
 	}	
@@ -2600,12 +2643,26 @@ tOBJ oexit(tOBJ a)
 tOBJ callfn(tOBJ  fn, tOBJ x)
 {
 	tOBJ r, arg, body;
+	tOBJ e= makedict();
+
 	if (dbg) printf ("lambda\n");
 	fn.type=CELL;
 	arg=ocar(fn);
 	body=ocdr(fn);
+	x=ocar(x);
+
 	//bind ags and params
-	//arg {"X"} pms {0}
+	while (onull(arg).number==0)
+	{
+		tOBJ n=ocar(arg);
+		tOBJ v=ocar(x);
+		if (n.type==STR || n.type==SYM)
+			dict_add((Dict*)e.dict, n.string, v);
+		arg=ocdr(arg);
+		x=ocdr(x);
+	}
+	if (dbg) ; dict_print((Dict *)e.dict);
+
 	r = odo(body);
 	return r;
 }
@@ -2629,14 +2686,22 @@ tOBJ oexec(tOBJ a)
 	//> !EXEC {CAR {1 2}}
 	//EXEC {FM {1}}
 	tOBJ r=emptyObj();
-	if (a.type==CELL && ((tCELLp)(a.cell))->head.type==FUNC)
+	if (a.type==CELL)
 	{
-		r = (*ocar(a).func)(ocar(ocdr(a)));
+		tOBJ fn=ocar(a);
+		if (fn.type == SYM)
+		{
+			fn = get(fn.string);
+		}
+		if (fn.type==FUNC)
+		{
+			r = (*fn.func)(ocar(ocdr(a)));
+		}
+		if (fn.type==LAMBDA)
+		{
+			r = callfn(fn,ocdr(a));
+		}	
 	}
-	if (a.type==CELL && ((tCELLp)(a.cell))->head.type==LAMBDA)
-	{
-		r = callfn(ocar(a),ocdr(a));
-	}	
 	return r;
 }
 
