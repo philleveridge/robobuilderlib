@@ -264,7 +264,7 @@ tOP oplist[] = {
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
 tOBJ print(tOBJ r);
-
+tOBJ get(Dict *ep, char *name);
 
 /**********************************************************/
 /*  strings                                              */
@@ -335,7 +335,7 @@ tCELLp newCell()
 
 void delCell(tCELLp p)
 {
-	if (dbg) ; printf ("Delete CELL\n");	
+	if (dbg)  printf ("Delete CELL\n");	
 	freeobj(&p->head);
 	if (p->tail !=NULL) delCell((tCELLp)p->tail);
 	free(p);
@@ -555,6 +555,8 @@ int dict_add(Dict *d, char *key, tOBJ value)
 {
 	tOBJ t1,t2;
 
+	if (d==NULL) return 0;
+
 	if(dbg) printf ("Add %d %d\n", d->ip, d->sz);
 
 	if ((d->ip) < (d->sz-1))
@@ -577,6 +579,7 @@ int dict_add(Dict *d, char *key, tOBJ value)
 int dict_find(Dict *d, char *key)
 {
 	int i=0;
+	if (d==NULL) return -1;
 
 	while (i<d->ip)
 	{
@@ -591,6 +594,7 @@ int dict_find(Dict *d, char *key)
 
 int dict_contains(Dict *d, char *key)
 {
+	if (d==NULL) return 0;
 	return dict_find(d, key)>=0;
 }
 
@@ -612,7 +616,9 @@ tOBJ dict_get(Dict *d, int indx)
 
 int dict_update(Dict *d, char *key, tOBJ value)
 {
-	int i=dict_find(d, key);
+	int i;
+	if (d==NULL) return 0;
+	i=dict_find(d, key);
 	if (i>=0) 
 	{
 		d->db[i].value = cloneObj(value); // clone it?
@@ -626,6 +632,7 @@ int dict_print(Dict *d)
 {
 	int i=0;
 
+	if (d==NULL) return 0;
 
 	while (i<d->ip)
 	{
@@ -975,7 +982,7 @@ tOBJ eval_oxpr(char *s)
 			switch (tk)
 			{
 			case ALPHA:
-				r = get(tokbuff);
+				r = get(NULL,tokbuff);
 				push(r);
 				gnf=1;
 				break;
@@ -1373,9 +1380,14 @@ tOBJ initEnv()
 	}
 }
 
-tOBJ get(char *name)
+tOBJ get(Dict *ep, char *name)
 {
 	tOBJ r;
+
+	if (dict_contains(ep,name))
+	{
+		return dict_getk(ep, name);
+	}
 
 	if (strlen(name)==1 && isalpha(*name)) //backwards compat
 	{
@@ -1396,9 +1408,14 @@ tOBJ get(char *name)
 	return dict_getk((Dict *)(env.dict), name);
 }
 
-int set(char *name, tOBJ r)
+int set(Dict * en, char *name, tOBJ r)
 {
 	int n = 0;
+
+	if (en != NULL && dict_contains(en, name))
+	{
+		return dict_update(en, name, r);
+	}
 	if (strlen(name)==1 && isalpha(*name)) //backwards compat
 	{
 		if (r.type==INTGR)
@@ -1942,7 +1959,7 @@ tOBJ oapply(tOBJ a)
 		for (j=0;j<h; j++)
 		{
 			v.floatpoint = fget2(&b.fmat2,i,j);
-			set("ME",v);
+			set(NULL, "ME",v);
 			//v.floatpoint = (float)j;
 			//set("ME_R",v);
 			//v.floatpoint = (float)i;
@@ -2459,7 +2476,7 @@ PRINT A,B
 	tOBJ r=emptyObj();
 	tOBJ env=emptyObj();
 	tOBJ name;
-	tOBJ value;
+	tOBJ value=emptyObj();
 
 	if (a.type==CELL)
 	{
@@ -2473,12 +2490,12 @@ PRINT A,B
 			}
 
 			if (name.type==EMPTY) break;
-			if (name.type==STR)
+			if (name.type==SYM)
 			{
 				value = ocar(ocdr(a));
 				if (env.type==EMPTY)
 				{
-					set(name.string, value);
+					set(NULL, name.string, value);
 				}
 				else
 				{
@@ -2502,19 +2519,20 @@ tOBJ oget(tOBJ a)
 		tOBJ name = ocar(a);
 
 		if (name.type==SYM )
-			r = get(name.string);
+			r = get(NULL, name.string);
 
 		if (name.type==DICT)
 		{
 			tOBJ env = name;
 			name = ocar(ocdr(a));
 			if (name.type==STR)
-				r = dict_getk(env.dict, name.string);
+				//r = dict_getk(env.dict, name.string);
+				r = get(env.dict, name.string);
 		}	
 	}
 	if (a.type==SYM)
 	{
-		r = get(a.string);
+		r = get(NULL, a.string);
 	}	
 	return r;
 }
@@ -2640,6 +2658,32 @@ tOBJ oexit(tOBJ a)
 #endif
 }
 
+tOBJ callfn(tOBJ  fn, tOBJ x);
+
+tOBJ exec(tOBJ a, Dict *e)
+{
+	//> !EXEC {CAR {1 2}}
+	//EXEC {FM {1}}
+	tOBJ r=emptyObj();
+	if (a.type==CELL)
+	{
+		tOBJ fn=ocar(a);
+		if (fn.type == SYM)
+		{
+			fn = get(e, fn.string);
+		}
+		if (fn.type==FUNC)
+		{
+			r = (*fn.func)(ocar(ocdr(a)));
+		}
+		if (fn.type==LAMBDA)
+		{
+			r = callfn(fn,ocdr(a));
+		}	
+	}
+	return r;
+}
+
 tOBJ callfn(tOBJ  fn, tOBJ x)
 {
 	tOBJ r, arg, body;
@@ -2663,7 +2707,16 @@ tOBJ callfn(tOBJ  fn, tOBJ x)
 	}
 	if (dbg) ; dict_print((Dict *)e.dict);
 
-	r = odo(body);
+	r=emptyObj();
+	if (body.type==CELL)
+	{
+		do {
+		x = ocar(body);
+		r = exec(x, (Dict *)e.dict);
+		body = ocdr(body);
+		} while (onull(body).number==0);
+	}	
+
 	return r;
 }
 
@@ -2671,13 +2724,13 @@ tOBJ odefn(tOBJ  r)
 {
 /*   !DEFN {"n" {args} {body}}
 i
-!DEFN {"FM" {x} {PR x}}
+!DEFN {FM {x} {PR x}}
 !EXEC {FM {1}}
 */
 	tOBJ fn   = ocar(r);
 	tOBJ fbdy  = ocdr(r);
 	fbdy.type = LAMBDA;
-	set(fn.string, fbdy);
+	set(NULL, fn.string, fbdy);
 	return emptyObj();
 }
 
@@ -2691,7 +2744,7 @@ tOBJ oexec(tOBJ a)
 		tOBJ fn=ocar(a);
 		if (fn.type == SYM)
 		{
-			fn = get(fn.string);
+			fn = get(NULL, fn.string);
 		}
 		if (fn.type==FUNC)
 		{
@@ -2831,13 +2884,13 @@ tOBJ omatr(tOBJ a)
 		if (!strcmp(v.string,"LOAD"))
 		{
 			val=toint(n);
-			v=get("DFN");
+			v=get(NULL, "DFN");
 			matrixload(val, v.string);
 		}
 		if (!strcmp(v.string,"STOR"))
 		{
 			val=toint(n);
-			v=get("DFN");
+			v=get(NULL, "DFN");
 			matrixstore(val, v.string);
 		}
 	}
@@ -2884,9 +2937,9 @@ void extend(char *x)
 		//set up glnal environment
 		initEnv();
 
-		set("PI",  makefloat (3.1415926));
-		set("DFN", makestring("data.txt"));
-		set("IFN", makestring("test.jpg"));
+		set(NULL, "PI",  makefloat (3.1415926));
+		set(NULL, "DFN", makestring("data.txt"));
+		set(NULL, "IFN", makestring("test.jpg"));
 		
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
@@ -2904,7 +2957,7 @@ void extend(char *x)
 			if (tk==OPR && oplist[getOP(tokbuff)].type==EQL)
 			{
 				v=eval_oxpr(e);
-				set(var,v);
+				set(NULL, var,v);
 				return;
 			}
 			if (tk==OPR && oplist[getOP(tokbuff)].type==OBR)
@@ -2947,7 +3000,7 @@ void extend(char *x)
 				v=eval_oxpr(e); 
 
 				f=tofloat(v);
-				R=get(var);
+				R=get(NULL, var);
 				if (R.type == FMAT2)
 				{
 					if (dbg) printf ("DBG var=%s %d,%d, %f\n",var,c,r,f);
