@@ -1284,7 +1284,18 @@ void printtype(tOBJ r)
     }
     else if (r.type == STR)
     {
-            rprintf("\"%s\"", r.string);
+		char ch, *cp=r.string;
+		while ( (ch=*cp++) != '\0')
+		{
+			if ((ch=='\\') && ((*cp)=='n') )
+			{ 
+				putchar(13); 
+				putchar(10); 
+				cp++;
+				continue;
+			}
+			putchar(ch);
+		}
     }
     else if (r.type == SYM)
     {
@@ -1360,9 +1371,9 @@ tOBJ print(tOBJ r)
     return r;
 }
 
-tOBJ println(tOBJ r)
+tOBJ println(char *s, tOBJ r)
 {
-	print(r); printf("\n");
+	printf ("%s", s); print(r); printf("\n");
 	return r;
 }
 
@@ -2664,24 +2675,36 @@ tOBJ exec(tOBJ a, Dict *e)
 {
 	//> !EXEC {CAR {1 2}}
 	//EXEC {FM {1}}
-	tOBJ r=emptyObj();
+
 	if (a.type==CELL)
 	{
+		tOBJ r=emptyObj();
 		tOBJ fn=ocar(a);
+		tOBJ arg=ocdr(a);
+
+		//println("arg=",arg);
+		//arg=exec(arg,e);
+		//println("after=",arg);
+
 		if (fn.type == SYM)
 		{
 			fn = get(e, fn.string);
 		}
 		if (fn.type==FUNC)
 		{
-			r = (*fn.func)(ocar(ocdr(a)));
+			r = (*fn.func)(ocar(arg));
 		}
 		if (fn.type==LAMBDA)
 		{
-			r = callfn(fn,ocdr(a));
+			r = callfn(fn,arg);
 		}	
+		return r;
 	}
-	return r;
+	if (a.type==SYM)
+	{
+		a = get(e, a.string);
+	}
+	return a;
 }
 
 tOBJ callfn(tOBJ  fn, tOBJ x)
@@ -2736,26 +2759,7 @@ i
 
 tOBJ oexec(tOBJ a)
 {
-	//> !EXEC {CAR {1 2}}
-	//EXEC {FM {1}}
-	tOBJ r=emptyObj();
-	if (a.type==CELL)
-	{
-		tOBJ fn=ocar(a);
-		if (fn.type == SYM)
-		{
-			fn = get(NULL, fn.string);
-		}
-		if (fn.type==FUNC)
-		{
-			r = (*fn.func)(ocar(ocdr(a)));
-		}
-		if (fn.type==LAMBDA)
-		{
-			r = callfn(fn,ocdr(a));
-		}	
-	}
-	return r;
+	return exec(a,NULL);
 }
 
 tOBJ odo(tOBJ a)
