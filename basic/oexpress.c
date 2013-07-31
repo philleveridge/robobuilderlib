@@ -168,8 +168,10 @@ tOBJ odefn(tOBJ  r);
 tOBJ odo(tOBJ  r); 
 tOBJ oqt(tOBJ  r); 
 
-tOBJ get(char *name);
-int  set(char *name, tOBJ r);
+tOBJ omath(tOBJ o1, tOBJ o2, int op);
+tOBJ print(tOBJ r);
+tOBJ get(Dict *ep, char *name);
+
 
 tOP oplist[] = { 
 /* 0 */	{"+",    10, PLUS,  2, NULL},
@@ -262,9 +264,7 @@ tOP oplist[] = {
 
 };
 
-tOBJ omath(tOBJ o1, tOBJ o2, int op);
-tOBJ print(tOBJ r);
-tOBJ get(Dict *ep, char *name);
+
 
 /**********************************************************/
 /*  strings                                              */
@@ -553,7 +553,7 @@ tOBJ makedict()
 
 int dict_add(Dict *d, char *key, tOBJ value)
 {
-	tOBJ t1,t2;
+	tOBJ t1;
 
 	if (d==NULL) return 0;
 
@@ -1389,6 +1389,7 @@ tOBJ initEnv()
 	if (eif==0) {
 		env = makedict();
 	}
+	return env;
 }
 
 tOBJ get(Dict *ep, char *name)
@@ -2667,6 +2668,7 @@ tOBJ oexit(tOBJ a)
 #ifdef LINUX
 	sigcatch();
 #endif
+	return emptyObj();
 }
 
 tOBJ callfn(tOBJ  fn, tOBJ x);
@@ -2676,15 +2678,22 @@ tOBJ exec(tOBJ a, Dict *e)
 	//> !EXEC {CAR {1 2}}
 	//EXEC {FM {1}}
 
+	if (dbg) println("exec=",a);
+
 	if (a.type==CELL)
 	{
 		tOBJ r=emptyObj();
 		tOBJ fn=ocar(a);
+
 		tOBJ arg=ocdr(a);
 
-		//println("arg=",arg);
-		//arg=exec(arg,e);
-		//println("after=",arg);
+		if (dbg) println("fn=",fn); 
+		if (dbg) println("arg=",arg);
+
+		if (arg.type!=EMPTY)
+		{
+			arg=exec(arg,e);
+		}
 
 		if (fn.type == SYM)
 		{
@@ -2692,13 +2701,16 @@ tOBJ exec(tOBJ a, Dict *e)
 		}
 		if (fn.type==FUNC)
 		{
-			r = (*fn.func)(ocar(arg));
+			return (*fn.func)(arg);
 		}
-		if (fn.type==LAMBDA)
+		else if (fn.type==LAMBDA)
 		{
-			r = callfn(fn,arg);
-		}	
-		return r;
+			return callfn(fn,arg);
+		}
+		else
+		{
+			return fn;	
+		}
 	}
 	if (a.type==SYM)
 	{
@@ -2716,19 +2728,21 @@ tOBJ callfn(tOBJ  fn, tOBJ x)
 	fn.type=CELL;
 	arg=ocar(fn);
 	body=ocdr(fn);
-	x=ocar(x);
+
+	if (dbg) println("args=",x);
 
 	//bind ags and params
 	while (onull(arg).number==0)
 	{
 		tOBJ n=ocar(arg);
 		tOBJ v=ocar(x);
+
 		if (n.type==STR || n.type==SYM)
 			dict_add((Dict*)e.dict, n.string, v);
 		arg=ocdr(arg);
 		x=ocdr(x);
 	}
-	if (dbg) ; dict_print((Dict *)e.dict);
+	if (dbg) dict_print((Dict *)e.dict);
 
 	r=emptyObj();
 	if (body.type==CELL)
@@ -3040,7 +3054,7 @@ void extend(char *x)
         			rprintfStr("error = expect int size 1-%d\n", sqrt(SCENESZ)); 
 				return;
 			}
-			file = get("IFN");	
+			file = get(NULL, "IFN");	
 			if (*e == ';')
 			{
 				e++;
@@ -3087,7 +3101,7 @@ void extend(char *x)
 				}
 			}
 
-			file = get("IFN");
+			file = get(NULL, "IFN");
 			if (file.type!=STR)
 			{
 				rprintfStr("error in string file name\n"); 
@@ -3103,7 +3117,7 @@ void extend(char *x)
 
 		if (!strcmp(tokbuff,"RAW"))
 		{
-			file = get("IFN");
+			file = get(NULL, "IFN");
 			if (*e != '\0')
 				file=eval_oxpr(e);
 
@@ -3197,7 +3211,7 @@ void extend(char *x)
 				//!IMAGE COLO "orange";20;30;60;2
 				v.number =add_color(color, args[0],args[1],args[2],args[3]);
 				v.type   =INTGR; 
-				set("CID", v);
+				set(NULL, "CID", v);
 			}
 			return;
 		}
