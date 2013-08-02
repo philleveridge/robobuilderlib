@@ -1212,7 +1212,7 @@ fMatrix readmatrix(char *s)
 
 	if (dbg) printf("LIST=%s\n", e);
 
-	while (e==0 || *e != 0)
+	while (e!=0 && *e != 0)
 	{
 //printf ("[%s]\n", e);
 		char *p=strchr(e, ' ');
@@ -1272,15 +1272,15 @@ fMatrix readmatrix(char *s)
 /*  print and formating                                   */
 /**********************************************************/
 
-void printtype(tOBJ r)
+void printtype(FILE *fp, tOBJ r)
 {
     if (r.type == INTGR)
     {
-            rprintf("%d", r.number);
+            fprintf(fp, "%d", r.number);
     }
     else if (r.type == FLOAT)
     {
-            rprintf("%f", r.floatpoint);
+            fprintf(fp, "%f", r.floatpoint);
     }
     else if (r.type == STR)
     {
@@ -1289,36 +1289,36 @@ void printtype(tOBJ r)
 		{
 			if ((ch=='\\') && ((*cp)=='n') )
 			{ 
-				putchar(13); 
-				putchar(10); 
+				fputc(13,fp); 
+				fputc(10,fp); 
 				cp++;
 				continue;
 			}
-			putchar(ch);
+			fputc(ch,fp);
 		}
     }
     else if (r.type == SYM)
     {
-            rprintfStr(r.string);
+            fputs(fp, r.string);
     }
     else if (r.type == BOOLN)
     {
         if ( r.number==0)
-                rprintfStr("False");
+                fprintf(fp, "False");
         else
-                rprintfStr("True");
+                fprintf(fp, "True");
     }
     else if (r.type == EMPTY)
     {
-        rprintfStr("NIL");
+         fprintf(fp, "NIL");
     }
     else if (r.type == LAMBDA)
     {
-        rprintfStr("LAMBDA");   
+         fprintf(fp, "LAMBDA");   
     }
     else if (r.type == FUNC)
     {
-        rprintfStr("FUNCTION");   
+         fprintf(fp, "FUNCTION");   
     }
     else if (r.type == FMAT2)
     {
@@ -1330,30 +1330,30 @@ void printtype(tOBJ r)
     }
     else  if (r.type == CELL)
     {
-	if (r.q) rprintfStr("'");
+	if (r.q)  fprintf(fp, "'");
 
 	if (r.cell != NULL)
 	{
-		rprintfStr("CELL");	
+		 fprintf(fp, "CELL");	
 	}
 	else
 	{
-		rprintfStr("null");
+		 fprintf(fp, "null");
 	}
     }  
     else
     {               
-        rprintfStr("? error - type\n");   
+         fprintf(fp, "? error - type\n");   
     }
     return;
 }
 
-tOBJ print(tOBJ r)
+tOBJ fprint(FILE *fp, tOBJ r)
 {
     if (r.type == CELL)
     {
         struct cell  *c = r.cell;
-        rprintfStr("{");  
+        fprintf(fp,"{");  
         print(c->head);
                 
         while (c->tail != (void *)0)
@@ -1362,13 +1362,18 @@ tOBJ print(tOBJ r)
                 rprintfStr(" ");
                 print(c->head);
         }
-        rprintfStr("}");
+        fprintf(fp,"}");
     }
     else
     {
-		printtype(r);
+		printtype(fp, r);
     }
     return r;
+}
+
+tOBJ print(tOBJ r)
+{
+	return fprint(stdout, r);
 }
 
 tOBJ println(char *s, tOBJ r)
@@ -2313,44 +2318,48 @@ tOBJ olast(tOBJ a)
 
 tOBJ osubst(tOBJ a)
 {
-	//!SUBS {1 2 {1 2 3}}
+	//!SUBS {2 1 {1 2 3}}
 	//{2 2 3}
 
 	tOBJ r=emptyObj();
+
 	if (a.type==CELL)
 	{
-		tCELLp n=NULL,m=NULL,p= a.cell;
-		tOBJ f,t,l,z;
-		int fl=0;
+		tOBJ p1, p2, z;
+		tCELLp prev=NULL;
 
-		f = p->head;
-		if (p->tail==NULL) {return r;}
-		p=p->tail;
-		t = p->head;
-		if (p->tail==NULL) {return r;}
-		p=p->tail;
-		l = p->head;
-		if (l.type!=CELL)
+		p2=ocar(a);
+		a=ocdr(a);
+		p1=ocar(a);
+
+		a=ocar(ocdr(a));
+		if (a.type!=CELL)
 		{
 			printf ("? not a list");
 			return r;
 		}
-		p=l.cell;
 
 		do {
-			z=makeCell();
-			if (!fl) { r=z; fl=1;}
-			m=n;
-			n=z.cell;	
-			if (compareObj(p->head, f))
-				n->head = t;
+			tOBJ v= ocar(a);
+
+			if (compareObj(v, p1))
+			{
+				z = makeCell2(p2, NULL);
+
+			}
 			else
-				n->head = p->head;
-			n->tail=0;	
-			if (m!=NULL) m->tail=n;	
-			p=p->tail;
-		}	
-		while (p!=NULL);	
+			{
+				z = makeCell2(v, NULL);
+			}
+		
+			a=ocdr(a);
+			if (prev == NULL) 
+				r =z;
+			else
+				prev->tail=z.cell;
+			prev = (tCELLp)(z.cell);
+
+		} while (onull(a).number==0);	
 	}	
 	return r;
 }
@@ -2794,15 +2803,77 @@ tOBJ odo(tOBJ a)
 }
 
 
-tOBJ oload(tOBJ  r)
+tOBJ oload(tOBJ  n)
 {
 	//!LOAD "fn"
+	// file start with [ is a matrix (note: no ']')
+	// file start with { x } is a list
+	// else string
+	tOBJ r=emptyObj();
+       	FILE *fp;
+	int i,t;
+	char *s = n.string;
+	int cn=0;
+	int sz=1024;
+	char *m=malloc(sz);
+	int ch;
+
+	if ((fp = fopen(s, "r")) == 0)
+	{
+		printf ("? can't find file - %s\n",s);
+		return r;
+	}
+
+	while ( (ch=fgetc(fp))>=0)
+	{
+		m[cn++]=ch;
+	}
+	m[cn]=0;
+	if (dbg) printf ("Loaded [%s] %d\n", m,cn);	
+	fclose(fp);
+
+	switch (m[0])
+	{
+	case '[' : 
+		m[cn-1]=0;	
+		r.type=FMAT2;
+		r.fmat2 = readmatrix(&m[1]);
+		break;
+	case '{' : 
+		r = stringtocells(m); 
+		break;
+	default:
+		r = makestring(m);
+		break;
+	}
 	return r;
+
 }
 
-tOBJ osave(tOBJ  r)
+tOBJ osave(tOBJ  n)
 {
-	//!SAVE "fn"
+	//!SAVE {"fn" object}
+	tOBJ f=ocar(n);
+	tOBJ r=ocar(ocdr(n));
+
+       	FILE *fp;
+	int i,t;
+	char *s;
+
+	if (f.type==STR) s = f.string;
+	
+
+	if ((fp = fopen(s, "w")) == 0)
+	{
+		printf ("? can't write to file - %s\n",s);
+		return r;
+	}
+
+	fprint(fp, r);
+
+
+	fclose(fp);
+
 	return r;
 }
 
