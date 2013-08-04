@@ -46,6 +46,7 @@ extern int  *frame;
 fMatrix readmatrix(char *s);
 fMatrix newmatrix(int c, int r);
 fMatrix fadd2(fMatrix *A, fMatrix *B, char op);  
+int 	fmatprint(FILE *fp, fMatrix *A);
 int     fmatprint2(fMatrix *A);
 fMatrix fmultiply2(fMatrix *A,fMatrix *B)  ; 
 float   fget2(fMatrix *M, int c, int r);
@@ -65,7 +66,7 @@ fMatrix fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)   ;
 //
 
 
-#define iswhite(c)   (c == ' ' || c == '\t')
+#define iswhite(c)   (c == ' ' || c == '\t' || c==13 || c==10)
 #define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
 #define isnumber(c)  (c >= '0' && c <= '9')
 
@@ -132,6 +133,10 @@ tOBJ ozerod(tOBJ  r);
 
 tOBJ ocar(tOBJ  r);
 tOBJ ocdr(tOBJ  r);
+
+tOBJ ecar(tOBJ  r);
+tOBJ ecdr(tOBJ  r);
+
 tOBJ otype(tOBJ  r);
 tOBJ olen(tOBJ  r);
 tOBJ oapp(tOBJ  r);
@@ -224,8 +229,9 @@ tOP oplist[] = {
 	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
 	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
 //LIST BASED
-	{"CAR",  40, NA,    1, ocar},  //function single arg
-	{"CDR",  40, NA,    1, ocdr},  //function single arg
+	{"CAR",  40, NA,    1, ecar},  //function single arg
+	{"CDR",  40, NA,    1, ecdr},  //function single arg
+
 /*50 */	{"TYPE", 40, NA,    1, otype},  //function single arg
 	{"APPD", 40, NA,    1, oapp},  //function single arg
 	{"LIST", 40, NA,    1, olist},  //function single arg
@@ -251,7 +257,7 @@ tOP oplist[] = {
 	{"DICT",  40, NA,   1, odict},// 
 	{"LOAD",  40, NA,   1, oload},//
 	{"SAVE",  40, NA,   1, osave},//
-	{"DO",    40, NA,   1, odo},//
+	{"DO",    40, NA,   1, oexec},//
 	{"DEFN",  40, NA,   1, odefn},//
 	{"QT",    40, NA,   1, oqt},//
 	{"EXIT",  40, NA,   0, oexit}
@@ -358,6 +364,7 @@ tOBJ cloneObj(tOBJ z);
 
 tOBJ makeCell2(tOBJ a, tCELLp b)
 {
+	// a + {b} => {a b}
 	tOBJ r; tCELLp p;
 	r.type=CELL;
 	p = newCell();
@@ -368,6 +375,19 @@ tOBJ makeCell2(tOBJ a, tCELLp b)
 	return r;
 }
 
+tOBJ makeCell3(tOBJ a, tCELLp b)
+{
+	// a + {b} => {b a}
+	tOBJ r; tCELLp p;
+	r.type=CELL;
+	p = newCell();
+	p->head=cloneObj(a);  //clone ?
+	p->tail=NULL;
+
+	while (b->tail != NULL) b=b->tail;
+	r.cell=b;
+	return r;
+}
 
 tCELLp cloneCell(tCELLp p)
 {
@@ -1120,13 +1140,28 @@ tOBJ readcells()
 		case CLIST:
 			top->head = readcells();
 			break;
+		case MLIST: 
+			{
+			int toop=oop;
+			oop=0;
+			top->head.type   = FMAT2;
+			top->head.fmat2 = readmatrix(tmpstr);
+			oop=toop;
+			break;	
+			}
 		case OPR:
 			{
 				tOBJ o;
 				int op = getOP(tokbuff);
 				o.type=FUNC;
 				o.func=oplist[op].func;
+
+				if (o.func==NULL)
+				{
+					o=makestring(tokbuff);
+				}
 				top->head = o;
+
 			}
 			break;
 		case DELI:
@@ -1226,10 +1261,11 @@ fMatrix readmatrix(char *s)
 		v=eval_oxpr(e);	
 		ts[c] = tofloat(v);
 
-		if (*e==';')
+		if (*e==';' || *e==13 || *e==10)
 		{
 			//
 			j++; i=0; e++; c++;
+			if (*e==13 || *e==10) e++;
 			v=eval_oxpr(e);	
 			ts[c] = tofloat(v);
 		}
@@ -1240,16 +1276,18 @@ fMatrix readmatrix(char *s)
 
 		while (*e==' ') e++; 
 
-		if (*e==';') { j++; i=0; e++; } else {i++;}
+		if (*e==';' || *e==13 || *e==10) { j++; i=0; e++; } else {i++;}
 
-		while (*e==' ') e++; 
+		while (*e==' ' || *e==13 || *e==10) e++; 
 
 		c++;
+
+		if (*e==']') break;
 	}
 
 	if (c != i*(j+1))
 	{
-		printf ("Bad matrix defintion ?\n");
+		printf ("Bad matrix defintion %d,%d,%d ?\n", c, i,j);
 		m.w=0;m.h=0;m.fstore=0;
 		return m;
 	}
@@ -1299,7 +1337,7 @@ void printtype(FILE *fp, tOBJ r)
     }
     else if (r.type == SYM)
     {
-            fputs(fp, r.string);
+            fputs(r.string,fp);
     }
     else if (r.type == BOOLN)
     {
@@ -1501,7 +1539,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		return makeint(!compareObj(o1,o2));
 	}
 
-	if (op == PLUS || o1.type==CELL)
+	if (op == PLUS && o1.type==CELL)
 	{
 		// {1 2} + 3 -> {1 2 3}
 		// TBD
@@ -1527,6 +1565,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 
 	if (o1.type==INTGR && o2.type==INTGR)
 	{
+
 		r.type=INTGR;
 		switch (op)
 		{
@@ -1598,6 +1637,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			break;
 		}
 	}
+
 
 	if (o1.type==STR || o2.type==STR)
 	{
@@ -2200,6 +2240,16 @@ tOBJ ocdr (tOBJ a)
 	return r;
 }
 
+tOBJ ecar (tOBJ a)
+{
+	return ocar(ocar(a));
+}
+
+tOBJ ecdr (tOBJ a)
+{
+	return ocdr(ocar(a));
+}
+
 tOBJ otype (tOBJ a)
 {
 	tOBJ r=makeint(a.type);
@@ -2684,8 +2734,13 @@ tOBJ callfn(tOBJ  fn, tOBJ x);
 
 tOBJ exec(tOBJ a, Dict *e)
 {
-	//> !EXEC {CAR {1 2}}
-	//EXEC {FM {1}}
+	//!EXEC {CDR {1 2 3 4}}
+	//!EXEC {FM {1}}
+	//!EXEC {+ 1 2}
+	//!EXEC {PR 1 2 3 }
+	//!LET ZZ={1 2 3 4}
+	//!CDR ZZ
+	//!EXEC {CDR ZZ}
 
 	if (dbg) println("exec=",a);
 
@@ -2699,10 +2754,22 @@ tOBJ exec(tOBJ a, Dict *e)
 		if (dbg) println("fn=",fn); 
 		if (dbg) println("arg=",arg);
 
-		if (arg.type!=EMPTY)
+		tOBJ param=emptyObj();
+		tOBJ prev;
+		tCELLp pn=NULL;
+		while (arg.type != EMPTY)
 		{
-			arg=exec(arg,e);
+			tOBJ a1=ocar(arg);
+			tOBJ b1=exec(a1, e);
+			param = makeCell2(b1, pn);
+			pn=param.cell;
+			arg=ocdr(arg);
 		}
+
+//println("param=",param);
+		arg=orev(param);
+//println("arg=",arg);		
+		
 
 		if (fn.type == SYM)
 		{
@@ -2712,13 +2779,18 @@ tOBJ exec(tOBJ a, Dict *e)
 		{
 			return (*fn.func)(arg);
 		}
+		else if (fn.type==STR)
+		{
+			int op=PLUS;
+			tOBJ o1=ocar(arg);
+			tOBJ o2=ocar(ocdr(arg));
+
+			if (fn.string[0]=='+') op=PLUS;
+			return omath(o1, o2, op);
+		}
 		else if (fn.type==LAMBDA)
 		{
 			return callfn(fn,arg);
-		}
-		else
-		{
-			return fn;	
 		}
 	}
 	if (a.type==SYM)
@@ -2741,6 +2813,8 @@ tOBJ callfn(tOBJ  fn, tOBJ x)
 	if (dbg) println("args=",x);
 
 	//bind ags and params
+	x=ocar(x);
+
 	while (onull(arg).number==0)
 	{
 		tOBJ n=ocar(arg);
@@ -2770,7 +2844,7 @@ tOBJ odefn(tOBJ  r)
 {
 /*   !DEFN {"n" {args} {body}}
 i
-!DEFN {FM {x} {PR x}}
+!DEFN {FM {x} {PR X "+" 1 " = " {+ x 1}}}
 !EXEC {FM {1}}
 */
 	tOBJ fn   = ocar(r);
@@ -2783,23 +2857,6 @@ i
 tOBJ oexec(tOBJ a)
 {
 	return exec(a,NULL);
-}
-
-tOBJ odo(tOBJ a)
-{
-	//!DO {{PR 1} {CAR {1 2 3}} {PR 2}}
-
-	tOBJ x;
-	tOBJ r=emptyObj();
-	if (a.type==CELL)
-	{
-		do {
-		x = ocar(a);
-		r = oexec(x);
-		a = ocdr(a);
-		} while (onull(a).number==0);
-	}	
-	return r;
 }
 
 
@@ -2850,6 +2907,7 @@ tOBJ oload(tOBJ  n)
 
 }
 
+
 tOBJ osave(tOBJ  n)
 {
 	//!SAVE {"fn" object}
@@ -2869,7 +2927,16 @@ tOBJ osave(tOBJ  n)
 		return r;
 	}
 
-	fprint(fp, r);
+	if (r.type==FMAT2)
+	{
+		fprintf(fp,"[");
+		fmatprint(fp, &r.fmat2);
+		fprintf(fp,"]\n");
+	}
+	else
+	{
+		fprint(fp, r);
+	}
 
 
 	fclose(fp);

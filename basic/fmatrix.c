@@ -106,20 +106,27 @@ fMatrix fmatrshp(fMatrix *A, int c, int r) //clone &  resize
 	return n;
 }
 
-int fmatprint2(fMatrix *A)
+int fmatprint(FILE *fp, fMatrix *A)
 {
 	int i,j;
-	printf ("Matrix %dx%d\n", A->w, A->h);
 
 	for (j=0; j<A->h;j++)
 	{
 		for (i=0; i<A->w; i++)
 		{
-			printf ("%3f ", A->fstore[i+j*A->w]);
+			fprintf (fp, "%3f ", A->fstore[i+j*A->w]);
 		}
-		printf ("\n");
+		if (j+1<A->h) fprintf (fp, "\n");
 	}
 	return 0;
+}
+
+int fmatprint2(fMatrix *A)
+{
+	int n;
+	printf ("Matrix %dx%d\n", A->w, A->h);
+	n = fmatprint(stdout, A);
+	return n;
 }
 
 float fget2(fMatrix *M, int c, int r)
