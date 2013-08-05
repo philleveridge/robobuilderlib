@@ -19,6 +19,14 @@
 #include "functions.h"
 #include "lists.h"
 
+#include "trex.h"
+
+#ifdef _UNICODE
+#define trex_sprintf swprintf
+#else
+#define trex_sprintf sprintf
+#endif
+
 //cmap.c functions
 extern void showImage	(int n);
 extern void clear_colors();
@@ -48,6 +56,7 @@ fMatrix newmatrix(int c, int r);
 fMatrix fadd2(fMatrix *A, fMatrix *B, char op);  
 int 	fmatprint(FILE *fp, fMatrix *A);
 int     fmatprint2(fMatrix *A);
+int 	delmatrix(fMatrix *);
 fMatrix fmultiply2(fMatrix *A,fMatrix *B)  ; 
 float   fget2(fMatrix *M, int c, int r);
 float   fset2(fMatrix *M, int c, int r, float v);
@@ -173,6 +182,11 @@ tOBJ odefn(tOBJ  r);
 tOBJ odo(tOBJ  r); 
 tOBJ oqt(tOBJ  r); 
 
+tOBJ orex(tOBJ  r); 
+tOBJ olft(tOBJ  r); 
+tOBJ orgt(tOBJ  r); 
+tOBJ omid(tOBJ  r); 
+
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
 tOBJ print(tOBJ r);
 tOBJ get(Dict *ep, char *name);
@@ -260,6 +274,10 @@ tOP oplist[] = {
 	{"DO",    40, NA,   1, oexec},//
 	{"DEFN",  40, NA,   1, odefn},//
 	{"QT",    40, NA,   1, oqt},//
+	{"REX",   40, NA,   2, orex},//
+	{"LFT",   40, NA,   2, olft},//
+	{"RGT",   40, NA,   2, orgt},//
+	{"MID",   40, NA,   3, omid},//
 	{"EXIT",  40, NA,   0, oexit}
  
 /* TBD - move all to function
@@ -308,6 +326,7 @@ tOBJ makestring(char *s)
 	r.cnt=0;
 	return r;
 }
+
 
 /**********************************************************/
 /*  CELLS                                              */
@@ -782,7 +801,7 @@ void clear()
 void stackprint()
 {
 	int i;
-	rprintfStr ("Stack\n");
+	printf ("Stack\n");
 	for (i=0;i<sop;i++)
 	{
 		rprintf ("%d ", i);
@@ -1397,7 +1416,7 @@ tOBJ fprint(FILE *fp, tOBJ r)
         while (c->tail != (void *)0)
         {
                 c=c->tail;
-                rprintfStr(" ");
+                fprintf(fp, " ");
                 print(c->head);
         }
         fprintf(fp,"}");
@@ -2632,6 +2651,120 @@ tOBJ onth(tOBJ a)
 }
 
 
+/**********************************************************
+ 
+String function  
+   
+**********************************************************/                                   
+
+tOBJ olft(tOBJ  a)
+{
+	//!LFT("test",2) -> "te"
+	tOBJ r=pop();
+	int p=toint(a);
+	char *cp;
+	if (r.type==STR)
+	{
+		int ln = strlen(r.string);
+		if (ln>0 && p>0 && ln>p)
+		{
+			cp=newstring1(p+1);
+			strncpy(cp, r.string,p);
+			*(cp+p)='\0';
+			r.string = cp;
+			return r;
+		}				
+	}
+	return emptyObj();
+}
+
+tOBJ orgt(tOBJ  a)
+{
+	//!RGT("test",2) -> "st"
+	tOBJ r=pop();
+	int p=toint(a);
+	char *cp;
+	if (r.type==STR)
+	{
+		int ln = strlen(r.string);
+		if (ln>0 && p>0 && ln>p)
+		{
+			cp=newstring1(p+1);
+			strncpy(cp, (r.string)+ln-p,p);
+			*(cp+p)='\0';
+			r.string = cp;
+			return r;
+		}
+	}
+	return emptyObj();
+}
+
+
+tOBJ omid(tOBJ  b)
+{
+	//!MID("testing",2,4) -> "est"
+	tOBJ a=pop();
+	tOBJ r=pop();
+	int p1=toint(a);
+	int p2=toint(b);
+	char *cp;
+	if (r.type==STR)
+	{
+		int ln = strlen(r.string);
+		if (ln>0 && p1>0 && p2>p1 && ln>p2)
+		{
+			cp=newstring1(p2-p1+1);
+			strncpy(cp, (r.string)+p1-1,p2-p1+1);
+			*(cp+p2-p1+1)='\0';
+			r.string = cp;
+			return r;
+		}
+	}
+	return emptyObj();
+}
+
+/**********************************************************
+ Uses T-Rex a tiny regular expression library
+ Copyright (C) 2003-2004 Alberto Demichelis
+**********************************************************/
+
+tOBJ orex(tOBJ  r)
+{
+	//!REX("testing","est")
+	tOBJ a=pop();
+	const TRexChar *begin,*end;
+	TRexChar sTemp[200];
+	const TRexChar *error = NULL;
+
+	if (!(a.type==STR && r.type==STR)) // two strings needed
+		return emptyObj();
+	
+	TRex *x = trex_compile(_TREXC(r.string),&error);
+	if(x) {
+		trex_sprintf(sTemp,_TREXC(a.string));
+		if(trex_search(x,sTemp,&begin,&end))
+		{
+			int i,n = trex_getsubexpcount(x);
+			TRexMatch match;
+			for(i = 0; i < n; i++)
+			{
+				TRexChar t[200];
+				trex_getsubexp(x,i,&match);
+				trex_sprintf(t,_TREXC("[%%d]%%.%ds\n"),match.len);
+				trex_printf(t,i,match.begin);
+			}
+			trex_printf(_TREXC("match! %d sub matches\n"),trex_getsubexpcount(x));
+		}
+		else {
+			trex_printf(_TREXC("no match!\n"));
+		}
+		trex_free(x);
+	}
+	else {
+		trex_printf(_TREXC("compilation error [%s]!\n"),error?error:_TREXC("undefined"));
+	}
+	return emptyObj();
+}
 
 /**********************************************************/
 /* SERVO routines                                        */
@@ -2730,6 +2863,12 @@ tOBJ oexit(tOBJ a)
 	return emptyObj();
 }
 
+/**********************************************************
+ 
+exec function  
+   
+**********************************************************/      
+
 tOBJ callfn(tOBJ  fn, tOBJ x);
 
 tOBJ exec(tOBJ a, Dict *e)
@@ -2746,16 +2885,13 @@ tOBJ exec(tOBJ a, Dict *e)
 
 	if (a.type==CELL)
 	{
-		tOBJ r=emptyObj();
 		tOBJ fn=ocar(a);
-
 		tOBJ arg=ocdr(a);
 
 		if (dbg) println("fn=",fn); 
 		if (dbg) println("arg=",arg);
 
 		tOBJ param=emptyObj();
-		tOBJ prev;
 		tCELLp pn=NULL;
 		while (arg.type != EMPTY)
 		{
@@ -2868,7 +3004,6 @@ tOBJ oload(tOBJ  n)
 	// else string
 	tOBJ r=emptyObj();
        	FILE *fp;
-	int i,t;
 	char *s = n.string;
 	int cn=0;
 	int sz=1024;
@@ -2915,7 +3050,6 @@ tOBJ osave(tOBJ  n)
 	tOBJ r=ocar(ocdr(n));
 
        	FILE *fp;
-	int i,t;
 	char *s;
 
 	if (f.type==STR) s = f.string;
@@ -3189,7 +3323,7 @@ void extend(char *x)
 			}
 			else
 			{
-        			rprintfStr("error = expect int size 1-%d\n", sqrt(SCENESZ)); 
+        			printf("error = expect int size 1-%d\n", (int)sqrt(SCENESZ)); 
 				return;
 			}
 			file = get(NULL, "IFN");	
@@ -3200,7 +3334,7 @@ void extend(char *x)
 
 				if (file.type!=STR)
 				{
-					rprintfStr("error = 2nd arg should be string file name\n"); 
+					printf("error = 2nd arg should be string file name\n"); 
 					return;
 				}
 			}
@@ -3234,7 +3368,7 @@ void extend(char *x)
 				}
 				else
 				{
-        				rprintfStr("incorrect number args (6)\n"); 
+        				printf("incorrect number args (6)\n"); 
 					return;
 				}
 			}
@@ -3242,7 +3376,7 @@ void extend(char *x)
 			file = get(NULL, "IFN");
 			if (file.type!=STR)
 			{
-				rprintfStr("error in string file name\n"); 
+				printf("error in string file name\n"); 
 				return;
 			}
 			
@@ -3261,8 +3395,8 @@ void extend(char *x)
 
 			if (file.type!=STR)
 			{
-				rprintfStr("error = expecting string\n"); 
-				return;
+				printf("error = expecting string\n"); 
+				printf;
 			}
 
 			loadJpg(file.string);
@@ -3280,7 +3414,7 @@ void extend(char *x)
 
 			if (*e++ == '\0')
 			{
-        			rprintfStr("clr thresholds\n"); 
+        			printf("clr thresholds\n"); 
 				clrmap();
 			}
 			else
@@ -3299,7 +3433,7 @@ void extend(char *x)
 					}
 					else
 					{
-						rprintfStr("incorrect number args (6)\n"); 
+						printf("incorrect number args (6)\n"); 
 						return;
 					}
 				}
@@ -3326,7 +3460,7 @@ void extend(char *x)
 
 				if (tk !=STRNG || *e++ != ';')
 				{
-					rprintfStr("need colour name\n");
+					printf("need colour name\n");
 					return; 
 				}
 				strncpy(color,tmpstr,10);
@@ -3341,7 +3475,7 @@ void extend(char *x)
 					}
 					else
 					{
-						rprintfStr("incorrect number args (5)\n"); 
+						printf("incorrect number args (5)\n"); 
 						return;
 					}
 				}
@@ -3408,7 +3542,7 @@ void extend(char *x)
 			return;
 		}
 
-		rprintfStr("No such option?\n");
+		printf("No such option?\n");
 		freeobj(&v);
 		return;
 	}
