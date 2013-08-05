@@ -43,7 +43,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 ## Objects that must be built in order to link
 
-OBJECTS = basic.o edit.o fix_fft.o linux.o linux-remote.o express.o  functions.o  oexpress.o  lists.o commands.o matrix.o network.o fmatrix.o fnetwork.o jpeg.o  cmap.o 
+OBJECTS = basic.o edit.o fix_fft.o linux.o linux-remote.o express.o  functions.o  oexpress.o  lists.o commands.o matrix.o network.o fmatrix.o fnetwork.o jpeg.o  cmap.o trex.o
 LIBS = -lpthread -lm -ljpeg
 
 
