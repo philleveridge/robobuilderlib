@@ -91,6 +91,7 @@
     <ClCompile Include="matrix.c" />
     <ClCompile Include="network.c" />
     <ClCompile Include="oexpress.c" />
+    <ClCompile Include="trex.c" />
     <ClCompile Include="win-remote.c" />
     <ClCompile Include="win.c" />
   </ItemGroup>

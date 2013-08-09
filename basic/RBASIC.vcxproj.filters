@@ -57,6 +57,9 @@
     <ClCompile Include="fnetwork.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="trex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="e-motion.h">

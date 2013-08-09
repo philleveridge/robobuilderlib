@@ -2731,6 +2731,7 @@ tOBJ omid(tOBJ  b)
 tOBJ orex(tOBJ  r)
 {
 	//!REX("testing","est")
+	TRex *x;
 	tOBJ a=pop();
 	const TRexChar *begin,*end;
 	TRexChar sTemp[200];
@@ -2739,7 +2740,7 @@ tOBJ orex(tOBJ  r)
 	if (!(a.type==STR && r.type==STR)) // two strings needed
 		return emptyObj();
 	
-	TRex *x = trex_compile(_TREXC(r.string),&error);
+	x = trex_compile(_TREXC(r.string),&error);
 	if(x) {
 		trex_sprintf(sTemp,_TREXC(a.string));
 		if(trex_search(x,sTemp,&begin,&end))
@@ -2887,12 +2888,12 @@ tOBJ exec(tOBJ a, Dict *e)
 	{
 		tOBJ fn=ocar(a);
 		tOBJ arg=ocdr(a);
-
+		tOBJ param=emptyObj();
+		tCELLp pn=NULL;
+	
 		if (dbg) println("fn=",fn); 
 		if (dbg) println("arg=",arg);
 
-		tOBJ param=emptyObj();
-		tCELLp pn=NULL;
 		while (arg.type != EMPTY)
 		{
 			tOBJ a1=ocar(arg);
