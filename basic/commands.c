@@ -534,7 +534,11 @@ int cmd_list(line_t l)
 }
 int cmd_data(line_t l)
 { 
+		//DATA A=1,2,3,4,5
+		//DATA A="abcd"
+
 		list_eval((l.var==32)?'!' : ('A' + l.var), l.text, 1);
+
 		return 0;
 }	
 
@@ -984,6 +988,8 @@ int cmd_delsel(line_t ln)
 }
 
 int base=0;
+extern void set_hi(char ln, int n, int v);
+extern void set_lo(char ln, int n, int v);
 
 int cmd_inset(line_t ln)
 {
@@ -991,7 +997,8 @@ int cmd_inset(line_t ln)
 	// i.e. INSERT [@A,]I,V 
 	// current array ![I]=V
 	char *p=ln.text;
-	long n=0;	
+	long n=0;
+	int bm=0;	
 
 	int ind=0;
 	char an='!';
@@ -1028,6 +1035,11 @@ int cmd_inset(line_t ln)
 	{
 		an=*p;
 		p=p+2;
+		if (*p=='#')
+		{
+			bm=1;
+			p++;
+		}
 	}
 
 	if (*p=='@')
@@ -1065,7 +1077,22 @@ int cmd_inset(line_t ln)
 		return 0;
 	}
 
-	listset(an, ind-base, n, ln.token==INSERT);
+	if (bm==1)
+	{
+		int n2=ind/2;
+		if (ind%2==1)
+		{
+			set_lo(an, n2, n);
+		}
+		else
+		{
+			set_hi(an, n2, n);
+		}
+	}
+	else
+	{
+		listset(an, ind-base, n, ln.token==INSERT);
+	}
 	return 0;
 }
 

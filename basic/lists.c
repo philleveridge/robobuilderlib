@@ -265,6 +265,42 @@ void listwrite(char ln, int n, int v)
 	}
 }
 
+/* BYTE operators */
+
+void set_hi(char ln, int n, int v)
+{
+	unsigned int v1 = listread(ln, n);
+	v=v&0x00FF;
+	v= ((v<<8) | (v1 & 0x00FF));
+	listwrite(ln, n, v);
+//printf("SH: %c, %d, %d \n", ln, n,v);
+}
+
+void set_lo(char ln, int n, int v)
+{
+	unsigned int v1 = listread(ln, n);
+	v= ((v&0x00FF) | (v1 & 0xFF00));
+	listwrite(ln, n, v);
+//printf("SL: %c, %d, %d \n", ln, n,v);
+}
+
+unsigned char get_hi(char ln, int n)
+{	
+	unsigned int v = listread(ln, n);
+//printf("GH: %c, %d, %d [%d] \n", ln, n,v,0x00FF&(v>>8));
+	return 0x00FF&(v>>8);
+}
+
+unsigned char get_lo(char ln, int n)
+{
+	unsigned int v = listread(ln, n);
+	unsigned char r = 0x00FF&v;
+//printf("GL: %c, %d, %d [%d] \n", ln, n,v,r);
+	return r;
+}
+
+
+
 /*
 List Program
 10 LIST A = 5,1,2,3,4,5
@@ -420,9 +456,20 @@ int list_eval(char ln, char *p, int ty)
 		i = 0;
 		if (*d != 0xFF) return 0;
 		n = d[1];
-		ind = listcreate(ln,n);//,1);
+		ind = listcreate(ln,n/2+n%2);//,1);
+
+		//PACK data in bytes
 		for (i=0; i<n; i++)
-			listwritei(ind, i, d[i+2]);
+		{
+			if (i%2==0)
+			{
+				set_hi(ln, i/2, d[i+2]);
+			}
+			else
+			{
+				set_lo(ln, i/2, d[i+2]);
+			}		
+		}
 		return 0;
 	}
 
