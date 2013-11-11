@@ -47,7 +47,7 @@ const  prog_char  specials[NOSPECS][7] = {
 		"RANGE", "SIG",  "DSIG",  "STAND","ZEROS",
 		"MIC",   "X",    "Y",     "Z",    "PSD", 
 		"GREY",  "TURTLE","EVENT","MAP",  "SHUF", 
-		"SCALE", "INPUT", "REV",  "SORT", "IMIN"
+		"SCALE", "INPUT", "REV",  "SORT", "IMIN", "UPK"
 #ifdef IMAGE
 		,"IMR"  //sIMR
 		,"PLY"  //sPLY
@@ -164,6 +164,9 @@ long epop()
 
 *************************************************************************************************************/
 extern int base;
+
+extern void set_hi(char ln, int n, int v);
+extern void set_lo(char ln, int n, int v);
 
 int preci(char s)
 {
@@ -391,7 +394,14 @@ unsigned char eval_expr(char **str, long *res)
 			}
 			if (**str == '[')
 			{
+				int bm=0;
 				(*str)++;
+
+				if (**str=='#')
+				{ 
+					(*str)++;
+					bm=1;
+				}
 				n1=0;
 				sgn=1;
 				eval_expr(str, &n1);
@@ -419,7 +429,24 @@ unsigned char eval_expr(char **str, long *res)
 				}
 				else
 				{
-					n1 = (long)listread(arrayname, (int)n1-base);
+					if (bm==1)
+					{
+						int n2=n1/2;
+						n1=n1-base;
+						if (n1%2==1)
+						{
+							n1=get_lo(arrayname, n2);
+						}
+						else
+						{
+							n1=get_hi(arrayname, n2);
+						}
+					}
+					else
+					{
+						n1 = (long)listread(arrayname, (int)n1-base);
+
+					}
 					sgn=1;
 					(*str)++;
 				}
@@ -472,7 +499,7 @@ unsigned char eval_expr(char **str, long *res)
 					i == sSIN   || i == sNORM  || i == sSUM  || i == sSERVO ||
 					i == sROM   || i == sMIN   || i == sMAX  || i == sIMAX  ||
 					i == sGREY  || i == sTURTLE|| i == sSHUF  || i == sREV   ||
-					i == sSORT  || i == sIMIN)
+					i == sSORT  || i == sIMIN  || i== sUPK )
 				{
 					noargs=1;
 				}

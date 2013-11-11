@@ -579,6 +579,25 @@ long fn_stand(long v)
 	return 0;
 }
 
+long fn_upk(long v) 
+{
+	int lc;
+	int i=0;
+	char a=(char)v; //arrayname
+
+	nis=listsize(a);
+	for (lc=0; lc<nis; lc++)
+	{
+		unsigned int n=listread(a,lc);
+		scene[i]= (n>>8)&0xFF;
+		scene[i+1]= (n)&0xFF;
+		i+=2;
+	}
+	nis=i;
+	fn_type=ARRAY;
+	return 0;
+}
+
 long fn_scale(long v)
 {
 	long n=0,a=0,ct=0,cf=0;	
@@ -675,7 +694,8 @@ long (*fnctab[])(long) = {
 	fn_input,  //sINP
 	fn_rev,	   //sREV
 	fn_sort,  //sSORT
-	fn_imin  //sIMIN
+	fn_imin,  //sIMIN
+	fn_upk  //sUPK
 #ifdef IMAGE
 	,fn_imready     //sIMR
 	,fn_plyrunning  //sPLY
