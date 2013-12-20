@@ -456,3 +456,249 @@ fMatrix fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)
 	return R;
 }
 
+
+//Cholesky(self, ztol=1.0e-5)
+//Computes the upper triangular Cholesky factorization of
+//positive definite matrix.
+
+fMatrix Cholesky(fMatrix *s, float ztol)
+{
+/*
+      	res = matrix([[]])
+        res.zero(self.dimx, self.dimx)
+*/
+	int i,j,k=0;
+	fMatrix r= newmatrix(s->w, s->w);
+/*       
+        for i in range(self.dimx):
+            S = sum([(res.value[k][i])**2 for k in range(i)])
+            d = self.value[i][i] - S
+*/
+	for (i=0; i<s->w; i++)
+	{		
+		float d,S=0.0;
+		for (k=0; k<i; k++)
+		{
+			S += fget2(&r,k,i) * fget2(&r,k,i);
+		}
+		d=fget2(s,i,i)-S;
+
+/*
+            if abs(d) < ztol:
+                res.value[i][i] = 0.0
+            else:
+                if d < 0.0:
+                    raise ValueError, """
+                res.value[i][i] = sqrt(d)
+*/
+		if (fabs(d)<ztol)
+		{
+			fset2(&r,i,i,0.0);
+		}
+		else
+		{
+			if (d<0.0)
+			{
+				printf("Matrix not positive-definite [%f]\n", d);
+				r.w=0; r.h=0; r.fstore=0;
+				return r; //bad array size
+			}
+			fset2(&r,i,i,(float)sqrt(d));					
+		}
+/*
+            for j in range(i+1, self.dimx):
+                S = sum([res.value[k][i] * res.value[k][j] for k in range(self.dimx)])
+                if abs(S) < ztol:
+                    S = 0.0
+                res.value[i][j] = (self.value[i][j] - S)/res.value[i][i]
+*/
+
+		for (j=i+1; j<s->w; j++)
+		{
+			S=0;
+			for (k=0; k<s->w; k++)
+			{
+				S += fget2(&r,k,i) * fget2(&r,k,j);
+			}
+			if (fabs(S)<ztol)
+				S=0.0;
+
+			fset2(&r,i,j, (fget2(s,i,j) - S)/fget2(&r,i,i));
+		}
+
+	} 
+	return r;
+}
+
+//CholeskyInverse(self)
+//Computes inverse of matrix given its Cholesky upper Triangular
+//decomposition of matrix.
+
+fMatrix CholeskyInverse(fMatrix *s)
+{
+/*
+        res = matrix([[]])
+        res.zero(self.dimx, self.dimx)
+*/
+	int i,j,k;
+	fMatrix r= newmatrix(s->w, s->w);
+
+        // Backward step for inverse.
+	
+/*        
+        for j in reversed(range(self.dimx)):
+            tjj = self.value[j][j]
+            S = sum([self.value[j][k]*res.value[j][k] for k in range(j+1, self.dimx)])
+            res.value[j][j] = 1.0/tjj**2 - S/tjj
+            for i in reversed(range(j)):
+                res.value[j][i] = res.value[i][j] = -sum([self.value[i][k]*res.value[k][j] for k in range(i+1, self.dimx)])/self.value[i][i]
+*/
+
+	for (j=s->w-1; j>=0; j--)
+	{
+		float tjj=fget2(s,j,j);
+		float S=0.0;
+		for (k=j+1; k<s->w; k++)
+		{
+			S += fget2(s,j,k)*fget2(&r,j,k);
+		}
+		fset2(&r,j,j,1.0/(tjj*tjj) -S/tjj);
+
+		for (i=j; i>=0; i--)
+		{
+			float r1 = 0.0;
+			for (k=i+1; k<s->w; k++)
+			{
+				r1 += fget2(s,i,k)*fget2(&r,k,j);
+			}
+			r1 = -r1/fget2(s,i,i);
+			fset2(&r,j,i, r1);
+			fset2(&r,i,j, r1);
+		}
+	}
+
+	return r;
+}
+
+fMatrix cofactors(fMatrix *num, int f) ;
+fMatrix trans(fMatrix *num, fMatrix *fac, int r);
+
+
+float detrminant(fMatrix *a, int k) 
+{
+ float s = 1, det = 0;
+ fMatrix b = newmatrix(k,k);
+ 
+ int i, j, m, n, c;
+ if (k == 1) {
+  return (fget2(a,0,0));
+ } else {
+  det = 0;
+  for (c = 0; c < k; c++) {
+   m = 0;
+   n = 0;
+   for (i = 0; i < k; i++) {
+    for (j = 0; j < k; j++) {
+     fset2(&b,i,j,0);
+     if (i != 0 && j != c) {
+      fset2(&b,m,n,fget2(a,i,j));
+      if (n < (k - 2))
+       n++;
+      else {
+       n = 0;
+       m++;
+      }
+     }
+    }
+   }
+   det = det + s * (fget2(a,0,c) * detrminant(&b, k - 1));
+   s = -1 * s;
+  }
+ }
+ return (det);
+}
+ 
+fMatrix cofactors(fMatrix *num, int f) 
+{
+ fMatrix b   = newmatrix(f,f);
+ fMatrix fac = newmatrix(f,f);
+
+ int p, q, m, n, i, j;
+ for (q = 0; q < f; q++) {
+  for (p = 0; p < f; p++) {
+   m = 0;
+   n = 0;
+   for (i = 0; i < f; i++) {
+    for (j = 0; j < f; j++) {
+     fset2(&b,i,j, 0);
+     if (i != q && j != p) {
+      fset2(&b,m,n,fget2(num,i,j));
+      if (n < (f - 2))
+       n++;
+      else {
+       n = 0;
+       m++;
+      }
+     }
+    }
+   }
+    fset2(&fac,q,p,pow(-1, q + p) * detrminant(&b, f - 1));
+  }
+ }
+ return trans(num, &fac, f);
+}
+ 
+fMatrix trans(fMatrix *num, fMatrix *fac, int r)
+{
+ int i, j;
+ fMatrix b   = newmatrix(r,r);
+ fMatrix inv = newmatrix(r,r);
+ float d;
+
+ for (i = 0; i < r; i++) {
+  for (j = 0; j < r; j++) {
+	fset2(&b,i,j, fget2(fac,j,i));
+  }
+ }
+ 
+ d = detrminant(num, r);
+ fset2(&inv,i,j,0.0);
+ for (i = 0; i < r; i++) {
+  for (j = 0; j < r; j++) {
+   fset2(&inv,i,j,fget2(&b,i,j)/d);
+  }
+ }
+  return inv;
+}
+
+
+/*
+octave:1> i=[1 2;3 4]
+
+   1   2
+   3   4
+
+octave:2> inverse(i)
+  -2.00000   1.00000
+   1.50000  -0.50000
+
+i
+!LET MT=[1.0 2.0;3.0 4.0]
+!PRINT MT
+!print INV(MT)
+*/
+
+fMatrix inverse(fMatrix *s)
+{
+	fMatrix res;
+	res.w=0;
+  	res.h=0;
+
+	if (detrminant(s, s->w) ==  0)
+		printf("\nMATRIX IS NOT INVERSIBLE\n");
+	else
+		return cofactors(s, s->w);
+        return res;
+}
+
+
