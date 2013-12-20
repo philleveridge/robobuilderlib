@@ -129,6 +129,7 @@ tOBJ orshp(tOBJ  r);
 tOBJ orep(tOBJ  r);
 
 tOBJ ozero(tOBJ  r);
+tOBJ ominv(tOBJ  r);
 tOBJ oeye(tOBJ  r);
 tOBJ ovsum(tOBJ  r);
 tOBJ ohsum(tOBJ  r);
@@ -187,6 +188,8 @@ tOBJ olft(tOBJ  r);
 tOBJ orgt(tOBJ  r); 
 tOBJ omid(tOBJ  r); 
 
+tOBJ omdet(tOBJ  r); 
+
 tOBJ omath(tOBJ o1, tOBJ o2, int op);
 tOBJ print(tOBJ r);
 tOBJ get(Dict *ep, char *name);
@@ -234,6 +237,9 @@ tOP oplist[] = {
 	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
 	{"HSUM", 40, NA,    1, ohsum},  //function <fMatrix>
 	{"VSUM", 40, NA,    1, ovsum},  //function <fMatrix>
+	{"INV",  40, NA,    1, ominv},  //function <fMatrix>
+	{"DET",  40, NA,    1, omdet},  //function <fMatrix>
+
 /*40 */	{"H2SM", 40, NA,    1, ohsum2},  //function <fMatrix>
 	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
 	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
@@ -276,7 +282,7 @@ tOP oplist[] = {
 	{"QT",    40, NA,   1, oqt},//
 	{"REX",   40, NA,   2, orex},//
 	{"LFT",   40, NA,   2, olft},//
-	{"RGT",   40, NA,   2, orgt},//
+/*80 */	{"RGT",   40, NA,   2, orgt},//
 	{"MID",   40, NA,   3, omid},//
 	{"EXIT",  40, NA,   0, oexit}
  
@@ -1900,6 +1906,32 @@ tOBJ omat(tOBJ a)
 	return r;
 }
 
+extern fMatrix inverse   (fMatrix *s);
+extern float   detrminant(fMatrix *s, int k) ;
+
+tOBJ ominv(tOBJ a)
+{
+	//invert a matrix
+	tOBJ r;
+	if (a.type==FMAT2) 
+	{
+		r.type=FMAT2;
+		r.fmat2=inverse(&a.fmat2);
+	}
+	return r;
+}
+tOBJ omdet(tOBJ a)
+{
+	//det of a matrix
+	tOBJ r;
+	if (a.type==FMAT2) 
+	{
+		r.type=FLOAT;
+		r.floatpoint=detrminant(&a.fmat2, a.fmat2.w);
+	}
+	return r;
+}
+
 tOBJ osig(tOBJ a)
 {
 	//binary signmoid function
@@ -2671,7 +2703,7 @@ tOBJ olft(tOBJ  a)
 			cp=newstring1(p+1);
 			strncpy(cp, r.string,p);
 			*(cp+p)='\0';
-			r.string = cp;
+			r.string = cp; //<-is this missing a free?
 			return r;
 		}				
 	}
@@ -2728,11 +2760,23 @@ tOBJ omid(tOBJ  b)
  Copyright (C) 2003-2004 Alberto Demichelis
 **********************************************************/
 
+/*
+i
+!LET S1="testing"
+!LET S2="est"
+!print s1;" ";s2;" ";REX(S1,s2)
+!LET S2="xst"
+!print s1;" ";s2;" ";REX(S1,s2)
+!LET S2="e.*n"
+!print s1;" ";s2;" ";REX(S1,s2)
+*/
+
 tOBJ orex(tOBJ  r)
 {
 	//!REX("testing","est")
 	TRex *x;
 	tOBJ a=pop();
+	tOBJ v=emptyObj();
 	const TRexChar *begin,*end;
 	TRexChar sTemp[200];
 	const TRexChar *error = NULL;
@@ -2751,20 +2795,22 @@ tOBJ orex(tOBJ  r)
 			{
 				TRexChar t[200];
 				trex_getsubexp(x,i,&match);
-				trex_sprintf(t,_TREXC("[%%d]%%.%ds\n"),match.len);
-				trex_printf(t,i,match.begin);
+				//trex_sprintf(t,_TREXC("[%%d]%%.%ds\n"),match.len);
+				//trex_printf(t,i,match.begin);
 			}
-			trex_printf(_TREXC("match! %d sub matches\n"),trex_getsubexpcount(x));
+			//trex_printf(_TREXC("match! %d sub matches\n"),trex_getsubexpcount(x));
+			v = makeint(trex_getsubexpcount(x));
 		}
 		else {
-			trex_printf(_TREXC("no match!\n"));
+			//trex_printf(_TREXC("no match!\n"));
+			v = makeint(0);
 		}
 		trex_free(x);
 	}
 	else {
 		trex_printf(_TREXC("compilation error [%s]!\n"),error?error:_TREXC("undefined"));
 	}
-	return emptyObj();
+	return v;
 }
 
 /**********************************************************/
