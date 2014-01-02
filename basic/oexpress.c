@@ -249,8 +249,8 @@ tOP oplist[] = {
 	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
 	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
 //LIST BASED
-	{"CAR",  40, NA,    1, ecar},  //function single arg
-	{"CDR",  40, NA,    1, ecdr},  //function single arg
+	{"CAR",  40, NA,    1, ocar},  //function single arg
+	{"CDR",  40, NA,    1, ocdr},  //function single arg
 
 /*50 */	{"TYPE", 40, NA,    1, otype},  //function single arg
 	{"APPD", 40, NA,    1, oapp},  //function single arg
@@ -2293,7 +2293,12 @@ tOBJ ocdr (tOBJ a)
 
 tOBJ ecar (tOBJ a)
 {
-	return ocar(ocar(a));
+//printf ("ecar "); print(a); printf("\n");
+	a=ocar(a);
+//printf ("ecar2 "); print(a); printf("\n");
+	a=ocar(a);
+//printf ("ecar3 "); print(a); printf("\n");
+	return a;
 }
 
 tOBJ ecdr (tOBJ a)
@@ -3056,6 +3061,11 @@ tOBJ oload(tOBJ  n)
 	int sz=1024;
 	char *m=malloc(sz);
 	int ch;
+	if (n.type != STR)
+	{
+		printf ("? requires filename\n");
+		return r;
+	}
 
 	if ((fp = fopen(s, "r")) == 0)
 	{
@@ -3280,6 +3290,12 @@ void extend(char *x)
 		
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
+	}
+
+	if (*x=='!')
+	{
+		extend2(x+1);
+		return;
 	}
 
 	e=x;
