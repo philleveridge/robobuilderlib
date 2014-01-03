@@ -33,18 +33,20 @@ extern void printtype	(FILE *fp, tOBJ r);
 extern tOBJ fprint	(FILE *fp, tOBJ r);
 extern tOBJ print	(tOBJ r);
 extern tOBJ println	(char *s, tOBJ r);
+extern void pp		(tOBJ x, int n);
 
 /**********************************************************/
 /*  conversuins float   and integers                      */
 /**********************************************************/
 
-extern tOBJ  makefloat	(float f);
-extern tOBJ  makefloati	(int i);
-extern float tofloat	(tOBJ v);
-extern tOBJ  makeint	(int i);
-extern int   toint	(tOBJ v);
-extern tOBJ  cnvtInttoList(int an, int *array);
-extern tOBJ  cnvtBytetoList(int an, BYTE *array);
+extern tOBJ  makefloat	    (float f);
+extern tOBJ  makefloati     (int i);
+extern float tofloat	    (tOBJ v);
+extern tOBJ  makeint	    (int i);
+extern int   toint	    (tOBJ v);
+extern tOBJ  cnvtInttoList  (int an, int *array);
+extern tOBJ  cnvtBytetoList (int an, BYTE *array);
 extern tOBJ  cnvtFloattoList(int an, float *array);
+extern int   cnvtListtoByte (tOBJ lst, int an, BYTE *array);
 
 #endif
