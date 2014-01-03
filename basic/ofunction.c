@@ -15,17 +15,8 @@
 #include "linux.h"
 #endif
 
-#include "express.h"
-#include "functions.h"
-#include "lists.h"
-
-#include "trex.h"
-
-#ifdef _UNICODE
-#define trex_sprintf swprintf
-#else
-#define trex_sprintf sprintf
-#endif
+//#include "express.h"
+//#include "functions.h"
 
 //cmap.c functions
 extern void showImage	(int n);
@@ -49,151 +40,38 @@ extern int  dbg;
 extern void output_grey1(int sz);
 extern int  *frame;
 
-/* new matrix functions */
+extern void	setvar(char n, long v);
+extern long	getvar(char n);
 
-fMatrix readmatrix(char *s);
-fMatrix newmatrix(int c, int r);
-fMatrix fadd2(fMatrix *A, fMatrix *B, char op);  
-int 	fmatprint(FILE *fp, fMatrix *A);
-int     fmatprint2(fMatrix *A);
-int 	delmatrix(fMatrix *);
-fMatrix fmultiply2(fMatrix *A,fMatrix *B)  ; 
-float   fget2(fMatrix *M, int c, int r);
-float   fset2(fMatrix *M, int c, int r, float v);
-fMatrix fmatcp(fMatrix *A); // clone
-fMatrix ftranspose2(fMatrix *A)  ;
-fMatrix fmatrshp(fMatrix *A, int c, int r) ;
-fMatrix freplicate2(fMatrix *A, int m, int n);
-fMatrix fconvolve2(fMatrix *A, fMatrix *B)  ;
-fMatrix fimport2(char m2, int c, int r);
-fMatrix fmatsum2(fMatrix *A, int mode) ;
-fMatrix fmatzerodiag2(fMatrix *A)   ;
-fMatrix fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)   ;
+/*
+[-Wimplicit-function-declaration - TBD
+Sin
+Cos
+readservos
+Get_AD_PSD
+Acc_GetData
+*/
 
-// The new expression parser
-// work in progress
-//
+#include "lists.h"
 
+#include "oobj.h"
+#include "ocells.h"
+#include "ostring.h"
+#include "odict.h"
+#include "ostack.h"
+#include "fmatrix.h"
 
-#define iswhite(c)   (c == ' ' || c == '\t' || c==13 || c==10)
-#define isnumdot(c)  ((c >= '0' && c <= '9') || c == '.')
-#define isnumber(c)  (c >= '0' && c <= '9')
+#include "ofunction.h"
 
-#define isdelim(c)  (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '<'  || c == '>'  \
-                    || c == '^' || c == '(' || c == ')' || c == ',' || c == '='  || c == '$' || c=='@' || c=='{' || c== '}')
+#include "trex.h"
+
+#ifdef _UNICODE
+#define trex_sprintf swprintf
+#else
+#define trex_sprintf sprintf
+#endif
 
 #define isalpha(c)  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_')
-
-
-#define MAXSTACK 50
-#define MAXSTRING 1024
-
-char exprbuff[MAXSTRING];
-char *e;
-char tokbuff[5];
-char tmpstr[MAXSTRING];
-int  tb;
-
-int    tnum;
-double tfloat;
-
-typedef struct ops {
-        char	*name;
-		int		level;
-		unsigned char type;
-		int		nop;
-		tOBJ	(*func)(tOBJ);
-} tOP, *tOPp;
-
-tOBJ osin ();
-tOBJ ocos(tOBJ  r);
-tOBJ otan(tOBJ  r);
-tOBJ osqrt(tOBJ  r);
-tOBJ olog(tOBJ  r);
-tOBJ oexp(tOBJ  r);
-tOBJ oacos(tOBJ  r);
-tOBJ oatan(tOBJ  r);
-tOBJ oabs(tOBJ  r);
-tOBJ oacx(tOBJ  r);
-tOBJ oacy(tOBJ  r);
-tOBJ oacz(tOBJ  r);
-tOBJ osig(tOBJ  r);
-tOBJ ornd(tOBJ  r);
-tOBJ odsig(tOBJ  r);
-tOBJ opsd(tOBJ  r);
-tOBJ omax(tOBJ  r);
-tOBJ omat(tOBJ  r);
-tOBJ otrn(tOBJ  r);
-tOBJ oapply(tOBJ  r);
-tOBJ orshp(tOBJ  r);
-tOBJ orep(tOBJ  r);
-
-tOBJ ozero(tOBJ  r);
-tOBJ ominv(tOBJ  r);
-tOBJ oeye(tOBJ  r);
-tOBJ ovsum(tOBJ  r);
-tOBJ ohsum(tOBJ  r);
-tOBJ ovsum2(tOBJ  r);
-tOBJ ohsum2(tOBJ  r);
-tOBJ oconv(tOBJ  r);
-tOBJ oimp(tOBJ  r);
-tOBJ ocond(tOBJ  r);
-tOBJ ozerob(tOBJ  r);
-tOBJ ozerod(tOBJ  r);
-
-tOBJ ocar(tOBJ  r);
-tOBJ ocdr(tOBJ  r);
-
-tOBJ ecar(tOBJ  r);
-tOBJ ecdr(tOBJ  r);
-
-tOBJ otype(tOBJ  r);
-tOBJ olen(tOBJ  r);
-tOBJ oapp(tOBJ  r);
-tOBJ olist(tOBJ  r);
-tOBJ ocons(tOBJ  r);
-tOBJ olast(tOBJ  r);
-tOBJ osubst(tOBJ  r);
-tOBJ orev(tOBJ  r);
-tOBJ onull(tOBJ  r);
-tOBJ omemb(tOBJ  r);
-tOBJ oatom(tOBJ  r);
-tOBJ oasso(tOBJ  r);
-tOBJ oexec(tOBJ  r);
-tOBJ opr(tOBJ  r);
-tOBJ oset(tOBJ  r);
-tOBJ oget(tOBJ  r);
-tOBJ oserv(tOBJ  r);
-tOBJ onth(tOBJ  r);
-tOBJ opose(tOBJ  r);
-tOBJ owhs(tOBJ  r);
-tOBJ oexit(tOBJ  r);
-tOBJ obf(tOBJ  r);
-
-tOBJ oload(tOBJ  r);
-tOBJ osave(tOBJ  r);
-tOBJ odict(tOBJ  r);
-
-tOBJ omatr(tOBJ  r);// {"LOAD" "STOR"}
-tOBJ oimg(tOBJ  r); // {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
-
-tOBJ oprt(tOBJ  r);
-tOBJ olet(tOBJ  r); 
-tOBJ odefn(tOBJ  r); 
-tOBJ odo(tOBJ  r); 
-tOBJ oqt(tOBJ  r); 
-
-tOBJ orex(tOBJ  r); 
-tOBJ olft(tOBJ  r); 
-tOBJ orgt(tOBJ  r); 
-tOBJ omid(tOBJ  r); 
-
-tOBJ omdet(tOBJ  r); 
-
-tOBJ omath(tOBJ o1, tOBJ o2, int op);
-tOBJ print(tOBJ r);
-tOBJ get(Dict *ep, char *name);
-
 
 tOP oplist[] = { 
 /* 0 */	{"+",    10, PLUS,  2, NULL},
@@ -294,537 +172,6 @@ tOP oplist[] = {
 
 };
 
-
-
-/**********************************************************/
-/*  strings                                              */
-/**********************************************************/
-
-char *newstring(char *s)
-{
-	char *r;
-	int n=strlen(s);
-	if (dbg) printf ("New String [%d]\n",n);
-	r=(char *)malloc(n*sizeof(char)+1);
-	strcpy(r, s);
-	return r;
-}
-
-char *newstring1(int n)
-{
-	char *r;
-	if (dbg) printf ("New String [%d]\n",n);
-	r=(char *)malloc(n*sizeof(char)+1);
-	return r;
-}
-
-void delstring(char *s)
-{
-	if (dbg) printf ("Del String \n");
-	free(s);
-}
-
-tOBJ makestring(char *s)
-{
-	tOBJ r;
-	r.type=STR;
-	r.string = newstring(s);
-	r.cnt=0;
-	return r;
-}
-
-
-/**********************************************************/
-/*  CELLS                                              */
-/**********************************************************/
-int freeobj(tOBJ *b);
-
-tOBJ emptyObj()
-{
-	tOBJ r;
-	r.type=EMPTY;
-	return r;
-}
-
-int compareObj(tOBJ a, tOBJ b)
-{
-	if (a.type != b.type) return 0; //false;
-
-	//SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2};
-	if (a.type == INTGR) return a.number==b.number;
-	if (a.type == FLOAT) return a.floatpoint==b.floatpoint;
-	if (a.type == STR)   return !strcmp(a.string,b.string);
-	if (a.type == EMPTY) return 1;
-	return 0;
-}
-
-tCELLp newCell()
-{
-	if (dbg) printf ("New CELL\n");	
-	return (tCELLp)malloc(sizeof(tCELL));
-}
-
-void delCell(tCELLp p)
-{
-	if (dbg)  printf ("Delete CELL\n");	
-	freeobj(&p->head);
-	if (p->tail !=NULL) delCell((tCELLp)p->tail);
-	free(p);
-}
-
-tOBJ makeCell()
-{
-	tOBJ r; tCELLp p;
-	r.type=CELL;
-	p = newCell();
-	p->head=emptyObj();
-	p->tail=0;
-	r.cell=p;
-	r.cnt=0;
-	return r;
-}
-
-
-tOBJ cloneObj(tOBJ z);
-
-tOBJ makeCell2(tOBJ a, tCELLp b)
-{
-	// a + {b} => {a b}
-	tOBJ r; tCELLp p;
-	r.type=CELL;
-	p = newCell();
-	p->head=cloneObj(a);  //clone ?
-	p->tail=b;
-	r.cell=p;
-	r.cnt=0;
-	return r;
-}
-
-tOBJ makeCell3(tOBJ a, tCELLp b)
-{
-	// a + {b} => {b a}
-	tOBJ r; tCELLp p;
-	r.type=CELL;
-	p = newCell();
-	p->head=cloneObj(a);  //clone ?
-	p->tail=NULL;
-
-	while (b->tail != NULL) b=b->tail;
-	r.cell=b;
-	return r;
-}
-
-tCELLp cloneCell(tCELLp p)
-{
-	tCELLp top, t,r=newCell();
-	top=r;
-	while (p!=NULL)
-	{
-		r->head =cloneObj(p->head);  //cloneObj??
-		p=p->tail;
-		t=r;
-		if (p!=NULL)
-		{
-			r=newCell();
-			t->tail=r;
-		}
-		else
-			t->tail=NULL;
-	}
-		
-	return top;
-}
-
-tOBJ cloneObj(tOBJ z)
-{
-	tOBJ r = z; // needs fixing for dynamic typees
-
-	if (r.type==STR)
-	{
-		r.string = newstring(z.string);
-	}
-	if (r.type==CELL || r.type==LAMBDA)
-	{
-		r.cell = cloneCell((tCELLp)z.cell);
-	}
-	if (r.type==FMAT2)
-	{
-		//TBD
-	}
-	return r;
-}
-
-
-tOBJ readcells();
-
-/**********************************************************/
-/*  float   and integers                                  */
-/**********************************************************/
-
-tOBJ makefloat(float f)
-{	
-	tOBJ r;
-	r.type=FLOAT;
-	r.floatpoint=f;
-	return r;
-}
-
-tOBJ makefloati(int i)
-{	
-	tOBJ r;
-	r.type=FLOAT;
-	r.floatpoint=(float)i;
-	return r;
-}
-
-float tofloat(tOBJ v)
-{
-	float f=0.0;
-	if (v.type==FLOAT)
-		f=v.floatpoint;
-	else
-	if (v.type==INTGR)
-		f=(float)v.number;
-
-	return f;
-}
-
-tOBJ makeint(int i)
-{	
-	tOBJ r;
-	r.type=INTGR;
-	r.number=i;
-	return r;
-}
-
-int toint(tOBJ v)
-{
-	int f=0;
-	if (v.type==FLOAT)
-		f=(int)v.floatpoint;
-	else
-	if (v.type==INTGR)
-		f=v.number;
-	return f;
-}
-
-tOBJ cnvtInttoList(int an, int *array)
-{
-	tOBJ r,n,top;
-	int i;
-
-	if (an<=0) return emptyObj();
-	top=makeCell2( makeint(array[0]), NULL);
-	r=top;
-
-	for (i=1; i<an; i++)
-	{
-		n=makeCell2(makeint(array[i]), NULL);
-		((tCELLp)(r.cell))->tail = n.cell;
-		r=n;
-	}
-	((tCELLp)(n.cell))->tail = 0;
-	return top;
-}
-
-tOBJ cnvtBytetoList(int an, BYTE *array)
-{
-	tOBJ r,n,top;
-	int i;
-
-	if (an<=0) return emptyObj();
-	top=makeCell2( makeint(array[0]), NULL);
-	r=top;
-
-	for (i=1; i<an; i++)
-	{
-		n=makeCell(makeint((int)array[i]), NULL);
-		((tCELLp)(r.cell))->tail = n.cell;
-		r=n;
-	}
-	((tCELLp)(n.cell))->tail = 0;
-	return top;
-}
-
-tOBJ cnvtFloattoList(int an, float *array)
-{
-	tOBJ r,n,top;
-	int i;
-
-	if (an<=0) return emptyObj();
-	top=makeCell2(makefloat(array[0]), NULL);
-	r=top;
-
-	for (i=1; i<an; i++)
-	{
-		n=makeCell2(makefloat(array[i]), NULL);
-		((tCELLp)(r.cell))->tail = n.cell;
-		r=n;
-	}
-	((tCELLp)(n.cell))->tail = 0;
-	return top;
-}
-
-/**********************************************************/
-/*  Dictionary                                            */
-/**********************************************************/
-
-
-Dict * newdict()
-{
-	Dict *n;
-	if (dbg) printf ("New dictionary\n");
-	n = (Dict *)malloc(sizeof(Dict));
-	n->sz=100;
-	n->ip=0;
-	n->db = (Kvp *)malloc((n->sz) * sizeof(Kvp));
-	return n;
-}
-
-int deldict(Dict *x)
-{
-	if (dbg) printf ("Delete dictionary\n");
-	return 0;
-}
-
-tOBJ makedict()
-{
-	tOBJ r=emptyObj();
-	Dict *f=newdict();
-	r.type=DICT;
-	r.dict=f;
-	return r;
-}
-
-int dict_add(Dict *d, char *key, tOBJ value)
-{
-	tOBJ t1;
-
-	if (d==NULL) return 0;
-
-	if(dbg) printf ("Add %d %d\n", d->ip, d->sz);
-
-	if ((d->ip) < (d->sz-1))
-	{
-		char *cp = d->db[d->ip].key;
-		strncpy(cp, key, 32);
-
-		//print(value);printf (" ... ");
-
-		t1 = cloneObj(value);
-
-		//print(t1);printf (" ...\n ");
-
-		d->db[d->ip].value = t1; // should be clone;
-		(d->ip)++;
-	}
-	return 0;
-}	
-
-int dict_find(Dict *d, char *key)
-{
-	int i=0;
-	if (d==NULL) return -1;
-
-	while (i<d->ip)
-	{
-		if (strcmp(key, d->db[i].key)==0)
-		{
-			return i;
-		}
-		i++;
-	}
-	return -1;
-}
-
-int dict_contains(Dict *d, char *key)
-{
-	if (d==NULL) return 0;
-	return dict_find(d, key)>=0;
-}
-
-tOBJ dict_getk(Dict *d, char *key)
-{
-	int i=dict_find(d, key);
-
-	if (i>=0) return d->db[i].value;
-	return emptyObj();
-}
-
-tOBJ dict_get(Dict *d, int indx)
-{
-	if (indx >=0 && indx <d->ip)
-		return d->db[indx].value;
-	return emptyObj();
-}
-
-
-int dict_update(Dict *d, char *key, tOBJ value)
-{
-	int i;
-	if (d==NULL) return 0;
-	i=dict_find(d, key);
-	if (i>=0) 
-	{
-		d->db[i].value = cloneObj(value); // clone it?
-		return 1;
-	}
-	dict_add(d, key, value);
-	return 0;
-}
-
-int dict_print(Dict *d)
-{
-	int i=0;
-
-	if (d==NULL) return 0;
-
-	while (i<d->ip)
-	{
-		tOBJ t;
-		char *st="";
-		t = d->db[i].value;
-
-		switch (t.type)
-		{  
-		case INTGR: st="Int   "; break;
-
-		case FLOAT: st="Float "; break;
-
-		case STR:   st="String"; break;
-
-		case FMAT2: st="Matrix"; break;
-
-		case CELL:  st="List  "; break;
-
-		case SYM:   st="Symbol"; break;
-
-		case LAMBDA:st="Lambda"; break;
-
-		case BOOLN: st="bool   ";break;
-
-		case EMPTY: st="Empty  ";break;
-
-		case FUNC:  break;
-		}
-
-		printf ("%7s [%s] ", d->db[i].key, st );
-
-		if (t.type==LAMBDA)
-		{
-			t.type=CELL;
-			print(t);
-		}
-		else
-		{
-			print (d->db[i].value);
-		}
-		printf ("\n");
-		i++;
-	}
-	return 0;
-}
-
-
-
-/**********************************************************/
-/*  stack                                                 */
-/**********************************************************/
-
-tOBJ stackobj[MAXSTACK];
-int sop=0;
-
-unsigned char stackop[MAXSTACK];
-int oop=0;
-
-
-int freeobj(tOBJ *b)
-{
-	if (b->type==FMAT2)
-	{
-		if (b->cnt==0) delmatrix(&b->fmat2);
-	}
-	if (b->type==STR)
-	{
-		if (b->cnt==0) delstring(b->string);
-	}
-	if (b->type==CELL)
-	{
-		if (b->cnt==0) delCell(b->cell);
-	}
-	if (b->type==DICT)
-	{
-		if (b->cnt==0) deldict(b->dict);
-	}
-	return 0;
-}
-
-int push(tOBJ a)
-{
-	if (dbg)  { printf ("PUSH %d = ", a.type); print(a); printf("\n"); }
-
-	if (sop<MAXSTACK-1)
-	{
-		stackobj[sop++] = a;
-		return 1;
-	}
-	return 0;
-}
-
-tOBJ pop()
-{
-	tOBJ e;
-	e.type=EMPTY;
-
-	if (sop>0)
-	{
-		e=stackobj[sop-1];
-		sop--;
-	}
-
-	if (dbg) { printf ("POP %d = ", e.type);  print(e); printf("\n"); }
-
-	return e;
-}
-
-tOBJ peek(int n)
-{
-	tOBJ e;
-	e.type=EMPTY;
-
-	if (sop-1-n >= 0)
-	{
-		return stackobj[sop-1-n];
-	}
-	return e;
-}
-
-void clear()
-{
-	sop=0;
-}
-
-void stackprint()
-{
-	int i;
-	printf ("Stack\n");
-	for (i=0;i<sop;i++)
-	{
-		rprintf ("%d ", i);
-		print(stackobj[i]);
-		rprintfCRLF();
-	}
-}
-
-int stacksize()
-{
-	return sop;
-}
-
-/**********************************************************/
-/*  Parser functions                                      */
-/**********************************************************/
-
 int getOP(char *str)
 {
 	int i=0;
@@ -838,627 +185,9 @@ int getOP(char *str)
 	return -1;
 }
 
-int get_token(int flg) 
-{
-	tb=0;
-	while (iswhite(*e))     // space or tab
-	{
-		e++;
-	}
-
-	// check for end of expression
-	if (*e == '\0')
-	{
-		return DELI;
-	}
-
-	if (*e == '"')
-	{
-		char *p=tmpstr;
-		if (flg) return DELI;
-		e++;
-		while (*e != '"' && *e !='\0')
-		{
-			*p++=*e++;
-		}
-		e++;
-		*p='\0';
-		return STRNG;
-	}
-
-	if (*e == '{')
-	{
-		return CLIST;
-	}
-
-	if (*e == '[')
-	{
-		char *p=tmpstr;
-		if (flg) return DELI;
-		e++;
-		while (*e != ']' && *e !='\0')
-		{
-			*p++=*e++;
-		}
-		e++;
-		*p='\0';
-		return MLIST;
-	}
-
-	if (*e== '.' && ((*(e+1)=='*') || (*(e+1)=='^')))
-	{		
-		tokbuff[tb++]='.';
-		tokbuff[tb++]=*(e+1);
-		tokbuff[tb]=0;
-		e+=2;
-		return OPR;
-	}
-
-	if (flg && *e=='-')
-	{
-		tokbuff[tb++]=*e++;
-		tokbuff[tb]=0;
-		return OPR;
-	}
-
-	if (isnumdot(*e) || (*e=='-' && isnumdot(*(e+1))) )
-	{
-		int r=NUMI;
-		int sgn=1;
-		double dn=0.1;
-		tnum=0;
-		if (flg) return DELI;
-		if (*e=='-') { e++; sgn=-1; }
-		while (isnumdot(*e))
-		{
-			if (*e=='.') 
-			{
-				r=NUMF;
-				tfloat=(double)tnum;
-			}
-			else
-			{	
-				if (r==NUMI)
-					tnum  = tnum*10 + (*e-'0');
-				else
-				{
-					tfloat= tfloat + dn * (*e-'0'); 
-					dn=dn/10;
-				}
-			}
-			e++;
-		}
-		if (r==NUMI) tnum=tnum*sgn;
-		if (r==NUMF) tfloat=tfloat*(float)sgn;
-		return r;
-	}
-
-	if (isdelim(*e))
-	{		
-		if (*e=='<' && *(e+1)=='>')
-		{
-			tokbuff[tb++]=*e++;
-		}
-		tokbuff[tb++]=*e++;
-		tokbuff[tb]=0;
-
-		if (getOP(tokbuff)<0)
-			return DELI;
-		else
-			return OPR;
-	}
-
-	if (isalpha(*e))
-	{
-		tokbuff[tb++]=toupper(*e++);
-		while (isalpha(*e) || isnumber(*e))
-		{
-			tokbuff[tb]=toupper(*e++);
-			tb=tb+1;
-			if (tb>4) tb=4;
-		}
-		tokbuff[tb]=0;
-
-		if (getOP(tokbuff)<0)
-			return ALPHA;
-		else
-			return OPR;
-	}
-	return DELI;
-}
-
-void reduce()
-{
-	tOBJ a,b, c;
-	int i;
-
-	if (oop<=0)
-		return; //nothing to do
-
-	i=stackop[--oop];
-
-	if (oplist[i].nop==2 && oplist[i].func == NULL)
-	{
-		b = pop();
-		a = pop();
-		c = omath(a, b, oplist[i].type);
-		push(c);
-		freeobj(&a);
-		freeobj(&b);
-	}
-	
-	if (oplist[i].nop==1 && oplist[i].func == NULL)
-	{
-		return;
-	}
-
-	if (oplist[i].func != NULL)
-	{
-		if(oplist[i].nop>stacksize())
-		{
-			rprintf("Insuffcient parameters need %d but only have %d\n", oplist[i].nop, stacksize());
-			stackprint();
-		}
-		else
-		{
-			push((*oplist[i].func)(pop()));
-		}
-	}
-}
-
-tOBJ eval_oxpr(char *s)
-{
-	tOBJ r;
-	int op=NA;
-	int lf=1;
-	int tk=0;
-	int gnf=0;
-
-	r.type=EMPTY;
-	strncpy(exprbuff,s,MAXSTRING-1);
-	e=exprbuff;
-
-	while (lf)
-	{
-		tk = get_token(gnf);
-
-		if (gnf==0 || (tk==OPR) || (tk==DELI))
-		{
-			switch (tk)
-			{
-			case ALPHA:
-				r = get(NULL,tokbuff);
-				push(r);
-				gnf=1;
-				break;
-			case STRNG:
-				r=makestring(tmpstr);
-				push(r);
-				gnf=1;
-				break;
-			case NUMI:
-				r.type   = INTGR;
-				r.number = tnum;
-				push(r);
-				gnf=1;
-				break;
-			case NUMF:
-				r.type   = FLOAT;
-				r.floatpoint = tfloat;
-				push(r);
-				gnf=1;
-				break;
-			case CLIST:
-				r = readcells();
-				push(r);
-				gnf=1;
-				break;
-			case MLIST: 
-				{
-				int toop=oop;
-				oop=0;
-				r.type   = FMAT2;
-				r.fmat2 = readmatrix(tmpstr);
-				r.cnt=0;
-				oop=toop;
-				push(r);	
-				gnf=1;	
-				break;	
-				}
-			case OPR:
-				{
-					op = getOP(tokbuff);
-
-					if (oplist[op].nop==0 && oplist[op].func != NULL)
-					{
-						push((*oplist[op].func)(emptyObj()));
-						continue;
-					}
-					else
-					if (oop>0 && (oplist[op].type == CBR || oplist[op].type==COMMA))
-					{
-						int t=oplist[op].type;
-						int i=stackop[oop-1];
-
-						while (oplist[i].type != OBR && oplist[i].type != COMMA)
-						{
-							if (oop==0) break;
-							reduce();
-							i=stackop[oop-1];
-				
-						}
-						if  ((t==CBR) && (oplist[i].type== OBR) )
-							reduce();
-						gnf=0;
-						continue;
-					}
-					else
-					if (oop>0)
-					{
-						int i = stackop[oop-1];
-						if ((oplist[i].type != OBR) && (oplist[op].level<=oplist[i].level) )
-						{
-							reduce();
-						}
-					}
-					stackop[oop++]=op;
-					gnf=0;
-				}
-				break;
-			case DELI:
-				lf=0;
-				gnf=0;
-				continue;
-			}
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	while (oop>0)
-	{
-		if (dbg) printf("Reduce %d \n",oop);
-		reduce();
-	}
-	return pop();
-}
-
-/* CELLS - linked list of objects
-i
-!{1 2 3}
-!{"list" "of" "things"}
-!{1 {2 4} 2 3 {4 {2}}}
-*/
-tOBJ readcells()
-{
-	int tf=1;
-	tOBJ r= makeCell();
-	tCELLp top = (tCELLp)r.cell; 
-	tCELLp prv = (tCELLp)0;
-	top->head = emptyObj();
-	top->tail=0;
-	e++;
-
-	while (tf)
-	{
-		int tk = get_token(0);	
-		tCELLp next;
-
-		switch (tk)
-		{
-		case ALPHA:
-			//top->head = get(tokbuff);
-			top->head = makestring(tokbuff);
-			top->head.type=SYM;
-			break;
-		case STRNG:
-			top->head = makestring(tmpstr);
-			break;
-		case NUMI:
-			top->head = makeint(tnum);
-			break;
-		case NUMF:
-			top->head = makefloat(tfloat);
-			break;
-		case CLIST:
-			top->head = readcells();
-			break;
-		case MLIST: 
-			{
-			int toop=oop;
-			oop=0;
-			top->head.type   = FMAT2;
-			top->head.fmat2 = readmatrix(tmpstr);
-			oop=toop;
-			break;	
-			}
-		case OPR:
-			{
-				tOBJ o;
-				int op = getOP(tokbuff);
-				o.type=FUNC;
-				o.func=oplist[op].func;
-
-				if (o.func==NULL)
-				{
-					o=makestring(tokbuff);
-				}
-				top->head = o;
-
-			}
-			break;
-		case DELI:
-			if (strcmp(tokbuff,"}")!=0)
-			{
-				printf ("Invalid character [%s]\n",tokbuff);
-			}
-			if (prv !=NULL) prv->tail=0;
-			tf=0;
-			break;
-		}
-
-		if (tf)
-		{
-			next=newCell();
-			next->head=emptyObj();
-			top->tail=next;	
-			prv=top;
-			top=next;
-		}
-	}
-	return r;
-}
-
-tOBJ stringtocells(char *s)
-{
-	tOBJ r=emptyObj();
-	char savebuff[MAXSTRING];
-	int toop;
-	char *t;
-	strncpy(savebuff, exprbuff, MAXSTRING); 
-	toop=oop;
-	t=s;
-
-	e=s;
-	r = readcells();
-
-	strncpy(exprbuff, savebuff, MAXSTRING); 
-	oop=toop;
-	e=t;
-	return r;
-}
-
-/*
-i
-!LET MC=[2.0 3.6;2.7 1.2]
-
-!let mx=[1.0 2.0;3.0 4.0]+[2.0 3.6;2.7 1.2]
-!print mx
-
-!let ms=mx+mc
-!print ms
-
-!print [1.0 2.0;3.0 4.0]*[2.0 3.6;2.7 1.2]
-
-!print trn([1.0 2.0 3.0 4.0])
-!print trn([1.0 2.0;3.0 4.0])
-
-!PRINT [1.0 2.0;3.0 4.0]*[1.0 2.0;3.0; 4.0]
-!PRINT [1.0 2.0;3.0 4.0]*[1.0 2.0;3.0 4.0]
-
-!PRINT [1.0 2.0;3.0 4.0]*0.2
-*/
-
-fMatrix readmatrix(char *s)
-{
-	fMatrix m;
-	float ts[10000];
-	char *t;
-	char savebuff[MAXSTRING];
-	tOBJ v;
-	int i=0;
-	int j=0;
-	int c=0;
-
-	int toop;
-
-	strncpy(savebuff, exprbuff, MAXSTRING); 
-	toop=oop;
-	t=e;
-
-	e=s;
-
-	if (dbg) printf("LIST=%s\n", e);
-
-	while (e!=0 && *e != 0)
-	{
-//printf ("[%s]\n", e);
-		char *p=strchr(e, ' ');
-		
-		if (p !=0)
-		{
-			*p='\0';
-			p++;
-		}
-
-		v=eval_oxpr(e);	
-		ts[c] = tofloat(v);
-
-		if (*e==';' || *e==13 || *e==10)
-		{
-			//
-			j++; i=0; e++; c++;
-			if (*e==13 || *e==10) e++;
-			v=eval_oxpr(e);	
-			ts[c] = tofloat(v);
-		}
-
-		if (p!=0) e=p;
-
-		if (dbg) printf ("[%d,%d] = %f  (%s)\n", i,j,ts[c], e);
-
-		while (*e==' ') e++; 
-
-		if (*e==';' || *e==13 || *e==10) { j++; i=0; e++; } else {i++;}
-
-		while (*e==' ' || *e==13 || *e==10) e++; 
-
-		c++;
-
-		if (*e==']') break;
-	}
-
-	if (c != i*(j+1))
-	{
-		printf ("Bad matrix defintion %d,%d,%d ?\n", c, i,j);
-		m.w=0;m.h=0;m.fstore=0;
-		return m;
-	}
-
-	//create matrix
-
-	m = newmatrix(i, j+1);
-	
-	//copy in ts[0-c];
-
-	for (i=0; i<c; i++) m.fstore[i]=ts[i];
-
-	strncpy(exprbuff, savebuff, MAXSTRING); oop=toop;
-	e=t;
-
-	return m;
-}
-
-/**********************************************************/
-/*  print and formating                                   */
-/**********************************************************/
-
-void printtype(FILE *fp, tOBJ r)
-{
-    if (r.type == INTGR)
-    {
-            fprintf(fp, "%d", r.number);
-    }
-    else if (r.type == FLOAT)
-    {
-            fprintf(fp, "%f", r.floatpoint);
-    }
-    else if (r.type == STR)
-    {
-		char ch, *cp=r.string;
-		while ( (ch=*cp++) != '\0')
-		{
-			if ((ch=='\\') && ((*cp)=='n') )
-			{ 
-				fputc(13,fp); 
-				fputc(10,fp); 
-				cp++;
-				continue;
-			}
-			fputc(ch,fp);
-		}
-    }
-    else if (r.type == SYM)
-    {
-            fputs(r.string,fp);
-    }
-    else if (r.type == BOOLN)
-    {
-        if ( r.number==0)
-                fprintf(fp, "False");
-        else
-                fprintf(fp, "True");
-    }
-    else if (r.type == EMPTY)
-    {
-         fprintf(fp, "NIL");
-    }
-    else if (r.type == LAMBDA)
-    {
-         fprintf(fp, "LAMBDA");   
-    }
-    else if (r.type == FUNC)
-    {
-         fprintf(fp, "FUNCTION");   
-    }
-    else if (r.type == FMAT2)
-    {
-	fmatprint2(&r.fmat2);	 
-    }
-    else  if (r.type == DICT)
-    {
-	dict_print(r.dict);
-    }
-    else  if (r.type == CELL)
-    {
-	if (r.q)  fprintf(fp, "'");
-
-	if (r.cell != NULL)
-	{
-		 fprintf(fp, "CELL");	
-	}
-	else
-	{
-		 fprintf(fp, "null");
-	}
-    }  
-    else
-    {               
-         fprintf(fp, "? error - type\n");   
-    }
-    return;
-}
-
-tOBJ fprint(FILE *fp, tOBJ r)
-{
-    if (r.type == CELL)
-    {
-        struct cell  *c = r.cell;
-        fprintf(fp,"{");  
-        print(c->head);
-                
-        while (c->tail != (void *)0)
-        {
-                c=c->tail;
-                fprintf(fp, " ");
-                print(c->head);
-        }
-        fprintf(fp,"}");
-    }
-    else
-    {
-		printtype(fp, r);
-    }
-    return r;
-}
-
-tOBJ print(tOBJ r)
-{
-	return fprint(stdout, r);
-}
-
-tOBJ println(char *s, tOBJ r)
-{
-	printf ("%s", s); print(r); printf("\n");
-	return r;
-}
-
 /**********************************************************/
 /*  Access variables (read/write)                         */
 /**********************************************************/
-
-tOBJ env;
-int eif=0;
-
-tOBJ initEnv()
-{
-	if (eif==0) {
-		env = makedict();
-	}
-	return env;
-}
 
 tOBJ get(Dict *ep, char *name)
 {
@@ -1485,13 +214,12 @@ tOBJ get(Dict *ep, char *name)
 		return r;
 	}
 
-	return dict_getk((Dict *)(env.dict), name);
+	//return dict_getk((Dict *)(env.dict), name);
+	return emptyObj();
 }
 
 int set(Dict * en, char *name, tOBJ r)
 {
-	int n = 0;
-
 	if (en != NULL && dict_contains(en, name))
 	{
 		return dict_update(en, name, r);
@@ -1527,18 +255,18 @@ int set(Dict * en, char *name, tOBJ r)
 
 	if (r.type==FMAT2 || r.type==STR || r.type==CELL || r.type==DICT || r.type==LAMBDA) r.cnt++;
 
-	n = dict_update((Dict *)(env.dict), name, r);
-	return n;
+	//n = dict_update((Dict *)(env.dict), name, r);
+	//return n;
+	return 9;
 }
 
 tOBJ owhs(tOBJ r)
 {
 	//display all variables and types
 	//!WHOS
-	dict_print(env.dict);
-	return emptyObj();
+	//dict_print(env.dict);  //TBFixed
+	return emptyObj(); 
 }
-
 
 
 /**********************************************************/
@@ -2072,7 +800,7 @@ tOBJ oapply(tOBJ a)
 			//set("ME_R",v);
 			//v.floatpoint = (float)i;
 			//set("ME_C",v);
-			v=eval_oxpr(expr);
+			//v=eval_oxpr(expr); // TBFixed!!
 			fset2(&r.fmat2,i,j,tofloat(v));
 		}
 	}
@@ -2798,16 +1526,12 @@ tOBJ orex(tOBJ  r)
 			TRexMatch match;
 			for(i = 0; i < n; i++)
 			{
-				TRexChar t[200];
 				trex_getsubexp(x,i,&match);
-				//trex_sprintf(t,_TREXC("[%%d]%%.%ds\n"),match.len);
-				//trex_printf(t,i,match.begin);
+
 			}
-			//trex_printf(_TREXC("match! %d sub matches\n"),trex_getsubexpcount(x));
 			v = makeint(trex_getsubexpcount(x));
 		}
 		else {
-			//trex_printf(_TREXC("no match!\n"));
 			v = makeint(0);
 		}
 		trex_free(x);
@@ -3055,6 +1779,7 @@ tOBJ oload(tOBJ  n)
 	// file start with { x } is a list
 	// else string
 	tOBJ r=emptyObj();
+/*
        	FILE *fp;
 	char *s = n.string;
 	int cn=0;
@@ -3095,6 +1820,7 @@ tOBJ oload(tOBJ  n)
 		r = makestring(m);
 		break;
 	}
+*/
 	return r;
 
 }
@@ -3141,8 +1867,6 @@ tOBJ oqt(tOBJ  r)
 	return r;
 }
 
-
-
 tOBJ odict(tOBJ  lst)
 {
 	//!DICT {{"a" 2} {"b" 3} {"c" 4}}
@@ -3166,6 +1890,51 @@ tOBJ odict(tOBJ  lst)
 	return emptyObj();
 }
 
+
+
+
+/***********************************************************************
+
+Extended input
+
+************************************************************************/
+
+tOBJ omatr(tOBJ a)
+{
+	tOBJ n=pop();
+	tOBJ v=pop();
+	int val;
+	// {"LOAD" "STOR"}
+	if (v.type==STR && n.type==INTGR)
+	{
+		if (!strcmp(v.string,"LOAD"))
+		{
+			val=toint(n);
+			v=get(NULL, "DFN");
+			matrixload(val, v.string);
+		}
+		if (!strcmp(v.string,"STOR"))
+		{
+			val=toint(n);
+			v=get(NULL, "DFN");
+			matrixstore(val, v.string);
+		}
+	}
+	return (emptyObj());
+}
+
+tOBJ oimg(tOBJ v)
+{
+	//!IMG {"command" {parameters}}
+	//comand : {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
+	
+	tOBJ cmd = ocar(v);
+	if (cmd.type == STR)
+	{
+		//tOBJ l = stringtocells("");
+	}
+	return (emptyObj());
+}
 
 /***********************************************************************
 
@@ -3214,436 +1983,7 @@ tOBJ obf(tOBJ v)
 
 
 
-/***********************************************************************
 
-Extended input
-
-************************************************************************/
-
-tOBJ omatr(tOBJ a)
-{
-	tOBJ n=pop();
-	tOBJ v=pop();
-	int val;
-	// {"LOAD" "STOR"}
-	if (v.type==STR && n.type==INTGR)
-	{
-		if (!strcmp(v.string,"LOAD"))
-		{
-			val=toint(n);
-			v=get(NULL, "DFN");
-			matrixload(val, v.string);
-		}
-		if (!strcmp(v.string,"STOR"))
-		{
-			val=toint(n);
-			v=get(NULL, "DFN");
-			matrixstore(val, v.string);
-		}
-	}
-	return (emptyObj());
-}
-
-tOBJ oimg(tOBJ v)
-{
-	//!IMG {"command" {parameters}}
-	//comand : {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
-	
-	tOBJ cmd = ocar(v);
-	if (cmd.type == STR)
-	{
-		//tOBJ l = stringtocells("");
-	}
-	return (emptyObj());
-}
-
-static int  intf=1;
-
-int get_str_token(char *s)
-{
-	int tk = get_token(0);
-	
-	if (s==(char *)0 && tk==ALPHA)
-		return 1;
-
-	if (tk==ALPHA && !strcmp(tokbuff,s))
-		return 1;
-	return 0;
-}
-
-
-
-void extend(char *x)
-{
-	tOBJ v,file;
-
-	if (intf) 
-	{ 	// set up defaults
-		intf=0; 
-
-		//set up glnal environment
-		initEnv();
-
-		set(NULL, "PI",  makefloat (3.1415926));
-		set(NULL, "DFN", makestring("data.txt"));
-		set(NULL, "IFN", makestring("test.jpg"));
-		
-		//seed the RND Gen
-		srand ( (unsigned)time ( NULL ) );
-	}
-
-	e=x;
-	if (get_str_token("LET")==1)
-	{
-		if (get_str_token(NULL)==1)
-		{	
-			char var[5];
-			int tk;
-			strncpy(var,tokbuff, 5);
-			tk = get_token(1);	
-			if (tk==OPR && oplist[getOP(tokbuff)].type==EQL)
-			{
-				v=eval_oxpr(e);
-				set(NULL, var,v);
-				return;
-			}
-			if (tk==OPR && oplist[getOP(tokbuff)].type==OBR)
-			{
-				/*
-				!LET MX=[1 2 3]
-				!LET MX(2,0)=5
-				!PRINT MX
-				*/
-				int c,r;
-				float f;
-				tOBJ R;
-
-				char *t;
-				t=strchr(e,',');
-				if (t==NULL) return;
-				*t='\0';
-				t++;
-
-				v=eval_oxpr(e);	
-				c=toint(v);
-				e=t;
-				t=strchr(e,')');
-				if (t==NULL) return;
-				*t='\0';
-				t++;
-
-				//printf ("DBG e=%s\n",e);
-
-				v=eval_oxpr(e);	
-				r=toint(v);
-
-				e=t;
-				t=strchr(e,'=');
-				if (t==NULL) return;
-				*t='\0';
-				e=t+1;
-
-				//printf ("DBG e=%s\n",e);
-				v=eval_oxpr(e); 
-
-				f=tofloat(v);
-				R=get(NULL, var);
-				if (R.type == FMAT2)
-				{
-					if (dbg) printf ("DBG var=%s %d,%d, %f\n",var,c,r,f);
-					fset2(&R.fmat2,c,r,f);
-				}
-				return;
-			}
-		}
-	}
-
-#ifdef IMAGE
-
-	e=x;
-	if (get_str_token("IMAG")==1)
-	{
-		if (get_str_token("UNLO")==1)
-		{
-			rellock();
-			return;
-		}
-
-		if (!strcmp(tokbuff,"LOAD"))
-		{
-			int sz = 8;
-			if (*e != '\0')
-				v=eval_oxpr(e);
-			if (v.type==INTGR &&  v.number< sqrt(SCENESZ))
-			{
-				sz=v.number;
-			}
-			else
-			{
-        			printf("error = expect int size 1-%d\n", (int)sqrt(SCENESZ)); 
-				return;
-			}
-			file = get(NULL, "IFN");	
-			if (*e == ';')
-			{
-				e++;
-				file=eval_oxpr(e);
-
-				if (file.type!=STR)
-				{
-					printf("error = 2nd arg should be string file name\n"); 
-					return;
-				}
-			}
-
-			if (loadimage(file.string, sz, &scene[0])==0)
-				nis=sz*sz;
-			else
-				nis=0;
-			return;
-		}
-
-
-		if (!strcmp(tokbuff,"FILT"))
-		{
-			//!IMAGE FILTER 4;1;10;10;100;100;100
-			int args[6];
-			int sz,i;
-
-			v=eval_oxpr(e);
-			sz=v.number;
-			if (*e++ != ';')
-				return;
-
-			for (i=0; i<6; i++)
-			{
-				v=eval_oxpr(e);
-				args[i]=v.number;
-				if (*e == ';' || (i==5 && *e=='\0'))
-				{
-					e++;
-				}
-				else
-				{
-        				printf("incorrect number args (6)\n"); 
-					return;
-				}
-			}
-
-			file = get(NULL, "IFN");
-			if (file.type!=STR)
-			{
-				printf("error in string file name\n"); 
-				return;
-			}
-			
-			if (filterimage(file.string,&scene[0],sz,args[0],args[1],args[2],args[3],args[4],args[5])==0)
-				nis=sz*sz;
-			else
-				nis=0;
-			return;
-		}
-
-		if (!strcmp(tokbuff,"RAW"))
-		{
-			file = get(NULL, "IFN");
-			if (*e != '\0')
-				file=eval_oxpr(e);
-
-			if (file.type!=STR)
-			{
-				printf("error = expecting string\n"); 
-				printf;
-			}
-
-			loadJpg(file.string);
-			e++;
-			return;
-		}
-
-		if (!strcmp(tokbuff,"THRE"))
-		{
-			//!IMAGE THRE 0
-			//!IMAGE THRE 1;10;10;100;100;100
-			int args[6];
-			int n;
-
-
-			if (*e++ == '\0')
-			{
-        			printf("clr thresholds\n"); 
-				clrmap();
-			}
-			else
-			{
-				int i;
-				v=eval_oxpr(e);
-				n=v.number;
-				e++;
-				for (i=0; i<6; i++)
-				{
-					v=eval_oxpr(e);
-					args[i]=v.number;
-					if (*e == ';' || (i==5 && *e=='\0'))
-					{
-						e++;
-					}
-					else
-					{
-						printf("incorrect number args (6)\n"); 
-						return;
-					}
-				}
-				//add_thresh(1, 120, 175, 40, 70, 30, 40);
-				//!IMAGE THRE CID;120; 175; 40; 70; 30; 40
-				add_thresh(n, args[0],args[1],args[2],args[3],args[4],args[5]);
-			}
-			return;
-		}
-
-		if (!strcmp(tokbuff,"COLO"))
-		{
-			int args[6];
-			char color[10];
-
-			if (*e++ == '\0')
-			{
-				clear_colors();
-			}
-			else
-			{
-				int i;
-				int tk = get_token(0);
-
-				if (tk !=STRNG || *e++ != ';')
-				{
-					printf("need colour name\n");
-					return; 
-				}
-				strncpy(color,tmpstr,10);
-
-				for (i=0; i<4; i++)
-				{
-					v=eval_oxpr(e);
-					args[i]=v.number;
-					if (*e == ';' || (i==3 && *e=='\0'))
-					{
-						e++;
-					}
-					else
-					{
-						printf("incorrect number args (5)\n"); 
-						return;
-					}
-				}
-				//add_color("orange", 20,30,60,2);
-				//!IMAGE COLO "orange";20;30;60;2
-				v.number =add_color(color, args[0],args[1],args[2],args[3]);
-				v.type   =INTGR; 
-				set(NULL, "CID", v);
-			}
-			return;
-		}
-
-		if (!strcmp(tokbuff,"PROC"))
-		{
-			if (*e != '\0')
-				v=eval_oxpr(e);
-			else
-				v.number=4;
-			//
-			processFrame(v.number, &scene[0]);
-			nis=v.number*v.number;
-			return;
-		}
-
-		if (!strcmp(tokbuff,"REG"))
-		{
-			if (*e != '\0')
-				v=eval_oxpr(e);
-			else
-				v.number=1;
-
-			get_color_region(v.number);
-			return;
-		}
-
-		if (!strcmp(tokbuff,"SHOW"))
-		{	
-			int sz=sqrt(nis);
-			frame=&scene[0];
-
-			if (*e != '\0')
-				v=eval_oxpr(e);
-			else
-				v.number=1;
-
-			switch (v.number) {
-			case 0: 
-			case 1: 
-			case 2:
-			case 3:
-			case 4:
-				showImage(v.number); break;
-			case 5:
-				output_grey1(sz); break;
-			case 6:
-				output_frame(sz); break;
-			}
-			return;
-		}
-
-		if (!strcmp(tokbuff,"DEBU"))
-		{
-			dbg=1-dbg;
-			return;
-		}
-
-		printf("No such option?\n");
-		freeobj(&v);
-		return;
-	}
-#endif
-
-	e=x;
-	if (get_str_token("PRIN")==1)
-	{
-		while (*e!='\0')
-		{
-			v=eval_oxpr(e);
-			if (*e==',') 
-			{
-				print(v);
-				rprintf(" ");
-
-			}
-			else if (*e==';') 
-			{
-				print(v);
-				e++;
-			}
-			else if (*e!='\0') 
-			{
-				printf ("synatx error at '%c'\n", *e);
-				return;
-			}
-			else
-			{
-				print(v);
-				rprintfCRLF();
-			}
-			
-		}
-		freeobj(&v);
-		return;
-	}
-
-	e=x;
-	v=eval_oxpr(e);
-	print(v);
-	rprintfCRLF();
-	freeobj(&v);
-}
 
 
 
