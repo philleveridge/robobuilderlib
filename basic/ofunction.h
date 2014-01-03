@@ -4,7 +4,7 @@
 #include "oobj.h"
 #include "odict.h"
 
-enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ, COMMA, PROD, POWR};
+enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ, COMMA, PROD, POWR, GTE, LTE, LMOD};
 
 typedef struct ops {
         char	*name;

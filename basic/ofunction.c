@@ -82,10 +82,13 @@ tOP oplist[] = {
 	{".^",   20, POWR,  2, NULL},
 	{"AND",  8,  LAND,  2, NULL},
 	{"OR",   8,  LOR,   2, NULL},
+	{"MOD",  8,  LMOD,  2, NULL},
 /*10 */	{"<",    5,  LT,    2, NULL},
 	{">",    5,  GT,    2, NULL},
 	{"=",    5,  EQL,   2, NULL},
 	{"<>",   5,  NEQ,   2, NULL},
+	{"<=",   5,  LTE,   2, NULL},
+	{">=",   5,  GTE,   2, NULL},
 	{"(",    50, OBR,   1, NULL},
 	{")",    50, CBR,   1, NULL},
 	{",",    50, COMMA, 1, NULL},
@@ -342,6 +345,12 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.number = o1.number < o2.number; break;
 		case GT:
 			r.number = o1.number > o2.number; break;
+		case LTE:
+			r.number = o1.number <= o2.number; break;
+		case GTE:
+			r.number = o1.number >= o2.number; break;
+		case LMOD:
+			r.number = o1.number % o2.number; break;
 		default:
 			r.type=EMPTY; //error
 			break;

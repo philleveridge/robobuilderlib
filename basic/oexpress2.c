@@ -47,7 +47,17 @@ char *readword(char *s, char *w)
 				break;
 			}
 		}
-		if ( strchr("+-*/=:,;[]{}() ",c)>0  && sf==0)
+
+		if ((c=='<' && *s =='>'  && n==0) || (c=='<' && *s =='=' && n==0) || (c=='>' && *s=='=' && n==0) )
+		{
+			*w++ = c;
+			*w++=*s++;
+			*w='\0';
+			return s;
+		}
+
+
+		if ( strchr("+-*/=:,;[]{}()<> ",c)>0  && sf==0)
 		{
 			if (c != ' ' && n==0) 
 				*w++=c;
@@ -504,7 +514,13 @@ tOBJ eval(tOBJ o, Dict *e)
 			int op = getOP(h.string);
 			if (op>=0)
 			{
-				//call
+				if (oplist[op].type != NA && oplist[op].type != CBR && oplist[op].type != OBR)
+				{
+					tOBJ a = ocar(o); o=ocdr(o);
+					tOBJ b = ocar(o); 					
+					return omath(a,b,oplist[op].type);
+				}
+				else//call
 				switch(oplist[op].nop)
 				{
 				case 0:
