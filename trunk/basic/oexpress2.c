@@ -15,53 +15,15 @@
 #include "linux.h"
 #endif
 
-#include "express.h"
-#include "functions.h"
-#include "lists.h"
 
-#include "trex.h"
-
-#ifdef _UNICODE
-#define trex_sprintf swprintf
-#else
-#define trex_sprintf sprintf
-#endif
-
-extern tOBJ ocar(tOBJ  r);
-extern tOBJ ocdr(tOBJ  r);
-extern tOBJ emptyObj();
-extern tOBJ print(tOBJ r);
-extern tOBJ makeCell();
-extern tOBJ makeCell2(tOBJ a, tCELLp b);
-extern tOBJ readcells();
-extern tOBJ cloneObj(tOBJ z);
-
-extern tOBJ makestring(char *s);
-extern void printtype(FILE *fp, tOBJ r);
-
-extern tOBJ makedict ();
-extern int  dict_find(Dict *d, char *key);
-extern int  dict_add (Dict *d, char *key, tOBJ value);
-extern int  dict_update(Dict *d, char *key, tOBJ value);
-extern tOBJ dict_getk  (Dict *d, char *key);
+#include "oobj.h"
+#include "ocells.h"
+#include "ostring.h"
+#include "odict.h"
+#include "ofunction.h"
 
 
-extern int toint(tOBJ v);
-extern int getOP(char *str);
-
-typedef struct ops {
-        char	*name;
-		int		level;
-		unsigned char type;
-		int		nop;
-		tOBJ	(*func)(tOBJ);
-} tOP, *tOPp;
-
-extern tOP oplist[] ;
 extern int dbg;
-
-//> !!( CAR 1 2 BC )
-//[(] [CAR] [1] [2] [BC] [)] 
 
 void pp(tOBJ x, int n)
 {
@@ -116,7 +78,7 @@ char *readword(char *s, char *w)
 
 int isnum(char *s)
 {
-	if (*s=='+' || *s=='-') s++;
+	if ((*s=='+' || *s=='-') && *(s+1)!=0)  s++;
 	while (*s !=0)
 	{
 		if ((*s<'0' || *s>'9') && *s!='.')
@@ -175,12 +137,10 @@ tOBJ makenumfstr(char *s)
 tOBJ tokenise(char *s)
 {
 	char buffer[1024];
-	int n;
 	int tf=1;
 
 	tOBJ r= makeCell();
 	tCELLp top = (tCELLp)r.cell; 
-	tCELLp prv = (tCELLp)0;
 	top->head = emptyObj();
 	top->tail=0;
 
@@ -213,7 +173,6 @@ tOBJ tokenise(char *s)
 			next=newCell();
 			next->head=emptyObj();
 			top->tail=next;	
-			prv=top;
 			top=next;
 		}	
 	}
@@ -225,9 +184,7 @@ tOBJ append(tOBJ a, tOBJ b)
 {
 	// {} A  -> {A}
 	// {B} A -> (B A}
-	// B A   -> NILL
-	//!!(CAR (1 2) 3 4)
-
+	// B A   -> NIL
 	tOBJ r;	
 	tCELLp m,n,p;
 
@@ -255,7 +212,6 @@ tOBJ append(tOBJ a, tOBJ b)
 	}
 
 	// add 'b'
-
 	m = newCell();
 	n->tail=m;
 	m->head = cloneObj(b);
@@ -301,40 +257,85 @@ tOBJ parse(char *s)
 tOBJ eval(tOBJ o, Dict *e);
 extern tOBJ omath(tOBJ o1, tOBJ o2, int op);
 
-tOBJ formula(tOBJ o, Dict *e)
+tOBJ formula(tOBJ *o, Dict *e)
 {
-	tOBJ r=eval(o, e);
-/*
 	// ( V op V )
 	// V op V op V
-	// F (arg)
+	// F (arg) -tbd
 	// 
 	tOBJ r=emptyObj();
-	while (o.type != EMPTY)
+	tOBJ v1=emptyObj();
+	tOBJ v2=emptyObj();
+
+	int op=0;
+	int p=0;
+
+	tOBJ n=emptyObj();;
+
+	while (1)
 	{
-		tOBJ n=ocar(o);
-		o=ocdr(o);
+		if (dbg) {print (v1); print (v2);print (n); print (*o); printf(" p=%d\n",p); }
 
-		//is it a function?
-
-		//is it an op ?
-
-		//recursive descent		
-
-		if (n.type==STR && !strcmp(n.string,"(")))
+		if (p!=0)
 		{
+			n=ocar(*o);
+			*o=ocdr(*o);
+
+			if (n.type==SYM)
+			{
+				//is it a function?
+				op = getOP(n.string);
+				if (op>=0 &&  (oplist[op].type==NA || oplist[op].type==CBR)) return r; //fucntion not op
+			}
+			else if (n.type==EMPTY)
+			{
+				return v1;
+			}
+			else
+			{
+				printf("?format ?\n");
+				return r;
+			}
 		}
 
-		// end and return
+		n=ocar(*o);
+		*o=ocdr(*o);
 
-		if (n.type==STR && !strcmp(n.string,")")))
+		if (n.type==INTGR || n.type==FLOAT || n.type==STR)
+			v2=n;
+		else if (n.type==SYM)
 		{
+			if (!strcmp(n.string,"("))
+			{
+				v2=formula(o,e);
+			}
+			else
+			{
+				//is it a variable?
+				v2=dict_getk(e, n.string);
+			}
+		}
+		else if (n.type==EMPTY)
+		{
+			return v1;
+		}
+		else
+		{
+			printf("?format   ?\n");
+			return r;
 		}
 
-		//
-
+		if (p==0)
+		{
+			v1=v2;
+			p=1;
+		}
+		else
+		{
+			if (op>=0) r=omath(v1,v2, oplist[op].type);
+			v1=r;
+		}
 	}
-*/
 	return r;
 }
 
@@ -403,15 +404,13 @@ tOBJ eval(tOBJ o, Dict *e)
 			tOBJ var = ocar(o); o=ocdr(o);
 			tOBJ eq =  ocar(o); o=ocdr(o);
 			if (eq.type != STR && strcmp(eq.string,"=")) {printf ("err\n"); return emptyObj();}
-			tOBJ form = ocar(o); 
-			eq = formula(ocar(o),e);
+			eq = formula(&o,e);
 			dict_update(e, var.string, eq);
 			return eq;
 		}
 		else
 		if (!strcmp(h.string,"PLUS"))
 		{
-			//LET VAR = FORMULA
 			tOBJ var1 = ocar(o); o=ocdr(o);
 			tOBJ var2 =  ocar(o); 
 			return omath(eval(var1,e), eval(var2,e), 1);
@@ -425,6 +424,7 @@ tOBJ eval(tOBJ o, Dict *e)
 				r=eval(exp,e);
 				print(r);
 			}
+			printf("\n");
 			return r;
 		}
 		else
@@ -464,7 +464,6 @@ tOBJ eval(tOBJ o, Dict *e)
 				case 0:
 					return (*oplist[op].func)(emptyObj());
 				case 1:	
-					//return (*oplist[op].func)(o);
 					return (*oplist[op].func)(eval(ocar(o),e));
 				default:
 					break;
@@ -476,14 +475,38 @@ tOBJ eval(tOBJ o, Dict *e)
 	return r;
 }
 
-extern tOBJ env;
+tOBJ env;
+static int  intf=1;
 
-void extend2(char *x)
+void extend(char *x)
 {
-	tOBJ v,file;
+	tOBJ v;
+
+	if (intf) 
+	{ 	// set up defaults
+		intf=0; 
+		env = makedict();
+
+		set(env.dict, "PI",  makefloat (3.1415926));
+		set(env.dict, "DFN", makestring("data.txt"));
+		set(env.dict, "IFN", makestring("test.jpg"));
+		
+		//seed the RND Gen
+		srand ( (unsigned)time ( NULL ) );
+	}
+
+	printf(" -- %s\n", x);
 
 	v=eval(parse(x), env.dict);
 
 	printf (" = ");print(v);printf ("\n");
 }
+
+tOBJ eval_oxpr(char *s)
+{
+	printf("%s\n", s);
+	return emptyObj();
+}
+
+
 
