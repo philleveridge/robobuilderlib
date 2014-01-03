@@ -24,19 +24,7 @@
 
 
 extern int dbg;
-
-void pp(tOBJ x, int n)
-{
-	int i;
-	while (x.type != EMPTY)
-	{
-		tOBJ e = ocar(x);
-		x=ocdr(x);
-		for (i=0;i<n; i++) printf (" "); print(e); printf("\n");
-		if (e.type==CELL)
-			pp(e,n+2);
-	}
-}
+tOBJ eval(tOBJ o, Dict *e);
 
 char *readword(char *s, char *w)
 {
@@ -254,8 +242,6 @@ tOBJ parse(char *s)
 	return L;
 }
 
-tOBJ eval(tOBJ o, Dict *e);
-extern tOBJ omath(tOBJ o1, tOBJ o2, int op);
 
 tOBJ formula(tOBJ *o, Dict *e)
 {
@@ -339,6 +325,43 @@ tOBJ formula(tOBJ *o, Dict *e)
 	return r;
 }
 
+tOBJ callfn(tOBJ  fn, tOBJ x)
+{
+	tOBJ r, arg, body;
+	tOBJ e= makedict();
+
+	if (dbg) printf ("lambda\n");
+	fn.type=CELL;
+	arg=ocar(fn);
+	body=ocdr(fn);
+
+	if (dbg) println("args=",x);
+
+	while (onull(arg).number==0)
+	{
+		tOBJ n=ocar(arg);
+		tOBJ v=ocar(x);
+
+		if (n.type==STR || n.type==SYM)
+			dict_add((Dict*)e.dict, n.string, v);
+		arg=ocdr(arg);
+		x=ocdr(x);
+	}
+	if (dbg) dict_print((Dict *)e.dict);
+
+	r=emptyObj();
+	if (body.type==CELL)
+	{
+		do {
+		x = ocar(body);
+		r = eval(x, (Dict *)e.dict);
+		body = ocdr(body);
+		} while (onull(body).number==0);
+	}	
+
+	return r;
+}
+
 tOBJ eval(tOBJ o, Dict *e)
 {
 	tOBJ r=emptyObj();
@@ -360,6 +383,12 @@ tOBJ eval(tOBJ o, Dict *e)
 		return dict_getk(e, o.string);
 	}
 
+	if (o.type != CELL)
+	{
+		//matrix ...
+	 	return o;
+	}
+
 	h=ocar(o);
 	o=ocdr(o);
 
@@ -368,8 +397,24 @@ tOBJ eval(tOBJ o, Dict *e)
 
 	if (h.type==SYM)
 	{
+		if (dbg) {printf ("eval - ");printtype(stdout,h); printf (" - "); print (h); printf ("\n");}
 
-	if (dbg) {printf ("eval - ");printtype(stdout,h); printf (" - "); print (h); printf ("\n");}
+		if (dict_contains(e, h.string))
+		{
+			tOBJ d=dict_getk(e,h.string);
+
+			if (d.type==LAMBDA)
+			{
+				//!FUNC ABC {X Y} {PLUS X Y}
+				//!ABC 2 4
+				if (dbg) printf ("calling - %s\n", h.string);
+				return callfn(d, o);
+			}
+			else
+			{
+				return emptyObj(); //error
+			}
+		}
 
 		if (!strcmp(h.string,"QT"))
 		{
@@ -435,15 +480,16 @@ tOBJ eval(tOBJ o, Dict *e)
 			dict_update(e, var.string, eval(exp,e));
 		}
 		else
-		if (!strcmp(h.string,"LAM"))
+		if (!strcmp(h.string,"FUNC"))
 		{
-			//tOBJ vars = ocar(o); o=ocdr(o);
-			//tOBJ exp  = ocar(o); 
-			//define lambda (a) b procedure
-			//call
+			//FUNC { x y} {PLUS X Y}
+			tOBJ fn = ocar(o); o=ocdr(o);
+			o.type  = LAMBDA;
+			set(e, fn.string, o);
+			return emptyObj();
 		}
 		else
-		if (!strcmp(h.string,"BEG"))
+		if (!strcmp(h.string,"BEGIN"))
 		{
 			while (o.type != EMPTY)
 			{
@@ -482,7 +528,7 @@ void extend(char *x)
 {
 	tOBJ v;
 
-	if (intf) 
+	if (intf==1) 
 	{ 	// set up defaults
 		intf=0; 
 		env = makedict();
@@ -493,18 +539,16 @@ void extend(char *x)
 		
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
+
+		//owhs(emptyObj());
 	}
-
-	printf(" -- %s\n", x);
-
 	v=eval(parse(x), env.dict);
-
 	printf (" = ");print(v);printf ("\n");
 }
 
 tOBJ eval_oxpr(char *s)
 {
-	printf("%s\n", s);
+	printf("%s\n", s); //TBD
 	return emptyObj();
 }
 

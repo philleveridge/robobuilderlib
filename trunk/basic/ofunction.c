@@ -156,8 +156,6 @@ tOP oplist[] = {
 	{"LOAD",  40, NA,   1, oload},//
 	{"SAVE",  40, NA,   1, osave},//
 	{"DO",    40, NA,   1, oexec},//
-	{"DEFN",  40, NA,   1, odefn},//
-	{"QT",    40, NA,   1, oqt},//
 	{"REX",   40, NA,   2, orex},//
 	{"LFT",   40, NA,   2, olft},//
 /*80 */	{"RGT",   40, NA,   2, orgt},//
@@ -213,14 +211,12 @@ tOBJ get(Dict *ep, char *name)
 		r = cnvtInttoList(an, array);
 		return r;
 	}
-
-	//return dict_getk((Dict *)(env.dict), name);
 	return emptyObj();
 }
 
 int set(Dict * en, char *name, tOBJ r)
 {
-	if (en != NULL && dict_contains(en, name))
+	if (en != NULL)
 	{
 		return dict_update(en, name, r);
 	}
@@ -255,16 +251,16 @@ int set(Dict * en, char *name, tOBJ r)
 
 	if (r.type==FMAT2 || r.type==STR || r.type==CELL || r.type==DICT || r.type==LAMBDA) r.cnt++;
 
-	//n = dict_update((Dict *)(env.dict), name, r);
-	//return n;
-	return 9;
+	return 0;
 }
+
+extern tOBJ env;   //TBFixed
 
 tOBJ owhs(tOBJ r)
 {
 	//display all variables and types
 	//!WHOS
-	//dict_print(env.dict);  //TBFixed
+	dict_print(env.dict); 
 	return emptyObj(); 
 }
 
@@ -633,9 +629,6 @@ tOBJ omat(tOBJ a)
 
 	return r;
 }
-
-extern fMatrix inverse   (fMatrix *s);
-extern float   detrminant(fMatrix *s, int k) ;
 
 tOBJ ominv(tOBJ a)
 {
@@ -1017,21 +1010,6 @@ tOBJ ocdr (tOBJ a)
 		}
 	}
 	return r;
-}
-
-tOBJ ecar (tOBJ a)
-{
-//printf ("ecar "); print(a); printf("\n");
-	a=ocar(a);
-//printf ("ecar2 "); print(a); printf("\n");
-	a=ocar(a);
-//printf ("ecar3 "); print(a); printf("\n");
-	return a;
-}
-
-tOBJ ecdr (tOBJ a)
-{
-	return ocdr(ocar(a));
 }
 
 tOBJ otype (tOBJ a)
@@ -1547,8 +1525,7 @@ tOBJ orex(tOBJ  r)
 /**********************************************************/
 
 extern BYTE cpos[];
-extern BYTE	nos;
-
+extern BYTE nos;
 
 tOBJ oserv(tOBJ a)
 {
@@ -1557,19 +1534,6 @@ tOBJ oserv(tOBJ a)
 	readservos();
 	r=cnvtBytetoList(nos, cpos);	
 	return r;
-}
-
-int cnvtListtoByte(tOBJ lst, int an, BYTE *array)
-{
-	int cnt=0;
-	if (lst.type != CELL) return 0;
-	while (cnt<an && onull(lst).number==0)
-	{
-		array[cnt++] = toint(ocar(lst));
-		lst=ocdr(lst); 
-	}
-	
-	return cnt;
 }
 
 tOBJ opose(tOBJ a)
@@ -1712,60 +1676,6 @@ tOBJ exec(tOBJ a, Dict *e)
 	return a;
 }
 
-tOBJ callfn(tOBJ  fn, tOBJ x)
-{
-	tOBJ r, arg, body;
-	tOBJ e= makedict();
-
-	if (dbg) printf ("lambda\n");
-	fn.type=CELL;
-	arg=ocar(fn);
-	body=ocdr(fn);
-
-	if (dbg) println("args=",x);
-
-	//bind ags and params
-	x=ocar(x);
-
-	while (onull(arg).number==0)
-	{
-		tOBJ n=ocar(arg);
-		tOBJ v=ocar(x);
-
-		if (n.type==STR || n.type==SYM)
-			dict_add((Dict*)e.dict, n.string, v);
-		arg=ocdr(arg);
-		x=ocdr(x);
-	}
-	if (dbg) dict_print((Dict *)e.dict);
-
-	r=emptyObj();
-	if (body.type==CELL)
-	{
-		do {
-		x = ocar(body);
-		r = exec(x, (Dict *)e.dict);
-		body = ocdr(body);
-		} while (onull(body).number==0);
-	}	
-
-	return r;
-}
-
-tOBJ odefn(tOBJ  r)
-{
-/*   !DEFN {"n" {args} {body}}
-i
-!DEFN {FM {x} {PR X "+" 1 " = " {+ x 1}}}
-!EXEC {FM {1}}
-*/
-	tOBJ fn   = ocar(r);
-	tOBJ fbdy  = ocdr(r);
-	fbdy.type = LAMBDA;
-	set(NULL, fn.string, fbdy);
-	return emptyObj();
-}
-
 tOBJ oexec(tOBJ a)
 {
 	return exec(a,NULL);
@@ -1858,12 +1768,6 @@ tOBJ osave(tOBJ  n)
 
 	fclose(fp);
 
-	return r;
-}
-
-tOBJ oqt(tOBJ  r)
-{
-	//!QT {}
 	return r;
 }
 

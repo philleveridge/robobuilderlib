@@ -19,6 +19,7 @@
 #include "ocells.h"
 #include "ostring.h"
 #include "odict.h"
+#include "ofunction.h"
 
 /**********************************************************/
 /* Objects                                                */
@@ -197,10 +198,22 @@ tOBJ println(char *s, tOBJ r)
 	return r;
 }
 
+void pp(tOBJ x, int n)
+{
+	int i;
+	while (x.type != EMPTY)
+	{
+		tOBJ e = ocar(x);
+		x=ocdr(x);
+		for (i=0;i<n; i++) printf (" "); print(e); printf("\n");
+		if (e.type==CELL)
+			pp(e,n+2);
+	}
+}
 
 
 /**********************************************************/
-/*  conversuins float   and integers                                  */
+/*  conversuins float   and integers                      */
 /**********************************************************/
 
 
@@ -307,6 +320,21 @@ tOBJ cnvtFloattoList(int an, float *array)
 	((tCELLp)(n.cell))->tail = 0;
 	return top;
 }
+
+
+int cnvtListtoByte(tOBJ lst, int an, BYTE *array)
+{
+	int cnt=0;
+	if (lst.type != CELL) return 0;
+	while (cnt<an && onull(lst).number==0)
+	{
+		array[cnt++] = toint(ocar(lst));
+		lst=ocdr(lst); 
+	}
+	return cnt;
+}
+
+
 
 
 
