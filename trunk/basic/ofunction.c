@@ -102,7 +102,7 @@ tOP oplist[] = {
 	{"SQRT", 40, NA,    1, osqrt}, //function single arg
 	{"ABS",  40, NA,    1, oabs},  //function single arg
 	{"RND",  40, NA,    0, ornd},  //in-const
-	{"MAX",  40, NA,    2, omax},   //function two args
+//	{"MAX",  40, NA,    2, omax},   //function two args
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
 	{"DSIG", 40, NA,    1, odsig}, //sigmoid functon
 	{"PSD",  40, NA,    0, opsd},  //const
@@ -111,11 +111,11 @@ tOP oplist[] = {
 	{"ACCZ", 40, NA,    0, oacz},  //const
 //MATRIX BASED
 	{"TRN",  40, NA,    1, otrn},   //function single arg    <fMatrix>
-	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
-	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
-	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
-	{"ZERO", 40, NA,    2, ozero},  //function two args  <fint, int>
-	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
+//	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
+//	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
+//	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
+//	{"ZERO", 40, NA,    2, ozero},  //function two args  <fint, int>
+//	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
 	{"HSUM", 40, NA,    1, ohsum},  //function <fMatrix>
 	{"VSUM", 40, NA,    1, ovsum},  //function <fMatrix>
 	{"INV",  40, NA,    1, ominv},  //function <fMatrix>
@@ -123,11 +123,11 @@ tOP oplist[] = {
 
 /*40 */	{"H2SM", 40, NA,    1, ohsum2},  //function <fMatrix>
 	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
-	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
-	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
-	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
-	{"COND", 40, NA,    5, ocond},  //function four args   <fmatrix>, <min>, <max> <value>
-	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
+//	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
+//	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
+//	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
+//	{"COND", 40, NA,    5, ocond},  //function four args   <fmatrix>, <min>, <max> <value>
+//	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
 	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
 //LIST BASED
 	{"CAR",  40, NA,    1, ocar},  //function single arg
@@ -145,7 +145,7 @@ tOP oplist[] = {
 	{"MEMB",  40, NA,   1, omemb},  //function single arg
 /*60 */	{"ASSN",  40, NA,   1, oasso},  //function single arg
 	{"ATOM",  40, NA,   1, oatom},  //function single arg
-	{"EXEC",  40, NA,   1, oexec},  //function single arg
+//	{"EXEC",  40, NA,   1, oexec},  //function single arg
 	{"SET",   40, NA,   1, oset}, //function single arg
 	{"GET",   40, NA,   1, oget}, //function single arg
 	{"SERV",  40, NA,   0, oserv}, //function single arg
@@ -158,19 +158,13 @@ tOP oplist[] = {
 	{"DICT",  40, NA,   1, odict},// 
 	{"LOAD",  40, NA,   1, oload},//
 	{"SAVE",  40, NA,   1, osave},//
-	{"DO",    40, NA,   1, oexec},//
-	{"REX",   40, NA,   2, orex},//
-	{"LFT",   40, NA,   2, olft},//
-/*80 */	{"RGT",   40, NA,   2, orgt},//
-	{"MID",   40, NA,   3, omid},//
-	{"EXIT",  40, NA,   0, oexit}
- 
-/* TBD - move all to function
-	{"LET",     40, NA,  0, olet},
-	{"IMAG",    40, NA,  1, oimg}, // {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
-	{"PRIN",    40, NA,  1, oprt},
-*/
-
+//	{"DO",    40, NA,   1, oexec},//
+//	{"REX",   40, NA,   2, orex},//
+//	{"LFT",   40, NA,   2, olft},//
+///*80 */	{"RGT",   40, NA,   2, orgt},//
+//	{"MID",   40, NA,   3, omid},//
+	{"EXIT",  40, NA,   0, oexit},
+	{"IMAGE",  40, NA,   2, oimg}
 };
 
 int getOP(char *str)
@@ -1612,93 +1606,17 @@ tOBJ oexit(tOBJ a)
 	return emptyObj();
 }
 
-/**********************************************************
- 
-exec function  
-   
-**********************************************************/      
-
-tOBJ callfn(tOBJ  fn, tOBJ x);
-
-tOBJ exec(tOBJ a, Dict *e)
-{
-	//!EXEC {CDR {1 2 3 4}}
-	//!EXEC {FM {1}}
-	//!EXEC {+ 1 2}
-	//!EXEC {PR 1 2 3 }
-	//!LET ZZ={1 2 3 4}
-	//!CDR ZZ
-	//!EXEC {CDR ZZ}
-
-	if (dbg) println("exec=",a);
-
-	if (a.type==CELL)
-	{
-		tOBJ fn=ocar(a);
-		tOBJ arg=ocdr(a);
-		tOBJ param=emptyObj();
-		tCELLp pn=NULL;
-	
-		if (dbg) println("fn=",fn); 
-		if (dbg) println("arg=",arg);
-
-		while (arg.type != EMPTY)
-		{
-			tOBJ a1=ocar(arg);
-			tOBJ b1=exec(a1, e);
-			param = makeCell2(b1, pn);
-			pn=param.cell;
-			arg=ocdr(arg);
-		}
-
-//println("param=",param);
-		arg=orev(param);
-//println("arg=",arg);		
-		
-
-		if (fn.type == SYM)
-		{
-			fn = get(e, fn.string);
-		}
-		if (fn.type==FUNC)
-		{
-			return (*fn.func)(arg);
-		}
-		else if (fn.type==STR)
-		{
-			int op=PLUS;
-			tOBJ o1=ocar(arg);
-			tOBJ o2=ocar(ocdr(arg));
-
-			if (fn.string[0]=='+') op=PLUS;
-			return omath(o1, o2, op);
-		}
-		else if (fn.type==LAMBDA)
-		{
-			return callfn(fn,arg);
-		}
-	}
-	if (a.type==SYM)
-	{
-		a = get(e, a.string);
-	}
-	return a;
-}
-
-tOBJ oexec(tOBJ a)
-{
-	return exec(a,NULL);
-}
-
+extern fMatrix readmatrix(char **str );
+extern tOBJ parse(char *s);
 
 tOBJ oload(tOBJ  n)
 {
 	//!LOAD "fn"
-	// file start with [ is a matrix (note: no ']')
+	// file start with [ is a matrix
 	// file start with { x } is a list
 	// else string
 	tOBJ r=emptyObj();
-/*
+
        	FILE *fp;
 	char *s = n.string;
 	int cn=0;
@@ -1728,26 +1646,24 @@ tOBJ oload(tOBJ  n)
 	switch (m[0])
 	{
 	case '[' : 
-		m[cn-1]=0;	
+		m++;
 		r.type=FMAT2;
-		r.fmat2 = readmatrix(&m[1]);
+		r.fmat2 = readmatrix(&m);
 		break;
 	case '{' : 
-		r = stringtocells(m); 
+		r = parse(m); 
 		break;
 	default:
 		r = makestring(m);
 		break;
 	}
-*/
 	return r;
-
 }
 
 
 tOBJ osave(tOBJ  n)
 {
-	//!SAVE {"fn" object}
+	//!SAVE "fn" object
 	tOBJ f=ocar(n);
 	tOBJ r=ocar(ocdr(n));
 
@@ -1773,10 +1689,7 @@ tOBJ osave(tOBJ  n)
 	{
 		fprint(fp, r);
 	}
-
-
 	fclose(fp);
-
 	return r;
 }
 
@@ -1814,23 +1727,26 @@ Extended input
 
 tOBJ omatr(tOBJ a)
 {
-	tOBJ n=pop();
-	tOBJ v=pop();
+	tOBJ n=ocar(a); a=ocdr(a);
+	tOBJ v=ocar(a); a=ocdr(a);
+	tOBJ file=ocar(a); a=ocdr(a);
 	int val;
-	// {"LOAD" "STOR"}
-	if (v.type==STR && n.type==INTGR)
+	// !MAT LOAD 8 "text.txt"
+	// !MAT STORE 8 "test.txt"
+
+	if (n.type==STR && n.type==INTGR)
 	{
-		if (!strcmp(v.string,"LOAD"))
+		if (!strcmp(n.string,"LOAD"))
 		{
-			val=toint(n);
-			v=get(NULL, "DFN");
-			matrixload(val, v.string);
+			val=toint(v);
+			//v=get(env, "DFN");
+			matrixload(val, file.string);
 		}
-		if (!strcmp(v.string,"STOR"))
+		if (!strcmp(n.string,"STORE"))
 		{
-			val=toint(n);
-			v=get(NULL, "DFN");
-			matrixstore(val, v.string);
+			val=toint(v);
+			//v=get(env, "DFN");
+			matrixstore(val, file.string);
 		}
 	}
 	return (emptyObj());
@@ -1839,12 +1755,101 @@ tOBJ omatr(tOBJ a)
 tOBJ oimg(tOBJ v)
 {
 	//!IMG {"command" {parameters}}
-	//comand : {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
+	//comand : {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" 
 	
 	tOBJ cmd = ocar(v);
-	if (cmd.type == STR)
+	v=ocdr(v);
+
+	if (cmd.type == SYM)
 	{
-		//tOBJ l = stringtocells("");
+		if (!strcmp(cmd.string,"UNLOCK"))
+		{
+			rellock();
+		}
+		else
+		if (!strcmp(cmd.string,"LOAD")) //  IMAG LOAD 8 "Text"
+		{
+			int sz;
+			tOBJ a=ocar(v); v=ocdr(v);
+			tOBJ file=ocar(v);
+
+			sz=toint(a);
+			if (sz>sqrt(SCENESZ))
+			{
+        			printf("error = expect int size 1-%d\n", (int)sqrt(SCENESZ)); 
+				return emptyObj();
+			}
+
+			if (file.type==STR && loadimage(file.string, sz, &scene[0])==0)
+				nis=sz*sz;
+			else
+				nis=0;
+		}
+		else
+		if (!strcmp(cmd.string,"FILTER"))
+		{
+			//!IMAGE FILTER 4;1;10;10;100;100;100
+		}
+		else
+		if (!strcmp(cmd.string,"THRESH"))
+		{
+			//!IMAGE THRE 0
+			//!IMAGE THRE 1;10;10;100;100;100
+		}
+		else
+		if (!strcmp(cmd.string,"COLOR"))  
+		{
+			//!IMAGE COLO "orange";20;30;60;2
+		}
+		else
+		if (!strcmp(cmd.string,"RAW"))
+		{
+			tOBJ file= ocar(v);
+			if (file.type==STR) loadJpg(file.string);
+		}
+		else
+		if (!strcmp(cmd.string,"PROC"))
+		{
+			int n=toint(ocar(v));
+			processFrame(n, &scene[0]);
+			nis=n*n;
+		}
+		else
+		if (!strcmp(cmd.string,"REG"))
+		{
+			cmd=ocar(v);
+			get_color_region(toint(cmd)); 
+		}
+		else
+		if (!strcmp(cmd.string,"SHOW"))
+		{
+			int sz=sqrt(nis);
+			int n=toint(ocar(v));
+
+			frame=&scene[0];
+			printf("image %d\n", n);
+
+			switch (n) {
+			case 0: 
+			case 1: 
+			case 2:
+			case 3:
+			case 4:
+				showImage(n); break;
+			case 5:
+				output_grey1(sz); break;
+			case 6:
+				output_frame(sz); break;
+			}
+		}
+		else
+		if (!strcmp(cmd.string,"UNLOAD"))
+		{
+		}
+		else
+		{
+			printf ("Invalid options %s\n", cmd.string);
+		}
 	}
 	return (emptyObj());
 }
