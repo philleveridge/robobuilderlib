@@ -16,11 +16,13 @@ typedef struct dict {
 	int sz;
 	int ip;
 	Kvp *db;
+	struct dict *outer;
 } Dict;
 
 extern Dict *newdict		();
 extern int   deldict		(Dict *x);
 extern tOBJ  makedict		();
+extern tOBJ  makedict2(		Dict *e);
 extern int   dict_add		(Dict *d, char *key, tOBJ value);
 extern int   dict_find		(Dict *d, char *key);
 extern int   dict_contains	(Dict *d, char *key);

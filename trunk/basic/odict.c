@@ -31,6 +31,7 @@ Dict * newdict()
 	n->sz=100;
 	n->ip=0;
 	n->db = (Kvp *)malloc((n->sz) * sizeof(Kvp));
+	n->outer=NULL;
 	return n;
 }
 
@@ -46,6 +47,13 @@ tOBJ makedict()
 	Dict *f=newdict();
 	r.type=DICT;
 	r.dict=f;
+	return r;
+}
+
+tOBJ makedict2(Dict *e)
+{
+	tOBJ r= makedict();
+	((Dict *)(r.dict))->outer=e;
 	return r;
 }
 
@@ -92,25 +100,33 @@ int dict_find(Dict *d, char *key)
 
 int dict_contains(Dict *d, char *key)
 {
-	if (d==NULL) return 0;
-	return dict_find(d, key)>=0;
-}
+	if (d==0) 
+		return (1==0);
 
+	return (dict_find(d, key)>=0)?1:dict_contains(d->outer, key);
+
+}
 tOBJ dict_getk(Dict *d, char *key)
 {
-	int i=dict_find(d, key);
+	int i;
+	if (d==NULL) 
+		return emptyObj();
 
-	if (i>=0) return d->db[i].value;
-	return emptyObj();
+	i=dict_find(d, key);
+
+	if (i>=0) 
+		return d->db[i].value;
+
+	return dict_getk(d->outer,key);
 }
 
 tOBJ dict_get(Dict *d, int indx)
 {
+	if (d==NULL) return emptyObj();	
 	if (indx >=0 && indx <d->ip)
 		return d->db[indx].value;
 	return emptyObj();
 }
-
 
 int dict_update(Dict *d, char *key, tOBJ value)
 {
@@ -175,6 +191,8 @@ int dict_print(Dict *d)
 		printf ("\n");
 		i++;
 	}
+	printf ("--\n");
+	dict_print(d->outer);
 	return 0;
 }
 
