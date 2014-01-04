@@ -334,6 +334,51 @@ int cnvtListtoByte(tOBJ lst, int an, BYTE *array)
 	return cnt;
 }
 
+tOBJ makenumfstr(char *s)
+{
+	tOBJ r;
+	r.type=EMPTY;
+	int n=0;
+	float f=0.0, rm=1.0;
+	int sgn=1;
+	int flt=0;
+	if (*s == '-') {sgn=-1; s++;}
+
+	while (*s != '\0')
+	{
+		if (*s=='.' && flt==0) 
+		{
+			s++;
+			flt=1;
+			f=n;
+		}
+		if (*s<'0' || *s>'9') 
+			break;
+
+		if (flt==0)
+		{
+			n=n*10+*s-'0';
+		}
+		else
+		{
+			rm=rm/10;
+			f=f+rm*(*s-'0');
+		}
+		s++;
+	}
+
+	if (flt==1)
+	{
+		r.floatpoint=f*sgn;
+		r.type=FLOAT;
+	}
+	else
+	{
+		r.number=n*sgn;
+		r.type=INTGR;
+	}
+	return r;
+}
 
 
 

@@ -98,6 +98,46 @@ tCELLp cloneCell(tCELLp p)
 	return top;
 }
 
+tOBJ append(tOBJ a, tOBJ b)
+{
+	// {} A  -> {A}
+	// {B} A -> (B A}
+	// B A   -> NIL
+	tOBJ r;	
+	tCELLp m,n,p;
+
+	if (a.type == EMPTY) 
+	{
+		r=makeCell();
+		((tCELLp)(r.cell))->head = cloneObj(b);
+		((tCELLp)(r.cell))->tail = NULL;
+		return r;
+	}
+
+	if (a.type != CELL)
+		return emptyObj();
+	
+	r=cloneObj(a);
+	
+	// walk to end
+	n=NULL;
+	p = r.cell;
+
+	while (p!= NULL)
+	{
+		n=p;
+		p=p->tail;
+	}
+
+	// add 'b'
+	m = newCell();
+	n->tail=m;
+	m->head = cloneObj(b);
+	m->tail = NULL;
+
+	return r;
+}
+
 
 
 

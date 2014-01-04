@@ -48,5 +48,6 @@ extern tOBJ  cnvtInttoList  (int an, int *array);
 extern tOBJ  cnvtBytetoList (int an, BYTE *array);
 extern tOBJ  cnvtFloattoList(int an, float *array);
 extern int   cnvtListtoByte (tOBJ lst, int an, BYTE *array);
+extern tOBJ  makenumfstr    (char *s);
 
 #endif
