@@ -498,6 +498,7 @@ tOBJ eval(tOBJ o, Dict *e)
 				case 1:	
 					return (*oplist[op].func)(eval(ocar(o),e));
 				default:
+					return (*oplist[op].func)(o);
 					break;
 				}
 			}
