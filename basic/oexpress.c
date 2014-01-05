@@ -35,6 +35,8 @@ char *readword(char *s, char *w)
 	while (*s != '\0')
 	{
 		c=*s++;
+		if (c==13 || c==10) {continue;} // ignore CR & LFs
+
 		if (c== '"')
 		{
 			if (sf==0)
@@ -57,15 +59,18 @@ char *readword(char *s, char *w)
 			return s;
 		}
 
-
 		if ( strchr("+-*/=:,;[]{}()<> ",c)>0  && sf==0)
 		{
 			if (c != ' ' && n==0) 
+			{
 				*w++=c;
+				while (*s==13 || *s==10 || *s==' ') s++; //skip trailing w/s
+			}
 			if (c != ' ' && n>0) 
 				s--;
 			if (c== ' ' && n==0) 
 				continue;
+
 			break;
 		}
 		*w++ = c;
@@ -159,7 +164,7 @@ fMatrix readmatrix(char **str )
 tOBJ tokenise(char *s)
 {
 	char buffer[1024];
-	int tf=1;
+
 
 	tOBJ r= makeCell();
 	tCELLp top = (tCELLp)r.cell; 
@@ -171,6 +176,12 @@ tOBJ tokenise(char *s)
 		tCELLp next;
 		s = readword(s, buffer);
 
+		if (buffer[0]== 0) 
+		{
+
+			continue;
+		}
+		else
 		if (isnum(buffer))
 		{
 			top->head = makenumfstr(buffer);
@@ -196,7 +207,7 @@ tOBJ tokenise(char *s)
 
 		top->tail=NULL;	
 
-		if (tf && s != NULL && *s != '\0')
+		if (s != NULL && *s != '\0')
 		{
 			next=newCell();
 			next->head=emptyObj();
@@ -354,7 +365,9 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 		do {
 		x = ocar(body);
 		r = eval(x, (Dict *)e.dict);
+	if (dbg) println("r=",r);
 		body = ocdr(body);
+	if (dbg) println("b=",body);
 		} while (onull(body).number==0);
 	}	
 	return r;
@@ -403,10 +416,10 @@ tOBJ eval(tOBJ o, Dict *e)
 		else
 		if (!strcmp(h.string,"EVAL"))
 		{
-			return eval(ocar(o),e);
+			return eval(eval(ocar(o),e),e);
 		}
 		else
-		if (!strcasecmp(h.string,"IF"))
+		if (!strcasecmp(h.string,"IF") || !strcasecmp(h.string,"COND"))
 		{
 			tOBJ test   = ocar(o); o=ocdr(o);
 			tOBJ conseq = ocar(o); o=ocdr(o);
@@ -426,6 +439,12 @@ tOBJ eval(tOBJ o, Dict *e)
 			tOBJ var = ocar(o); o=ocdr(o);
 			tOBJ exp = ocar(o); 
 			dict_update(e, var.string, exp);
+		}
+		else
+		if (!strcasecmp(h.string,"READ"))
+		{
+			tOBJ var = eval(ocar(o),e);
+			if (var.type==STR) return tokenise(var.string);
 		}
 		else
 		if (!strcasecmp(h.string,"SET"))
@@ -458,13 +477,6 @@ tOBJ eval(tOBJ o, Dict *e)
 			return r;
 		}
 		else
-		if (!strcasecmp(h.string,"DEF"))
-		{
-			tOBJ var = ocar(o); o=ocdr(o);
-			tOBJ exp    = ocar(o); 
-			dict_update(e, var.string, eval(exp,e));
-		}
-		else
 		if (!strcasecmp(h.string,"FUNC") || !strcasecmp(h.string,"DEFN"))
 		{
 			//!FUNC ABC {X Y} {PLUS X Y}
@@ -474,7 +486,14 @@ tOBJ eval(tOBJ o, Dict *e)
 			return emptyObj();
 		}
 		else
-		if (!strcasecmp(h.string,"BEGIN"))
+		if (!strcasecmp(h.string,"LAMBDA"))
+		{
+			//!LAMBA {X Y} {PLUS X Y}
+			o.type  = LAMBDA;
+			return o;
+		}
+		else
+		if (!strcasecmp(h.string,"BEGIN") || !strcasecmp(h.string,"DO"))
 		{
 			while (o.type != EMPTY)
 			{
@@ -549,8 +568,8 @@ void init_extend()
 		env = makedict();
 
 		set(env.dict, "PI",  makefloat (3.1415926));
-		set(env.dict, "DFN", makestring("data.txt"));
-		set(env.dict, "IFN", makestring("test.jpg"));
+		//set(env.dict, "DFN", makestring("data.txt"));
+		//set(env.dict, "IFN", makestring("test.jpg"));
 	
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
