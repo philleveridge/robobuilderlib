@@ -1554,6 +1554,9 @@ void basic()
 		case 'M': // matrix 
 			matrixstore(nis,"data.txt");
 			break;
+		case '!': // go lisp 
+			repl();
+			break;
 #endif
 		default:
 			rprintfCRLF();

@@ -5,7 +5,7 @@
 ## General Flags
 PROJECT = Basic
 MCU = atmega128
-TARGET = Basic
+TARGET = Basic2
 
 ## Attempt to tell what platform we're on, to pick the right avr-gcc
 
@@ -43,7 +43,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 ## Objects that must be built in order to link
 
-OBJECTS = basic.o edit.o fix_fft.o linux.o linux-remote.o express.o  functions.o  oexpress.o  lists.o commands.o matrix.o network.o fmatrix.o fnetwork.o jpeg.o  cmap.o trex.o
+OBJECTS = basic.o edit.o fix_fft.o linux.o linux-remote.o express.o  functions.o  lists.o commands.o matrix.o network.o fmatrix.o fnetwork.o jpeg.o  cmap.o trex.o oobj.o ostring.o ocells.o ostack.o  ofunction.o odict.o oexpress.o rbmread.o
 
 LIBS = -lpthread -lm -ljpeg
 
