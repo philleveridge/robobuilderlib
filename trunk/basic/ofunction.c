@@ -1186,7 +1186,7 @@ tOBJ onull(tOBJ a)
 tOBJ oatom(tOBJ a)
 {
 	//!ATOM 1 -> 1
-	return (makeint(a.type==CELL));
+	return makeint(!(a.type==CELL || a.type==FMAT2));
 }
 
 tOBJ omemb(tOBJ a)
@@ -1620,6 +1620,10 @@ tOBJ oload(tOBJ  n)
 	case '{' : 
 		r = parse(m); 
 		break;
+	case '!' : 
+		m++;
+		r = eval_oxpr(m); 
+		break;
 	default:
 		r = makestring(m);
 		break;
@@ -1721,8 +1725,8 @@ tOBJ omatr(tOBJ a)
 
 tOBJ oimg(tOBJ v)
 {
-	//!IMG {"command" {parameters}}
-	//comand : {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" 
+	//!IMAGE {"command" {parameters}}
+	//comand : {"UNLOCK" "LOAD" "FILT" "RAW" "THRE" "COLOR" "PROC" "REG" "SHOW" 
 	
 	tOBJ cmd = ocar(v);
 	v=ocdr(v);

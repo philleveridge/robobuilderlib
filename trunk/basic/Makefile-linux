@@ -5,7 +5,7 @@
 ## General Flags
 PROJECT = Basic
 MCU = atmega128
-TARGET = Basic2
+TARGET = Basic
 
 ## Attempt to tell what platform we're on, to pick the right avr-gcc
 
