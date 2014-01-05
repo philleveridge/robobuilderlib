@@ -16,7 +16,7 @@
 #endif
 
 //#include "express.h"
-//#include "functions.h"
+
 
 //cmap.c functions
 extern void showImage	(int n);
@@ -43,15 +43,7 @@ extern int  *frame;
 extern void	setvar(char n, long v);
 extern long	getvar(char n);
 
-/*
-[-Wimplicit-function-declaration - TBD
-Sin
-Cos
-readservos
-Get_AD_PSD
-Acc_GetData
-*/
-
+#include "functions.h"
 #include "lists.h"
 
 #include "oobj.h"
@@ -1509,7 +1501,7 @@ tOBJ oserv(tOBJ a)
 {
 	//> !SERV
 	tOBJ r;
-	readservos();
+	readservos(0);
 	r=cnvtBytetoList(nos, cpos);	
 	return r;
 }
@@ -1747,18 +1739,27 @@ tOBJ oimg(tOBJ v)
 			int sz;
 			tOBJ a=ocar(v); v=ocdr(v);
 			tOBJ file=ocar(v);
-
 			sz=toint(a);
-			if (sz>sqrt(SCENESZ))
+			if (sz<1 || sz>sqrt(SCENESZ))
 			{
         			printf("error = expect int size 1-%d\n", (int)sqrt(SCENESZ)); 
 				return emptyObj();
 			}
+			if (file.type != STR)
+			{
+				file = makestring("test.jpg"); //should read from env
+			}
 
 			if (file.type==STR && loadimage(file.string, sz, &scene[0])==0)
+			{
 				nis=sz*sz;
+				return makeint(nis);
+			}
 			else
+			{
+				printf ("error\n");
 				nis=0;
+			}
 		}
 		else
 		if (!strcmp(cmd.string,"FILTER"))
@@ -1802,7 +1803,6 @@ tOBJ oimg(tOBJ v)
 			int n=toint(ocar(v));
 
 			frame=&scene[0];
-			printf("image %d\n", n);
 
 			switch (n) {
 			case 0: 
@@ -1816,10 +1816,6 @@ tOBJ oimg(tOBJ v)
 			case 6:
 				output_frame(sz); break;
 			}
-		}
-		else
-		if (!strcmp(cmd.string,"UNLOAD"))
-		{
 		}
 		else
 		{
@@ -1873,6 +1869,8 @@ tOBJ obf(tOBJ v)
 
 	return (emptyObj());
 }
+
+extern int loadrbm(char *);
 
 tOBJ orbmrf(tOBJ v)
 {
