@@ -571,52 +571,6 @@ void extend(char *s)
 	println (" = ", eval_oxpr(s));
 }
 
-/**********************************************************************************************
-
-#define MAX 255
-char inputbuffer[MAX];
-int  ibcnt;
-char *ibptr;
-
-void readline()
-{
-	int ch=0;
-	ibcnt=0;
-	ibptr=&inputbuffer[0];
-	
-	while (ibcnt<MAX-1) 
-	{
-		while ((ch=getchar())<0) ;
-
-		if (ch == 13) 
-		{
-			putchar(13); putchar(10);
-		    	break;
-		}
-		if (ch == 10) 
-		{
-			printf("\n");
-		    	break;
-		}
-		if (ch==8 || ch==127)   //Bsapce ?
-		{
-			if (ibcnt>0) 
-			{
-				putchar(8);putchar(32);putchar(8);
-				ibcnt--;
-			}	
-		}
-		else
-		{
-			putchar(ch);            //echo input
-			inputbuffer[ibcnt++] = ch;
-		}
-	}		
-	inputbuffer[ibcnt]=0;
-}
-
-*/
-
 extern int readLine(char *line);
 
 #define MAX 255

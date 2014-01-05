@@ -1764,18 +1764,62 @@ tOBJ oimg(tOBJ v)
 		else
 		if (!strcmp(cmd.string,"FILTER"))
 		{
-			//!IMAGE FILTER 4;1;10;10;100;100;100
+			//!IMAGE FILTER 4 1 10 10 100 100 100
+			char *file = "test.jpg";
+
+			int sz= toint(ocar(v)); v=ocdr(v);
+			int a = toint(ocar(v)); v=ocdr(v);
+			int b = toint(ocar(v)); v=ocdr(v);
+			int c = toint(ocar(v)); v=ocdr(v);
+			int d = toint(ocar(v)); v=ocdr(v);
+			int e = toint(ocar(v)); v=ocdr(v);
+			int f = toint(ocar(v));
+
+			if (filterimage(file,&scene[0],sz,a,b,c,d,e,f)==0)
+				nis=sz*sz;
+			else
+				nis=0;
+			return makeint(nis);
 		}
 		else
 		if (!strcmp(cmd.string,"THRESH"))
 		{
 			//!IMAGE THRE 0
-			//!IMAGE THRE 1;10;10;100;100;100
+			//!IMAGE THRE CID 120 175 40 70 30 40
+
+			int cid = toint(ocar(v));  v=ocdr(v);
+
+			if (cid==0)
+			{
+        			printf("clr thresholds\n"); 
+				clrmap();
+			}
+
+			int a = toint(ocar(v)); v=ocdr(v);
+			int b = toint(ocar(v)); v=ocdr(v);
+			int c = toint(ocar(v)); v=ocdr(v);
+			int d = toint(ocar(v)); v=ocdr(v);
+			int e = toint(ocar(v)); v=ocdr(v);
+			int f = toint(ocar(v));
+
+			add_thresh(cid, a,b,c,d,e,f);
 		}
 		else
 		if (!strcmp(cmd.string,"COLOR"))  
 		{
-			//!IMAGE COLO "orange";20;30;60;2
+			//!IMAGE COLOR "orange" 20 30 60 2
+			tOBJ r=emptyObj();
+			tOBJ colour = ocar(v);  v=ocdr(v);
+			int a = toint(ocar(v)); v=ocdr(v);
+			int b = toint(ocar(v)); v=ocdr(v);
+			int c = toint(ocar(v)); v=ocdr(v);
+			int d = toint(ocar(v));
+
+			if (colour.type==STR)
+			{
+				r  = makeint(add_color(colour.string, a,b,c,d));
+			}
+			return r;
 		}
 		else
 		if (!strcmp(cmd.string,"RAW"))

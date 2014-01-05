@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 # opkg install http://192.168.1.64/ramips/packages/rbasic_452.7-1_ramips.ipk
 
-SVN:=$(shell svnversion -n ~/Desktop/basic  | cut -d: -f2)
+SVN:=$(shell svnversion -n ~/Desktop/basic | cut -d: -f2)
 
 PKG_NAME:=rbasic
 PKG_VERSION:=$(SVN)
