@@ -102,7 +102,7 @@ tOP oplist[] = {
 	{"SQRT", 40, NA,    1, osqrt}, //function single arg
 	{"ABS",  40, NA,    1, oabs},  //function single arg
 	{"RND",  40, NA,    0, ornd},  //in-const
-//	{"MAX",  40, NA,    2, omax},   //function two args
+	{"MAX",  40, NA,    2, omax},   //function two args
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
 	{"DSIG", 40, NA,    1, odsig}, //sigmoid functon
 	{"PSD",  40, NA,    0, opsd},  //const
@@ -111,11 +111,11 @@ tOP oplist[] = {
 	{"ACCZ", 40, NA,    0, oacz},  //const
 //MATRIX BASED
 	{"TRN",  40, NA,    1, otrn},   //function single arg    <fMatrix>
-//	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
-//	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
-//	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
-//	{"ZERO", 40, NA,    2, ozero},  //function two args  <fint, int>
-//	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
+	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
+	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
+	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
+	{"ZERO", 40, NA,    2, ozero},  //function two args  <fint, int>
+	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
 	{"HSUM", 40, NA,    1, ohsum},  //function <fMatrix>
 	{"VSUM", 40, NA,    1, ovsum},  //function <fMatrix>
 	{"INV",  40, NA,    1, ominv},  //function <fMatrix>
@@ -123,11 +123,11 @@ tOP oplist[] = {
 
 /*40 */	{"H2SM", 40, NA,    1, ohsum2},  //function <fMatrix>
 	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
-//	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
-//	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
-//	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
-//	{"COND", 40, NA,    5, ocond},  //function four args   <fmatrix>, <min>, <max> <value>
-//	{"ZERB", 40, NA,    4, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
+	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
+	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
+	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
+	{"COND", 40, NA,    5, ocond},  //function four args   <fmatrix>, <min>, <max> <value>
+	{"ZERB", 40, NA,    5, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
 	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
 //LIST BASED
 	{"CAR",  40, NA,    1, ocar},  //function single arg
@@ -145,7 +145,6 @@ tOP oplist[] = {
 	{"MEMB",  40, NA,   1, omemb},  //function single arg
 /*60 */	{"ASSN",  40, NA,   1, oasso},  //function single arg
 	{"ATOM",  40, NA,   1, oatom},  //function single arg
-//	{"EXEC",  40, NA,   1, oexec},  //function single arg
 	{"SET",   40, NA,   1, oset}, //function single arg
 	{"GET",   40, NA,   1, oget}, //function single arg
 	{"SERV",  40, NA,   0, oserv}, //function single arg
@@ -154,17 +153,17 @@ tOP oplist[] = {
 	{"PR",    40, NA,   1, opr},   //function single arg
 	{"WHOS",  40, NA,   0, owhs},
 /*70 */	{"BF",    40, NA,   1, obf},
-	{"MAT",   40, NA,   2, omatr},// 
+	{"MAT",   40, NA,   3, omatr},// 
 	{"DICT",  40, NA,   1, odict},// 
 	{"LOAD",  40, NA,   1, oload},//
 	{"SAVE",  40, NA,   1, osave},//
-//	{"DO",    40, NA,   1, oexec},//
-//	{"REX",   40, NA,   2, orex},//
-//	{"LFT",   40, NA,   2, olft},//
-///*80 */	{"RGT",   40, NA,   2, orgt},//
-//	{"MID",   40, NA,   3, omid},//
+	{"REX",   40, NA,   2, orex},//
+	{"LFT",   40, NA,   2, olft},//
+/*80 */	{"RGT",   40, NA,   2, orgt},//
+	{"MID",   40, NA,   3, omid},//
 	{"EXIT",  40, NA,   0, oexit},
-	{"IMAGE",  40, NA,   2, oimg}
+	{"RBM",   40, NA,   1, orbmrf},
+	{"IMAGE", 40, NA,   9, oimg}
 };
 
 int getOP(char *str)
@@ -559,16 +558,15 @@ tOBJ oexp(tOBJ a)
 {
 	tOBJ r;
 	r.type=FLOAT;
-	r.floatpoint=exp(tofloat(pop()));
+	r.floatpoint=exp(tofloat(a));
 	return r;
 }
 
 tOBJ osqrt(tOBJ a)
 {
-	//binary signmoid function
 	tOBJ r;
 	r.type=FLOAT;
-	r.floatpoint=sqrt(tofloat(pop()));
+	r.floatpoint=sqrt(tofloat(a));
 	return r;
 }
 
@@ -580,9 +578,8 @@ tOBJ ornd(tOBJ a)
 	return r;
 }
 
-tOBJ omax(tOBJ a)
+tOBJ omax(tOBJ a, tOBJ r)
 {
-	tOBJ r=pop();
 	int i;
 
 	if (r.type==INTGR && a.type==INTGR)
@@ -615,21 +612,19 @@ tOBJ omax(tOBJ a)
 !PRINT DSIG(MA)
 !print apply(ma, "expr")
 */
-tOBJ omat(tOBJ a) 
+tOBJ omat(tOBJ m, tOBJ a, tOBJ b) 
 {
 	//binary signmoid function
-	tOBJ r,m;
+	tOBJ r;
 	int row,col;
 	r=makefloat(0.0);
 	row=toint(a);
-	col=toint(pop());
-	m=pop();
+	col=toint(b);
 
 	if (m.type==FMAT2) 
 	{
 		r.floatpoint = fget2(&(m.fmat2),col,row);
 	}
-
 	return r;
 }
 
@@ -758,15 +753,14 @@ tOBJ odsig(tOBJ a)
 	return r;
 }
 
-tOBJ oapply(tOBJ a)
+tOBJ oapply(tOBJ b, tOBJ a)
 {
 	//apply (<matrix>, <string>)
-	tOBJ r,b, v;
+	tOBJ r, v;
 	int i=0, j=0, w, h;
 	char *expr;
 
 	r.type=EMPTY;
-	b=pop();
 
 	if (a.type !=STR && b.type != FMAT2)
 	{
@@ -796,7 +790,7 @@ tOBJ oapply(tOBJ a)
 			//set("ME_R",v);
 			//v.floatpoint = (float)i;
 			//set("ME_C",v);
-			//v=eval_oxpr(expr); // TBFixed!!
+			v=eval_oxpr(expr); // TBFixed!!
 			fset2(&r.fmat2,i,j,tofloat(v));
 		}
 	}
@@ -818,16 +812,13 @@ tOBJ otrn(tOBJ a)
 	return r;
 }
 
-tOBJ orshp(tOBJ a)
+tOBJ orshp(tOBJ m, tOBJ a, tOBJ b)
 {	// RSHP(M,x,y)
-	tOBJ r,m;
+	tOBJ r=emptyObj();
 	int row,col;
-	r.type=EMPTY;
-
 	row=toint(a);
-	col=toint(pop());
+	col=toint(b);
 
-	m=pop();
 	if (m.type==FMAT2)
 	{
 		r.type=FMAT2;
@@ -837,16 +828,14 @@ tOBJ orshp(tOBJ a)
 }
 
 
-tOBJ orep (tOBJ a)
+tOBJ orep (tOBJ m, tOBJ a, tOBJ b)
 {	// REP(M,x,y)
-	tOBJ r,m;
 	int row,col;
-	r.type=EMPTY;
+	tOBJ r=emptyObj();
 
 	row=toint(a);
-	col=toint(pop());
+	col=toint(b);
 
-	m=pop();
 	if (m.type==FMAT2)
 	{
 		r.type=FMAT2;
@@ -856,21 +845,21 @@ tOBJ orep (tOBJ a)
 }
 
 
-tOBJ ozero (tOBJ a)
+tOBJ ozero (tOBJ a, tOBJ b)
 {
 	tOBJ r;
 	int row,col;
 	r.type=EMPTY;
 
 	row=toint(a);
-	col=toint(pop());
+	col=toint(b);
 
 	r.type=FMAT2;
 	r.fmat2 = newmatrix(col, row);
 	return r;
 }
 
-tOBJ oeye (tOBJ a)
+tOBJ oeye (tOBJ a, tOBJ b)
 {
 	tOBJ r;
 	int i;
@@ -878,7 +867,7 @@ tOBJ oeye (tOBJ a)
 	r.type=EMPTY;
 
 	row=toint(a);
-	col=toint(pop());
+	col=toint(b);
 
 	r.type=FMAT2;
 	r.fmat2 = newmatrix(col, row);
@@ -891,34 +880,29 @@ tOBJ oeye (tOBJ a)
 	return r;
 }
 
-tOBJ oconv (tOBJ b)
+tOBJ oconv (tOBJ a, tOBJ b)
 {
-	tOBJ r, a;
-
+	tOBJ r;
 	r.type=EMPTY;
-
-	a=pop();
 
 	if (a.type != FMAT2 && b.type!=FMAT2)
 		return r;
 
 	r.type=FMAT2;
-	r.fmat2=fconvolve2(&a.fmat2,&b.fmat2) ;
-		
+	r.fmat2=fconvolve2(&a.fmat2,&b.fmat2) ;		
 	return r;
 }
 
-tOBJ ocond(tOBJ a)
+tOBJ ocond(tOBJ a, tOBJ b, tOBJ c, tOBJ d, tOBJ e)
 {
 	// COND (Matrix,lv, uv, nv1, nv2)
 	tOBJ r;
 	int i;
-	float lv=0,uv=0,nv1=0,nv2=0;
-	nv2 = tofloat(a);
-	nv1 = tofloat(pop());
-	uv = tofloat(pop());
-	lv = tofloat(pop());
-	a = pop();
+	float nv2 = tofloat(e);
+	float nv1 = tofloat(d);
+	float uv  = tofloat(c);
+	float lv  = tofloat(b);
+
 	r.type=EMPTY;
 	if (a.type==FMAT2)
 	{
@@ -935,16 +919,15 @@ tOBJ ocond(tOBJ a)
 	return r;
 }
 
-tOBJ ozerob(tOBJ a)
+tOBJ ozerob(tOBJ a, tOBJ b, tOBJ c, tOBJ d, tOBJ e)
 {
 	// ZER (Matrix,c1,r1,c2,r2)
 	tOBJ r;
-	int c1=0,c2=0,r1=0,r2=0;
-	r2 = toint(a);
-	c2 = toint(pop());
-	r1 = toint(pop());
-	c1 = toint(pop());
-	a = pop();
+	int r2 = toint(e);
+	int c2 = toint(d);
+	int r1 = toint(c);
+	int c1 = toint(b);
+
 	r.type=EMPTY;
 	if (a.type==FMAT2)
 	{
@@ -967,15 +950,12 @@ tOBJ ozerod(tOBJ a)
 	return r;
 }
 
-tOBJ oimp (tOBJ c)
+tOBJ oimp (tOBJ a, tOBJ b, tOBJ c)
 {
 	//IMP("A",2,2);
 
-	tOBJ r, a, b;
-
+	tOBJ r;
 	r.type=EMPTY;
-
-	b=pop(); a=pop();
 
 	if (a.type != STR)
 		return r;
@@ -1403,10 +1383,9 @@ String function
    
 **********************************************************/                                   
 
-tOBJ olft(tOBJ  a)
+tOBJ olft(tOBJ  r, tOBJ a)
 {
 	//!LFT("test",2) -> "te"
-	tOBJ r=pop();
 	int p=toint(a);
 	char *cp;
 	if (r.type==STR)
@@ -1424,10 +1403,9 @@ tOBJ olft(tOBJ  a)
 	return emptyObj();
 }
 
-tOBJ orgt(tOBJ  a)
+tOBJ orgt(tOBJ  r, tOBJ a)
 {
 	//!RGT("test",2) -> "st"
-	tOBJ r=pop();
 	int p=toint(a);
 	char *cp;
 	if (r.type==STR)
@@ -1446,11 +1424,9 @@ tOBJ orgt(tOBJ  a)
 }
 
 
-tOBJ omid(tOBJ  b)
+tOBJ omid(tOBJ  r, tOBJ a, tOBJ  b)
 {
 	//!MID("testing",2,4) -> "est"
-	tOBJ a=pop();
-	tOBJ r=pop();
 	int p1=toint(a);
 	int p2=toint(b);
 	char *cp;
@@ -1485,11 +1461,10 @@ i
 !print s1;" ";s2;" ";REX(S1,s2)
 */
 
-tOBJ orex(tOBJ  r)
+tOBJ orex(tOBJ  a, tOBJ r)
 {
 	//!REX("testing","est")
 	TRex *x;
-	tOBJ a=pop();
 	tOBJ v=emptyObj();
 	const TRexChar *begin,*end;
 	TRexChar sTemp[200];
@@ -1897,6 +1872,12 @@ tOBJ obf(tOBJ v)
 		printf("need a string argument");
 
 	return (emptyObj());
+}
+
+tOBJ orbmrf(tOBJ v)
+{
+	if (v.type==STR) loadrbm(v.string);
+	return (emptyObj());	
 }
 
 
