@@ -45,6 +45,8 @@ int remote=0;
 #endif
 
 #ifdef LINUX
+#include <stdio.h>
+#include <string.h>
 #include "linux.h"
 #endif
 

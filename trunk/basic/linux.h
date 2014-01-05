@@ -36,6 +36,11 @@ char _port[8];
 #define strcmp_P		strcmp	
 #define strncmp_P		strncmp	
 
+extern void rprintfStrLen(char *p, int s, int l);
+extern void rprintfCRLF();
+extern void rprintfStr(char *z);
+extern void rprintfChar(char c);
+
 extern void			eeprom_read_block (unsigned char *b, char *d, int l);
 extern uint16_t 		eeprom_read_word  (unsigned char *p);
 extern uint8_t			eeprom_read_byte  (unsigned char *p);
@@ -70,3 +75,15 @@ extern volatile BYTE	MIC_SAMPLING;
 
 
 void PlayPose(int d, int s, int f, unsigned char data[], int n);
+
+extern int matrixload(int n, char *s);
+extern int matrixstore(int n, char *s);
+
+extern int Get_AD_PSD();
+extern void  Acc_GetData ();
+extern int readservos(int n);
+
+
+
+
+

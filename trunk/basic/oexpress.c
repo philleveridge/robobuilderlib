@@ -571,7 +571,7 @@ void extend(char *s)
 	println (" = ", eval_oxpr(s));
 }
 
-/************************************************************************************************/
+/**********************************************************************************************
 
 #define MAX 255
 char inputbuffer[MAX];
@@ -615,13 +615,19 @@ void readline()
 	inputbuffer[ibcnt]=0;
 }
 
+*/
+
+extern int readLine(char *line);
+
+#define MAX 255
 void repl()
 {
+	char inputbuffer[MAX];
 	while (1)
 	{
-		printf("> ");
-		readline();
-		if (!strcmp(inputbuffer,"q")) return;
+		printf("!");
+		readLine(&inputbuffer[0]);
+		if (!strcasecmp(inputbuffer,"q")) return;
 		extend(inputbuffer);
 	}
 }
