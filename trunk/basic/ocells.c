@@ -47,6 +47,7 @@ tOBJ makeCell()
 	p->tail=0;
 	r.cell=p;
 	r.cnt=0;
+	r.q=0;
 	return r;
 }
 
@@ -60,6 +61,7 @@ tOBJ makeCell2(tOBJ a, tCELLp b)
 	p->tail=b;
 	r.cell=p;
 	r.cnt=0;
+	r.q=0;
 	return r;
 }
 

@@ -235,7 +235,8 @@ tOBJ read_from(tOBJ *r)
 		else
 		if (h.type==SYM && !strcmp(h.string, "{"))
 		{	
-			tOBJ t=read_from(r);	
+			tOBJ t=read_from(r);
+	
 			t.q=qf;	
 			L=append(L,t );
 			qf=0;
@@ -246,7 +247,10 @@ tOBJ read_from(tOBJ *r)
 			break;
 		}
 		else
+		{
+			h.q=qf;	qf=0;
 			L=append(L,h);	
+		}
 	}
 	return L;
 }
@@ -583,8 +587,8 @@ void init_extend()
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
 
-		eval_oxpr("Func TEST {} {Begin {PR \"Hello\"} {WHOS}}");
-		eval_oxpr("func FACT {n} {if {<= n 1} 1 {* n {FACT {- n 1}}}}");
+		//eval_oxpr("Func TEST {} {Begin {PR \"Hello\"} {WHOS}}");
+		//eval_oxpr("func FACT {n} {if {<= n 1} 1 {* n {FACT {- n 1}}}}");
 	}
 }
 

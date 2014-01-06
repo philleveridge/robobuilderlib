@@ -1931,6 +1931,7 @@ tOBJ orbmrf(tOBJ v)
 		rbmprint (&m);
 		r.type=RBM;
 		r.mot = m;
+		r.q=0;
 	}
 	return r;
 }
