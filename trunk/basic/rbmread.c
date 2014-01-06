@@ -7,46 +7,61 @@
 #include <time.h>
 #include "linux.h"
 
-typedef struct scene
-{
-	char name[32];
-	int TransitionTime;
-	int Frames;
-	int mPositions;
-	int mTorque;
-	int mExternalData;
-} Scene;
+#include "oobj.h"
 
-char *ReadLine(FILE *fp, char *m)
+extern int dbg;
+
+#include "rbmread.h"
+
+
+int ReadLine(FILE *fp, char *m, int n)
 {
 	int ch, cn=0;
-	while ( (ch=fgetc(fp))>=0 )
+	while ( (ch=fgetc(fp))>=0  && cn <n)
 	{
 		if (cn==0 && ch==' ') continue;
 		m[cn++]=ch;
 		if (ch=='13') break;
 	}
 	m[cn]=0;
-printf("%s\n", m);
 	return (ch>=0);
 }
 
-int loadrbm(char *fn)
+char *readfield(char sep, char *s, char *b)
 {
-	int* PGain;
-	int* DGain;
-	int* IGain;
-	int* Position;
-	int* extData;
-	char name[256];
+	char c;
+	while (s!=0 && *s!=0) {
+		c=*s++;
+		if (c == sep) break;
+		*b++=c;
+	}
+	*b=0;
 
-        Scene *scenes;
+	return s;
+}
 
-        int no_servos = 0;
-	int no_scenes = 0;
+void rbmdelete(Motion *m)
+{
+	if (m != 0)
+	{
+		if (m->sc != 0) free (m->sc);
+		m->sc=0;
+	}
+}
+
+
+void rbmprint(Motion *m)
+{
+	printf ("Name:  %s\n", m->name);
+	printf ("Servos-%d\n", m->no_servos);
+	printf ("Scenes-%d\n", m->no_scenes);
+}
+
+Motion rbmload(char *fn)
+{
 
 	/*
-	*  How about if we loaded (and wrote out) the .rbm files directly.  There 
+	* if we loaded (and wrote out) the .rbm files directly.  There 
 	basically just ascii files - using ': ' separators here's one (The 
 	simple wave - HunoDemo_Hi)
 	Ive broken down (and added some comments as to what I think the format). 
@@ -74,78 +89,94 @@ int loadrbm(char *fn)
 	* 
 	*/
 
-        char line[1024];
+        char line[MAXC];
         FILE *tr;
-
+	Motion mot;
+	int Lg=0;
+	mot.no_servos=0;
+	mot.no_scenes=0;
+	
 	if ( (tr=fopen(fn,"r"))== 0)
 	{
 		printf ("? can't find file - %s\n",fn);
-		return 0;
+		return mot;
 	}
 
-
-        while (ReadLine(tr, line))
+        while (1)
         {
-	printf ("line - %s\n", line);
-/*
-            line = line.Trim();
-            string[] a = line.Split(':');
+		ReadLine(tr, line, MAXC);
 
-            name = a[6];
-            no_servos = Convert.ToInt16(a[11]);
-            no_scenes = Convert.ToInt16(a[9]);
+		if (dbg) printf ("line - %d\n", (Lg=strlen(line)));
 
-            rprintf ("Motion file: %s\n", a[6]);
-            rprintf ("Servos: %d\n", no_servos);
-            rprintf ("Scenes: %d\n", no_scenes);
+		int i;
+		char field[256], *l=&line[0];
+	
+		for (i=0;i<12; i++)
+		{
+			l = readfield(':', l, field);
+			if (i==6)   strcpy(mot.name,field);
+			if (i==11)  mot.no_servos=atoi(field);
+			if (i==9)   mot.no_scenes=atoi(field);
+		}
 
-            IGain    = int[no_servos];
-            DGain    = int[no_servos];
-            PGain    = int[no_servos];
-            Position = int[no_servos];
-            extData  = int[no_servos];
-            scenes   = new Scene[no_scenes];
+		l = readfield(':', l, field);
+		l = readfield(':', l, field);
 
-            int c = 13; // start of 00 postion
 
-            for (int i = 0; i < no_servos; i++)
-            {
-                PGain[i]    = (int)(a[c + 1 + i * 6]);
-                DGain[i]    = (int)(a[c + 2 + i * 6]);
-                IGain[i]    = (int)(a[c + 3 + i * 6]);
-                extData[i]  = (int)(a[c + 4 + i * 6]);
-                Position[i] = (int)(a[c + 5 + i * 6]);
-            }
+		for (i = 0; i < mot.no_servos; i++)
+		{
+			l = readfield(':', l, field);  mot.PGain[i]=atoi(field);
+			l = readfield(':', l, field);  mot.DGain[i]=atoi(field);
+			l = readfield(':', l, field);  mot.IGain[i]=atoi(field);
+			l = readfield(':', l, field);  mot.eData[i]=atoi(field);
+			l = readfield(':', l, field);  mot.Postn[i]=atoi(field);
+			if (dbg) printf ("%d) %d, %d, %d, %d : %d\n", i, mot.PGain[i], mot.DGain[i], mot.IGain[i], mot.eData[i], mot.Postn[i]);
 
-            c = c + no_servos*6 + 2 ; // start of scene
+			l = readfield(':', l, field);
+		}
 
-            int s = 0;
+		l = readfield(':', l, field);
+		l = readfield(':', l, field);
 
-            while (c + no_servos * 6 + 5 <= a.Length + 1)
-            {
-                if (s == no_scenes) break;
+		mot.sc = (Scene *)malloc(sizeof(Scene)*mot.no_scenes);
 
-                rprintf ("Scene %s %s\n", s, a[c]);
+		for (int ns=0; ns< mot.no_scenes; ns++)
+		{
+			int nf, tt;
+			l = readfield(':', l, field); nf=atoi(field);//Frames
+			l = readfield(':', l, field); tt=atoi(field);//TransitionTime
+			l = readfield(':', l, field); //?
+			l = readfield(':', l, field); //???
+			l = readfield(':', l, field); //??
 
-                scenes[s]                = new Scene();
-                strncpy(scenes[s].name,a[c],32);
-                scenes[s].TransitionTime = (int)(a[c + 2]);
-                scenes[s].Frames         = (int)(a[c + 1]);
+			mot.sc->TransitionTime=tt;
+			mot.sc->Frames=nf;
 
-                scenes[s].mExternalData  = new uint[no_servos];
-                scenes[s].mPositions     = new uint[no_servos];  // scene end positions
-                scenes[s].mTorque        = new uint[no_servos];
+			if (dbg) printf ("[%d] %d %d : ", ns, nf,tt);
 
-                for (int i = 0; i < no_servos; i++)
-                {
-                    scenes[s].mPositions[i]    = (int)(a[c + 6 + i * 6]);
-                    scenes[s].mTorque[i]       = (int)(a[c + 7 + i * 6]);
-                    scenes[s].mExternalData[i] = (int)(a[c + 8 + i * 6]);
-                }
-                c += no_servos * 6 + 5;
-                s = s + 1;
-            }
-*/
+			for (int nq=0; nq<mot.no_servos; nq++)
+			{
+				int pos;
+				l = readfield(':', l, field); //pos
+				pos=atoi(field);
+				l = readfield(':', l, field); //torq
+				l = readfield(':', l, field); //edata
+
+				mot.sc->F.Position[nq] = pos;
+
+				if (dbg) printf("%d, ", pos);
+
+				l = readfield(':', l, field); //?
+				l = readfield(':', l, field); //???
+				l = readfield(':', l, field); //??
+			}
+			if (dbg) printf ("\n");
+		}
+
+
+		break;
+
         }
         fclose(tr);
+	return mot;
 }

@@ -238,6 +238,7 @@ int token_match(prog_char list[][7], char **p_line, int n)
 #endif
 
 
+int readflg=1;
 
 int readLine(char *line)
 {
@@ -256,7 +257,7 @@ int readLine(char *line)
 
 		while ((ch = uartGetByte())<0) ;
 
-		if (ch=='\'') // comment ignore rest of line
+		if (ch=='\'' && readflg) // comment ignore rest of line
 		{
 			rprintfChar(ch);
 			*line='\0'; 
@@ -362,6 +363,7 @@ int readLine(char *line)
 				rprintfChar(8);
 				rprintfChar(32);
 				rprintfChar(8);
+				if (*line=='"') qf=!qf;
 			}
 		}
 		else
@@ -1557,7 +1559,9 @@ void basic()
 			matrixstore(nis,"data.txt");
 			break;
 		case '!': // go lisp 
+			readflg=0;
 			repl();
+			readflg=1;
 			break;
 #endif
 		default:
