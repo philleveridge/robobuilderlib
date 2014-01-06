@@ -54,6 +54,7 @@ tOBJ makestring(char *s)
 	r.type=STR;
 	r.string = newstring(s);
 	r.cnt=0;
+	r.q=0;
 	return r;
 }
 

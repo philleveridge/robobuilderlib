@@ -87,6 +87,10 @@ tOBJ cloneObj(tOBJ z)
 	{
 		//TBD
 	}
+	if (r.type==RBM)
+	{
+		//TBD
+	}
 	return r;
 }
 
@@ -235,6 +239,7 @@ tOBJ makefloat(float f)
 	tOBJ r;
 	r.type=FLOAT;
 	r.floatpoint=f;
+	r.q=0;
 	return r;
 }
 
@@ -243,6 +248,7 @@ tOBJ makefloati(int i)
 	tOBJ r;
 	r.type=FLOAT;
 	r.floatpoint=(float)i;
+	r.q=0;
 	return r;
 }
 
@@ -263,6 +269,7 @@ tOBJ makeint(int i)
 	tOBJ r;
 	r.type=INTGR;
 	r.number=i;
+	r.q=0;
 	return r;
 }
 
@@ -349,8 +356,7 @@ int cnvtListtoByte(tOBJ lst, int an, BYTE *array)
 
 tOBJ makenumfstr(char *s)
 {
-	tOBJ r;
-	r.type=EMPTY;
+	tOBJ r = emptyObj();
 	int n=0;
 	float f=0.0, rm=1.0;
 	int sgn=1;
