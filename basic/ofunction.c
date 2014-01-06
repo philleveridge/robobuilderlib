@@ -52,8 +52,10 @@ extern long	getvar(char n);
 #include "odict.h"
 #include "ostack.h"
 #include "fmatrix.h"
+#include "rbmread.h"
 
 #include "ofunction.h"
+
 
 #include "trex.h"
 
@@ -1918,14 +1920,20 @@ tOBJ obf(tOBJ v)
 	return (emptyObj());
 }
 
-extern int loadrbm(char *);
 
 tOBJ orbmrf(tOBJ v)
 {
-	if (v.type==STR) loadrbm(v.string);
-	return (emptyObj());	
+	tOBJ r=emptyObj();
+	Motion m;
+	if (v.type==STR) 
+	{ 
+		m = rbmload(v.string) ;
+		rbmprint (&m);
+		r.type=RBM;
+		r.mot = m;
+	}
+	return r;
 }
-
 
 
 

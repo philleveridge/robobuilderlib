@@ -19,6 +19,7 @@
 #include "ocells.h"
 #include "ostring.h"
 #include "odict.h"
+#include "rbmread.h"
 #include "ofunction.h"
 
 /**********************************************************/
@@ -43,6 +44,10 @@ int freeobj(tOBJ *b)
 	{
 		if (b->cnt==0) deldict(b->dict);
 	}
+	if (b->type==RBM)
+	{
+		if (b->cnt==0) rbmdelete(&b->mot);
+	}
 	return 0;
 }
 
@@ -50,6 +55,7 @@ tOBJ emptyObj()
 {
 	tOBJ r;
 	r.type=EMPTY;
+	r.q=0;
 	return r;
 }
 
@@ -136,6 +142,11 @@ void printtype(FILE *fp, tOBJ r)
     {
          fprintf(fp, "FUNCTION");   
     }
+    else if (r.type == RBM)
+    {
+         fprintf(fp, "RBM\n");  
+	 rbmprint (&r.mot);
+    }
     else if (r.type == FMAT2)
     {
 	fmatprint2(&r.fmat2);	 
@@ -146,7 +157,7 @@ void printtype(FILE *fp, tOBJ r)
     }
     else  if (r.type == CELL)
     {
-	if (r.q)  fprintf(fp, "'");
+	//if (r.q)  fprintf(fp, "'");
 
 	if (r.cell != NULL)
 	{
@@ -166,6 +177,8 @@ void printtype(FILE *fp, tOBJ r)
 
 tOBJ fprint(FILE *fp, tOBJ r)
 {
+    if (r.q==1) fprintf (fp,"'");
+
     if (r.type == CELL)
     {
         struct cell  *c = r.cell;

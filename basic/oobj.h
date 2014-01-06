@@ -2,14 +2,15 @@
 #define OOBJ_H
 
 #include "fmatrix.h"
+#include "rbmread.h"
 
-enum  TYPE  {SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2, DICT, LAMBDA};
+enum  TYPE  {SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2, DICT, LAMBDA, RBM};
 
 typedef struct object {
-        int   type;
-	unsigned char cnt;
+        int   		type;
+	unsigned char 	cnt;
+	int		q;
         union { 
-		int	q;
 		float   floatpoint; 
                 int     number; 
                 char    *string;
@@ -17,6 +18,7 @@ typedef struct object {
                 void    *dict;
 		struct object	(*func)(struct object);
 		fMatrix fmat2;
+                Motion  mot;
       	};
 } tOBJ;
 
@@ -36,7 +38,7 @@ extern tOBJ println	(char *s, tOBJ r);
 extern void pp		(tOBJ x, int n);
 
 /**********************************************************/
-/*  conversuins float   and integers                      */
+/*  conversions float   and integers                      */
 /**********************************************************/
 
 extern tOBJ  makefloat	    (float f);

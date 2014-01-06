@@ -59,7 +59,7 @@ char *readword(char *s, char *w)
 			return s;
 		}
 
-		if ( strchr("+-*/=:,;[]{}()<> ",c)>0  && sf==0)
+		if ( strchr("`'+-*/=:,;[]{}()<> ",c)>0  && sf==0)
 		{
 			if (c != ' ' && n==0) 
 			{
@@ -221,15 +221,24 @@ tOBJ tokenise(char *s)
 tOBJ read_from(tOBJ *r)
 {
 	tOBJ h, L = emptyObj();
+	int qf=0;
 
 	while (r->type!=EMPTY)
 	{
 		h=ocar(*r);
 		*r=ocdr(*r);
 
+		if (h.type==SYM && !strcmp(h.string, "'"))
+		{	
+			qf=1;	
+		}
+		else
 		if (h.type==SYM && !strcmp(h.string, "{"))
-		{			
-			L=append(L, read_from(r));
+		{	
+			tOBJ t=read_from(r);	
+			t.q=qf;	
+			L=append(L,t );
+			qf=0;
 		}
 		else
 		if (h.type==SYM && !strcmp(h.string, "}"))
@@ -380,7 +389,7 @@ tOBJ eval(tOBJ o, Dict *e)
 
 	if (dbg) {println ("eval - ",o);}
 
-	if (o.type==INTGR || o.type==FLOAT || o.type==STR || o.type == FMAT2 || o.type == EMPTY )
+	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type==STR || o.type == FMAT2 || o.type == EMPTY )
 		return o;
 
 	if (o.type==SYM)
@@ -439,6 +448,7 @@ tOBJ eval(tOBJ o, Dict *e)
 			tOBJ var = ocar(o); o=ocdr(o);
 			tOBJ exp = ocar(o); 
 			dict_update(e, var.string, exp);
+			return exp;
 		}
 		else
 		if (!strcasecmp(h.string,"READ"))
@@ -452,6 +462,7 @@ tOBJ eval(tOBJ o, Dict *e)
 			tOBJ var = ocar(o); o=ocdr(o);
 			tOBJ exp = eval(ocar(o),e); 
 			dict_update(e, var.string, exp);
+			return exp;
 		}
 		else
 		if (!strcasecmp(h.string,"LET"))
@@ -568,8 +579,6 @@ void init_extend()
 		env = makedict();
 
 		set(env.dict, "PI",  makefloat (3.1415926));
-		//set(env.dict, "DFN", makestring("data.txt"));
-		//set(env.dict, "IFN", makestring("test.jpg"));
 	
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
