@@ -378,9 +378,7 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 		do {
 		x = ocar(body);
 		r = eval(x, (Dict *)e.dict);
-	if (dbg) println("r=",r);
 		body = ocdr(body);
-	if (dbg) println("b=",body);
 		} while (onull(body).number==0);
 	}	
 	return r;
@@ -394,7 +392,10 @@ tOBJ eval(tOBJ o, Dict *e)
 	if (dbg) {println ("eval - ",o);}
 
 	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type==STR || o.type == FMAT2 || o.type == EMPTY )
+	{
+		o.q=0;
 		return o;
+	}
 
 	if (o.type==SYM)
 	{
@@ -489,6 +490,30 @@ tOBJ eval(tOBJ o, Dict *e)
 				print(r);
 			}
 			printf("\n");
+			return r;
+		}
+		else
+		if (!strcasecmp(h.string,"LIST"))
+		{
+			while (o.type != EMPTY)
+			{
+				tOBJ exp = ocar(o); o=ocdr(o);	
+				r = append(r, eval(exp, e));
+			}
+			return r;
+		}
+		else
+		if (!strcasecmp(h.string,"APPEND"))
+		{
+			while (o.type != EMPTY)
+			{
+				tOBJ exp = eval(ocar(o),e); o=ocdr(o);	
+				while (exp.type != EMPTY)
+				{
+					r = append(r, ocar(exp));
+					exp=ocdr(exp);
+				}
+			}
 			return r;
 		}
 		else
