@@ -433,21 +433,6 @@ tOBJ eval(tOBJ o, Dict *e)
 			return eval(eval(ocar(o),e),e);
 		}
 		else
-		if (!strcasecmp(h.string,"IF") || !strcasecmp(h.string,"COND"))
-		{
-			tOBJ test   = ocar(o); o=ocdr(o);
-			tOBJ conseq = ocar(o); o=ocdr(o);
-			tOBJ alt    = ocar(o); 
-			if (toint(eval(test,e))==1)
-			{
-				return eval(conseq,e);
-			}
-			else
-			{
-				return eval(alt,e);
-			}
-		}
-		else
 		if (!strcasecmp(h.string,"SETQ"))
 		{
 			tOBJ var = ocar(o); o=ocdr(o);
@@ -470,6 +455,20 @@ tOBJ eval(tOBJ o, Dict *e)
 			return exp;
 		}
 		else
+           	if (!strcasecmp(h.string,"IF"))
+                {
+                        tOBJ test   = ocar(o); o=ocdr(o);
+                        tOBJ conseq = ocar(o); o=ocdr(o);
+                        tOBJ alt    = ocar(o); 
+                        if (toint(eval(test,e))==1)
+                        {
+                                return eval(conseq,e);
+                        }
+                        else
+                        {
+                                return eval(alt,e);
+                        }
+                }
 		if (!strcasecmp(h.string,"LET"))
 		{
 			//LET VAR = FORMULA
@@ -479,42 +478,6 @@ tOBJ eval(tOBJ o, Dict *e)
 			eq = formula(&o,e);
 			dict_update(e, var.string, eq);
 			return eq;
-		}
-		else
-		if (!strcasecmp(h.string,"PR") || !strcmp(h.string,"PRINT"))
-		{
-			while (o.type != EMPTY)
-			{
-				tOBJ exp = ocar(o); o=ocdr(o);	
-				r=eval(exp,e);
-				print(r);
-			}
-			printf("\n");
-			return r;
-		}
-		else
-		if (!strcasecmp(h.string,"LIST"))
-		{
-			while (o.type != EMPTY)
-			{
-				tOBJ exp = ocar(o); o=ocdr(o);	
-				r = append(r, eval(exp, e));
-			}
-			return r;
-		}
-		else
-		if (!strcasecmp(h.string,"APPEND"))
-		{
-			while (o.type != EMPTY)
-			{
-				tOBJ exp = eval(ocar(o),e); o=ocdr(o);	
-				while (exp.type != EMPTY)
-				{
-					r = append(r, ocar(exp));
-					exp=ocdr(exp);
-				}
-			}
-			return r;
 		}
 		else
 		if (!strcasecmp(h.string,"FUNC") || !strcasecmp(h.string,"DEFN"))
@@ -531,16 +494,6 @@ tOBJ eval(tOBJ o, Dict *e)
 			//!LAMBA {X Y} {PLUS X Y}
 			o.type  = LAMBDA;
 			return o;
-		}
-		else
-		if (!strcasecmp(h.string,"BEGIN") || !strcasecmp(h.string,"DO"))
-		{
-			while (o.type != EMPTY)
-			{
-				tOBJ exp = ocar(o); o=ocdr(o);	
-				r=eval(exp,e);
-			}
-			return r;
 		}
 		else
 		{
@@ -585,7 +538,7 @@ tOBJ eval(tOBJ o, Dict *e)
 						,eval(c,e),eval(d,e),eval(g,e));
 					}
 				default:
-					return (*oplist[op].func)(o);
+					return (*oplist[op].funce)(o,e);
 					break;
 				}
 			}
@@ -612,8 +565,7 @@ void init_extend()
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
 
-		//eval_oxpr("Func TEST {} {Begin {PR \"Hello\"} {WHOS}}");
-		//eval_oxpr("func FACT {n} {if {<= n 1} 1 {* n {FACT {- n 1}}}}");
+		eval_oxpr("FUNC FACT {N} {IF {<= N 1} 1 {* N {FACT {- N 1}}}}");
 	}
 }
 
