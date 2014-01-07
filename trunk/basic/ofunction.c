@@ -74,8 +74,8 @@ tOP oplist[] = {
 	{"*",    20, MULT,  2, NULL},
 /* 5 */	{".*",   20, PROD,  2, NULL},
 	{".^",   20, POWR,  2, NULL},
-	{"AND",  8,  LAND,  2, NULL},
-	{"OR",   8,  LOR,   2, NULL},
+	{"&",    8,  LAND,  2, NULL},
+	{"|",    8,  LOR,   2, NULL},
 	{"MOD",  8,  LMOD,  2, NULL},
 /*10 */	{"<",    5,  LT,    2, NULL},
 	{">",    5,  GT,    2, NULL},
@@ -119,7 +119,7 @@ tOP oplist[] = {
 	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
 	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
 	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
-	{"COND", 40, NA,    5, ocond},  //function three args   <fMatrix>
+	{"MCOND",40, NA,    5, omcond},  //function three args   <fMatrix>
 	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
 	{"ZERB", 40, NA,    5, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
 	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
@@ -137,16 +137,20 @@ tOP oplist[] = {
 	{"MEMB",  40, NA,   1, omemb},  //function single arg
 /*60 */	{"ASSN",  40, NA,   1, oasso},  //function single arg
 	{"ATOM",  40, NA,   1, oatom},  //function single arg
-	{"SET",   40, NA,   1, oset}, //function single arg
-	{"GET",   40, NA,   1, oget}, //function single arg
+
 	{"SERV",  40, NA,   0, oserv}, //function single arg
 	{"POSE",  40, NA,   1, opose}, //function single arg
-	{"NTH",   40, NA,   1, onth}, //function single arg
-	{"PR",    40, NA,   1, opr},   //function single arg
+
+	{"NTH",   40, NA,   2, onth}, //function two arg
+
 	{"WHOS",  40, NA,   0, owhs},
 /*70 */	{"BF",    40, NA,   1, obf},
 	{"MAT",   40, NA,   3, omatr},// 
+
 	{"DICT",  40, NA,   1, odict},// 
+	{"SETK",  40, NA,   1, oset}, //function single arg
+	{"GETK",  40, NA,   1, oget}, //function single arg
+
 	{"LOAD",  40, NA,   1, oload},//
 	{"SAVE",  40, NA,   1, osave},//
 	{"REX",   40, NA,   2, orex},//
@@ -155,6 +159,17 @@ tOP oplist[] = {
 	{"MID",   40, NA,   3, omid},//
 	{"EXIT",  40, NA,   0, oexit},
 	{"RBM",   40, NA,   1, orbmrf},
+
+	{"COND",  40, NA,   9, ocond}, 
+	{"DO",    40, NA,   9, obegin},  
+	{"BEGIN", 40, NA,   9, obegin},  
+	{"LIST",  40, NA,   9, olist},   
+	{"APPEND",40, NA,   9, oappend}, 
+	{"PLUS",  40, NA,   9, oplus}, 
+	{"AND",   40, NA,   9, oand}, 
+	{"OR",    40, NA,   9, oor}, 
+	{"PRINT", 40, NA,   9, opr},  
+	{"PR",    40, NA,   9, opr},   
 	{"IMAGE", 40, NA,   9, oimg}
 };
 
@@ -885,7 +900,7 @@ tOBJ oconv (tOBJ a, tOBJ b)
 	return r;
 }
 
-tOBJ ocond(tOBJ a, tOBJ b, tOBJ c, tOBJ d, tOBJ e)
+tOBJ omcond(tOBJ a, tOBJ b, tOBJ c, tOBJ d, tOBJ e)
 {
 	// COND (Matrix,lv, uv, nv1, nv2)
 	tOBJ r;
@@ -1198,33 +1213,127 @@ tOBJ oasso(tOBJ a)
 	return r;
 }
 
+/***********************************************************************
 
-tOBJ opr(tOBJ a)
+
+***********************************************************************/
+
+tOBJ olist(tOBJ o, Dict *e)
+{
+	tOBJ r=emptyObj();
+	while (o.type != EMPTY)
+	{
+		tOBJ exp = ocar(o); o=ocdr(o);	
+		r = append(r, eval(exp, e));
+	}
+	return r;
+}
+
+tOBJ oplus(tOBJ o, Dict *e)
+{
+	tOBJ r = ocar(o); o=ocdr(o);	
+
+	while (o.type != EMPTY)
+	{
+		tOBJ exp = ocar(o); o=ocdr(o);	
+		r = omath(r, eval(exp, e), PLUS);
+	}
+	return r;
+}
+
+tOBJ oor(tOBJ o, Dict *e)
+{
+	tOBJ r = ocar(o); o=ocdr(o);	
+	while (o.type != EMPTY)
+	{
+		tOBJ exp = ocar(o); o=ocdr(o);	
+		r = omath(r, eval(exp, e), LOR);
+		if (r.type==INTGR && r.number==1) return r;
+	}
+	return r;
+}
+
+tOBJ oand(tOBJ o, Dict *e)
+{
+	tOBJ r = ocar(o); o=ocdr(o);	
+	while (o.type != EMPTY)
+	{
+		tOBJ exp = ocar(o); o=ocdr(o);	
+		r = omath(r, eval(exp, e), LAND);
+		if (r.type==INTGR && r.number==0) return r;
+	}
+	return r;
+}
+
+tOBJ oappend(tOBJ o, Dict *e)
+{
+	tOBJ r=emptyObj();
+	while (o.type != EMPTY)
+	{
+		tOBJ exp = eval(ocar(o),e); o=ocdr(o);	
+		while (exp.type != EMPTY)
+		{
+			r = append(r, ocar(exp));
+			exp=ocdr(exp);
+		}
+	}
+	return r;
+}
+
+tOBJ opr(tOBJ a, Dict *e)
 {
 	//> !PR 1
 	//1
 	tOBJ t=emptyObj();
-	while (onull(a).number==0 && a.type==CELL)
+	while (onull(a).number==0)
 	{
-		t=ocar(a);
+		t=eval(ocar(a),e);
 		print(t);
 		a=ocdr(a);
 	}
-	if (onull(a).number==0)
-	{
-		t=print(a);
-	}
+	printf ("\n");
 	return t;
 }
+
+tOBJ obegin(tOBJ o, Dict *e)
+{
+	//> !PR 1
+	//1
+	tOBJ r=emptyObj();
+	while (o.type != EMPTY)
+	{
+		tOBJ exp = ocar(o); o=ocdr(o);	
+		r=eval(exp,e);
+	}
+	return r;
+}
+
+tOBJ ocond(tOBJ o, Dict *e)
+{
+	// COND { {= X 1} 'ONE {= X 2} 'TWO ' 1 'NA}
+
+	tOBJ cond=emptyObj();
+	o=ocar(o);
+	while (o.type != EMPTY)
+	{
+		tOBJ cond = ocar(o); o=ocdr(o);
+		tOBJ act = ocar(o); o=ocdr(o);
+		if (dbg) {print (cond);printf ("?\n");}
+		if (toint(eval(cond,e))!=0) return eval(act,e);
+	}	
+	return cond;
+}
+
+
 
 tOBJ oset(tOBJ a)
 {
 /*
 !SET {"A" 2 "B" 3}
 PRINT A,B
-!LET EN=DICT {{"a" 1} {"b" 2.3}}
-!GET {EN "b"}
-!SET {EN "b" 2.9}
+!LET EN=DICT '{{"a" 1} {"b" 2.3}}
+!GETK '{EN "b"}
+!SETK '{EN "b" 2.9}
 */
 	tOBJ r=emptyObj();
 	tOBJ env=emptyObj();
@@ -1291,24 +1400,20 @@ tOBJ oget(tOBJ a)
 }
 
 
-tOBJ onth(tOBJ a)
+tOBJ onth(tOBJ a, tOBJ lst)
 {
 	//!nth {0 {"one" "two" "three"}}
 	//!nth {5 {"one" "two" "three"}}
-	tOBJ indx = ocar(a);
-	if (indx.type==INTGR)
+	int cnt = toint(a);
+
+	if (lst.type == CELL)
 	{
-		tOBJ lst = ocar(ocdr(a));
-		if (lst.type == CELL)
+		while (cnt>0)	
 		{
-			int cnt=indx.number;
-			while (cnt>0)	
-			{
-				lst = ocdr(lst);
-				cnt--;
-			}
-			return ocar(lst);
+			lst = ocdr(lst);
+			cnt--;
 		}
+		return ocar(lst);
 	}
 	return emptyObj();
 }
@@ -1458,6 +1563,14 @@ tOBJ opose(tOBJ a)
 	int nb,i;
 	int speed=4, tm=1000, fm=10, fmflg=0;
 
+	if (a.type=RBM)
+	{
+		printf ("RB Motion\n");
+		print (a);
+		//tbd
+		//put play code here
+	}
+	else
 	if ((nb=cnvtListtoByte(a, 32, sp)))
 	{
 		for (i=0; i<nb; i++)
@@ -1668,7 +1781,7 @@ tOBJ omatr(tOBJ a)
 	return (emptyObj());
 }
 
-tOBJ oimg(tOBJ v)
+tOBJ oimg(tOBJ v, Dict *e)
 {
 	//!IMAGE {"command" {parameters}}
 	//comand : {"UNLOCK" "LOAD" "FILT" "RAW" "THRE" "COLOR" "PROC" "REG" "SHOW" 
