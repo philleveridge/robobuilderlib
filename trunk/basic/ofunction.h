@@ -69,7 +69,7 @@ extern tOBJ otype(tOBJ  r);
 extern tOBJ olen(tOBJ  r);
 extern tOBJ oapp(tOBJ  r);
 extern tOBJ olist(tOBJ  r);
-extern tOBJ ocons(tOBJ  r);
+extern tOBJ ocons(tOBJ  r, tOBJ a);
 extern tOBJ olast(tOBJ  r);
 extern tOBJ osubst(tOBJ  r);
 extern tOBJ orev(tOBJ  r);

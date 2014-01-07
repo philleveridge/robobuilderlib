@@ -119,8 +119,8 @@ tOP oplist[] = {
 	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
 	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
 	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
+	{"COND", 40, NA,    5, ocond},  //function three args   <fMatrix>
 	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
-	{"COND", 40, NA,    5, ocond},  //function four args   <fmatrix>, <min>, <max> <value>
 	{"ZERB", 40, NA,    5, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
 	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
 //LIST BASED
@@ -128,9 +128,7 @@ tOP oplist[] = {
 	{"CDR",  40, NA,    1, ocdr},  //function single arg
 
 /*50 */	{"TYPE", 40, NA,    1, otype},  //function single arg
-	{"APPD", 40, NA,    1, oapp},  //function single arg
-	{"LIST", 40, NA,    1, olist},  //function single arg
-	{"CONS", 40, NA,    1, ocons},  //function single arg
+	{"CONS", 40, NA,    2, ocons},  //function single arg
 	{"LEN",  40, NA,    1, olen},  //function single arg
 	{"SUBS", 40, NA,    1, osubst},  //function single arg
 	{"LAST", 40, NA,    1, olast},  //function single arg
@@ -1020,70 +1018,15 @@ tOBJ olen (tOBJ a)
 	return r;
 }
 
-tOBJ olist (tOBJ a)
-{	
-	//!LIST {1 2 3} -> {{1 2 3}}
-	tOBJ r=makeCell2(a, NULL);	
-	return r;
-}
-
-tOBJ ocons (tOBJ n)
+tOBJ ocons (tOBJ a, tOBJ b)
 {
-	//!CONS {1 {2 3}} -> {1 2 3}
+	//!CONS 1 '{2 3} -> {1 2 3}
 	tOBJ r=emptyObj();
-	if (n.type==CELL)
-	{
-		tOBJ a = ocar(n);
-		tOBJ b = ocar(ocdr(n));
-		if (b.type==CELL)
-		{
-			r=makeCell2(a, b.cell);
-		}
-	}
-	return r;
-}
 
-tOBJ oapp (tOBJ a)
-{
-	//!APPD {{1 2} {3 4}} -> {1 2 3 4}
-	tOBJ r=emptyObj();
-	tOBJ n;
-
-	if (a.type==CELL)
-	{
-		tCELLp p= a.cell;
-		r=makeCell();
-		n=r;
-		do
-		{
-			tOBJ h=p->head;
-			tCELLp l;
-			if (h.type != CELL)
-			{
-				printf("not a list?\n");
-				break;
-			}
-			l=h.cell;
-			do //add each elemnt to list
-			{
-				tCELLp z=n.cell;
-				z->head=l->head;
-				l=l->tail;
-				if (l!=NULL || p->tail != NULL) 
-				{
-					n=makeCell();
-					z->tail=n.cell;	
-				}
-				else
-				{
-					z->tail=NULL;
-				}
-			}
-			while (l != NULL);		
-			p=p->tail;
-		}
-		while (p !=NULL);
-	}	
+        if (b.type==CELL)
+        {
+                r=makeCell2(a, b.cell);
+        }
 	return r;
 }
 

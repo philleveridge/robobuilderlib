@@ -17,7 +17,7 @@ extern int dbg;
 int ReadLine(FILE *fp, char *m, int n)
 {
 	int ch, cn=0;
-	while ( (ch=fgetc(fp))>=0  && cn <n)
+	while ( (ch=fgetc(fp))>=0  && cn <n-1)
 	{
 		if (cn==0 && ch==' ') continue;
 		m[cn++]=ch;
@@ -46,6 +46,7 @@ void rbmdelete(Motion *m)
 	{
 		if (m->sc != 0) free (m->sc);
 		m->sc=0;
+		if (dbg) printf ("Del RBM\n");
 	}
 }
 
