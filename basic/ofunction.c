@@ -53,6 +53,7 @@ extern long	getvar(char n);
 #include "ostack.h"
 #include "fmatrix.h"
 #include "rbmread.h"
+#include "oexpress.h"
 
 #include "ofunction.h"
 
@@ -117,7 +118,7 @@ tOP oplist[] = {
 
 /*40 */	{"H2SM", 40, NA,    1, ohsum2},  //function <fMatrix>
 	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
-	{"APPL", 40, NA,    2, oapply}, //function two args   <fMatrix>
+	{"MAPCAR",40,NA,    2, oapply}, //function two args   <fMatrix>
 	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
 	{"MCOND",40, NA,    5, omcond},  //function three args   <fMatrix>
 	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
@@ -257,8 +258,6 @@ int set(Dict * en, char *name, tOBJ r)
 	return 0;
 }
 
-extern tOBJ env;   //TBFixed
-
 tOBJ owhs(tOBJ r)
 {
 	//display all variables and types
@@ -266,7 +265,6 @@ tOBJ owhs(tOBJ r)
 	dict_print(env.dict); 
 	return emptyObj(); 
 }
-
 
 /**********************************************************/
 /*  maths functions                                       */
@@ -756,53 +754,49 @@ tOBJ odsig(tOBJ a)
 			r.fmat2.fstore[i] = f*(1-f);
 		}			
 	}
-
 	return r;
 }
 
-tOBJ oapply(tOBJ b, tOBJ a)
+tOBJ oapply(tOBJ a, tOBJ b)
 {
-	//apply (<matrix>, <string>)
-	tOBJ r, v;
-	int i=0, j=0, w, h;
-	char *expr;
+	tOBJ r=emptyObj(), v;
+	if (dbg) printf ("Mapcar -\n");
 
-	r.type=EMPTY;
-
-	if (a.type !=STR && b.type != FMAT2)
+	if (b.type==FMAT2)
 	{
-		return r;
-	}
+		// FUNC FOO {X} {+ 1.0 X}
+		// MAPCAR FOO [ 1 2 ; 3 4 ]
+		int i=0, j=0;
+		// create new matrix
+		r.type=FMAT2;
+		r.fmat2=fmatcp(&b.fmat2);
 
-	r.type=FMAT2;
-	// create new matrix
-	r.fmat2=fmatcp(&b.fmat2);
-
-	w=b.fmat2.w;
-	h=b.fmat2.h;
-
-	v.type=FLOAT;
-
-	expr = a.string;
-
-	if (dbg) printf ("Apply - %s\n", expr);
+		tOBJ tenv = makedict();
 	
-	for (i=0; i<w; i++)
-	{
-		for (j=0;j<h; j++)
+		for (i=0; i<b.fmat2.w; i++)
 		{
-			v.floatpoint = fget2(&b.fmat2,i,j);
-			set(NULL, "ME",v);
-			//v.floatpoint = (float)j;
-			//set("ME_R",v);
-			//v.floatpoint = (float)i;
-			//set("ME_C",v);
-			v=eval_oxpr(expr); // TBFixed!!
-			fset2(&r.fmat2,i,j,tofloat(v));
+			for (j=0;j<b.fmat2.h; j++)
+			{
+				v.type=FLOAT;
+				v.floatpoint =fget2(&b.fmat2,i,j);
+				tOBJ n  = procall (a, v, env.dict);	
+				fset2(&r.fmat2,i,j,tofloat(n));			
+			}
+		}
+		freeobj(&env);
+	}
+	else if (b.type==CELL)
+	{
+		// FUNC FOO {X} {+ X 1}
+		// MAPCAR FOO '{2 3 4}
+		while (b.type != EMPTY)
+		{
+			tOBJ arg= ocar(b);
+			tOBJ n  = procall (a, arg, env.dict);		
+			b=ocdr(b);
+			r=append(r,n);
 		}
 	}
-
-
 	return r;
 }
 
@@ -1631,8 +1625,6 @@ tOBJ oexit(tOBJ a)
 	return emptyObj();
 }
 
-extern fMatrix readmatrix(char **str );
-extern tOBJ parse(char *s);
 
 tOBJ oload(tOBJ  n)
 {
@@ -1737,7 +1729,7 @@ tOBJ odict(tOBJ  lst)
 			if (n.type==STR)
 				dict_add(r.dict, n.string, v);
 
-			lst=ocdr(lst); 	// lst=cdr lst		
+			lst=ocdr(lst); 
 		}
 		while (onull(lst).number==0); 	
 		return r;		
@@ -1754,16 +1746,13 @@ Extended input
 
 ************************************************************************/
 
-tOBJ omatr(tOBJ a)
+tOBJ omatr(tOBJ n, tOBJ v, tOBJ file)
 {
-	tOBJ n=ocar(a); a=ocdr(a);
-	tOBJ v=ocar(a); a=ocdr(a);
-	tOBJ file=ocar(a); a=ocdr(a);
-	int val;
 	// !MAT LOAD 8 "text.txt"
 	// !MAT STORE 8 "test.txt"
+	int val;
 
-	if (n.type==STR && n.type==INTGR)
+	if (n.type==STR && v.type==INTGR && file.type==INTGR)
 	{
 		if (!strcmp(n.string,"LOAD"))
 		{

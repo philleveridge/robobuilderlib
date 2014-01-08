@@ -23,9 +23,10 @@
 #include "odict.h"
 #include "ofunction.h"
 
+#include "oexpress.h"
+
 
 extern int dbg;
-tOBJ eval(tOBJ o, Dict *e);
 
 char *readword(char *s, char *w)
 {
@@ -347,6 +348,7 @@ tOBJ formula(tOBJ *o, Dict *e)
 	return r;
 }
 
+
 tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 {
 	tOBJ r, arg, body;
@@ -362,11 +364,20 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 
 	while (onull(arg).number==0)
 	{
-		tOBJ n=ocar(arg);
-		tOBJ v=eval(ocar(x),(Dict *)e.dict);
+		tOBJ n=ocar(arg);tOBJ v;
+
+		if (oatom(x).number)
+		{
+			v=eval(x,(Dict *)e.dict);
+		}
+		else
+		{
+			v=eval(ocar(x),(Dict *)e.dict);
+		}
 
 		if (n.type==STR || n.type==SYM)
 			dict_add((Dict*)e.dict, n.string, v);
+
 		arg=ocdr(arg);
 		x=ocdr(x);
 	}
@@ -382,6 +393,76 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 		} while (onull(body).number==0);
 	}	
 	return r;
+}
+
+tOBJ procall (tOBJ h, tOBJ o, Dict *e )
+{
+
+	if (h.type==LAMBDA)
+	{
+		//!ABC 2 4
+		if (dbg) printf ("calling - lambda\n");
+		return callfn(h, o, e);
+	}
+
+	if (h.type==FUNC)
+	{
+		return (*h.func)(eval(o,e));
+	}
+
+
+	if (h.type!=SYM)
+	{
+		return emptyObj();
+	}
+
+	//lookup procedure
+	int op = getOP(h.string);
+	if (op>=0)
+	{
+		if (oplist[op].type != NA && oplist[op].type != CBR && oplist[op].type != OBR)
+		{
+			tOBJ a = ocar(o); o=ocdr(o);
+			tOBJ b = ocar(o); 					
+			return omath(eval(a,e),eval(b,e),oplist[op].type);
+		}
+		else//call
+		switch(oplist[op].nop)
+		{
+		case 0:
+			return (*oplist[op].func)(emptyObj());
+		case 1:	
+			return (*oplist[op].func)(eval(ocar(o),e));
+		case 2:	
+			{
+			tOBJ a = ocar(o); o=ocdr(o);
+			tOBJ b = ocar(o); 
+			return (*oplist[op].func2)(eval(a,e),eval(b,e));
+			}
+		case 3:	
+			{
+			tOBJ a = ocar(o); o=ocdr(o);
+			tOBJ b = ocar(o); o=ocdr(o);
+			tOBJ c = ocar(o); 
+			return (*oplist[op].func3)(eval(a,e),eval(b,e),eval(c,e));
+			}
+		case 5:	
+			{
+			tOBJ a = ocar(o); o=ocdr(o);
+			tOBJ b = ocar(o); o=ocdr(o);
+			tOBJ c = ocar(o); o=ocdr(o);
+			tOBJ d = ocar(o); o=ocdr(o);
+			tOBJ g = ocar(o); 
+			return (*oplist[op].func5)(eval(a,e),eval(b,e)
+				,eval(c,e),eval(d,e),eval(g,e));
+			}
+		default:
+			return (*oplist[op].funce)(o,e);
+			break;
+		}
+	}
+	printf ("? unknown symbol [%s]\n", h.string);
+	return emptyObj();
 }
 
 tOBJ eval(tOBJ o, Dict *e)
@@ -402,6 +483,16 @@ tOBJ eval(tOBJ o, Dict *e)
 		return dict_getk(e, o.string);
 	}
 
+	if (o.type==LAMBDA)
+	{
+		return o;
+	}
+
+	if (o.type==FUNC)
+	{
+		return o;
+	}
+
 	h=ocar(o);
 	o=ocdr(o);
 
@@ -409,18 +500,7 @@ tOBJ eval(tOBJ o, Dict *e)
 	{
 		if (dict_contains(e, h.string))
 		{
-			tOBJ d=dict_getk(e,h.string);
-
-			if (d.type==LAMBDA)
-			{
-				//!ABC 2 4
-				if (dbg) printf ("calling - %s\n", h.string);
-				return callfn(d, o, e);
-			}
-			else
-			{
-				return emptyObj(); //error
-			}
+			h=dict_getk(e,h.string);
 		}
 
 		if (!strcmp(h.string,"QT"))
@@ -486,7 +566,7 @@ tOBJ eval(tOBJ o, Dict *e)
 			tOBJ fn = ocar(o); o=ocdr(o);
 			o.type  = LAMBDA;
 			set(e, fn.string, o);
-			return emptyObj();
+			return o;
 		}
 		else
 		if (!strcasecmp(h.string,"LAMBDA"))
@@ -498,51 +578,7 @@ tOBJ eval(tOBJ o, Dict *e)
 		else
 		{
 			//lookup procedure
-			int op = getOP(h.string);
-			if (op>=0)
-			{
-				if (oplist[op].type != NA && oplist[op].type != CBR && oplist[op].type != OBR)
-				{
-					tOBJ a = ocar(o); o=ocdr(o);
-					tOBJ b = ocar(o); 					
-					return omath(eval(a,e),eval(b,e),oplist[op].type);
-				}
-				else//call
-				switch(oplist[op].nop)
-				{
-				case 0:
-					return (*oplist[op].func)(emptyObj());
-				case 1:	
-					return (*oplist[op].func)(eval(ocar(o),e));
-				case 2:	
-					{
-					tOBJ a = ocar(o); o=ocdr(o);
-					tOBJ b = ocar(o); 
-					return (*oplist[op].func2)(eval(a,e),eval(b,e));
-					}
-				case 3:	
-					{
-					tOBJ a = ocar(o); o=ocdr(o);
-					tOBJ b = ocar(o); o=ocdr(o);
-					tOBJ c = ocar(o); 
-					return (*oplist[op].func3)(eval(a,e),eval(b,e),eval(c,e));
-					}
-				case 5:	
-					{
-					tOBJ a = ocar(o); o=ocdr(o);
-					tOBJ b = ocar(o); o=ocdr(o);
-					tOBJ c = ocar(o); o=ocdr(o);
-					tOBJ d = ocar(o); o=ocdr(o);
-					tOBJ g = ocar(o); 
-					return (*oplist[op].func5)(eval(a,e),eval(b,e)
-						,eval(c,e),eval(d,e),eval(g,e));
-					}
-				default:
-					return (*oplist[op].funce)(o,e);
-					break;
-				}
-			}
-			printf ("? unknown symbol [%s]\n", h.string);
+			return procall (h, o, e );
 		}
 	}
 	return r;

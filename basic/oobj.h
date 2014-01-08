@@ -16,7 +16,7 @@ typedef struct object {
                 char    *string;
                 void    *cell;
                 void    *dict;
-		struct object	(*func)(struct object);
+		struct  object	(*func)(struct object);
 		fMatrix fmat2;
                 Motion  mot;
       	};
