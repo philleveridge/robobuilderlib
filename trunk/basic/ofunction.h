@@ -91,7 +91,7 @@ extern tOBJ obf(tOBJ  r);
 extern tOBJ oload(tOBJ  r);
 extern tOBJ osave(tOBJ  r);
 extern tOBJ odict(tOBJ  r);
-extern tOBJ omatr(tOBJ  r);// {"LOAD" "STOR"}
+extern tOBJ omatr(tOBJ  r, tOBJ, tOBJ);// {"LOAD" "STOR"}
 extern tOBJ oprt(tOBJ  r);
 extern tOBJ olet(tOBJ  r); 
 extern tOBJ odefn(tOBJ  r); 
