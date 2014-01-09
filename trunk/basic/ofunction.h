@@ -47,9 +47,14 @@ extern tOBJ ornd(tOBJ  r);
 extern tOBJ odsig(tOBJ  r);
 extern tOBJ opsd(tOBJ  r);
 extern tOBJ omax(tOBJ  r, tOBJ s);
+
 extern tOBJ omat(tOBJ  r, tOBJ, tOBJ);
+extern tOBJ omats(tOBJ  r, tOBJ, tOBJ, tOBJ, tOBJ);
+extern tOBJ omatr(tOBJ  r, tOBJ, tOBJ);
+
 extern tOBJ otrn(tOBJ  r);
 extern tOBJ oapply(tOBJ  r, tOBJ);
+extern tOBJ omapcar(tOBJ  r, tOBJ);
 extern tOBJ orshp(tOBJ  r, tOBJ, tOBJ);
 extern tOBJ orep(tOBJ  r, tOBJ, tOBJ);
 extern tOBJ ozero(tOBJ  r, tOBJ s);
@@ -89,9 +94,9 @@ extern tOBJ owhs(tOBJ  r);
 extern tOBJ oexit(tOBJ  r);
 extern tOBJ obf(tOBJ  r);
 extern tOBJ oload(tOBJ  r);
-extern tOBJ osave(tOBJ  r);
+extern tOBJ osave(tOBJ  r, tOBJ);
 extern tOBJ odict(tOBJ  r);
-extern tOBJ omatr(tOBJ  r, tOBJ, tOBJ);// {"LOAD" "STOR"}
+
 extern tOBJ oprt(tOBJ  r);
 extern tOBJ olet(tOBJ  r); 
 extern tOBJ odefn(tOBJ  r); 
@@ -115,6 +120,10 @@ extern tOBJ olist   (tOBJ  r, Dict *);
 extern tOBJ oappend (tOBJ  r, Dict *);
 extern tOBJ opr     (tOBJ  r, Dict *);
 extern tOBJ oimg    (tOBJ  r, Dict *); // {"UNLO" "LOAD" "FILT" "RAW" "THRE" "COLO" "PROC" "REG" "SHOW" "DEBU"}
+
+extern tOBJ ofor    (tOBJ  r, Dict *);
+extern tOBJ ofore   (tOBJ  r, Dict *);
+extern tOBJ owhile  (tOBJ  r, Dict *);
 
 
 #endif

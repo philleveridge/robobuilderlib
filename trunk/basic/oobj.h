@@ -52,4 +52,6 @@ extern tOBJ  cnvtFloattoList(int an, float *array);
 extern int   cnvtListtoByte (tOBJ lst, int an, BYTE *array);
 extern tOBJ  makenumfstr    (char *s);
 
+extern char *objtype	    (tOBJ t);
+
 #endif

@@ -399,6 +399,38 @@ tOBJ makenumfstr(char *s)
 	return r;
 }
 
+char *objtype(tOBJ t)
+{
+	char *st;
+	switch (t.type)
+	{  
+	case INTGR: st="Int   "; break;
+
+	case FLOAT: st="Float "; break;
+
+	case STR:   st="String"; break;
+
+	case FMAT2: st="Matrix"; break;
+
+	case CELL:  st="List  "; break;
+
+	case SYM:   st="Symbol"; break;
+
+	case LAMBDA:st="Lambda"; break;
+
+	case BOOLN: st="bool  ";break;
+
+	case EMPTY: st="Empty ";break;
+
+	case DICT:  st="Dict  ";break;
+
+	case RBM:   st="RBM   ";break;
+
+	case FUNC:  break;
+	}
+	return st;
+}
+
 
 
 
