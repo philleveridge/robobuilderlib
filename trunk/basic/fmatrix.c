@@ -322,7 +322,7 @@ fMatrix fmatsum2(fMatrix *A, int mode)
 
 float fsum(fMatrix *A)
 {
-	float x;
+	float x=0.0;
   	for (int i=0; i < (A->h)*(A->w); i++)
 		x += A->fstore[i];
 	return x;
