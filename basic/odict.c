@@ -70,11 +70,7 @@ int dict_add(Dict *d, char *key, tOBJ value)
 		char *cp = d->db[d->ip].key;
 		strncpy(cp, key, 32);
 
-		//print(value);printf (" ... ");
-
 		t1 = cloneObj(value);
-
-		//print(t1);printf (" ...\n ");
 
 		d->db[d->ip].value = t1; // should be clone;
 		(d->ip)++;
@@ -138,6 +134,11 @@ int dict_update(Dict *d, char *key, tOBJ value)
 		d->db[i].value = cloneObj(value); // clone it?
 		return 1;
 	}
+//	else
+//	{
+//		if (dict_update(d->outer, key, value))
+//			return 1;
+//	}
 	dict_add(d, key, value);
 	return 0;
 }
@@ -150,32 +151,8 @@ int dict_print(Dict *d)
 
 	while (i<d->ip)
 	{
-		tOBJ t;
-		char *st="";
-		t = d->db[i].value;
-
-		switch (t.type)
-		{  
-		case INTGR: st="Int   "; break;
-
-		case FLOAT: st="Float "; break;
-
-		case STR:   st="String"; break;
-
-		case FMAT2: st="Matrix"; break;
-
-		case CELL:  st="List  "; break;
-
-		case SYM:   st="Symbol"; break;
-
-		case LAMBDA:st="Lambda"; break;
-
-		case BOOLN: st="bool   ";break;
-
-		case EMPTY: st="Empty  ";break;
-
-		case FUNC:  break;
-		}
+		tOBJ t  = d->db[i].value;
+		char *st=objtype(t);
 
 		printf ("%7s [%s] ", d->db[i].key, st );
 
@@ -183,6 +160,11 @@ int dict_print(Dict *d)
 		{
 			t.type=CELL;
 			print(t);
+		}
+		else 
+		if (t.type==DICT || t.type==RBM)
+		{
+			printf (" +++");
 		}
 		else
 		{

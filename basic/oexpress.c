@@ -354,13 +354,12 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 	tOBJ r, arg, body;
 	tOBJ e= makedict2(env);
 
-	if (dbg) printf ("lambda\n");
 	fn.type=CELL;
 
 	arg=ocar(fn);
 	body=ocdr(fn);
 
-	if (dbg) println("args=",x);
+	if (dbg) println("Lambda args=",x);
 
 	while (onull(arg).number==0)
 	{
@@ -401,7 +400,6 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 	if (h.type==LAMBDA)
 	{
 		//!ABC 2 4
-		if (dbg) printf ("calling - lambda\n");
 		return callfn(h, o, e);
 	}
 

@@ -107,6 +107,7 @@ tOP oplist[] = {
 //MATRIX BASED
 	{"TRN",  40, NA,    1, otrn},   //function single arg    <fMatrix>
 	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
+	{"SCELL",40, NA,    5, omats},   //function three args   <fMatrix, int, int>
 	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
 	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
 	{"ZERO", 40, NA,    2, ozero},  //function two args  <fint, int>
@@ -118,7 +119,8 @@ tOP oplist[] = {
 
 /*40 */	{"H2SM", 40, NA,    1, ohsum2},  //function <fMatrix>
 	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
-	{"MAPCAR",40,NA,    2, oapply}, //function two args   <fMatrix>
+	{"MAPCAR",40,NA,    2, omapcar}, //function two args   <fMatrix>
+	{"APPLY",40,NA,     2, oapply}, //function two args   <fMatrix>
 	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
 	{"MCOND",40, NA,    5, omcond},  //function three args   <fMatrix>
 	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
@@ -153,7 +155,7 @@ tOP oplist[] = {
 	{"GETK",  40, NA,   1, oget}, //function single arg
 
 	{"LOAD",  40, NA,   1, oload},//
-	{"SAVE",  40, NA,   1, osave},//
+	{"SAVE",  40, NA,   2, osave},//
 	{"REX",   40, NA,   2, orex},//
 	{"LFT",   40, NA,   2, olft},//
 /*80 */	{"RGT",   40, NA,   2, orgt},//
@@ -170,7 +172,12 @@ tOP oplist[] = {
 	{"AND",   40, NA,   9, oand}, 
 	{"OR",    40, NA,   9, oor}, 
 	{"PRINT", 40, NA,   9, opr},  
-	{"PR",    40, NA,   9, opr},   
+	{"PR",    40, NA,   9, opr}, 
+
+	{"FOR",    40, NA,  9, ofor}, 
+	{"FOREACH",40, NA,  9, ofore}, 
+	{"WHILE",  40, NA,  9, owhile}, 
+  
 	{"IMAGE", 40, NA,   9, oimg}
 };
 
@@ -612,14 +619,14 @@ tOBJ omax(tOBJ a, tOBJ r)
 /*  matrix function (loating point)                       */
 /**********************************************************/
 /*
-!LET MA=[1.0 2.0;3.0 4.0]
-!print cell(ma,1,1)
-!PRINT DSIG(MA)
-!print apply(ma, "expr")
+!SET MA [1.0 2.0;3.0 4.0]
+!print cell ma 1 1
+!PRINT DSIG MA
+!MAPCAR 'expr ma
 */
 tOBJ omat(tOBJ m, tOBJ a, tOBJ b) 
 {
-	//binary signmoid function
+	//read matrix cell
 	tOBJ r;
 	int row,col;
 	r=makefloat(0.0);
@@ -632,6 +639,39 @@ tOBJ omat(tOBJ m, tOBJ a, tOBJ b)
 	}
 	return r;
 }
+
+tOBJ omats(tOBJ m, tOBJ a, tOBJ b, tOBJ v, tOBJ dummy) 
+{
+	//store in mat cell
+	float cv=tofloat(v);
+	int row,col;
+	row=toint(a);
+	col=toint(b);
+
+	if (m.type==FMAT2) 
+	{
+		fset2(&(m.fmat2),col,row, cv);
+	}
+	return makefloat(cv);
+}
+
+
+tOBJ oimp (tOBJ a, tOBJ b, tOBJ c)
+{
+	//IMP("A",2,2);
+
+	tOBJ r;
+	r.type=EMPTY;
+
+	if (a.type != STR)
+		return r;
+
+	r.type=FMAT2;
+	r.fmat2=fimport2(*(a.string), toint(b), toint(c)) ;
+		
+	return r;
+}
+
 
 tOBJ ominv(tOBJ a)
 {
@@ -759,13 +799,35 @@ tOBJ odsig(tOBJ a)
 
 tOBJ oapply(tOBJ a, tOBJ b)
 {
+	// APPLY 'PLUS '{2 3 4} -> 9
+
+	tOBJ r=emptyObj();
+	if (dbg) printf ("APPLY -\n");
+
+	//a=eval(a,env.dict);
+	if (b.type==CELL)
+	{
+		r  = procall (a, b, env.dict);		
+	}
+	return r;
+}
+/*
+!> MAPCAR 'FACT '{1 2 3 4}
+ = {1 2 6 24}
+!> MAPCAR {LAMBDA {X} {+ X 1}} '{1 2 3 4}
+ = {2 3 4 5}
+*/
+tOBJ omapcar(tOBJ a, tOBJ b)
+{
 	tOBJ r=emptyObj(), v;
 	if (dbg) printf ("Mapcar -\n");
+
+	a=eval(a,env.dict);
 
 	if (b.type==FMAT2)
 	{
 		// FUNC FOO {X} {+ 1.0 X}
-		// MAPCAR FOO [ 1 2 ; 3 4 ]
+		// MAPCAR 'FOO [ 1 2 ; 3 4 ]
 		int i=0, j=0;
 		// create new matrix
 		r.type=FMAT2;
@@ -951,21 +1013,6 @@ tOBJ ozerod(tOBJ a)
 	return r;
 }
 
-tOBJ oimp (tOBJ a, tOBJ b, tOBJ c)
-{
-	//IMP("A",2,2);
-
-	tOBJ r;
-	r.type=EMPTY;
-
-	if (a.type != STR)
-		return r;
-
-	r.type=FMAT2;
-	r.fmat2=fimport2(*(a.string), toint(b), toint(c)) ;
-		
-	return r;
-}
 
 /**********************************************************/
 /*  List functions                                       */
@@ -1145,8 +1192,8 @@ tOBJ oatom(tOBJ a)
 
 tOBJ omemb(tOBJ a)
 {
-	//!MEMB {2 {2 3}} -> 1
-	//!MEMB {4 {2 3}} -> 0
+	//!MEMB '{2 {2 3}} -> 1
+	//!MEMB '{4 {2 3}} -> 0
 	if (a.type==CELL)
 	{
 		tOBJ key = ocar(a);
@@ -1176,9 +1223,9 @@ tOBJ omemb(tOBJ a)
 
 tOBJ oasso(tOBJ a)
 {
-	//!ASSN {1 {{1 2} {2 3} {3 4}}} -> {1 2}
-	//!ASSN {2 {{1 2} {2 3} {3 4}}} -> {2 3}
-	//!ASSN {7 {{1 2} {2 3} {3 4}}} -> NIL
+	//!ASSN '{1 {{1 2} {2 3} {3 4}}} -> {1 2}
+	//!ASSN '{2 {{1 2} {2 3} {3 4}}} -> {2 3}
+	//!ASSN '{7 {{1 2} {2 3} {3 4}}} -> NIL
 
 	tOBJ r=emptyObj();
 	if (a.type==CELL)
@@ -1279,27 +1326,25 @@ tOBJ opr(tOBJ a, Dict *e)
 	//> !PR 1
 	//1
 	tOBJ t=emptyObj();
+	int f=1;
 	while (onull(a).number==0)
 	{
-		t=eval(ocar(a),e);
-		print(t);
+		tOBJ v=ocar(a);
+		if (v.type==SYM && !strcmp(v.string,";"))
+		{
+			printf(" ");
+			f=0;
+		}
+		else
+		{
+			t=eval(v,e);
+			print(t);
+			f=1;
+		}
 		a=ocdr(a);
 	}
-	printf ("\n");
+	if (f) printf ("\n");
 	return t;
-}
-
-tOBJ obegin(tOBJ o, Dict *e)
-{
-	//> !PR 1
-	//1
-	tOBJ r=emptyObj();
-	while (o.type != EMPTY)
-	{
-		tOBJ exp = ocar(o); o=ocdr(o);	
-		r=eval(exp,e);
-	}
-	return r;
 }
 
 tOBJ ocond(tOBJ o, Dict *e)
@@ -1323,39 +1368,40 @@ tOBJ ocond(tOBJ o, Dict *e)
 tOBJ oset(tOBJ a)
 {
 /*
-!SET {"A" 2 "B" 3}
-PRINT A,B
-!LET EN=DICT '{{"a" 1} {"b" 2.3}}
-!GETK '{EN "b"}
-!SETK '{EN "b" 2.9}
+SETK '{A 2 B 3}
+GETK 'A
+> PRINT A,B
+SET ENZ {DICT '{{"a" 1} {"b" 2.3}}}
+set env {DICT '{{AZ 1.0} {BZ 2.0}}}
+GETK '{ENV 'AZ}
+SETK '{ENV 'BZ 2.9}
 */
 	tOBJ r=emptyObj();
-	tOBJ env=emptyObj();
-	tOBJ name;
+	tOBJ en=emptyObj();
 	tOBJ value=emptyObj();
 
 	if (a.type==CELL)
 	{
 		while(1) {
-			name = ocar(a);
+			tOBJ name = eval(ocar(a),env.dict);
 			if (name.type ==DICT)
 			{
-				env= name;
+				en   = name;
 				name = ocar(ocdr(a));
-				a = ocdr(a);
+				a    = ocdr(a);
 			}
 
 			if (name.type==EMPTY) break;
 			if (name.type==SYM)
 			{
-				value = ocar(ocdr(a));
-				if (env.type==EMPTY)
+				value = eval(ocar(ocdr(a)), en.dict);
+				if (en.type==EMPTY)
 				{
-					set(NULL, name.string, value);
+					set(en.dict, name.string, value);
 				}
 				else
 				{
-					dict_update(env.dict, name.string, value);
+					dict_update(en.dict, name.string, value);
 				}
 			}
 			a = ocdr(ocdr(a));
@@ -1367,28 +1413,34 @@ PRINT A,B
 
 tOBJ oget(tOBJ a)
 {
-	//> !GET {"A"}
-	//> !GET {A}
+	//> !GETK '{A B}
+	//> !GETK 'A
+	//SET ENV {DICT '{{AZ 1.0} {BZ 2.0}}}
+	//GETK '{ENV 'AZ}
 	tOBJ r=emptyObj();
 	if (a.type==CELL)
 	{
-		tOBJ name = ocar(a);
+		tOBJ name = eval(ocar(a),env.dict);
 
 		if (name.type==SYM )
-			r = get(NULL, name.string);
+		{
+			r = get(env.dict, name.string);
+		}
 
 		if (name.type==DICT)
 		{
-			tOBJ env = name;
-			name = ocar(ocdr(a));
-			if (name.type==STR)
-				//r = dict_getk(env.dict, name.string);
-				r = get(env.dict, name.string);
+			tOBJ en = name;
+			name = eval(ocar(ocdr(a)),en.dict);
+
+			if (name.type==STR || name.type==SYM )
+			{
+				r = get(en.dict, name.string);
+			}
 		}	
 	}
 	if (a.type==SYM)
 	{
-		r = get(NULL, a.string);
+		r = get(env.dict, a.string);
 	}	
 	return r;
 }
@@ -1396,8 +1448,8 @@ tOBJ oget(tOBJ a)
 
 tOBJ onth(tOBJ a, tOBJ lst)
 {
-	//!nth {0 {"one" "two" "three"}}
-	//!nth {5 {"one" "two" "three"}}
+	//!nth 0 '{"one" "two" "three"}
+	//!nth 5 '{"one" "two" "three"}
 	int cnt = toint(a);
 
 	if (lst.type == CELL)
@@ -1682,16 +1734,16 @@ tOBJ oload(tOBJ  n)
 }
 
 
-tOBJ osave(tOBJ  n)
+tOBJ osave(tOBJ  f, tOBJ r)
 {
 	//!SAVE "fn" object
-	tOBJ f=ocar(n);
-	tOBJ r=ocar(ocdr(n));
-
        	FILE *fp;
 	char *s;
 
-	if (f.type==STR) s = f.string;
+	if (f.type==STR) 
+		s = f.string;
+	else
+		return emptyObj();
 	
 
 	if ((fp = fopen(s, "w")) == 0)
@@ -1716,7 +1768,7 @@ tOBJ osave(tOBJ  n)
 
 tOBJ odict(tOBJ  lst)
 {
-	//!DICT {{"a" 2} {"b" 3} {"c" 4}}
+	//!DICT '{{"a" 2} {"b" 3} {"c" 4}}
 	tOBJ r;
 	if (lst.type==CELL)
 	{
@@ -1726,7 +1778,7 @@ tOBJ odict(tOBJ  lst)
 			tOBJ n = ocar(pair);
 			tOBJ v = ocar(ocdr(pair));
 
-			if (n.type==STR)
+			if (n.type==STR ||n.type==SYM  )
 				dict_add(r.dict, n.string, v);
 
 			lst=ocdr(lst); 
@@ -1737,43 +1789,126 @@ tOBJ odict(tOBJ  lst)
 	return emptyObj();
 }
 
+/***********************************************************************
+
+LOOP functions
+
+************************************************************************/
+
+
+tOBJ obegin(tOBJ o, Dict *e)
+{
+	tOBJ r=emptyObj();
+	while (o.type != EMPTY)
+	{
+		tOBJ exp = ocar(o); o=ocdr(o);	
+		r=eval(exp,e);
+	}
+	return r;
+}
+
+tOBJ owhile  (tOBJ  o, Dict *e)
+{
+	//SET N 5
+	//!WHILE {> N 0} {DO {PRINT N} {SET N {- N 1}}}
+	tOBJ r=emptyObj();
+
+	tOBJ cond =ocar(o);
+	o=ocdr(o);
+
+	while (toint(eval(cond,e))!=0)
+	{
+		//loop
+		r = obegin(o,e);
+	}
+	return r;
+}
+
+
+tOBJ ofore   (tOBJ  o, Dict *e)
+{
+	//!FOREACH X '{1 2 3} {PR X}
+	//!FOREACH X [1 2 3]  {PR X}
+	tOBJ r=emptyObj();
+
+	tOBJ ind =ocar(o);
+	o=ocdr(o);
+
+	if (ind.type != SYM) return emptyObj();
+
+	tOBJ list =ocar(o);
+	o=ocdr(o);
+
+	if (list.type == FMAT2)
+	{		
+		for (int i=0; i<list.fmat2.w; i++)
+		{
+			for (int j=0;j<list.fmat2.h; j++)
+			{
+				tOBJ v;
+				v.type=FLOAT;
+				v.floatpoint =fget2(&list.fmat2,i,j);
+				dict_update(e, ind.string, v);
+				r = obegin(o,e);		
+			}
+		}
+		return r;
+	}
+
+
+	do {
+		tOBJ value=ocar(list);
+		list=ocdr(list);
+
+		dict_update(e, ind.string, value);
+		
+		//loop
+		r = obegin(o,e);
+
+	} while (list.type != EMPTY);
+
+	return r;
+}
+
+
+tOBJ ofor (tOBJ  o, Dict *e)
+{
+	//!FOR X '{3 5} {PR X}
+	int s,f;
+	tOBJ r=emptyObj();
+
+	tOBJ ind =ocar(o);
+	o=ocdr(o);
+
+	if (ind.type != SYM) return emptyObj();
+
+	tOBJ range =ocar(o);
+
+	s=toint(eval(ocar(range),e));
+	f=toint(eval(ocar(ocdr(range)),e));
+
+	o=ocdr(o);
+
+	for (int i=s; i<=f; i++)
+	{
+		dict_update(e, ind.string, makeint(i));
+		r = obegin(o,e);
+	}
+	return r;
+}
 
 
 
 /***********************************************************************
 
-Extended input
+IMAGE functions
 
 ************************************************************************/
 
-tOBJ omatr(tOBJ n, tOBJ v, tOBJ file)
-{
-	// !MAT LOAD 8 "text.txt"
-	// !MAT STORE 8 "test.txt"
-	int val;
-
-	if (n.type==STR && v.type==INTGR && file.type==INTGR)
-	{
-		if (!strcmp(n.string,"LOAD"))
-		{
-			val=toint(v);
-			//v=get(env, "DFN");
-			matrixload(val, file.string);
-		}
-		if (!strcmp(n.string,"STORE"))
-		{
-			val=toint(v);
-			//v=get(env, "DFN");
-			matrixstore(val, file.string);
-		}
-	}
-	return (emptyObj());
-}
-
 tOBJ oimg(tOBJ v, Dict *e)
 {
-	//!IMAGE {"command" {parameters}}
-	//comand : {"UNLOCK" "LOAD" "FILT" "RAW" "THRE" "COLOR" "PROC" "REG" "SHOW" 
+	//!IMAGE "command" {parameters}
+	//comand : "UNLOCK" "LOAD" "FILT" "RAW" "THRE" "COLOR" "PROC" "REG" "SHOW" 
 	
 	tOBJ cmd = ocar(v);
 	v=ocdr(v);
@@ -1966,6 +2101,13 @@ tOBJ obf(tOBJ v)
 }
 
 
+
+/***********************************************************************
+
+Import export functions
+
+************************************************************************/
+
 tOBJ orbmrf(tOBJ v)
 {
 	tOBJ r=emptyObj();
@@ -1980,6 +2122,31 @@ tOBJ orbmrf(tOBJ v)
 	}
 	return r;
 }
+
+tOBJ omatr(tOBJ n, tOBJ v, tOBJ file)
+{
+	// !MAT LOAD 8 "text.txt"
+	// !MAT STORE 8 "test.txt"
+	int val;
+
+	if (n.type==STR && v.type==INTGR && file.type==INTGR)
+	{
+		if (!strcmp(n.string,"LOAD"))
+		{
+			val=toint(v);
+			//v=get(env, "DFN");
+			matrixload(val, file.string);
+		}
+		if (!strcmp(n.string,"STORE"))
+		{
+			val=toint(v);
+			//v=get(env, "DFN");
+			matrixstore(val, file.string);
+		}
+	}
+	return (emptyObj());
+}
+
 
 
 
