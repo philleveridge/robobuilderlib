@@ -40,4 +40,6 @@ extern fMatrix trans(fMatrix *num, fMatrix *fac, int r);
 extern float   detrminant(fMatrix *a, int k) ;
 extern fMatrix inverse(fMatrix *s);
 
+extern float   fsum(fMatrix *A);
+
 #endif
