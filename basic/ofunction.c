@@ -119,6 +119,7 @@ tOP oplist[] = {
 
 /*40 */	{"H2SM", 40, NA,    1, ohsum2},  //function <fMatrix>
 	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
+	{"SUM",  40, NA,    1, osum},  //function <fMatrix>
 	{"MAPCAR",40,NA,    2, omapcar}, //function two args   <fMatrix>
 	{"APPLY",40,NA,     2, oapply}, //function two args   <fMatrix>
 	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
@@ -730,6 +731,18 @@ tOBJ ohsum(tOBJ a)
 	{
 		r.type=FMAT2;
 		r.fmat2=fmatsum2(&a.fmat2, 1);	
+	}
+	return r;
+}
+
+tOBJ osum(tOBJ a)
+{
+	tOBJ r=emptyObj();
+
+	if (a.type==FMAT2)
+	{ 
+		r.type=FLOAT;
+		r.floatpoint = fsum(&a.fmat2);
 	}
 	return r;
 }
@@ -1836,7 +1849,7 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 
 	if (ind.type != SYM) return emptyObj();
 
-	tOBJ list =ocar(o);
+	tOBJ list = eval(ocar(o),e);
 	o=ocdr(o);
 
 	if (list.type == FMAT2)
@@ -1855,17 +1868,19 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 		return r;
 	}
 
+	if (list.type == CELL)
+	{			
+		do {
+			tOBJ value=ocar(list);
+			list=ocdr(list);
 
-	do {
-		tOBJ value=ocar(list);
-		list=ocdr(list);
-
-		dict_update(e, ind.string, value);
+			dict_update(e, ind.string, value);
 		
-		//loop
-		r = obegin(o,e);
+			//loop
+			r = obegin(o,e);
 
-	} while (list.type != EMPTY);
+		} while (list.type != EMPTY);
+	}
 
 	return r;
 }

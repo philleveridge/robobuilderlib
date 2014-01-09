@@ -320,6 +320,13 @@ fMatrix fmatsum2(fMatrix *A, int mode)
 	return R;
 }
 
+float fsum(fMatrix *A)
+{
+	float x;
+  	for (int i=0; i < (A->h)*(A->w); i++)
+		x += A->fstore[i];
+	return x;
+}
 
 fMatrix fconvolve2(fMatrix *A, fMatrix *B)  
 {	

@@ -64,6 +64,7 @@ extern tOBJ ovsum(tOBJ  r);
 extern tOBJ ohsum(tOBJ  r);
 extern tOBJ ovsum2(tOBJ  r);
 extern tOBJ ohsum2(tOBJ  r);
+extern tOBJ osum(tOBJ  r);
 extern tOBJ oconv(tOBJ  r, tOBJ);
 extern tOBJ oimp(tOBJ  r, tOBJ, tOBJ);
 extern tOBJ omcond(tOBJ  r, tOBJ, tOBJ, tOBJ, tOBJ);
