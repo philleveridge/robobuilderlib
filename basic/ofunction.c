@@ -1920,6 +1920,10 @@ IMAGE functions
 
 ************************************************************************/
 
+extern int gkp;
+extern int imready;
+extern int pbrunning;
+
 tOBJ oimg(tOBJ v, Dict *e)
 {
 	//!IMAGE "command" {parameters}
@@ -2061,6 +2065,14 @@ tOBJ oimg(tOBJ v, Dict *e)
 			case 6:
 				output_frame(sz); break;
 			}
+		}
+		if (!strcmp(cmd.string,"WAIT"))
+		{
+			int key;
+			while (imready==0 && (key=uartGetByte())<0 ) 
+				; // wait for signal
+			imready=0;
+			if (key>=0) gkp=key;
 		}
 		else
 		{

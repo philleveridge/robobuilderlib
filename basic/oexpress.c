@@ -52,7 +52,11 @@ char *readword(char *s, char *w)
 			}
 		}
 
-		if ((c=='<' && *s =='>'  && n==0) || (c=='<' && *s =='=' && n==0) || (c=='>' && *s=='=' && n==0) )
+		if (	(c=='<' && *s =='>'  && n==0) 
+			|| (c=='<' && *s =='=' && n==0) 
+			|| (c=='.' && *s =='*' && n==0) 
+			|| (c=='.' && *s =='^' && n==0) 
+			|| (c=='>' && *s =='=' && n==0) )
 		{
 			*w++ = c;
 			*w++=*s++;
@@ -127,6 +131,11 @@ fMatrix readmatrix(char **str )
 	while (s!=0 && *s != 0)
 	{
 		s = readword(s, buffer);
+
+		if (!strcmp(buffer,"-")) 
+		{
+			s = readword(s, buffer+1);
+		}
 
 		if (!strcmp(buffer,"]")) 
 			break;
