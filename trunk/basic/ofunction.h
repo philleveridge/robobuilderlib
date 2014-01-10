@@ -85,12 +85,13 @@ extern tOBJ onull(tOBJ  r);
 extern tOBJ omemb(tOBJ  r);
 extern tOBJ oatom(tOBJ  r);
 extern tOBJ oasso(tOBJ  r);
-
+extern tOBJ onot(tOBJ  r);
 extern tOBJ okey(tOBJ  r);
 extern tOBJ owait(tOBJ a);
 extern tOBJ oset(tOBJ  r);
 extern tOBJ oget(tOBJ  r);
 extern tOBJ oserv(tOBJ  r);
+extern tOBJ oputch(tOBJ a);
 
 extern tOBJ opose(tOBJ  r);
 extern tOBJ owhs(tOBJ  r);

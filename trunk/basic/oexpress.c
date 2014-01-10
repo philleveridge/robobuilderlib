@@ -64,6 +64,13 @@ char *readword(char *s, char *w)
 			return s;
 		}
 
+		if ((c=='-' || c=='+') && *s>='0' && *s<='9' && sf==0)
+		{
+			*w++ = c;
+			continue;
+		}
+
+
 		if ( strchr("`'+-*/=:,;[]{}()<> ",c)>0  && sf==0)
 		{
 			if (c != ' ' && n==0) 
@@ -131,11 +138,6 @@ fMatrix *readmatrix(char **str )
 	while (s!=0 && *s != 0)
 	{
 		s = readword(s, buffer);
-
-		if (!strcmp(buffer,"-")) 
-		{
-			s = readword(s, buffer+1);
-		}
 
 		if (!strcmp(buffer,"]")) 
 			break;
@@ -419,7 +421,6 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 
 tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 {
-
 	if (h.type==LAMBDA)
 	{
 		//!ABC 2 4
@@ -501,7 +502,16 @@ tOBJ eval(tOBJ o, Dict *e)
 
 	if (o.type==SYM)
 	{
-		return dict_getk(e, o.string);
+		int op = getOP(o.string);
+		if (op>=0 && oplist[op].type == NA)
+		{
+			tOBJ r;
+			r.type=FUNC;
+			r.func =oplist[op].func;
+			return r;
+		}
+		else
+			return dict_getk(e, o.string);
 	}
 
 	if (o.type==LAMBDA)
