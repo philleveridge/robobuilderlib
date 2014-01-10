@@ -178,6 +178,9 @@ tOP oplist[] = {
 	{"FOR",    40, NA,  9, ofor}, 
 	{"FOREACH",40, NA,  9, ofore}, 
 	{"WHILE",  40, NA,  9, owhile}, 
+
+	{"KEY",    40, NA,  1, okey}, 
+	{"WAIT",    40, NA,  1, owait}, 
   
 	{"IMAGE", 40, NA,   9, oimg}
 };
@@ -416,57 +419,57 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	if (o1.type==FMAT2 && o2.type==FMAT2 && (op==PLUS || op==MINUS || op==DIVD || op==PROD))
 	{
 		r.type=FMAT2;	
-		if (op==PLUS)  r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '+') ;
-		if (op==MINUS) r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '-') ;	
-		if (op==DIVD)  r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '/') ;	
-		if (op==PROD)  r.fmat2 = fadd2(&o1.fmat2,&o2.fmat2, '*') ;		
+		if (op==PLUS)  r.fmat2 = fadd2(o1.fmat2,o2.fmat2, '+') ;
+		if (op==MINUS) r.fmat2 = fadd2(o1.fmat2,o2.fmat2, '-') ;	
+		if (op==DIVD)  r.fmat2 = fadd2(o1.fmat2,o2.fmat2, '/') ;	
+		if (op==PROD)  r.fmat2 = fadd2(o1.fmat2,o2.fmat2, '*') ;		
 	}
 
 	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==PLUS)
 	{
 		r.type=FMAT2;	
-		r.fmat2 = fmatcp(&o1.fmat2);
-		for (i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
-			r.fmat2.fstore[i] += tofloat(o2);	
+		r.fmat2 = fmatcp(o1.fmat2);
+		for (i=0; i<o1.fmat2->w*o1.fmat2->h; i++)
+			r.fmat2->fstore[i] += tofloat(o2);	
 	}
 
 	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==POWR)
 	{
 		r.type=FMAT2;	
-		r.fmat2 = fmatcp(&o1.fmat2);
-		for (i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
-			r.fmat2.fstore[i] = pow(r.fmat2.fstore[i],tofloat(o2));	
+		r.fmat2 = fmatcp(o1.fmat2);
+		for (i=0; i<o1.fmat2->w*o1.fmat2->h; i++)
+			r.fmat2->fstore[i] = pow(r.fmat2->fstore[i],tofloat(o2));	
 	}
 
 	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==MULT)
 	{
 		r.type=FMAT2;	
-		r.fmat2 = fmatcp(&o1.fmat2);
-		for (i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
-			r.fmat2.fstore[i] = r.fmat2.fstore[i] * tofloat(o2);	
+		r.fmat2 = fmatcp(o1.fmat2);
+		for (i=0; i<o1.fmat2->w*o1.fmat2->h; i++)
+			r.fmat2->fstore[i] = r.fmat2->fstore[i] * tofloat(o2);	
 	}
 
 	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==DIVD)
 	{
 		r.type=FMAT2;	
-		r.fmat2 = fmatcp(&o1.fmat2);
-		for (i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
-			r.fmat2.fstore[i] /= tofloat(o2);	
+		r.fmat2 = fmatcp(o1.fmat2);
+		for (i=0; i<o1.fmat2->w*o1.fmat2->h; i++)
+			r.fmat2->fstore[i] /= tofloat(o2);	
 	}
 
 	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==MINUS)
 	{
 		r.type=FMAT2;	
-		r.fmat2 = fmatcp(&o1.fmat2);
-		for (i=0; i<o1.fmat2.w*o1.fmat2.h; i++)
-			r.fmat2.fstore[i] -= tofloat(o2);	
+		r.fmat2 = fmatcp(o1.fmat2);
+		for (i=0; i<o1.fmat2->w*o1.fmat2->h; i++)
+			r.fmat2->fstore[i] -= tofloat(o2);	
 	}
 
 	if (o1.type==FMAT2 && o2.type==FMAT2 && op==MULT)
 	{
 		r.type=FMAT2;	
-		r.fmat2 = fmultiply2(&o1.fmat2,&o2.fmat2) ;	
-		if (r.fmat2.w*r.fmat2.h == 0)
+		r.fmat2 = fmultiply2(o1.fmat2,o2.fmat2) ;	
+		if (r.fmat2->w*r.fmat2->h == 0)
 		{
 			r.type=EMPTY;
 		}
@@ -553,10 +556,10 @@ tOBJ oabs(tOBJ a)
 	if (a.type==FMAT2)
 	{
 		r.type = FMAT2;	
-		r.fmat2 = fmatcp(&a.fmat2);
-		for (i=0; i<a.fmat2.w*a.fmat2.h; i++)
+		r.fmat2 = fmatcp(a.fmat2);
+		for (i=0; i<a.fmat2->w*a.fmat2->h; i++)
 		{
-			r.fmat2.fstore[i] = fabs(r.fmat2.fstore[i]);
+			r.fmat2->fstore[i] = fabs(r.fmat2->fstore[i]);
 		}
 	}
 	else
@@ -608,9 +611,9 @@ tOBJ omax(tOBJ a, tOBJ r)
 	if (a.type==FMAT2)
 	{
 		r.type=FLOAT;
-		r.floatpoint=a.fmat2.fstore[0];
-		for (i=1; i<a.fmat2.h*a.fmat2.w; i++)
-			if (a.fmat2.fstore[i]>r.floatpoint) r.floatpoint= a.fmat2.fstore[i];
+		r.floatpoint=a.fmat2->fstore[0];
+		for (i=1; i<a.fmat2->h*a.fmat2->w; i++)
+			if (a.fmat2->fstore[i]>r.floatpoint) r.floatpoint= a.fmat2->fstore[i];
 	}
 
 	return r;
@@ -636,7 +639,7 @@ tOBJ omat(tOBJ m, tOBJ a, tOBJ b)
 
 	if (m.type==FMAT2) 
 	{
-		r.floatpoint = fget2(&(m.fmat2),col,row);
+		r.floatpoint = fget2((m.fmat2),col,row);
 	}
 	return r;
 }
@@ -651,7 +654,7 @@ tOBJ omats(tOBJ m, tOBJ a, tOBJ b, tOBJ v, tOBJ dummy)
 
 	if (m.type==FMAT2) 
 	{
-		fset2(&(m.fmat2),col,row, cv);
+		fset2((m.fmat2),col,row, cv);
 	}
 	return makefloat(cv);
 }
@@ -681,7 +684,7 @@ tOBJ ominv(tOBJ a)
 	if (a.type==FMAT2) 
 	{
 		r.type=FMAT2;
-		r.fmat2=inverse(&a.fmat2);
+		r.fmat2=inverse(a.fmat2);
 	}
 	return r;
 }
@@ -692,7 +695,7 @@ tOBJ omdet(tOBJ a)
 	if (a.type==FMAT2) 
 	{
 		r.type=FLOAT;
-		r.floatpoint=detrminant(&a.fmat2, a.fmat2.w);
+		r.floatpoint=detrminant(a.fmat2, a.fmat2->w);
 	}
 	return r;
 }
@@ -707,11 +710,11 @@ tOBJ osig(tOBJ a)
 	{
 		r.type=FMAT2;
 		// create new matrix
-		r.fmat2=fmatcp(&a.fmat2);
-		for (i=0; i<a.fmat2.h*a.fmat2.w; i++)
+		r.fmat2=fmatcp(a.fmat2);
+		for (i=0; i<a.fmat2->h*a.fmat2->w; i++)
 		{
-			float f= a.fmat2.fstore[i];
-			r.fmat2.fstore[i] =1/(1+exp(-f));
+			float f= a.fmat2->fstore[i];
+			r.fmat2->fstore[i] =1/(1+exp(-f));
 		}			
 	}
 	else
@@ -730,7 +733,7 @@ tOBJ ohsum(tOBJ a)
 	if (a.type==FMAT2)
 	{
 		r.type=FMAT2;
-		r.fmat2=fmatsum2(&a.fmat2, 1);	
+		r.fmat2=fmatsum2(a.fmat2, 1);	
 	}
 	return r;
 }
@@ -742,7 +745,7 @@ tOBJ osum(tOBJ a)
 	if (a.type==FMAT2)
 	{ 
 		r.type=FLOAT;
-		r.floatpoint = fsum(&a.fmat2);
+		r.floatpoint = fsum(a.fmat2);
 	}
 	return r;
 }
@@ -754,7 +757,7 @@ tOBJ ovsum(tOBJ a)
 	if (a.type==FMAT2)
 	{
 		r.type=FMAT2;
-		r.fmat2=fmatsum2(&a.fmat2, 2);	
+		r.fmat2=fmatsum2(a.fmat2, 2);	
 	}
 	return r;
 }
@@ -766,7 +769,7 @@ tOBJ ohsum2(tOBJ a)
 	if (a.type==FMAT2)
 	{
 		r.type=FMAT2;
-		r.fmat2=fmatsum2(&a.fmat2, 3);	
+		r.fmat2=fmatsum2(a.fmat2, 3);	
 	}
 	return r;
 }
@@ -778,7 +781,7 @@ tOBJ ovsum2(tOBJ a)
 	if (a.type==FMAT2)
 	{
 		r.type=FMAT2;
-		r.fmat2=fmatsum2(&a.fmat2, 4);	
+		r.fmat2=fmatsum2(a.fmat2, 4);	
 	}
 	return r;
 }
@@ -800,11 +803,11 @@ tOBJ odsig(tOBJ a)
 	{
 		r.type=FMAT2;
 		// create new matrix
-		r.fmat2=fmatcp(&a.fmat2);
-		for (i=0; i<a.fmat2.h*a.fmat2.w; i++)
+		r.fmat2=fmatcp(a.fmat2);
+		for (i=0; i<a.fmat2->h*a.fmat2->w; i++)
 		{
-			float f= a.fmat2.fstore[i];
-			r.fmat2.fstore[i] = f*(1-f);
+			float f= a.fmat2->fstore[i];
+			r.fmat2->fstore[i] = f*(1-f);
 		}			
 	}
 	return r;
@@ -844,18 +847,16 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 		int i=0, j=0;
 		// create new matrix
 		r.type=FMAT2;
-		r.fmat2=fmatcp(&b.fmat2);
-
-		tOBJ tenv = makedict();
+		r.fmat2=fmatcp(b.fmat2);
 	
-		for (i=0; i<b.fmat2.w; i++)
+		for (i=0; i<b.fmat2->w; i++)
 		{
-			for (j=0;j<b.fmat2.h; j++)
+			for (j=0;j<b.fmat2->h; j++)
 			{
 				v.type=FLOAT;
-				v.floatpoint =fget2(&b.fmat2,i,j);
+				v.floatpoint =fget2(b.fmat2,i,j);
 				tOBJ n  = procall (a, v, env.dict);	
-				fset2(&r.fmat2,i,j,tofloat(n));			
+				fset2(r.fmat2,i,j,tofloat(n));			
 			}
 		}
 		freeobj(&env);
@@ -882,7 +883,7 @@ tOBJ otrn(tOBJ a)
 	if (a.type==FMAT2)
 	{
 		r.type = FMAT2;
-		r.fmat2 = ftranspose2(&a.fmat2); 
+		r.fmat2 = ftranspose2(a.fmat2); 
 	}
 
 	return r;
@@ -898,7 +899,7 @@ tOBJ orshp(tOBJ m, tOBJ a, tOBJ b)
 	if (m.type==FMAT2)
 	{
 		r.type=FMAT2;
-		r.fmat2 = fmatrshp(&m.fmat2, col,row);
+		r.fmat2 = fmatrshp(m.fmat2, col,row);
 	}
 	return r;
 }
@@ -915,7 +916,7 @@ tOBJ orep (tOBJ m, tOBJ a, tOBJ b)
 	if (m.type==FMAT2)
 	{
 		r.type=FMAT2;
-		r.fmat2 = freplicate2(&m.fmat2, col,row);
+		r.fmat2 = freplicate2(m.fmat2, col,row);
 	}
 	return r;
 }
@@ -951,7 +952,7 @@ tOBJ oeye (tOBJ a, tOBJ b)
 	for (i=0; i<col; i++)
 	{
 		if (i<row) 
-			r.fmat2.fstore[i+i*col] = 1.0;
+			r.fmat2->fstore[i+i*col] = 1.0;
 	}
 	return r;
 }
@@ -965,7 +966,7 @@ tOBJ oconv (tOBJ a, tOBJ b)
 		return r;
 
 	r.type=FMAT2;
-	r.fmat2=fconvolve2(&a.fmat2,&b.fmat2) ;		
+	r.fmat2=fconvolve2(a.fmat2,b.fmat2) ;		
 	return r;
 }
 
@@ -983,13 +984,13 @@ tOBJ omcond(tOBJ a, tOBJ b, tOBJ c, tOBJ d, tOBJ e)
 	if (a.type==FMAT2)
 	{
 		r.type = FMAT2;	
-		r.fmat2 = fmatcp(&a.fmat2); // clone
-		for (i=0; i<a.fmat2.w*a.fmat2.h; i++)
+		r.fmat2 = fmatcp(a.fmat2); // clone
+		for (i=0; i<a.fmat2->w*a.fmat2->h; i++)
 		{
-			if (r.fmat2.fstore[i]>= lv && r.fmat2.fstore[i]<= uv)
-				r.fmat2.fstore[i] = nv1;
+			if (r.fmat2->fstore[i]>= lv && r.fmat2->fstore[i]<= uv)
+				r.fmat2->fstore[i] = nv1;
 			else
-				r.fmat2.fstore[i] = nv2;
+				r.fmat2->fstore[i] = nv2;
 		}
 	}
 	return r;
@@ -1008,7 +1009,7 @@ tOBJ ozerob(tOBJ a, tOBJ b, tOBJ c, tOBJ d, tOBJ e)
 	if (a.type==FMAT2)
 	{
 		r.type = FMAT2;	
-		r.fmat2 =fmatzeroregion(&a.fmat2, c1, r1, c2, r2)   ;
+		r.fmat2 =fmatzeroregion(a.fmat2, c1, r1, c2, r2)   ;
 	}
 	return r;
 }
@@ -1021,7 +1022,7 @@ tOBJ ozerod(tOBJ a)
 	if (a.type==FMAT2)
 	{
 		r.type = FMAT2;
-		r.fmat2 = fmatzerodiag2(&a.fmat2) ;
+		r.fmat2 = fmatzerodiag2(a.fmat2) ;
 	}
 	return r;
 }
@@ -1655,6 +1656,42 @@ tOBJ opsd(tOBJ a)
 	return r;
 }
 
+extern long fn_kir(long v);
+extern long fn_kbd(long v);
+extern long fn_input(long v);
+
+
+tOBJ owait(tOBJ a)
+{
+	delay_ms(toint(a));
+	return emptyObj();
+}
+
+tOBJ okey(tOBJ a)
+{
+	tOBJ r;
+	r.type=INTGR;
+	switch(toint(a)) 
+	{
+	case 1:
+		{
+		r.number=(int)fn_kbd(0);
+		break;
+		}
+	case 2:
+		{
+		r.number=(int)fn_input(0) ;
+		break;
+		}
+	default:
+		{
+		r.number=(int)fn_kir(0);
+		break;
+		}	
+	}
+	return r;
+}
+
 tOBJ oacx(tOBJ a)
 {
 	tOBJ r;
@@ -1768,7 +1805,7 @@ tOBJ osave(tOBJ  f, tOBJ r)
 	if (r.type==FMAT2)
 	{
 		fprintf(fp,"[");
-		fmatprint(fp, &r.fmat2);
+		fmatprint(fp, r.fmat2);
 		fprintf(fp,"]\n");
 	}
 	else
@@ -1854,13 +1891,13 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 
 	if (list.type == FMAT2)
 	{		
-		for (int i=0; i<list.fmat2.w; i++)
+		for (int i=0; i<list.fmat2->w; i++)
 		{
-			for (int j=0;j<list.fmat2.h; j++)
+			for (int j=0;j<list.fmat2->h; j++)
 			{
 				tOBJ v;
 				v.type=FLOAT;
-				v.floatpoint =fget2(&list.fmat2,i,j);
+				v.floatpoint =fget2(list.fmat2,i,j);
 				dict_update(e, ind.string, v);
 				r = obegin(o,e);		
 			}
@@ -1939,7 +1976,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 			rellock();
 		}
 		else
-		if (!strcmp(cmd.string,"LOAD")) //  IMAG LOAD 8 "Text"
+		if (!strcmp(cmd.string,"LOAD") || !strcmp(cmd.string,"NORM")) //  IMAG LOAD 8 "Text"
 		{
 			int sz;
 			tOBJ a=ocar(v); v=ocdr(v);
@@ -1957,8 +1994,22 @@ tOBJ oimg(tOBJ v, Dict *e)
 
 			if (file.type==STR && loadimage(file.string, sz, &scene[0])==0)
 			{
-				nis=sz*sz;
-				return makeint(nis);
+				if (!strcmp(cmd.string,"NORM"))
+				{
+					tOBJ r;
+					fMatrix *m = newmatrix(sz,sz);
+					r.type=FMAT2;
+					r.fmat2=m;
+					float s=0.0;
+					for (int i=0; i<sz*sz; i++) {m->fstore[i]=(float)scene[i]; if (s< m->fstore[i]) s=m->fstore[i] ;}
+					for (int i=0; i<sz*sz; i++) m->fstore[i]/=s;
+					return r;	
+				}
+				else
+				{
+					nis=sz*sz;
+					return makeint(nis);
+				}
 			}
 			else
 			{
@@ -1966,6 +2017,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 				nis=0;
 			}
 		}
+
 		else
 		if (!strcmp(cmd.string,"FILTER"))
 		{
@@ -2038,6 +2090,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 			int n=toint(ocar(v));
 			processFrame(n, &scene[0]);
 			nis=n*n;
+			return makeint(nis);
 		}
 		else
 		if (!strcmp(cmd.string,"REG"))
@@ -2065,7 +2118,9 @@ tOBJ oimg(tOBJ v, Dict *e)
 			case 6:
 				output_frame(sz); break;
 			}
+			return makeint(nis);
 		}
+		else
 		if (!strcmp(cmd.string,"WAIT"))
 		{
 			int key;

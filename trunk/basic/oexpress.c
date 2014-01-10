@@ -117,9 +117,9 @@ int isnum(char *s)
 !PRINT [1.0 2.0;3.0 4.0]*0.2
 */
 
-fMatrix readmatrix(char **str )
+fMatrix *readmatrix(char **str )
 {
-	fMatrix m;
+	fMatrix *m;
 	float ts[10000];
 	char *s = *str;
 	char buffer[MAXSTRING];
@@ -155,8 +155,7 @@ fMatrix readmatrix(char **str )
 	if (c != i*(j+1))
 	{
 		printf ("Bad matrix defintion %d,%d,%d ?\n", c, i,j);
-		m.w=0;m.h=0;m.fstore=0;
-		return m;
+		return NULL;
 	}
 
 	//create matrix
@@ -165,7 +164,7 @@ fMatrix readmatrix(char **str )
 	
 	//copy in ts[0-c];
 
-	for (i=0; i<c; i++) m.fstore[i]=ts[i];
+	for (i=0; i<c; i++) m->fstore[i]=ts[i];
 
 	*str=s;
 	return m;
@@ -205,9 +204,8 @@ tOBJ tokenise(char *s)
 			else
 			if (buffer[0]=='[')
 			{
-				fMatrix m = readmatrix(&s);
 				top->head.type=FMAT2;	
-				top->head.fmat2=m;			
+				top->head.fmat2=readmatrix(&s);			
 			}
 			else{
 				top->head = makestring(buffer);
