@@ -2,7 +2,7 @@
 #define RBMREAD_H
 
 
-#define MAXC 1024*8
+#define MAXC 32000
 
 typedef struct frame
 {
@@ -39,7 +39,7 @@ typedef struct motion
 
 extern void 	rbmprint	(Motion *m);
 extern void 	rbmdelete	(Motion *m);
-extern Motion 	rbmload		(char *fn);
+extern Motion 	*rbmload	(char   *fn);
 
 
 

@@ -1618,27 +1618,65 @@ tOBJ oserv(tOBJ a)
 
 tOBJ opose(tOBJ a)
 {
-	//> !POSE {1 2 3 4}
+	//> !POSE '{25 1 {1 2 3 4}}
+	//   POSE {RBM "rbm"}
+
 	BYTE sp[32];
-	int nb,i;
+	int nb=0,i;
 	int speed=4, tm=1000, fm=10, fmflg=0;
 
-	if (a.type=RBM)
+	if (a.type==RBM)
 	{
-		printf ("RB Motion\n");
-		print (a);
-		//tbd
 		//put play code here
+		int i,j;
+		Motion *m;
+		m=a.mot;
+		printf ("RB Motion %s (%d,%d)\n",m->name, m->no_servos,m->no_scenes);
+		for (i=0; i<m->no_servos; i++)
+		{
+			sp[i]=(BYTE)(m->Postn[i]);
+			if (dbg); printf ("%d,", sp[i]);			
+		}
+		if (dbg); printf ("\n");
+
+		if (!dbg) PlayPose(tm, fm, speed, sp, (fmflg==0)?nb:0);
+
+		for (j=0; j<m->no_scenes; j++)
+		{
+			Scene p=m->sc[j];
+
+			tm = p.TransitionTime;
+			fm = p.Frames;
+
+			printf ("Scene %d %d %d\n",j, tm, fm);
+
+			for (i=0; i<m->no_servos; i++)
+			{
+				sp[i]=(BYTE)(m->sc[j].F.Position[i]);
+
+				if (dbg) printf ("%d,", sp[i]);			
+			}
+			if (!dbg) PlayPose(tm, fm, speed, sp, (fmflg==0)?nb:0);
+			if (dbg) printf ("\n");
+		}
 	}
 	else
-	if ((nb=cnvtListtoByte(a, 32, sp)))
+	if (a.type==CELL)
 	{
+		tm = toint(ocar(a)); a=ocdr(a);
+		fm = toint(ocar(a)); a=ocdr(a);
+
+		nb=cnvtListtoByte(ocar(a), 32, sp);
+
+		printf ("%d %d %d\n", tm,fm,nb);
+
 		for (i=0; i<nb; i++)
 		{
-			if (dbg) printf ("%d\n", sp[i]);
+			if (dbg); printf ("%d,", sp[i]);
 		}
 		if (!dbg) PlayPose(tm, fm, speed, sp, (fmflg==0)?nb:0);
 		fmflg=1;
+		if (dbg) printf ("\n");
 	}
 	return emptyObj();
 }
@@ -2193,11 +2231,11 @@ Import export functions
 tOBJ orbmrf(tOBJ v)
 {
 	tOBJ r=emptyObj();
-	Motion m;
+	Motion *m;
 	if (v.type==STR) 
 	{ 
 		m = rbmload(v.string) ;
-		rbmprint (&m);
+		rbmprint (m);
 		r.type=RBM;
 		r.mot = m;
 		r.q=0;

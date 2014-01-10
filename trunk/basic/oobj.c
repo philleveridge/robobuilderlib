@@ -149,7 +149,7 @@ void printtype(FILE *fp, tOBJ r)
     else if (r.type == RBM)
     {
          fprintf(fp, "RBM\n");  
-	 rbmprint (&r.mot);
+	 rbmprint (r.mot);
     }
     else if (r.type == FMAT2)
     {
