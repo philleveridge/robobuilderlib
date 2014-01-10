@@ -96,6 +96,7 @@ tOP oplist[] = {
 	{"EXP",  40, NA,    1, oexp},  //function single arg
 	{"SQRT", 40, NA,    1, osqrt}, //function single arg
 	{"ABS",  40, NA,    1, oabs},  //function single arg
+	{"NOT",  40, NA,    1, onot},  //function single arg
 	{"RND",  40, NA,    0, ornd},  //in-const
 	{"MAX",  40, NA,    2, omax},   //function two args
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
@@ -144,6 +145,8 @@ tOP oplist[] = {
 
 	{"SERV",  40, NA,   0, oserv}, //function single arg
 	{"POSE",  40, NA,   1, opose}, //function single arg
+
+	{"PUTC",  40, NA,    1, oputch},  //function single arg
 
 	{"NTH",   40, NA,   2, onth}, //function two arg
 
@@ -547,6 +550,20 @@ tOBJ oatan(tOBJ a)
 	return r;
 }
 
+tOBJ onot(tOBJ a)
+{
+	tOBJ r;
+	r.type=INTGR;
+	r.number=(toint(a)!=0)?0:1;
+	return r;
+}
+
+tOBJ oputch(tOBJ a)
+{
+	putchar(toint(a));
+	return emptyObj();
+}
+
 tOBJ oabs(tOBJ a)
 {
 	tOBJ r;
@@ -561,6 +578,12 @@ tOBJ oabs(tOBJ a)
 		{
 			r.fmat2->fstore[i] = fabs(r.fmat2->fstore[i]);
 		}
+	}
+	else
+	if (a.type==INTGR)
+	{
+		r.type=INTGR;
+		r.number=abs(toint(a));
 	}
 	else
 	{
@@ -868,6 +891,8 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 		while (b.type != EMPTY)
 		{
 			tOBJ arg= ocar(b);
+//println("arg=",arg);
+//println("a=",a);
 			tOBJ n  = procall (a, arg, env.dict);		
 			b=ocdr(b);
 			r=append(r,n);
