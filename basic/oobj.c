@@ -30,7 +30,7 @@ int freeobj(tOBJ *b)
 {
 	if (b->type==FMAT2)
 	{
-		if (b->cnt==0) delmatrix(&b->fmat2);
+		if (b->cnt==0) delmatrix(b->fmat2);
 	}
 	if (b->type==STR)
 	{
@@ -153,7 +153,7 @@ void printtype(FILE *fp, tOBJ r)
     }
     else if (r.type == FMAT2)
     {
-	fmatprint2(&r.fmat2);	 
+	fmatprint2(r.fmat2);	 
     }
     else  if (r.type == DICT)
     {
