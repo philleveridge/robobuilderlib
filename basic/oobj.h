@@ -18,7 +18,7 @@ typedef struct object {
                 void    *dict;
 		struct  object	(*func)(struct object);
 		fMatrix *fmat2;
-                Motion  mot;
+                Motion  *mot;
       	};
 } tOBJ;
 

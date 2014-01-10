@@ -53,12 +53,22 @@ void rbmdelete(Motion *m)
 
 void rbmprint(Motion *m)
 {
-	printf ("Name:  %s\n", m->name);
-	printf ("Servos-%d\n", m->no_servos);
-	printf ("Scenes-%d\n", m->no_scenes);
+	int i;
+	if (m==NULL)
+		return;
+
+	printf ("Name:  %s - ", m->name);
+	printf ("Servos-%d, ", m->no_servos);
+	printf ("Scenes-%d {", m->no_scenes);
+
+	for (i=0; i<m->no_servos; i++)
+	{
+		printf ("%d ", m->Postn[i]);			
+	}
+	printf ("}\n");	
 }
 
-Motion rbmload(char *fn)
+Motion *rbmload(char *fn)
 {
 
 	/*
@@ -92,10 +102,10 @@ Motion rbmload(char *fn)
 
         char line[MAXC];
         FILE *tr;
-	Motion mot;
+	Motion *mot = (Motion *)malloc(sizeof(Motion));
 	int Lg=0;
-	mot.no_servos=0;
-	mot.no_scenes=0;
+	mot->no_servos=0;
+	mot->no_scenes=0;
 	
 	if ( (tr=fopen(fn,"r"))== 0)
 	{
@@ -115,23 +125,23 @@ Motion rbmload(char *fn)
 		for (i=0;i<12; i++)
 		{
 			l = readfield(':', l, field);
-			if (i==6)   strcpy(mot.name,field);
-			if (i==11)  mot.no_servos=atoi(field);
-			if (i==9)   mot.no_scenes=atoi(field);
+			if (i==6)   strcpy(mot->name,field);
+			if (i==11)  mot->no_servos=atoi(field);
+			if (i==9)   mot->no_scenes=atoi(field);
 		}
 
 		l = readfield(':', l, field);
 		l = readfield(':', l, field);
 
 
-		for (i = 0; i < mot.no_servos; i++)
+		for (i = 0; i < mot->no_servos; i++)
 		{
-			l = readfield(':', l, field);  mot.PGain[i]=atoi(field);
-			l = readfield(':', l, field);  mot.DGain[i]=atoi(field);
-			l = readfield(':', l, field);  mot.IGain[i]=atoi(field);
-			l = readfield(':', l, field);  mot.eData[i]=atoi(field);
-			l = readfield(':', l, field);  mot.Postn[i]=atoi(field);
-			if (dbg) printf ("%d) %d, %d, %d, %d : %d\n", i, mot.PGain[i], mot.DGain[i], mot.IGain[i], mot.eData[i], mot.Postn[i]);
+			l = readfield(':', l, field);  mot->PGain[i]=atoi(field);
+			l = readfield(':', l, field);  mot->DGain[i]=atoi(field);
+			l = readfield(':', l, field);  mot->IGain[i]=atoi(field);
+			l = readfield(':', l, field);  mot->eData[i]=atoi(field);
+			l = readfield(':', l, field);  mot->Postn[i]=atoi(field);
+			if (dbg) printf ("%d) %d, %d, %d, %d : %d\n", i, mot->PGain[i], mot->DGain[i], mot->IGain[i], mot->eData[i], mot->Postn[i]);
 
 			l = readfield(':', l, field);
 		}
@@ -139,9 +149,9 @@ Motion rbmload(char *fn)
 		l = readfield(':', l, field);
 		l = readfield(':', l, field);
 
-		mot.sc = (Scene *)malloc(sizeof(Scene)*mot.no_scenes);
+		mot->sc = (Scene *)malloc(sizeof(Scene)*mot->no_scenes);
 
-		for (int ns=0; ns< mot.no_scenes; ns++)
+		for (int ns=0; ns< mot->no_scenes; ns++)
 		{
 			int nf, tt;
 			l = readfield(':', l, field); nf=atoi(field);//Frames
@@ -150,12 +160,12 @@ Motion rbmload(char *fn)
 			l = readfield(':', l, field); //???
 			l = readfield(':', l, field); //??
 
-			mot.sc->TransitionTime=tt;
-			mot.sc->Frames=nf;
+			mot->sc[ns].TransitionTime=tt;
+			mot->sc[ns].Frames=nf;
 
 			if (dbg) printf ("[%d] %d %d : ", ns, nf,tt);
 
-			for (int nq=0; nq<mot.no_servos; nq++)
+			for (int nq=0; nq<mot->no_servos; nq++)
 			{
 				int pos;
 				l = readfield(':', l, field); //pos
@@ -163,7 +173,7 @@ Motion rbmload(char *fn)
 				l = readfield(':', l, field); //torq
 				l = readfield(':', l, field); //edata
 
-				mot.sc->F.Position[nq] = pos;
+				mot->sc[ns].F.Position[nq] = pos;
 
 				if (dbg) printf("%d, ", pos);
 

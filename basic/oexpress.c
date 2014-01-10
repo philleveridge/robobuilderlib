@@ -187,7 +187,6 @@ tOBJ tokenise(char *s)
 
 		if (buffer[0]== 0) 
 		{
-
 			continue;
 		}
 		else
@@ -301,7 +300,8 @@ tOBJ formula(tOBJ *o, Dict *e)
 			{
 				//is it a function?
 				op = getOP(n.string);
-				if (op>=0 &&  (oplist[op].type==NA || oplist[op].type==CBR)) return r; //fucntion not op
+				if (op>=0 &&  (oplist[op].type==NA || oplist[op].type==CBR)) 
+					return v1; //fucntion not op
 			}
 			else if (n.type==EMPTY)
 			{
@@ -321,6 +321,16 @@ tOBJ formula(tOBJ *o, Dict *e)
 			v2=n;
 		else if (n.type==SYM)
 		{
+			int fop = getOP(n.string);
+			if (fop>=0 && oplist[fop].type ==NA )
+			{
+				// FOO ()
+				n=ocar(*o); // '('
+				*o=ocdr(*o);
+				v2 = (*oplist[fop].func)(formula(o,e));	
+		
+			}
+			else
 			if (!strcmp(n.string,"("))
 			{
 				v2=formula(o,e);
@@ -329,6 +339,12 @@ tOBJ formula(tOBJ *o, Dict *e)
 			{
 				//is it a variable?
 				v2=dict_getk(e, n.string);
+				if (v2.type==LAMBDA)
+				{
+					n=ocar(*o); // '('
+					*o=ocdr(*o);
+					v2 = procall (v2, formula(o,e), e );
+				}
 			}
 		}
 		else if (n.type==EMPTY)
@@ -631,7 +647,7 @@ void repl()
 	{
 		printf("!");
 		readLine(&inputbuffer[0]);
-		if (!strcasecmp(inputbuffer,"q")) return;
+		if (!strcasecmp(inputbuffer,".")) return;
 		extend(inputbuffer);
 	}
 }
