@@ -576,10 +576,28 @@ tOBJ eval(tOBJ o, Dict *e)
 		else
 		if (!strcasecmp(h.string,"SET"))
 		{
-			tOBJ var = ocar(o); o=ocdr(o);
-			tOBJ exp = eval(ocar(o),e); 
-			dict_update(e, var.string, exp);
+			tOBJ exp = emptyObj();
+			while (o.type != EMPTY)
+			{
+				tOBJ var = ocar(o); o=ocdr(o);
+				exp = eval(ocar(o),e); o=ocdr(o);
+
+				if (var.type==SYM)
+					dict_update(e, var.string, exp);
+				else
+				if (var.type==CELL && exp.type==CELL)
+				{
+					while (var.type != EMPTY)
+					{
+						tOBJ v1 = ocar(var); var=ocdr(var);
+						tOBJ v2 = ocar(exp); exp=ocdr(exp);
+			 			if (v1.type==SYM)
+							dict_update(e, v1.string, v2);
+					}
+				}
+			}
 			return exp;
+		
 		}
 		else
            	if (!strcasecmp(h.string,"IF"))
