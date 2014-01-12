@@ -406,6 +406,14 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.type=INTGR; r.number = a != b; break;
 		case GT:
 			r.type=INTGR; r.number = a > b; break;
+		case LTE:
+			r.type=INTGR; r.number = a<= b; break;
+		case GTE:
+			r.type=INTGR; r.number = a >= b; break;
+		case LAND:
+			r.type=INTGR; r.number = a && b; break;
+		case LOR:
+			r.type=INTGR; r.number = a || b; break;
 		default:
 			r.type=EMPTY; //error
 			break;
@@ -1339,7 +1347,8 @@ tOBJ olist(tOBJ o, Dict *e)
 
 tOBJ oplus(tOBJ o, Dict *e)
 {
-	tOBJ r = ocar(o); o=ocdr(o);	
+	tOBJ r = eval(ocar(o),e); 
+	o=ocdr(o);	
 
 	while (o.type != EMPTY)
 	{
@@ -1351,7 +1360,8 @@ tOBJ oplus(tOBJ o, Dict *e)
 
 tOBJ oor(tOBJ o, Dict *e)
 {
-	tOBJ r = ocar(o); o=ocdr(o);	
+	tOBJ r = eval(ocar(o),e); 
+	o=ocdr(o);	
 	while (o.type != EMPTY)
 	{
 		tOBJ exp = ocar(o); o=ocdr(o);	
@@ -1363,7 +1373,8 @@ tOBJ oor(tOBJ o, Dict *e)
 
 tOBJ oand(tOBJ o, Dict *e)
 {
-	tOBJ r = ocar(o); o=ocdr(o);	
+	tOBJ r = eval(ocar(o),e); 
+	o=ocdr(o);	
 	while (o.type != EMPTY)
 	{
 		tOBJ exp = ocar(o); o=ocdr(o);	

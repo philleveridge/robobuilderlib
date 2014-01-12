@@ -25,51 +25,45 @@
 {PP IM}
 
 {FUNC CENTER {I} 
-     {SET SX 0.0}
-     {SET SY 0.0} 
-     {SET SM {SUM IM}} 
+     {SET SX 0.0 SY 0.0 SM {SUM IM}} 
      {FOR X '{0 15} 
       {FOR Y '{0 15} 
         {IF {CELL I X Y} {DO {SET SX {+ SX X}} {SET SY {+ SY Y}}}  }  } 
      }
-     {PR {LIST {/ SX SM} {/ SY SM}}}
+     {LIST {/ SX SM} {/ SY SM}}
 }
 
+
 {FUNC ORIENTATION {I} 
-     {SET SA 0.0}
-     {SET SB 0.0} 
-     {SET SC 0.0} 
-     {SET COA {CENTER IM}}
-     {SET I0 {CAR COA}}
-     {SET J0 {CAR {CDR COA}}}
+     {SET SA 0.0 SB 0.0 SC 0.0 {X0 Y0} {CENTER IM}}
      {FOR X '{0 15} 
       {FOR Y '{0 15} 
         {IF {CELL I X Y} 
-         {DO 
-             {SET SA {+ SA {* {- X I0} {- X I0}}}} 
-             {SET SB {+ SB {* 2 {* {- X I0} {- Y J0}}}}}
-             {SET SC {+ SC {* {- Y J0} {- Y J0}}}}
-         }  }  } 
+           {DO 
+             {LET SA = SA + ((X - X0) * (X - X0))     }
+             {LET SB = SB + (2 * (X - X0) * (Y - Y0)) }
+             {LET SC = SC + ((Y - Y0) * (Y - Y0))     }
+           }  
+        }  
+      } 
      }
-     {LIST COA {/ {/ {ATAN  SB} {- SA SC }} 2.0}}
+     {LIST X0 Y0 {/ {/ {ATAN  SB} {- SA SC }} 2.0}}
 }
-
-
-{ORIENTATION IM}
 
 {FUNC EULER {I} 
-  {FOR X '{0 15} 
-    {FOR Y '{0 15} 
-        {IF {NOT {CELL I X Y}}  
-        {  SET S { +     
-           { AND {NOT {CELL I {+ X 1} Y}} {NOT {CELL I X {+ Y 1}}}  {CELL I {+ X 1} {+ Y 1}} } 
-           { AND {CELL I {+ X 1} Y} {CELL I X {+ Y 1}}  {CELL I {+ X 1} {+ Y 1}} }   
-        }  
-        }
-        }
-    } 
+  {SET S1 0 S2 0}
+  {FOR X '{0 14} 
+    {FOR Y '{0 14} 
+      {IF {NOT {CELL I X Y}} 
+        {DO 
+        {SET S1 { + S1 { AND {NOT {CELL I {+ X 1} Y}} {NOT {CELL I X {+ Y 1}}}  {CELL I {+ X 1} {+ Y 1}}}}} 
+        {SET S2 { + S2 { AND {CELL I {+ X 1} Y} {CELL I X {+ Y 1}}  {CELL I {+ X 1} {+ Y 1}} }}}   }
+      }  
+    }
   }
+  {PR S1 ; S2 ; {- S1 S2}}
 }
+
 
 
 

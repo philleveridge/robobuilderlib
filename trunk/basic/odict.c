@@ -162,7 +162,7 @@ int dict_print(Dict *d)
 			print(t);
 		}
 		else 
-		if (t.type==DICT || t.type==RBM)
+		if (t.type==DICT || t.type==RBM || t.type==FMAT2)
 		{
 			printf (" +++");
 		}
