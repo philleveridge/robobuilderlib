@@ -552,6 +552,22 @@ tOBJ eval(tOBJ o, Dict *e)
 			return exp;
 		}
 		else
+		if (!strcasecmp(h.string,"INC"))
+		{
+			tOBJ var = ocar(o); 
+			tOBJ expr =omath(dict_getk(e,var.string), makeint(1), PLUS);
+			dict_update(e, var.string, expr);
+			return expr;
+		}
+		else
+		if (!strcasecmp(h.string,"DEC"))
+		{
+			tOBJ var = ocar(o); 
+			tOBJ expr =omath(dict_getk(e,var.string), makeint(1), MINUS);
+			dict_update(e, var.string, expr);
+			return expr;
+		}
+		else
 		if (!strcasecmp(h.string,"READ"))
 		{
 			tOBJ var = eval(ocar(o),e);
