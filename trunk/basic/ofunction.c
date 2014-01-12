@@ -106,7 +106,11 @@ tOP oplist[] = {
 /*30 */	{"ACCY", 40, NA,    0, oacy},  //const
 	{"ACCZ", 40, NA,    0, oacz},  //const
 //MATRIX BASED
+
 	{"TRN",  40, NA,    1, otrn},   //function single arg    <fMatrix>
+
+	{"ROW",  40, NA,    1, orow},   //function single arg    <fMatrix>
+	{"COL",  40, NA,    1, ocol},   //function single arg    <fMatrix>
 	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
 	{"SCELL",40, NA,    5, omats},   //function three args   <fMatrix, int, int>
 	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
@@ -389,7 +393,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		case MULT:
 			r.floatpoint = a * b; break;
 		case DIVD:
-			if (b ==0) 
+			if (b ==0.0) 
 				r.type=EMPTY;
 			else
 				r.floatpoint = a / b; 
@@ -409,7 +413,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	}
 
 
-	if (o1.type==STR || o2.type==STR)
+	if (o1.type==STR && o2.type==STR)
 	{
 		int n=strlen(o1.string)+strlen(o2.string)+1;
 		char *s=newstring1(n);
@@ -769,6 +773,30 @@ tOBJ osum(tOBJ a)
 	{ 
 		r.type=FLOAT;
 		r.floatpoint = fsum(a.fmat2);
+	}
+	return r;
+}
+
+tOBJ orow(tOBJ a)
+{
+	tOBJ r=emptyObj();
+
+	if (a.type==FMAT2)
+	{ 
+		r.type=INTGR;
+		r.number = a.fmat2->h;
+	}
+	return r;
+}
+
+tOBJ ocol(tOBJ a)
+{
+	tOBJ r=emptyObj();
+
+	if (a.type==FMAT2)
+	{ 
+		r.type=INTGR;
+		r.number = a.fmat2->w;
 	}
 	return r;
 }
@@ -1802,8 +1830,9 @@ tOBJ oload(tOBJ  n)
        	FILE *fp;
 	char *s = n.string;
 	int cn=0;
-	int sz=1024;
-	char *m=malloc(sz);
+	//int sz=1024;
+	//char *m=malloc(sz);
+	char m[32000];
 	int ch;
 	if (n.type != STR)
 	{
@@ -1828,16 +1857,16 @@ tOBJ oload(tOBJ  n)
 	switch (m[0])
 	{
 	case '[' : 
-		m++;
+		//m++;
 		r.type=FMAT2;
-		r.fmat2 = readmatrix(&m);
+		r.fmat2 = readmatrix(&m[1]);
 		break;
 	case '{' : 
 		r = parse(m); 
 		break;
 	case '!' : 
-		m++;
-		r = eval_oxpr(m); 
+		//m++;
+		r = eval_oxpr(&m[1]); 
 		break;
 	default:
 		r = makestring(m);

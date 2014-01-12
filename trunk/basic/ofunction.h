@@ -53,6 +53,8 @@ extern tOBJ omats(tOBJ  r, tOBJ, tOBJ, tOBJ, tOBJ);
 extern tOBJ omatr(tOBJ  r, tOBJ, tOBJ);
 
 extern tOBJ otrn(tOBJ  r);
+extern tOBJ orow(tOBJ  r);
+extern tOBJ ocol(tOBJ  r);
 extern tOBJ oapply(tOBJ  r, tOBJ);
 extern tOBJ omapcar(tOBJ  r, tOBJ);
 extern tOBJ orshp(tOBJ  r, tOBJ, tOBJ);
