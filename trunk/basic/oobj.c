@@ -46,7 +46,7 @@ int freeobj(tOBJ *b)
 	}
 	if (b->type==RBM)
 	{
-		if (b->cnt==0) rbmdelete(&b->mot);
+		if (b->cnt==0) rbmdelete(b->mot);
 	}
 	return 0;
 }
@@ -66,8 +66,18 @@ int compareObj(tOBJ a, tOBJ b)
 	//SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2};
 	if (a.type == INTGR) return a.number==b.number;
 	if (a.type == FLOAT) return a.floatpoint==b.floatpoint;
-	if (a.type == STR)   return !strcmp(a.string,b.string);
+	if (a.type == STR || a.type == SYM )   return !strcmp(a.string,b.string);
 	if (a.type == EMPTY) return 1;
+
+	if (a.type == CELL)
+	{
+		while (a.type != EMPTY)
+		{
+			if (!compareObj(ocar(a), ocar(b))) return 0;
+			a=ocdr(a); b=ocdr(b);
+		}
+		return 1;
+	}
 	return 0;
 }
 

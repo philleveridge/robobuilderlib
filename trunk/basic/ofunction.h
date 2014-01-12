@@ -84,7 +84,7 @@ extern tOBJ olast(tOBJ  r);
 extern tOBJ osubst(tOBJ  r);
 extern tOBJ orev(tOBJ  r);
 extern tOBJ onull(tOBJ  r);
-extern tOBJ omemb(tOBJ  r);
+extern tOBJ omemb(tOBJ  r, tOBJ);
 extern tOBJ oatom(tOBJ  r);
 extern tOBJ oasso(tOBJ  r);
 extern tOBJ onot(tOBJ  r);
