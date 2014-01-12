@@ -19,10 +19,10 @@ typedef struct dict {
 	struct dict *outer;
 } Dict;
 
-extern Dict *newdict		();
+extern Dict *newdict		(int n);
 extern int   deldict		(Dict *x);
-extern tOBJ  makedict		();
-extern tOBJ  makedict2(		Dict *e);
+extern tOBJ  makedict		(int n);
+extern tOBJ  makedict2		(Dict *e);
 extern int   dict_add		(Dict *d, char *key, tOBJ value);
 extern int   dict_find		(Dict *d, char *key);
 extern int   dict_contains	(Dict *d, char *key);

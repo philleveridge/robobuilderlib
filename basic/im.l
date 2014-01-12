@@ -18,9 +18,7 @@
   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ]
 }
 
-
-{FUNC PP {I} {FOR X '{0 15} {FOR Y '{0 15} {PR {IF {CELL I X Y} 'O '_  } ; }} {PR}}
-}
+{FUNC PP {I} {FOR X '{0 15} {FOR Y '{0 15} {PR {IF {CELL I X Y} 'O '_  } ; }} {PR}}}
 
 {PP IM}
 
@@ -32,7 +30,6 @@
      }
      {LIST {/ SX SM} {/ SY SM}}
 }
-
 
 {FUNC ORIENTATION {I} 
      {SET SA 0.0 SB 0.0 SC 0.0 {X0 Y0} {CENTER IM}}
@@ -63,6 +60,22 @@
   }
   {PR S1 ; S2 ; {- S1 S2}}
 }
+
+{FUNC PERIMETER {I}
+  {SET S1 0}
+  {FOR X '{0 14} 
+    {FOR Y '{0 14} {DO
+        {IF {AND {CELL I X Y} {NOT {CELL I {+ X 1} Y}}} {INC S1}}
+   	{IF {AND {NOT {CELL I X Y}} {CELL I {+ X 1} Y}} {INC S1}}
+        {IF {AND {CELL I X Y} {NOT {CELL I X {+ Y 1}}}} {INC S1}}
+        {IF {AND {NOT {CELL I X Y}} {CELL I X {+ Y 1}}} {INC S1}}
+      }  
+    }
+  }
+  {PR S1}
+}
+
+
 
 
 

@@ -36,7 +36,7 @@ char *readword(char *s, char *w)
 	while (*s != '\0')
 	{
 		c=*s++;
-		if (c==13 || c==10) {continue;} // ignore CR & LFs
+		if (c==13 || c==10 || c==9 ) {continue;} // ignore CR & LFs
 
 		if (c== '"')
 		{
@@ -659,7 +659,7 @@ void init_extend()
 	if (intf)
 	{
 		intf=0; 
-		env = makedict();
+		env = makedict(200);
 
 		set(env.dict, "PI",  makefloat (3.1415926));
 	

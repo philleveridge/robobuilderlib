@@ -23,12 +23,13 @@
 
 extern int dbg;
 
-Dict * newdict()
+Dict * newdict(int sz)
 {
 	Dict *n;
-	if (dbg) printf ("New dictionary\n");
+	if (dbg) printf ("New dictionary (%d)\n",sz);
 	n = (Dict *)malloc(sizeof(Dict));
-	n->sz=100;
+	if (sz==0) sz=100; //default
+	n->sz=sz;
 	n->ip=0;
 	n->db = (Kvp *)malloc((n->sz) * sizeof(Kvp));
 	n->outer=NULL;
@@ -41,10 +42,10 @@ int deldict(Dict *x)
 	return 0;
 }
 
-tOBJ makedict()
+tOBJ makedict(int n)
 {
 	tOBJ r=emptyObj();
-	Dict *f=newdict();
+	Dict *f=newdict(n);
 	r.type=DICT;
 	r.dict=f;
 	return r;
@@ -52,7 +53,7 @@ tOBJ makedict()
 
 tOBJ makedict2(Dict *e)
 {
-	tOBJ r= makedict();
+	tOBJ r= makedict(0);
 	((Dict *)(r.dict))->outer=e;
 	return r;
 }
@@ -65,7 +66,7 @@ int dict_add(Dict *d, char *key, tOBJ value)
 
 	if(dbg) printf ("Add %d %d\n", d->ip, d->sz);
 
-	if ((d->ip) < (d->sz-1))
+	if ((d->ip) < d->sz)
 	{
 		char *cp = d->db[d->ip].key;
 		strncpy(cp, key, 32);
@@ -74,7 +75,9 @@ int dict_add(Dict *d, char *key, tOBJ value)
 
 		d->db[d->ip].value = t1; // should be clone;
 		(d->ip)++;
+		return 1;
 	}
+	printf ("?error no space in dict \n");
 	return 0;
 }	
 

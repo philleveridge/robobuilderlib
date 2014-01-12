@@ -143,7 +143,7 @@ tOP oplist[] = {
 	{"LAST", 40, NA,    1, olast},  //function single arg
 	{"REV",  40, NA,    1, orev},  //function single arg
 	{"NULL",  40, NA,   1, onull},  //function single arg
-	{"MEMB",  40, NA,   1, omemb},  //function single arg
+	{"MEMB",  40, NA,   2, omemb},  //function single arg
 /*60 */	{"ASSN",  40, NA,   1, oasso},  //function single arg
 	{"ATOM",  40, NA,   1, oatom},  //function single arg
 
@@ -1265,15 +1265,12 @@ tOBJ oatom(tOBJ a)
 	return makeint(!(a.type==CELL || a.type==FMAT2));
 }
 
-tOBJ omemb(tOBJ a)
+tOBJ omemb(tOBJ key, tOBJ lst)
 {
-	//!MEMB '{2 {2 3}} -> 1
-	//!MEMB '{4 {2 3}} -> 0
-	if (a.type==CELL)
+	//!MEMB '2 '{2 3}-> 1
+	//!MEMB '4 '{2 3} -> 0
+	if (lst.type==CELL)
 	{
-		tOBJ key = ocar(a);
-		tOBJ lst = ocar(ocdr(a));
-		tOBJ mem;
 
 		if (lst.type != CELL)
 		{
@@ -1283,16 +1280,16 @@ tOBJ omemb(tOBJ a)
 
 		do
 		{
-			mem = ocar(lst);
+			tOBJ mem = ocar(lst);
 			if (compareObj(mem, key))
 			{
-				return makeint(1);
+				return lst;
 			}
 			lst=ocdr(lst); 	// lst=cdr lst				
 		}
 		while (onull(lst).number==0); 	
 	}
-	return makeint(0);
+	return emptyObj();
 }
 
 
@@ -1925,7 +1922,8 @@ tOBJ odict(tOBJ  lst)
 	tOBJ r;
 	if (lst.type==CELL)
 	{
-		r = makedict();
+		int n=toint(olen(lst));
+		r = makedict(n);
 		do {
 			tOBJ pair = ocar(lst);
 			tOBJ n = ocar(pair);
