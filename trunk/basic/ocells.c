@@ -26,13 +26,13 @@ extern int dbg;
 
 tCELLp newCell()
 {
-	if (dbg) printf ("New CELL\n");	
+	if (dbg>1) printf ("New CELL\n");	
 	return (tCELLp)malloc(sizeof(tCELL));
 }
 
 void delCell(tCELLp p)
 {
-	if (dbg)  printf ("Delete CELL\n");	
+	if (dbg>1)  printf ("Delete CELL\n");	
 	freeobj(&p->head);
 	if (p->tail !=NULL) delCell((tCELLp)p->tail);
 	free(p);
