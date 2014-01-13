@@ -377,14 +377,15 @@ tOBJ formula(tOBJ *o, Dict *e)
 tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 {
 	tOBJ r, arg, body;
-	tOBJ e= makedict2(env);
+
+	tOBJ e= makedict2(env,0);
 
 	fn.type=CELL;
 
 	arg=ocar(fn);
 	body=ocdr(fn);
 
-	if (dbg) println("Lambda args=",x);
+	if (dbg) {println("Lambda args=",x); println("values=",arg); }
 
 	while (onull(arg).number==0)
 	{
@@ -392,11 +393,11 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 
 		if (oatom(x).number)
 		{
-			v=eval(x,(Dict *)e.dict);
+			v=eval(x,env);
 		}
 		else
 		{
-			v=eval(ocar(x),(Dict *)e.dict);
+			v=eval(ocar(x),env);
 		}
 
 		if (n.type==STR || n.type==SYM)
@@ -406,6 +407,7 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 		x=ocdr(x);
 	}
 	if (dbg) dict_print((Dict *)e.dict);
+
 
 	r=emptyObj();
 	if (body.type==CELL)
@@ -487,12 +489,12 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 	return emptyObj();
 }
 
-tOBJ eval(tOBJ o, Dict *e)
+tOBJ eval2(tOBJ o, Dict *e)
 {
 	tOBJ r=emptyObj();
 	tOBJ h;
 
-	if (dbg) {println ("eval - ",o);}
+	//if (dbg) {println ("eval - ",o);}
 
 	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type==STR || o.type == FMAT2 || o.type == EMPTY )
 	{
@@ -631,6 +633,7 @@ tOBJ eval(tOBJ o, Dict *e)
 			tOBJ fn = ocar(o); o=ocdr(o);
 			o.type  = LAMBDA;
 			set(e, fn.string, o);
+			printf ("Function %s\n", fn.string);
 			return o;
 		}
 		else
@@ -646,6 +649,14 @@ tOBJ eval(tOBJ o, Dict *e)
 			return procall (h, o, e );
 		}
 	}
+	return r;
+}
+
+tOBJ eval(tOBJ o, Dict *e)
+{
+	if (dbg) {println ("eval - ",o);}
+	tOBJ r=eval2(o,e);
+	if (dbg) {println ("ret  - ",r);}
 	return r;
 }
 

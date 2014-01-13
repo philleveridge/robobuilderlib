@@ -185,6 +185,7 @@ tOP oplist[] = {
 	{"FOR",    40, NA,  9, ofor}, 
 	{"FOREACH",40, NA,  9, ofore}, 
 	{"WHILE",  40, NA,  9, owhile}, 
+	{"RETURN", 40, NA,  1, oreturn}, 
 
 	{"KEY",    40, NA,  1, okey}, 
 	{"WAIT",    40, NA,  1, owait}, 
@@ -295,7 +296,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	r.type=EMPTY;
 
 
-	if (dbg) {printf("math op : %d %d %d\n", o1.type, op, o2.type); } //debug info
+	if (dbg>1) {printf("math op : %d %d %d\n", o1.type, op, o2.type); } //debug info
 
 	if (op == EQL)
 	{
@@ -1946,11 +1947,13 @@ LOOP functions
 
 ************************************************************************/
 
+int retflgset=0;
 
 tOBJ obegin(tOBJ o, Dict *e)
 {
 	tOBJ r=emptyObj();
-	while (o.type != EMPTY)
+	retflgset=0;
+	while (!retflgset && o.type != EMPTY)
 	{
 		tOBJ exp = ocar(o); o=ocdr(o);	
 		r=eval(exp,e);
@@ -1966,13 +1969,19 @@ tOBJ owhile  (tOBJ  o, Dict *e)
 
 	tOBJ cond =ocar(o);
 	o=ocdr(o);
-
-	while (toint(eval(cond,e))!=0)
+	retflgset=0;
+	while (	!retflgset && toint(eval(cond,e))!=0)
 	{
 		//loop
 		r = obegin(o,e);
 	}
 	return r;
+}
+
+tOBJ oreturn  (tOBJ  o)
+{
+	retflgset=1;
+	return o;
 }
 
 
@@ -2007,7 +2016,8 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 	}
 
 	if (list.type == CELL)
-	{			
+	{
+		retflgset=0;			
 		do {
 			tOBJ value=ocar(list);
 			list=ocdr(list);
@@ -2017,7 +2027,7 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 			//loop
 			r = obegin(o,e);
 
-		} while (list.type != EMPTY);
+		} while (!retflgset && list.type != EMPTY);
 	}
 
 	return r;
@@ -2041,8 +2051,9 @@ tOBJ ofor (tOBJ  o, Dict *e)
 	f=toint(eval(ocar(ocdr(range)),e));
 
 	o=ocdr(o);
+	retflgset=0;
 
-	for (int i=s; i<=f; i++)
+	for (int i=s; (!retflgset && i<=f); i++)
 	{
 		dict_update(e, ind.string, makeint(i));
 		r = obegin(o,e);

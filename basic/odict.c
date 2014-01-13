@@ -26,7 +26,7 @@ extern int dbg;
 Dict * newdict(int sz)
 {
 	Dict *n;
-	if (dbg) printf ("New dictionary (%d)\n",sz);
+	if (dbg>1) printf ("New dictionary (%d)\n",sz);
 	n = (Dict *)malloc(sizeof(Dict));
 	if (sz==0) sz=100; //default
 	n->sz=sz;
@@ -51,9 +51,9 @@ tOBJ makedict(int n)
 	return r;
 }
 
-tOBJ makedict2(Dict *e)
+tOBJ makedict2(Dict *e, int n)
 {
-	tOBJ r= makedict(0);
+	tOBJ r= makedict(n);
 	((Dict *)(r.dict))->outer=e;
 	return r;
 }
@@ -64,7 +64,7 @@ int dict_add(Dict *d, char *key, tOBJ value)
 
 	if (d==NULL) return 0;
 
-	if(dbg) printf ("Add %d %d\n", d->ip, d->sz);
+	if(dbg>1) printf ("Add %d %d\n", d->ip, d->sz);
 
 	if ((d->ip) < d->sz)
 	{
@@ -127,7 +127,7 @@ tOBJ dict_get(Dict *d, int indx)
 	return emptyObj();
 }
 
-int dict_update(Dict *d, char *key, tOBJ value)
+int dict_updateonly(Dict *d, char *key, tOBJ value)
 {
 	int i;
 	if (d==NULL) return 0;
@@ -137,13 +137,15 @@ int dict_update(Dict *d, char *key, tOBJ value)
 		d->db[i].value = cloneObj(value); // clone it?
 		return 1;
 	}
-//	else
-//	{
-//		if (dict_update(d->outer, key, value))
-//			return 1;
-//	}
-	dict_add(d, key, value);
-	return 0;
+	else
+	{
+		return dict_updateonly(d->outer, key, value);
+	}
+}
+
+int dict_update(Dict *d, char *key, tOBJ value)
+{
+	return dict_updateonly(d,key,value) || dict_add(d, key, value);
 }
 
 int dict_print(Dict *d)
@@ -176,8 +178,11 @@ int dict_print(Dict *d)
 		printf ("\n");
 		i++;
 	}
+if (dbg>1)
+{
 	printf ("--\n");
 	dict_print(d->outer);
+}
 	return 0;
 }
 
