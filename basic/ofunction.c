@@ -150,7 +150,9 @@ tOP oplist[] = {
 	{"SERV",  40, NA,   0, oserv}, //function single arg
 	{"POSE",  40, NA,   1, opose}, //function single arg
 
-	{"PUTC",  40, NA,    1, oputch},  //function single arg
+
+
+	{"PUTC",  40, NA,   1, oputch},  //function single arg
 
 	{"NTH",   40, NA,   2, onth}, //function two arg
 
@@ -167,6 +169,9 @@ tOP oplist[] = {
 	{"REX",   40, NA,   2, orex},//
 	{"LFT",   40, NA,   2, olft},//
 /*80 */	{"RGT",   40, NA,   2, orgt},//
+	{"STOA",  40, NA,   1, ostoa}, 
+	{"ATOS",  40, NA,   1, oatos}, 
+
 	{"MID",   40, NA,   3, omid},//
 	{"EXIT",  40, NA,   0, oexit},
 	{"RBM",   40, NA,   1, orbmrf},
@@ -1159,6 +1164,11 @@ tOBJ ocons (tOBJ a, tOBJ b)
         {
                 r=makeCell2(a, b.cell);
         }
+	if (b.type==EMPTY)
+	{
+		r=makeCell();
+		((tCELLp)(r.cell))->head=a;
+	}
 	return r;
 }
 
@@ -1359,27 +1369,30 @@ tOBJ oplus(tOBJ o, Dict *e)
 tOBJ oor(tOBJ o, Dict *e)
 {
 	tOBJ r = eval(ocar(o),e); 
-	o=ocdr(o);	
+	o=ocdr(o);
+	if (r.type==INTGR && r.number>0) return makeint(1);	
+	r=makeint(0);
 	while (o.type != EMPTY)
 	{
 		tOBJ exp = ocar(o); o=ocdr(o);	
-		r = omath(r, eval(exp, e), LOR);
-		if (r.type==INTGR && r.number==1) return r;
+		if (toint(omath(r, eval(exp, e), LOR))==1) return makeint(1);
+		r=makeint(0);
 	}
-	return r;
+	return makeint(0);
 }
 
 tOBJ oand(tOBJ o, Dict *e)
 {
 	tOBJ r = eval(ocar(o),e); 
 	o=ocdr(o);	
+	if (r.type == EMPTY || (r.type==INTGR && r.number==0)) return makeint(0);
 	while (o.type != EMPTY)
 	{
 		tOBJ exp = ocar(o); o=ocdr(o);	
 		r = omath(r, eval(exp, e), LAND);
-		if (r.type==INTGR && r.number==0) return r;
+		if (r.type == EMPTY || (r.type==INTGR && r.number==0)) return makeint(0);
 	}
-	return r;
+	return makeint(1);
 }
 
 tOBJ oappend(tOBJ o, Dict *e)
@@ -1470,7 +1483,8 @@ SETK '{ENV 'BZ 2.9}
 			if (name.type==EMPTY) break;
 			if (name.type==SYM)
 			{
-				value = eval(ocar(ocdr(a)), en.dict);
+				//value = eval(ocar(ocdr(a)), en.dict);
+				value = ocar(ocdr(a));
 				if (en.type==EMPTY)
 				{
 					set(en.dict, name.string, value);
@@ -1552,7 +1566,7 @@ tOBJ olft(tOBJ  r, tOBJ a)
 	//!LFT("test",2) -> "te"
 	int p=toint(a);
 	char *cp;
-	if (r.type==STR)
+	if (r.type==STR || r.type==SYM)
 	{
 		int ln = strlen(r.string);
 		if (ln>0 && p>0 && ln>p)
@@ -1572,7 +1586,7 @@ tOBJ orgt(tOBJ  r, tOBJ a)
 	//!RGT("test",2) -> "st"
 	int p=toint(a);
 	char *cp;
-	if (r.type==STR)
+	if (r.type==STR|| r.type==SYM)
 	{
 		int ln = strlen(r.string);
 		if (ln>0 && p>0 && ln>p)
@@ -1594,10 +1608,11 @@ tOBJ omid(tOBJ  r, tOBJ a, tOBJ  b)
 	int p1=toint(a);
 	int p2=toint(b);
 	char *cp;
-	if (r.type==STR)
+	if (r.type==STR|| r.type==SYM)
 	{
 		int ln = strlen(r.string);
-		if (ln>0 && p1>0 && p2>p1 && ln>p2)
+		if (p2==0) p2=ln;
+		if (ln>0 && p1>0 && p2>p1 && p2<=ln)
 		{
 			cp=newstring1(p2-p1+1);
 			strncpy(cp, (r.string)+p1-1,p2-p1+1);
@@ -1607,6 +1622,18 @@ tOBJ omid(tOBJ  r, tOBJ a, tOBJ  b)
 		}
 	}
 	return emptyObj();
+}
+
+tOBJ ostoa(tOBJ  r)
+{
+	if (r.type==STR) r.type=SYM;
+	return r;
+}
+
+tOBJ oatos(tOBJ  r)
+{
+	if (r.type==SYM) r.type=STR;
+	return r;
 }
 
 /**********************************************************

@@ -8,28 +8,28 @@
 }
 }
 
-{SET FACTS '{{ANIMAL IS CHEETAH} {ANIMAL HAS DARK SPOTS} {ANIMAL EATS MEAT}}}
+{SETQ FACTS '{{ANIMAL IS CHEETAH} {ANIMAL HAS DARK SPOTS} {ANIMAL EATS MEAT}}}
 
-{FUNC REM {NEW} {DO {IF {NOT {MEMB NEW FACTS}} {SET FACTS {CONS NEW FACTS}}} {PR FACTS}}}
+{FUNC REM {NEW} {DO {IF {NOT {MEMB NEW FACTS}} {SETQ FACTS {CONS NEW FACTS}}} {PR FACTS}}}
 
 {FUNC REC {F} {DO {IF {NOT {NULL {MEMB F FACTS}}} {PR F}}}}
 
 {FUNC TESTIF  {R} {DO 
-   {SET IFS {CDR {CAR {CDR {CDR R}}}} F 1} 
+   {SETQ IFS {CDR {CAR {CDR {CDR R}}}} F 1} 
    {PR "If=" IFS}
    {WHILE {AND F {NOT {NULL IFS}} }
-      {IF {NOT {NULL {REC {CAR IFS}}}} {DO {SET F 0} {CAR IFS}} {SET IFS {CDR IFS}}  }
+      {IF {NOT {NULL {REC {CAR IFS}}}} {DO {SETQ F 0} {CAR IFS}} {SETQ IFS {CDR IFS}}  }
    }
 }}
 
 {FUNC USETHEN {R} 
  {DO 
-  {SET THENS {CDR {CAR {CDR {CDR {CDR R}}}}} F 1}
+  {SETQ THENS {CDR {CAR {CDR {CDR {CDR R}}}}} F 1}
   {PR "Then= " THENS}
   {WHILE {AND F {NOT {NULL THENS}}} 
   {DO 
-    {IF {NOT {NULL {REM {CAR THENS}}}} {DO {SET F 0} {PR "Rule matches .. " " Deduces: " {CAR THENS}}}}
-    {SET THENS {CDR THENS}}
+    {IF {NOT {NULL {REM {CAR THENS}}}} {DO {SETQ F 0} {PR "Rule matches .. " " Deduces: " {CAR THENS}}}}
+    {SETQ THENS {CDR THENS}}
   }}
 }
 }
@@ -50,9 +50,9 @@
 
 '{TRYRULE '{RULE IDENTIFY2 {IF {ANIMAL EATS MEAT }}               {THEN {ANIMAL IS MAMMAL}}}}
 
-{FUNC STEPF {} {DO {SET RL RULES} 
+{FUNC STEPF {} {DO {SETQ RL RULES} 
                {WHILE {NOT {NULL RL}} 
-                  {DO {SET T {TRYRULE {CAR RL}}} {SET RL {CDR RL}}}
+                  {DO {SETQ T {TRYRULE {CAR RL}}} {SETQ RL {CDR RL}}}
                }
                {PR T}}}
 
