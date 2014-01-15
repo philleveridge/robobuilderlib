@@ -393,11 +393,13 @@ void imageready()
 #endif
 
 extern char device[];
+extern int  readflg;
+extern void init_extend();
 
 void main(int argc, char *argv[])
 {
 	int lf=0,rf=0,cf=0;
-	int sf=0;
+	int sf=0,lm=0;
 
 	PORTA=3;
 
@@ -435,6 +437,9 @@ void main(int argc, char *argv[])
 
 		if (!strcmp(argv[i],"HANDS"))
 			setdh(1);
+
+		if (!strcmp(argv[i],"LM"))
+			lm=1;
 
 		if (!strcmp(argv[i],"STAND"))
 		{
@@ -487,6 +492,15 @@ void main(int argc, char *argv[])
 #endif
 	initfirmware();
 	basic_zero();
+
+	if (lm) {
+		
+		init_extend();
+
+		readflg=0;
+		repl();
+		readflg=1;
+	}
 
 	if (lf || rf)
 		binmode();

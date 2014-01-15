@@ -11,7 +11,8 @@
 #include <string.h>
 #include <strings.h>
 #include <math.h>
-#include <stdlib.h>
+#include <stdlib.h> 
+#include <unistd.h>
 #include <time.h>
 #include "linux.h"
 #endif
@@ -679,6 +680,11 @@ void init_extend()
 		srand ( (unsigned)time ( NULL ) );
 
 		eval_oxpr("FUNC FACT {N} {IF {<= N 1} 1 {* N {FACT {- N 1}}}}");
+
+		if (access("boot.l",F_OK) != -1)
+		{
+			oload(makestring("boot.l"));
+		}
 	}
 }
 
