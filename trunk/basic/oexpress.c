@@ -546,14 +546,6 @@ tOBJ eval2(tOBJ o, Dict *e)
 			return eval(eval(ocar(o),e),e);
 		}
 		else
-		if (!strcasecmp(h.string,"SETQ"))
-		{
-			tOBJ var = ocar(o); o=ocdr(o);
-			tOBJ exp = ocar(o); 
-			dict_update(e, var.string, exp);
-			return exp;
-		}
-		else
 		if (!strcasecmp(h.string,"INC"))
 		{
 			tOBJ var = ocar(o); 
@@ -573,16 +565,25 @@ tOBJ eval2(tOBJ o, Dict *e)
 		if (!strcasecmp(h.string,"READ"))
 		{
 			tOBJ var = eval(ocar(o),e);
-			if (var.type==STR) return tokenise(var.string);
+			if (var.type==STR)   return tokenise(var.string);
+			if (var.type==EMPTY) 
+			{
+				char ibf[1024];
+				printf("?");
+				readLine(ibf);
+				return tokenise(ibf);
+			}
 		}
 		else
-		if (!strcasecmp(h.string,"SET"))
+		if (!strcasecmp(h.string,"SET") || !strcasecmp(h.string,"SETQ"))
 		{
 			tOBJ exp = emptyObj();
 			while (o.type != EMPTY)
 			{
 				tOBJ var = ocar(o); o=ocdr(o);
 				exp = eval(ocar(o),e); o=ocdr(o);
+
+				if (!strcasecmp(h.string,"SET")) var=eval(var,e);
 
 				if (var.type==SYM)
 					dict_update(e, var.string, exp);
@@ -627,7 +628,7 @@ tOBJ eval2(tOBJ o, Dict *e)
 			return eq;
 		}
 		else
-		if (!strcasecmp(h.string,"FUNC") || !strcasecmp(h.string,"DEFN"))
+		if (!strcasecmp(h.string,"FUNC") || !strcasecmp(h.string,"DEF"))
 		{
 			//!FUNC ABC {X Y} {PLUS X Y}
 			tOBJ fn = ocar(o); o=ocdr(o);

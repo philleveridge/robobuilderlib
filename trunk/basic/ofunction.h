@@ -115,6 +115,9 @@ extern tOBJ omdet(tOBJ  r);
 extern tOBJ print(tOBJ r);
 extern tOBJ orbmrf(tOBJ r);
 
+extern tOBJ oatos(tOBJ r);
+extern tOBJ ostoa(tOBJ r);
+
 extern tOBJ oreturn(tOBJ r);
 extern tOBJ onth(tOBJ  r, tOBJ);
 
