@@ -586,7 +586,7 @@ tOBJ eval2(tOBJ o, Dict *e)
 
 				if (!strcasecmp(h.string,"SET")) var=eval(var,e);
 
-				if (var.type==SYM)
+				if (var.type==SYM || var.type == STR)
 					dict_update(e, var.string, exp);
 				else
 				if (var.type==CELL && exp.type==CELL)
@@ -595,7 +595,7 @@ tOBJ eval2(tOBJ o, Dict *e)
 					{
 						tOBJ v1 = ocar(var); var=ocdr(var);
 						tOBJ v2 = ocar(exp); exp=ocdr(exp);
-			 			if (v1.type==SYM)
+			 			if (v1.type==SYM || var.type == STR)
 							dict_update(e, v1.string, v2);
 					}
 				}
@@ -603,6 +603,17 @@ tOBJ eval2(tOBJ o, Dict *e)
 			return exp;
 		
 		}
+		else
+                if (!strcasecmp(h.string,"WITH"))
+                {
+                        while (o.type != EMPTY)
+                        {
+                                tOBJ var = ocar(o); o=ocdr(o);
+                                if (var.type==SYM || var.type == STR)
+                                        dict_add(e, var.string, emptyObj());
+                        }
+                        return emptyObj();
+                }
 		else
            	if (!strcasecmp(h.string,"IF"))
                 {

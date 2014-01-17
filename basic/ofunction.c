@@ -1273,8 +1273,8 @@ tOBJ onull(tOBJ a)
 tOBJ oatom(tOBJ a)
 {
 	//!ATOM 1 -> 1
-	return makeint(!(a.type==CELL || a.type==FMAT2));
-}
+	return makeint(!(a.type==CELL || a.type==FMAT2 || a.type==EMPTY ||  a.type==RBM ));
+} 
 
 tOBJ omemb(tOBJ key, tOBJ lst)
 {
@@ -1990,8 +1990,10 @@ tOBJ obegin(tOBJ o, Dict *e)
 
 tOBJ owhile  (tOBJ  o, Dict *e)
 {
-	//SET N 5
-	//!WHILE {> N 0} {DO {PRINT N} {SET N {- N 1}}}
+	//SETQ N 5
+	//WHILE {> N 0} {DO {PRINT N} {SET N {- N 1}}}
+	//WHILE {> N 0} {PRINT N} {DEC }
+
 	tOBJ r=emptyObj();
 
 	tOBJ cond =ocar(o);
@@ -2080,10 +2082,11 @@ tOBJ ofor (tOBJ  o, Dict *e)
 	o=ocdr(o);
 	retflgset=0;
 
-	for (int i=s; (!retflgset && i<=f); i++)
+	for (int i=s; (!retflgset && i<=f); i++) //=toint(dict_getk(e, ind.string))+1)
 	{
 		dict_update(e, ind.string, makeint(i));
 		r = obegin(o,e);
+		i = toint(dict_getk(e, ind.string));
 	}
 	return r;
 }
