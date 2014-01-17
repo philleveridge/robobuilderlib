@@ -16,7 +16,7 @@
 {PRINT "back propagate"}
 {SET ERR 0.9}
 {PRINT "Step 6) output layer"}
-{SET MY {SIG {* MW {TRN MS}}}}}
+{SET MY {SIG {* MW {TRN MS}}}}
 
 {SET MY {MAPCAR {LAMBDA {X} {* {- ERR X} {DSIG X}}} MY}}
 
@@ -25,4 +25,4 @@
 
 
 {PRINT "Step  8) update weights"}
-{SET APLHA 0.3}
+{SET ALPHA 0.3}
