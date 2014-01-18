@@ -196,7 +196,7 @@ tOBJ fprint(FILE *fp, tOBJ r)
     if (r.type == CELL)
     {
         struct cell  *c = r.cell;
-        fprintf(fp,"{");  
+        fprintf(fp,"(");  
         print(c->head);
                 
         while (c->tail != (void *)0)
@@ -205,7 +205,7 @@ tOBJ fprint(FILE *fp, tOBJ r)
                 fprintf(fp, " ");
                 print(c->head);
         }
-        fprintf(fp,"}");
+        fprintf(fp,")");
     }
     else
     {
@@ -371,7 +371,10 @@ tOBJ makenumfstr(char *s)
 	float f=0.0, rm=1.0;
 	int sgn=1;
 	int flt=0;
-	if (*s == '-') {sgn=-1; s++;}
+	if (*s == '-') 
+		{sgn=-1; s++;}
+	else if (*s == '+') 
+		{s++;}
 
 	while (*s != '\0')
 	{
