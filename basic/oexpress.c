@@ -65,7 +65,7 @@ char *readword(char *s, char *w)
 			return s;
 		}
 
-		if ((c=='-' || c=='+') && *s>='0' && *s<='9' && sf==0)
+		if ((c=='-' || c=='+') && *s>='0' && *s<='9' && sf==0 && n==0)
 		{
 			*w++ = c;
 			continue;
@@ -243,7 +243,7 @@ tOBJ read_from(tOBJ *r)
 			qf=1;	
 		}
 		else
-		if (h.type==SYM && !strcmp(h.string, "{"))
+		if (h.type==SYM && !strcmp(h.string, "("))
 		{	
 			tOBJ t=read_from(r);
 	
@@ -252,7 +252,7 @@ tOBJ read_from(tOBJ *r)
 			qf=0;
 		}
 		else
-		if (h.type==SYM && !strcmp(h.string, "}"))
+		if (h.type==SYM && !strcmp(h.string, ")"))
 		{
 			break;
 		}
@@ -274,104 +274,94 @@ tOBJ parse(char *s)
 	return L;
 }
 
+//int getOP(char *str);
 
-tOBJ formula(tOBJ *o, Dict *e)
+tOBJ formula(tOBJ ae, Dict *e)
 {
 	// ( V op V )
 	// V op V op V
 	// F (arg) -tbd
 	// 
-	tOBJ r=emptyObj();
-	tOBJ v1=emptyObj();
-	tOBJ v2=emptyObj();
+	tOBJ ops=emptyObj();
+	tOBJ opd=emptyObj();
 
-	int op=0;
-	int p=0;
+	tOBJ dummy=ostoa(makestring("DUMMY"));
 
-	tOBJ n=emptyObj();;
+	if (oatom(ae).number==1) {return ae;}
+	ops = append(emptyObj(),dummy);
 
 	while (1)
 	{
-		if (dbg) {print (v1); print (v2);print (n); print (*o); printf(" p=%d\n",p); }
+		if (dbg) {println ("o=", ae); }
 
-		if (p!=0)
-		{
-			n=ocar(*o);
-			*o=ocdr(*o);
+		if (onull(ae).number==1) return emptyObj();
 
-			if (n.type==SYM)
-			{
-				//is it a function?
-				op = getOP(n.string);
-				if (op>=0 &&  (oplist[op].type==NA || oplist[op].type==CBR)) 
-					return v1; //fucntion not op
-			}
-			else if (n.type==EMPTY)
-			{
-				return v1;
-			}
-			else
-			{
-				printf("?format ?\n");
-				return r;
-			}
-		}
-
-		n=ocar(*o);
-		*o=ocdr(*o);
-
-		if (n.type==INTGR || n.type==FLOAT || n.type==STR)
-			v2=n;
-		else if (n.type==SYM)
-		{
-			int fop = getOP(n.string);
-			if (fop>=0 && oplist[fop].type ==NA )
-			{
-				// FOO ()
-				n=ocar(*o); // '('
-				*o=ocdr(*o);
-				v2 = (*oplist[fop].func)(formula(o,e));	
-		
-			}
-			else
-			if (!strcmp(n.string,"("))
-			{
-				v2=formula(o,e);
-			}
-			else
-			{
-				//is it a variable?
-				v2=dict_getk(e, n.string);
-				if (v2.type==LAMBDA)
-				{
-					n=ocar(*o); // '('
-					*o=ocdr(*o);
-					v2 = procall (v2, formula(o,e), e );
-				}
-			}
-		}
-		else if (n.type==EMPTY)
-		{
-			return v1;
-		}
+		if (oatom(ocar(ae)).number==1) 
+			opd = ocons(ocar(ae),opd);
 		else
-		{
-			printf("?format   ?\n");
-			return r;
-		}
+			opd = ocons(formula(ocar(ae),e),opd);
 
-		if (p==0)
+		ae = ocdr(ae);
+		while (1)
 		{
-			v1=v2;
-			p=1;
+			int wa=-1,wb=-1;
+			if (dbg) {okey(makeint(2)); println ("ae =", ae); println (" opd=", opd); println ("ops=", ops);  }
+			if (onull(ae).number==1 && compareObj(ocar(ops),dummy)==1 ) 
+				return ocar(opd);
+
+			tOBJ a = ocar(ae);
+			tOBJ b = ocar(ops);	
+			if (dbg) {println ("a =", a); println ("b =", b);}
+
+			if (a.type==SYM)
+				wa=getOP(a.string);
+			if (wa>=0) wa=oplist[wa].level; 
+			else 
+			{ 
+				//opd = ocons(a,opd);
+				wa=0;
+			}
+
+			if (a.type==SYM)
+				wb=getOP(b.string);
+			if (wb>=0) wb=oplist[wb].level;
+
+			if (onull(ae).number==1 ||  (wa <= wb))
+			{
+ 				if (dbg) {printf ("P1 : %d %d\n",wa,wb); }
+
+				tOBJ opc =  ocar(ops);
+				if (dbg) println ("opc =", opc);
+
+				if (opc.type==SYM)
+					wa=getOP(opc.string);
+				else
+					wa=0;
+				if (wa>=0) wa=oplist[wa].type;
+
+				a = eval(ocar(ocdr(opd)),e);
+				b = eval(ocar(opd),e);
+
+				if (dbg) {println ("a1 =", a); println ("a2 =",b);}
+
+				tOBJ ans= omath(a, b, wa);
+
+				if (dbg) println ("ans =", ans);
+
+				opd = append(ocdr(ocdr(opd)),ans);
+
+				ops=ocdr(ops);
+			}
+			else
+			{
+				if (dbg) {printf ("P2 : %d %d\n",wa,wb); }
+				ops=ocons(a,ops);
+				break;
+			}
+
 		}
-		else
-		{
-			if (op>=0) r=omath(v1,v2, oplist[op].type);
-			v1=r;
-		}
-	}
-	return r;
+		ae = ocdr(ae);
+	}	
 }
 
 
@@ -494,8 +484,6 @@ tOBJ eval2(tOBJ o, Dict *e)
 {
 	tOBJ r=emptyObj();
 	tOBJ h;
-
-	//if (dbg) {println ("eval - ",o);}
 
 	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type==STR || o.type == FMAT2 || o.type == EMPTY )
 	{
@@ -629,13 +617,18 @@ tOBJ eval2(tOBJ o, Dict *e)
                                 return eval(alt,e);
                         }
                 }
+		if (!strcasecmp(h.string,"FORM"))
+		{
+			return formula(o,e);
+		}
+		else
 		if (!strcasecmp(h.string,"LET"))
 		{
 			//LET VAR = FORMULA
 			tOBJ var = ocar(o); o=ocdr(o);
 			tOBJ eq =  ocar(o); o=ocdr(o);
 			if (eq.type != STR && strcmp(eq.string,"=")) {printf ("err\n"); return emptyObj();}
-			eq = formula(&o,e);
+			eq = formula(o,e);
 			dict_update(e, var.string, eq);
 			return eq;
 		}
@@ -690,7 +683,7 @@ void init_extend()
 		//seed the RND Gen
 		srand ( (unsigned)time ( NULL ) );
 
-		eval_oxpr("FUNC FACT {N} {IF {<= N 1} 1 {* N {FACT {- N 1}}}}");
+		eval_oxpr("FUNC FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
 
 		if (access("boot.l",F_OK) != -1)
 		{

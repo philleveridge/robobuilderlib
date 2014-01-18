@@ -1,37 +1,36 @@
 !DO 
-{FUNC THREAT {I J A B}
-{PR "threat: " I J A B}
-{OR {= I A}
-    {= J B}
-    {= {- I J} {- A B}}
-    {= {+ I J} {+ A B}}
-}
-}
-{FUNC CONFLICT {N M BOARD} {IF  {NOT {NULL BOARD}} {OR {THREAT N M {CAR {CAR BOARD}} {CAR {CDR {CAR BOARD}}}}
-                                                         {CONFLICT N M {CDR BOARD}}}}}
+(FUNC THREAT (I J A B)
+(PR "threat: " I J A B)
+(OR (= I A)
+    (= J B)
+    (= (- I J) (- A B))
+    (= (+ I J) (+ A B))
+)
+)
+(FUNC CONFLICT (N M BOARD) (IF  (NOT (NULL BOARD)) (OR (THREAT N M (CAR (CAR BOARD)) (CAR (CDR (CAR BOARD))))
+                                                         (CONFLICT N M (CDR BOARD)))))
 
-{DEF QUEEN {SIZE} {WITH N M BOARD} 
-  {FOR N {1 SIZE} 
-    {FOR M {1 SIZE} 
-       {PRINT N M ;}
-       {IF {NOT {CONFLICT N M BOARD}} 
-              {DO {PR 'OK} {SETQ BOARD {CONS {LIST N M} BOARD} M SIZE}}
+(DEF QUEEN (SIZE) (WITH N M BOARD) 
+  (FOR N (1 SIZE) 
+    (FOR M (1 SIZE) 
+       (PRINT N M ;)
+       (IF (NOT (CONFLICT N M BOARD)) 
+              (DO (SETQ BOARD (CONS (LIST N M) BOARD) M SIZE) (PR 'OK BOARD) )
+              (DO (IF (NULL BOARD) (RETURN 'FINISH) (SETQ M (CAR (CDR (CAR BOARD))) N (CAR (CAR BOARD)) BOARD (CDR BOARD))) (PR N ; M  ;BOARD))
+       )
+   )
+  ) (PBOARD SIZE BOARD))
 
-              {DO {PR 'NO BOARD} {IF {NULL BOARD} {RETURN 'FINISH} {SETQ M {CAR {CDR {CAR BOARD}}} N {CAR {CAR BOARD}} BOARD {CDR BOARD}}} }
-       }
-   }
-  } {PBOARD SIZE BOARD}}
+'( CONFLICT 2 2 '((2 0) (1 0) )  )
+'( THREAT 2 2 1 0                )
+'( PBOARD 4 '((1 2))             )
 
-'{ CONFLICT 2 2 '{{2 0} {1 0} }  }
-'{ THREAT 2 2 1 0                }
-'{ PBOARD 4 '{{1 2}}             }
-
-{DEF PBOARD {SIZE BOARD} 
-  {FOR N {1 SIZE} 
-    {FOR M {1 SIZE} 
-       {IF {NULL {MEMB {LIST N M} BOARD}}  {PRINT '_ ;} {PRINT 'Q ;}}
-    }
-    {PR}
-  }}
+(DEF PBOARD (SIZE BOARD) 
+  (FOR N (1 SIZE) 
+    (FOR M (1 SIZE) 
+       (IF (NULL (MEMB (LIST N M) BOARD))  (PRINT '_ ;) (PRINT 'Q ;))
+    )
+    (PR)
+  ))
 
 

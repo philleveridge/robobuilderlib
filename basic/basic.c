@@ -247,6 +247,7 @@ int readLine(char *line)
 	int cf=0;
 	int lf=0;
 	char *start=line;
+	char *end=line;
 	
 	rprintfStr ("> ");
 	
@@ -254,6 +255,7 @@ int readLine(char *line)
 	{
 		// foreach char entered
 		pch=ch;
+		if (line>end) {end=line; *end=0;}
 
 		while ((ch = uartGetByte())<0) ;
 
@@ -270,24 +272,51 @@ int readLine(char *line)
 			break;		
 		}
 
-		if (start==line && ch=='=' ) //recover last line
-		{
 #ifdef LINUX
+		if (ch==20) //recover last line ^U
+		{
 			if (hbfc>0) 
 			{
-				rprintfStr(histbuff[hbfc-1]);
+				int z, n= line-start;
+				for (z=0;z<n;z++) {rprintfChar(8); rprintfChar(32); rprintfChar(8);}
+				rprintf("%s", histbuff[hbfc-1]);fflush(stdout);
 				strcpy(start,histbuff[hbfc-1]);
 				line = start+strlen(histbuff[hbfc-1]);
 			}
 			hbfc--;
 			continue;
+		}
+
+		if (ch==2) //back ^B
+		{
+			if (line>start) 
+			{
+				line--;
+				rprintfChar(8);
+			}
+			continue;
+		}
+
+		if (ch==6) //forward ^F
+		{
+			if (line<end) 
+			{
+				rprintfChar(*line);
+				line++;
+			}
+			continue;
+		}
 #else
+		if (start==line && ch=='=') //recover last line
+		{
+
 			rprintfStr(line);
 			while (*line++!=0);
+			end=line;
 			line--;
 			continue;
-#endif
 		}
+#endif
 
 		if (lf==1)
 		{
@@ -315,16 +344,14 @@ int readLine(char *line)
 				
 		if (ch==13 || (start==line && ch=='.') )
 		{
-			if (ch=='.') *line++='.';
+			if (ch=='.') { *end++='.';*end='\0';}
 			if (pch==' ') line--; //get rid of trailling space
-			*line='\0'; 
+			//*line='\0'; 
 			rprintf("\r\n");	
 			break;
 		}
 #ifdef LINUX
-// printf ("[%d]",ch);
-
-		if (ch==18)
+		if (ch==18 && readflg) //^R
 		{
 			readservos(0);
 			if (nos>0) {
@@ -337,6 +364,7 @@ int readLine(char *line)
 				strcpy(line,buf);
 				line += strlen(buf);
 				*line='\0';
+				end=line;
 				continue;
 			}
 		}
@@ -382,7 +410,7 @@ int readLine(char *line)
 		hbfc=(hbfc+1)%HB;
 	}
 #endif
-	return (line-start);
+	return (end-start);
 }
 
 int execute(line_t line, int f);
