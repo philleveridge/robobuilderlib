@@ -114,7 +114,7 @@ void dumpstack()
 		rprintf("Ops %d\n", op); 
 		for (sc=0;sc<op;sc++) rprintf("%d - [%c]\n", sc,ops[sc]);
 		rprintf("stack %d\n", sp); 
-		for (sc=0;sc<sp;sc++) rprintf("%d - %d\n", sc,stack[sc]);
+		for (sc=0;sc<sp;sc++) rprintf("%d - %ld\n", sc,stack[sc]);
 	}
 	return;
 }
@@ -175,6 +175,11 @@ int preci(char s)
 	return mp[(p-o)];
 }
 
+#ifdef PARSE
+extern tOBJ eval_oxpr(char *s);
+extern tOBJ print (tOBJ);
+#endif
+
 unsigned char eval_expr(char **str, long *res)
 {
 	char c;
@@ -200,10 +205,17 @@ unsigned char eval_expr(char **str, long *res)
 		if (dbg > 1) printf ("E=[%s]\n", *str);
 		v=eval_oxpr(*str);
 		if (v.type==INTGR)
-			n1=v.number;
+		{
+			n1=(long)(v.number);
+		}
 		else if (v.type==FLOAT)
-			n1=(int)v.floatpoint;
-		else n1=0;
+		{
+			n1=(long)(v.floatpoint);
+		}
+		else
+		{
+			 n1=0;
+		}
 		*res=n1;
 		if (cp !=0) 
 			*str=cp+1;
