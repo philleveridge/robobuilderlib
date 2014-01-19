@@ -26,7 +26,9 @@ typedef struct ops {
 extern tOP oplist[];
 
 extern int  set   	(Dict *en, char *name, tOBJ r);
+extern tOBJ setb   	(tOBJ  s, tOBJ r);
 extern tOBJ get   	(Dict *ep, char *name);
+extern tOBJ getb   	(tOBJ  r);
 extern int  getOP 	(char *str);
 extern tOBJ omath 	(tOBJ o1, tOBJ o2, int op);
 

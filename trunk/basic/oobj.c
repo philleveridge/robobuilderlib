@@ -315,11 +315,7 @@ tOBJ cnvtInttoList(int an, int *array)
 
 tOBJ cnvtBytetoList(int an, BYTE *array)
 {
-	tOBJ r,n,top;
-	int i;
-
-	if (an<=0) return emptyObj();
-	top=makeCell2( makeint(array[0]), NULL);
+/*	top=makeCell2( makeint(array[0]), NULL);
 	r=top;
 
 	for (i=1; i<an; i++)
@@ -329,7 +325,17 @@ tOBJ cnvtBytetoList(int an, BYTE *array)
 		r=n;
 	}
 	((tCELLp)(n.cell))->tail = 0;
-	return top;
+*/
+	int i;
+	tOBJ r=emptyObj();
+	if (an<=0) return r;
+
+	for (i=an-1; i>=0; i--)
+	{
+		r=ocons(makeint((int)array[i]), r);
+	}
+
+	return r;
 }
 
 tOBJ cnvtFloattoList(int an, float *array)

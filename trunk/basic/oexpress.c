@@ -714,6 +714,7 @@ int countb(char *s)
 void repl()
 {
 	char inputbuffer[MAX];
+	init_extend();
 	while (1)
 	{
 		printf("!");
