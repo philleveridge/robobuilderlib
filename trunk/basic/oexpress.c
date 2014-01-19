@@ -516,12 +516,12 @@ tOBJ eval2(tOBJ o, Dict *e)
 			h=dict_getk(e,h.string);
 		}
 
-		if (!strcmp(h.string,"QT"))
+		if (!strcasecmp(h.string,"QT"))
 		{
 			return ocar(o);
 		}
 		else
-		if (!strcmp(h.string,"EVAL"))
+		if (!strcasecmp(h.string,"EVAL"))
 		{
 			return eval(eval(ocar(o),e),e);
 		}
@@ -699,11 +699,13 @@ int countb(char *s)
 	char c;
 	int n=0;
 	int sf=0;
-	while ( (c=*s++) != 9)
+
+	while ( (c=*s++) != 0)
 	{
 		if (c=='"')        sf=!sf;
 		if (c=='(' && !sf) n++;
 		if (c==')' && !sf) n--;		
+
 	}
 	return n;
 }
@@ -715,12 +717,14 @@ void repl()
 	while (1)
 	{
 		printf("!");
+		inputbuffer[0]=0;
 		readLine(&inputbuffer[0]);
 		if (countb(inputbuffer)!=0)
 		{
 			printf("Mis-matched brackets\n");
 			continue;
 		}
+		if (inputbuffer[0]==';') continue;
 		if (!strcasecmp(inputbuffer,".")) return;
 		extend(inputbuffer);
 	}
