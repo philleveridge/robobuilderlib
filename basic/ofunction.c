@@ -87,115 +87,98 @@ tOP oplist[] = {
 	{"(",    50, OBR,   1, NULL},
 	{")",    50, CBR,   1, NULL},
 	{",",    50, COMMA, 1, NULL},
-	{"SIN",  40, NA,    1, osin},  //function single arg
-	{"COS",  40, NA,    1, ocos},  //function single arg
-	{"TAN",  40, NA,    1, otan},  //function single arg
-	{"ATAN", 40, NA,    1, oatan}, //function single arg
-	{"ACOS", 40, NA,    1, oacos}, //function single arg
-/*20 */	{"LOG",  40, NA,    1, olog},  //function single arg
-	{"EXP",  40, NA,    1, oexp},  //function single arg
-	{"SQRT", 40, NA,    1, osqrt}, //function single arg
 	{"ABS",  40, NA,    1, oabs},  //function single arg
-	{"NOT",  40, NA,    1, onot},  //function single arg
-	{"RND",  40, NA,    0, ornd},  //in-const
-	{"MAX",  40, NA,    2, omax},   //function two args
-	{"SIG",  40, NA,    1, osig},  //sigmoid functon
-	{"DSIG", 40, NA,    1, odsig}, //sigmoid functon
-	{"PSD",  40, NA,    0, opsd},  //const
 	{"ACCX", 40, NA,    0, oacx},  //const
-/*30 */	{"ACCY", 40, NA,    0, oacy},  //const
+	{"ACCY", 40, NA,    0, oacy},  //const
 	{"ACCZ", 40, NA,    0, oacz},  //const
-//MATRIX BASED
-
-	{"TRN",  40, NA,    1, otrn},   //function single arg    <fMatrix>
-
-	{"ROW",  40, NA,    1, orow},   //function single arg    <fMatrix>
-	{"COL",  40, NA,    1, ocol},   //function single arg    <fMatrix>
-	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
-	{"SCELL",40, NA,    5, omats},   //function three args   <fMatrix, int, int>
-	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
-	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
-	{"ZERO", 40, NA,    2, ozero},  //function two args  <fint, int>
-	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
-	{"HSUM", 40, NA,    1, ohsum},  //function <fMatrix>
-	{"VSUM", 40, NA,    1, ovsum},  //function <fMatrix>
-	{"INV",  40, NA,    1, ominv},  //function <fMatrix>
-	{"DET",  40, NA,    1, omdet},  //function <fMatrix>
-
-/*40 */	{"H2SM", 40, NA,    1, ohsum2},  //function <fMatrix>
-	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
-	{"SUM",  40, NA,    1, osum},  //function <fMatrix>
-	{"MAPCAR",40,NA,    2, omapcar}, //function two args   <fMatrix>
-	{"APPLY",40,NA,     2, oapply}, //function two args   <fMatrix>
-	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
-	{"MCOND",40, NA,    5, omcond},  //function three args   <fMatrix>
-	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
-	{"ZERB", 40, NA,    5, ozerob}, //function four args   <fmatrix>, <int> <int> Mint> <int>
-	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
-//LIST BASED
-	{"CAR",  40, NA,    1, ocar},  //function single arg
-	{"CDR",  40, NA,    1, ocdr},  //function single arg
-
-/*50 */	{"TYPE", 40, NA,    1, otype},  //function single arg
-	{"CONS", 40, NA,    2, ocons},  //function single arg
-	{"LEN",  40, NA,    1, olen},  //function single arg
-	{"SUBS", 40, NA,    1, osubst},  //function single arg
-	{"LAST", 40, NA,    1, olast},  //function single arg
-	{"REV",  40, NA,    1, orev},  //function single arg
-	{"NULL",  40, NA,   1, onull},  //function single arg
-	{"MEMB",  40, NA,   2, omemb},  //function single arg
-/*60 */	{"ASSN",  40, NA,   1, oasso},  //function single arg
-	{"ATOM",  40, NA,   1, oatom},  //function single arg
-
-	{"SERV",  40, NA,   0, oserv}, //function single arg
-	{"POSE",  40, NA,   1, opose}, //function single arg
-
-
-
-	{"PUTC",  40, NA,   1, oputch},  //function single arg
-
-	{"NTH",   40, NA,   2, onth}, //function two arg
-
-	{"WHOS",  40, NA,   0, owhs},
-/*70 */	{"BF",    40, NA,   1, obf},
-	{"MAT",   40, NA,   3, omatr},// 
-
-	{"DICT",  40, NA,   1, odict},// 
-	{"SETK",  40, NA,   1, oset}, //function single arg
-	{"GETK",  40, NA,   1, oget}, //function single arg
-
-	{"LOAD",  40, NA,   1, oload},//
-	{"SAVE",  40, NA,   2, osave},//
-	{"REX",   40, NA,   2, orex},//
-	{"LFT",   40, NA,   2, olft},//
-/*80 */	{"RGT",   40, NA,   2, orgt},//
-	{"STOA",  40, NA,   1, ostoa}, 
-	{"ATOS",  40, NA,   1, oatos}, 
-
-	{"MID",   40, NA,   3, omid},//
-	{"EXIT",  40, NA,   0, oexit},
-	{"RBM",   40, NA,   1, orbmrf},
-
-	{"COND",  40, NA,   9, ocond}, 
-	{"DO",    40, NA,   9, obegin},  
-	{"BEGIN", 40, NA,   9, obegin},  
-	{"LIST",  40, NA,   9, olist},   
-	{"APPEND",40, NA,   9, oappend}, 
-	{"PLUS",  40, NA,   9, oplus}, 
+	{"ACOS", 40, NA,    1, oacos}, //function single arg
 	{"AND",   40, NA,   9, oand}, 
-	{"OR",    40, NA,   9, oor}, 
-	{"PRINT", 40, NA,   9, opr},  
-	{"PR",    40, NA,   9, opr}, 
-
-	{"FOR",    40, NA,  9, ofor}, 
+	{"APPEND",40, NA,   9, oappend}, 
+	{"APPLY",40,NA,     2, oapply}, //function two args   <fMatrix>
+	{"ASSN",  40, NA,   1, oasso},  //function single arg
+	{"ATAN", 40, NA,    1, oatan}, //function single arg
+	{"ATOM",  40, NA,   1, oatom},  //function single arg
+	{"ATOS",  40, NA,   1, oatos}, 
+	{"BEGIN", 40, NA,   9, obegin},  
+	{"BF",    40, NA,   1, obf},
+	{"CAR",  40, NA,    1, ocar},  //LIST BASED
+	{"CDR",  40, NA,    1, ocdr},  //function single arg
+	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
+	{"COL",  40, NA,    1, ocol},   //function single arg    <fMatrix>
+	{"COND",  40, NA,   9, ocond}, 
+	{"CONS", 40, NA,    2, ocons},  //function single arg
+	{"CONV", 40, NA,    2, oconv},  //function three args   <fMatrix>
+	{"COS",  40, NA,    1, ocos},  //function single arg
+	{"DET",  40, NA,    1, omdet},  //function <fMatrix>
+	{"DICT",  40, NA,   1, odict},// 
+	{"DO",    40, NA,   9, obegin},  
+	{"DSIG", 40, NA,    1, odsig}, //sigmoid functon
+	{"EXIT",  40, NA,   0, oexit},
+	{"EXP",  40, NA,    1, oexp},  //function single arg
+	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
+	{"FOR",   40, NA,   9, ofor}, 
 	{"FOREACH",40, NA,  9, ofore}, 
-	{"WHILE",  40, NA,  9, owhile}, 
-	{"RETURN", 40, NA,  1, oreturn}, 
-
-	{"KEY",    40, NA,  1, okey}, 
-	{"WAIT",    40, NA,  1, owait}, 
-  
-	{"IMAGE", 40, NA,   9, oimg}
+	{"GETK",  40, NA,   1, oget}, //function single arg
+	{"GETSERVO",40, NA, 1, ogetservo}, //function single arg
+	{"H2SM", 40, NA,    1, ohsum2},  //function <fMatrix>
+	{"HSUM", 40, NA,    1, ohsum},  //function <fMatrix>
+	{"IMAGE", 40, NA,   9, oimg},
+	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
+	{"INV",  40, NA,    1, ominv},  //function <fMatrix>
+	{"KEY",   40, NA,   1, okey}, 
+	{"LAST", 40, NA,    1, olast},  //function single arg
+	{"LEN",  40, NA,    1, olen},  //function single arg
+	{"LFT",   40, NA,   2, olft},//
+	{"LIST",  40, NA,   9, olist},   
+	{"LOAD",  40, NA,   1, oload},//
+	{"LOG",  40, NA,    1, olog},  //function single arg
+	{"MAPCAR",40,NA,    2, omapcar}, //function two args   <fMatrix>
+	{"MAT",   40, NA,   3, omatr},// 
+	{"MAX",  40, NA,    2, omax},   //function two args
+	{"MCOND",40, NA,    5, omcond},  //function three args   <fMatrix>
+	{"MEMB",  40, NA,   2, omemb},  //function single arg
+	{"MID",   40, NA,   3, omid},//
+	{"NOT",  40, NA,    1, onot},  //function single arg
+	{"NTH",   40, NA,   2, onth}, //function two arg
+	{"NULL",  40, NA,   1, onull},  //function single arg
+	{"OR",    40, NA,   9, oor}, 
+	{"PLUS",  40, NA,   9, oplus}, 
+	{"POSE",  40, NA,   1, opose}, //function single arg
+	{"PR",    40, NA,   9, opr}, 
+	{"PRINT", 40, NA,   9, opr},  
+	{"PSD",  40, NA,    0, opsd},  //const
+	{"PUTC",  40, NA,   1, oputch},  //function single arg
+	{"RBM",   40, NA,   1, orbmrf},
+	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
+	{"RETURN",40, NA,   1, oreturn}, 
+	{"REV",  40, NA,    1, orev},  //function single arg
+	{"REX",   40, NA,   2, orex},//
+	{"RGT",   40, NA,   2, orgt},//
+	{"RND",  40, NA,    0, ornd},  //in-const
+	{"ROW",  40, NA,    1, orow},   //function single arg    <fMatrix>
+	{"RSHP", 40, NA,    3, orshp},  //function three args  <fMatrix, int, int>
+	{"SAVE",  40, NA,   2, osave},//
+	{"SCELL",40, NA,    5, omats},   //function three args   <fMatrix, int, int>
+	{"SERVO", 40, NA,   0, oserv}, //function single arg
+	{"SETK", 40, NA,    1, oset}, //function single arg
+	{"SETSERVO", 40, NA,3, osetservo}, //function single arg
+	{"SIG",  40, NA,    1, osig},  //sigmoid functon
+	{"SIN",  40, NA,    1, osin},  //function single arg
+	{"SQRT", 40, NA,    1, osqrt}, //function single arg
+	{"STOA", 40, NA,    1, ostoa}, 
+	{"SUBS", 40, NA,    1, osubst},  //function single arg
+	{"SUM",  40, NA,    1, osum},  //function <fMatrix>
+	{"TAN",  40, NA,    1, otan},  //function single arg
+	{"TRN",  40, NA,    1, otrn},   ////MATRIX BASED 
+	{"TYPE", 40, NA,    1, otype},  //function single arg
+	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
+	{"VSUM", 40, NA,    1, ovsum},  //function <fMatrix>
+	{"WAIT",  40, NA,   1, owait},  
+	{"WHILE", 40, NA,   9, owhile}, 
+	{"WHOS",  40, NA,   0, owhs},
+	{"ZERB", 40, NA,    5, ozerob},  //function four args   <fmatrix>, <int> <int> Mint> <int>
+	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
+	{"ZERO", 40, NA,    2, ozero}    //function two args  <fint, int>
 };
 
 int getOP(char *str)
@@ -204,7 +187,7 @@ int getOP(char *str)
 	while (i<sizeof(oplist)/sizeof(tOP))
 	{
 		//printf ("%d %s\n", i,oplist[i].name);
-		if (!strcmp(oplist[i].name,str))
+		if (!strcasecmp(oplist[i].name,str))
 			return i;
 		i++;
 	}
@@ -1695,6 +1678,9 @@ tOBJ orex(tOBJ  a, tOBJ r)
 
 extern BYTE cpos[];
 extern BYTE nos;
+extern int wckReadPos(int id, int d1);
+extern int wckPassive(int id);
+extern int wckMovePos(int id, int pos, int torq);
 
 tOBJ oserv(tOBJ a)
 {
@@ -1703,6 +1689,24 @@ tOBJ oserv(tOBJ a)
 	readservos(0);
 	r=cnvtBytetoList(nos, cpos);	
 	return r;
+}
+
+tOBJ ogetservo(tOBJ a, tOBJ b)
+{
+	//> !GETSERVO 10
+	int id=toint(a);
+	int d1=toint(b);
+	return makeint(wckReadPos(id, d1));
+}
+
+tOBJ osetservo(tOBJ s, tOBJ p, tOBJ v)
+{
+	//> !SETSERVO 12 120 4
+	int id=toint(s);
+	int pos=toint(p);
+	int tor=toint(v);
+	if (id<0 || id>31 || pos <0 || pos>254 || tor<0 || tor>4) return emptyObj();
+	return makeint(wckMovePos(id,pos,tor));
 }
 
 tOBJ opose(tOBJ a)
