@@ -28,6 +28,7 @@
 
 
 extern int dbg;
+extern int readLine(char *line);
 
 char *readword(char *s, char *w)
 {
@@ -106,23 +107,15 @@ int isnum(char *s)
 }
 
 /*
-!LET MC=[2.0 3.6;2.7 1.2]
-
-!let mx=[1.0 2.0;3.0 4.0]+[2.0 3.6;2.7 1.2]
-!print mx
-
-!let ms=mx+mc
-!print ms
-
-!print [1.0 2.0;3.0 4.0]*[2.0 3.6;2.7 1.2]
-
-!print trn([1.0 2.0 3.0 4.0])
-!print trn([1.0 2.0;3.0 4.0])
-
-!PRINT [1.0 2.0;3.0 4.0]*[1.0 2.0;3.0; 4.0]
-!PRINT [1.0 2.0;3.0 4.0]*[1.0 2.0;3.0 4.0]
-
-!PRINT [1.0 2.0;3.0 4.0]*0.2
+!setq  MC [2.0 3.6;2.7 1.2]
+!setq  mx (+ [1.0 2.0;3.0 4.0] [2.0 3.6;2.7 1.2])
+!let ms = mx + mc
+!print (* [1.0 2.0;3.0 4.0] [2.0 3.6;2.7 1.2])
+!print (trn [1.0 2.0 3.0 4.0])
+!print (trn [1.0 2.0;3.0 4.0])
+!PRINT (* [1.0 2.0;3.0 4.0] [1.0 2.0;3.0; 4.0])
+!PRINT (* [1.0 2.0;3.0 4.0] [1.0 2.0;3.0 4.0])
+!PRINT (* [1.0 2.0;3.0 4.0] 0.2)
 */
 
 fMatrix *readmatrix(char **str )
@@ -273,8 +266,6 @@ tOBJ parse(char *s)
 	L = read_from(&r);	
 	return L;
 }
-
-//int getOP(char *str);
 
 tOBJ formula(tOBJ ae, Dict *e)
 {
@@ -703,7 +694,19 @@ void extend(char *s)
 	println (" = ", eval_oxpr(s));
 }
 
-extern int readLine(char *line);
+int countb(char *s)
+{
+	char c;
+	int n=0;
+	int sf=0;
+	while ( (c=*s++) != 9)
+	{
+		if (c=='"')        sf=!sf;
+		if (c=='(' && !sf) n++;
+		if (c==')' && !sf) n--;		
+	}
+	return n;
+}
 
 #define MAX 255
 void repl()
@@ -713,6 +716,11 @@ void repl()
 	{
 		printf("!");
 		readLine(&inputbuffer[0]);
+		if (countb(inputbuffer)!=0)
+		{
+			printf("Mis-matched brackets\n");
+			continue;
+		}
 		if (!strcasecmp(inputbuffer,".")) return;
 		extend(inputbuffer);
 	}

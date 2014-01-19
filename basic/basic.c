@@ -233,7 +233,7 @@ int token_match(prog_char list[][7], char **p_line, int n)
 
 #ifdef LINUX
 #define HB 10
-	char histbuff[HB][100];
+	char histbuff[HB][MAX_LINE];
 	int hbfc=0;
 #endif
 
@@ -248,6 +248,7 @@ int readLine(char *line)
 	int lf=0;
 	char *start=line;
 	char *end=line;
+	int hb2 = hbfc;
 	
 	rprintfStr ("> ");
 	
@@ -275,15 +276,16 @@ int readLine(char *line)
 #ifdef LINUX
 		if (ch==20) //recover last line ^U
 		{
-			if (hbfc>0) 
+			if (hb2<=0) hb2=hbfc;
+			if (hb2>0) 
 			{
 				int z, n= line-start;
 				for (z=0;z<n;z++) {rprintfChar(8); rprintfChar(32); rprintfChar(8);}
-				rprintf("%s", histbuff[hbfc-1]);fflush(stdout);
-				strcpy(start,histbuff[hbfc-1]);
-				line = start+strlen(histbuff[hbfc-1]);
+				rprintf("%s", histbuff[hb2-1]);fflush(stdout);
+				strcpy(start,histbuff[hb2-1]);
+				line = start+strlen(histbuff[hb2-1]);
+				hb2--;
 			}
-			hbfc--;
 			continue;
 		}
 
@@ -385,9 +387,9 @@ int readLine(char *line)
 		
 		if (ch==8 || ch==127) //Bsapce ?
 		{
-			if (line>start) 
+			if (line>start && line==end) 
 			{
-				line--;
+				line--; end--;
 				rprintfChar(8);
 				rprintfChar(32);
 				rprintfChar(8);
