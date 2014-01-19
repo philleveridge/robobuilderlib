@@ -118,6 +118,7 @@ tOP oplist[] = {
 	{"EYE",  40, NA,    2, oeye},   //function two args  <fint, int>
 	{"FOR",   40, NA,   9, ofor}, 
 	{"FOREACH",40, NA,  9, ofore}, 
+	{"GETB",  40, NA,   1, getb}, //function single arg
 	{"GETK",  40, NA,   1, oget}, //function single arg
 	{"GETSERVO",40, NA, 1, ogetservo}, //function single arg
 	{"H2SM", 40, NA,    1, ohsum2},  //function <fMatrix>
@@ -160,6 +161,7 @@ tOP oplist[] = {
 	{"SAVE",  40, NA,   2, osave},//
 	{"SCELL",40, NA,    5, omats},   //function three args   <fMatrix, int, int>
 	{"SERVO", 40, NA,   0, oserv}, //function single arg
+	{"SETB", 40, NA,    2, setb}, //function single arg
 	{"SETK", 40, NA,    1, oset}, //function single arg
 	{"SETSERVO", 40, NA,3, osetservo}, //function single arg
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
@@ -206,6 +208,17 @@ tOBJ get(Dict *ep, char *name)
 	{
 		return dict_getk(ep, name);
 	}
+	return emptyObj();
+}
+
+tOBJ getb(tOBJ n)
+{
+	tOBJ r;
+	char *name;
+	if (n.type != STR) 
+		return emptyObj();
+
+	name=n.string;
 
 	if (strlen(name)==1 && isalpha(*name)) //backwards compat
 	{
@@ -231,6 +244,16 @@ int set(Dict * en, char *name, tOBJ r)
 	{
 		return dict_update(en, name, r);
 	}
+}
+
+tOBJ setb(tOBJ n, tOBJ r)
+{
+	char *name;
+	if (n.type != STR) 
+		return emptyObj();
+
+	name=n.string;
+
 	if (strlen(name)==1 && isalpha(*name)) //backwards compat
 	{
 		if (r.type==INTGR)
@@ -239,9 +262,8 @@ int set(Dict * en, char *name, tOBJ r)
 			setvar(*name-'A',(long)r.floatpoint);
 		if (r.type==EMPTY)
 			setvar(*name-'A',0);
-		return 1;
+		return r;
 	}
-
 	if (strlen(name)==2 && *name=='@' && isalpha(*(name+1))) //backwards compat
 	{
 		if (r.type==CELL)
@@ -255,14 +277,10 @@ int set(Dict * en, char *name, tOBJ r)
 				array[cnt++] = toint(ocar(r));
 				r=ocdr(r); 
 			}
-	
 		}
-		return 1;
+		return r;
 	}
-
-	if (r.type==FMAT2 || r.type==STR || r.type==CELL || r.type==DICT || r.type==LAMBDA) r.cnt++;
-
-	return 0;
+	return emptyObj();
 }
 
 tOBJ owhs(tOBJ r)
@@ -1681,13 +1699,14 @@ extern BYTE nos;
 extern int wckReadPos(int id, int d1);
 extern int wckPassive(int id);
 extern int wckMovePos(int id, int pos, int torq);
+extern int response[32];
 
 tOBJ oserv(tOBJ a)
 {
 	//> !SERV
 	tOBJ r;
-	readservos(0);
-	r=cnvtBytetoList(nos, cpos);	
+	int n=readservos(0);
+	r=cnvtBytetoList(n, cpos);	
 	return r;
 }
 
@@ -1696,17 +1715,19 @@ tOBJ ogetservo(tOBJ a, tOBJ b)
 	//> !GETSERVO 10
 	int id=toint(a);
 	int d1=toint(b);
-	return makeint(wckReadPos(id, d1));
+	wckReadPos(id, d1);
+	return makeint(response[1]);
 }
 
 tOBJ osetservo(tOBJ s, tOBJ p, tOBJ v)
 {
 	//> !SETSERVO 12 120 4
-	int id=toint(s);
+	int id =toint(s);
 	int pos=toint(p);
 	int tor=toint(v);
 	if (id<0 || id>31 || pos <0 || pos>254 || tor<0 || tor>4) return emptyObj();
-	return makeint(wckMovePos(id,pos,tor));
+	wckMovePos(id,pos,tor);
+	return makeint(response[1]);
 }
 
 tOBJ opose(tOBJ a)
