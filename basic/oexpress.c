@@ -318,7 +318,7 @@ tOBJ formula(tOBJ ae, Dict *e)
 			if (wa>=0) wa=oplist[wa].level; 
 			else 
 			{ 
-				//opd = ocons(a,opd);
+				ae = ocons(a,ae);
 				wa=0;
 			}
 

@@ -34,56 +34,10 @@ typedef struct mat {
 
 
 #ifdef PARSE
-//
-// The new expression parser
-// work in progress
-//
 
-typedef struct fmat {
-	int h; 
-	int w;
-	float *fstore;
-} fMatrix;
-
-
-typedef struct object {
-        int   type;
-	unsigned char cnt;
-        union { 
-		int	q;
-		float   floatpoint; 
-                int     number; 
-                char    *string;
-                void    *cell;
-                void    *dict;
-		struct object	(*func)(struct object);
-		fMatrix fmat2;
-                };
-} tOBJ;
-
-typedef struct cell { 
-        tOBJ                    head;           
-        struct cell*    tail;           
-} tCELL, *tCELLp; 
-
-typedef struct kvp {
-	char key[32];
-	tOBJ value;
-} Kvp;
-
-typedef struct dict {
-	int sz;
-	int ip;
-	Kvp *db;
-} Dict;
-
-typedef tOBJ (*PFP)(tCELLp);
-
-enum  TOKTYP	{NUMI, NUMF, DELI, ALPHA, OPR, STRNG, MLIST, CLIST};
-enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ, COMMA, PROD, POWR};
-enum  TYPE	{SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2, DICT, LAMBDA};
-
-tOBJ eval_oxpr(char *s);
+#include <stdio.h>
+#include "linux.h"
+#include "oobj.h"
 
 #endif
 
