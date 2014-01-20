@@ -35,10 +35,13 @@ char *readword(char *s, char *w)
 	char c;
 	int n=0;
 	int sf=0;
+	int l=0;
 	while (*s != '\0')
 	{
 		c=*s++;
-		if (c==13 || c==10 || c==9 ) {continue;} // ignore CR & LFs
+		if (c==13 || c==10 || c==9 ) {l=0; continue;} // ignore CR & LFs
+		if (c==';' && l==0) l=1;
+		if (l==1) continue;
 
 		if (c== '"')
 		{
@@ -416,6 +419,10 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 		return (*h.func)(eval(o,e));
 	}
 
+	if (h.type==FUNC2)
+	{
+		//return (*h.func)(eval(o,e));
+	}
 
 	if (h.type!=SYM)
 	{
@@ -668,6 +675,8 @@ void init_extend()
 	{
 		intf=0; 
 		env = makedict(200);
+
+		//loadop(env.dict); //experimental
 
 		set(env.dict, "PI",  makefloat (3.1415926));
 	
