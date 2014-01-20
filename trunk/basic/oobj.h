@@ -5,7 +5,7 @@
 #include "rbmread.h"
 
 
-enum  TYPE  {SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2, DICT, LAMBDA, RBM, STACK, FUNC2};
+enum  TYPE  {SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2, DICT, LAMBDA, RBM, STACK};
 
 typedef struct object {
         int   		type;
@@ -18,7 +18,6 @@ typedef struct object {
                 void    *cell;
                 void    *dict;
                 void    *stk;
-		struct  object	(*func)(struct object);
 		void    *fptr;
 		fMatrix *fmat2;
                 Motion  *mot;

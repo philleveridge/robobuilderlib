@@ -51,7 +51,7 @@ int freeobj(tOBJ *b)
 	}
 	if (b->type==STACK)
 	{
-		//if (b->cnt==0) stackdel(b->stack);
+		if (b->cnt==0) delstack(b->stk);
 	}
 	return 0;
 }
@@ -103,6 +103,10 @@ tOBJ cloneObj(tOBJ z)
 		//TBD
 	}
 	if (r.type==RBM)
+	{
+		//TBD
+	}
+	if (r.type==STACK)
 	{
 		//TBD
 	}
@@ -161,10 +165,6 @@ void printtype(FILE *fp, tOBJ r)
     {
          fprintf(fp, "FUNCTION");   
     }
-    else  if (r.type == FUNC2)
-    {
-         fprintf(fp, "FUNCTION Ptr %s\n", ((tOPp)(r.fptr))->name);  
-    }
     else if (r.type == RBM)
     {
          fprintf(fp, "RBM\n");  
@@ -176,7 +176,7 @@ void printtype(FILE *fp, tOBJ r)
     }
     else  if (r.type == DICT)
     {
-	dict_print(r.dict);
+	dict_print(r.dict,0);
     }
     else  if (r.type == STACK)
     {
@@ -184,8 +184,6 @@ void printtype(FILE *fp, tOBJ r)
     }
     else  if (r.type == CELL)
     {
-	//if (r.q)  fprintf(fp, "'");
-
 	if (r.cell != NULL)
 	{
 		 fprintf(fp, "CELL");	
@@ -328,17 +326,6 @@ tOBJ cnvtInttoList(int an, int *array)
 
 tOBJ cnvtBytetoList(int an, BYTE *array)
 {
-/*	top=makeCell2( makeint(array[0]), NULL);
-	r=top;
-
-	for (i=1; i<an; i++)
-	{
-		n=makeCell(makeint((int)array[i]), NULL);
-		((tCELLp)(r.cell))->tail = n.cell;
-		r=n;
-	}
-	((tCELLp)(n.cell))->tail = 0;
-*/
 	int i;
 	tOBJ r=emptyObj();
 	if (an<=0) return r;
@@ -353,21 +340,16 @@ tOBJ cnvtBytetoList(int an, BYTE *array)
 
 tOBJ cnvtFloattoList(int an, float *array)
 {
-	tOBJ r,n,top;
 	int i;
+	tOBJ r=emptyObj();
+	if (an<=0) return r;
 
-	if (an<=0) return emptyObj();
-	top=makeCell2(makefloat(array[0]), NULL);
-	r=top;
-
-	for (i=1; i<an; i++)
+	for (i=an-1; i>=0; i--)
 	{
-		n=makeCell2(makefloat(array[i]), NULL);
-		((tCELLp)(r.cell))->tail = n.cell;
-		r=n;
+		r=ocons(makefloat((int)array[i]), r);
 	}
-	((tCELLp)(n.cell))->tail = 0;
-	return top;
+
+	return r;
 }
 
 
@@ -437,30 +419,18 @@ char *objtype(tOBJ t)
 	switch (t.type)
 	{  
 	case INTGR: st="Int   "; break;
-
 	case FLOAT: st="Float "; break;
-
 	case STR:   st="String"; break;
-
 	case FMAT2: st="Matrix"; break;
-
 	case CELL:  st="List  "; break;
-
 	case SYM:   st="Symbol"; break;
-
 	case LAMBDA:st="Lambda"; break;
-
 	case BOOLN: st="bool  ";break;
-
 	case EMPTY: st="Empty ";break;
-
 	case DICT:  st="Dict  ";break;
-
 	case RBM:   st="RBM   ";break;
-
 	case STACK: st="STACK ";break;
-
-	case FUNC:  break;
+	case FUNC:  st="Func  ";break;
 	}
 	return st;
 }

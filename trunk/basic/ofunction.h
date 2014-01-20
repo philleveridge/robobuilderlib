@@ -23,15 +23,16 @@ typedef struct ops {
 	};
 } tOP, *tOPp;
 
-
-extern tOP oplist[];
-extern void loadop (Dict *e);
+extern tOP  oplist[];
+extern void loadop 	(Dict *e);
+extern tOBJ getOP2	(Dict *e, char *str);
+extern int  getOPlevel	(Dict *e, char *str);
+extern int  getOPtype	(Dict *e, char *str);
 
 extern int  set   	(Dict *en, char *name, tOBJ r);
 extern tOBJ setb   	(tOBJ  s, tOBJ r);
 extern tOBJ get   	(Dict *ep, char *name);
 extern tOBJ getb   	(tOBJ  r);
-extern int  getOP 	(char *str);
 extern tOBJ omath 	(tOBJ o1, tOBJ o2, int op);
 
 extern tOBJ ecar	(tOBJ  r);
