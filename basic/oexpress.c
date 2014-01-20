@@ -40,8 +40,8 @@ char *readword(char *s, char *w)
 	{
 		c=*s++;
 		if (c==13 || c==10 || c==9 ) {l=0; continue;} // ignore CR & LFs
-		if (c==';' && l==0) l=1;
-		if (l==1) continue;
+		//if (c==';' && l==0) l=1;
+		//if (l==1) continue;
 
 		if (c== '"')
 		{
@@ -308,17 +308,16 @@ tOBJ formula(tOBJ ae, Dict *e)
 			if (dbg) {println ("a =", a); println ("b =", b);}
 
 			if (a.type==SYM)
-				wa=getOP(a.string);
-			if (wa>=0) wa=oplist[wa].level; 
-			else 
+				wa=getOPlevel(e, a.string); 
+
+			if (wa<0)
 			{ 
 				ae = ocons(a,ae);
 				wa=0;
 			}
 
 			if (a.type==SYM)
-				wb=getOP(b.string);
-			if (wb>=0) wb=oplist[wb].level;
+				wb=getOPlevel(e, b.string);
 
 			if (onull(ae).number==1 ||  (wa <= wb))
 			{
@@ -328,10 +327,9 @@ tOBJ formula(tOBJ ae, Dict *e)
 				if (dbg) println ("opc =", opc);
 
 				if (opc.type==SYM)
-					wa=getOP(opc.string);
+					wa=getOPtype(e, opc.string);
 				else
 					wa=0;
-				if (wa>=0) wa=oplist[wa].type;
 
 				a = eval(ocar(ocdr(opd)),e);
 				b = eval(ocar(opd),e);
@@ -362,11 +360,9 @@ tOBJ formula(tOBJ ae, Dict *e)
 tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 {
 	tOBJ r, arg, body;
-
 	tOBJ e= makedict2(env,0);
 
 	fn.type=CELL;
-
 	arg=ocar(fn);
 	body=ocdr(fn);
 
@@ -391,19 +387,9 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 		arg=ocdr(arg);
 		x=ocdr(x);
 	}
-	if (dbg) dict_print((Dict *)e.dict);
+	if (dbg) dict_print((Dict *)e.dict,1);
 
-
-	r=emptyObj();
-	if (body.type==CELL)
-	{
-		do {
-		x = ocar(body);
-		r = eval(x, (Dict *)e.dict);
-		body = ocdr(body);
-		} while (onull(body).number==0);
-	}	
-	return r;
+	return obegin(body,(Dict *)e.dict);
 }
 
 tOBJ procall (tOBJ h, tOBJ o, Dict *e )
@@ -416,48 +402,32 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 
 	if (h.type==FUNC)
 	{
-		return (*h.func)(eval(o,e));
-	}
-
-	if (h.type==FUNC2)
-	{
-		//return (*h.func)(eval(o,e));
-	}
-
-	if (h.type!=SYM)
-	{
-		return emptyObj();
-	}
-
-	//lookup procedure
-	int op = getOP(h.string);
-	if (op>=0)
-	{
-		if (oplist[op].type != NA && oplist[op].type != CBR && oplist[op].type != OBR)
+		tOPp p = (tOPp)h.fptr;
+		if (p->type != NA && p->type != CBR && p->type != OBR)
 		{
 			tOBJ a = ocar(o); o=ocdr(o);
 			tOBJ b = ocar(o); 					
-			return omath(eval(a,e),eval(b,e),oplist[op].type);
+			return omath(eval(a,e),eval(b,e),p->type);
 		}
 		else//call
-		switch(oplist[op].nop)
+		switch(p->nop)
 		{
 		case 0:
-			return (*oplist[op].func)(emptyObj());
+			return (*p->func)(emptyObj());
 		case 1:	
-			return (*oplist[op].func)(eval(ocar(o),e));
+			return (*p->func)(eval(ocar(o),e));
 		case 2:	
 			{
 			tOBJ a = ocar(o); o=ocdr(o);
 			tOBJ b = ocar(o); 
-			return (*oplist[op].func2)(eval(a,e),eval(b,e));
+			return (*p->func2)(eval(a,e),eval(b,e));
 			}
 		case 3:	
 			{
 			tOBJ a = ocar(o); o=ocdr(o);
 			tOBJ b = ocar(o); o=ocdr(o);
 			tOBJ c = ocar(o); 
-			return (*oplist[op].func3)(eval(a,e),eval(b,e),eval(c,e));
+			return (*p->func3)(eval(a,e),eval(b,e),eval(c,e));
 			}
 		case 5:	
 			{
@@ -466,15 +436,20 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			tOBJ c = ocar(o); o=ocdr(o);
 			tOBJ d = ocar(o); o=ocdr(o);
 			tOBJ g = ocar(o); 
-			return (*oplist[op].func5)(eval(a,e),eval(b,e)
+			return (*p->func5)(eval(a,e),eval(b,e)
 				,eval(c,e),eval(d,e),eval(g,e));
 			}
 		default:
-			return (*oplist[op].funce)(o,e);
+			return (*p->funce)(o,e);
 			break;
-		}
+		}		
 	}
-	printf ("? unknown symbol [%s]\n", h.string);
+
+	if (h.type==SYM || h.type==STR)
+		printf ("? unknown symbol [%s]\n", h.string);
+	else
+		printf ("? unknown\n");
+
 	return emptyObj();
 }
 
@@ -483,7 +458,7 @@ tOBJ eval2(tOBJ o, Dict *e)
 	tOBJ r=emptyObj();
 	tOBJ h;
 
-	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type==STR || o.type == FMAT2 || o.type == EMPTY )
+	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type==STR || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA)
 	{
 		o.q=0;
 		return o;
@@ -491,38 +466,19 @@ tOBJ eval2(tOBJ o, Dict *e)
 
 	if (o.type==SYM)
 	{
-		int op = getOP(o.string);
-		if (op>=0 && oplist[op].type == NA)
-		{
-			tOBJ r;
-			r.type=FUNC;
-			r.func =oplist[op].func;
-			return r;
-		}
-		else
-			return dict_getk(e, o.string);
-	}
-
-	if (o.type==LAMBDA)
-	{
-		return o;
-	}
-
-	if (o.type==FUNC)
-	{
-		return o;
+		return dict_getk(e, o.string);
 	}
 
 	h=ocar(o);
 	o=ocdr(o);
 
+	if (h.type==SYM && dict_contains(e, h.string))
+	{
+		h=dict_getk(e,h.string);
+	}
+
 	if (h.type==SYM)
 	{
-		if (dict_contains(e, h.string))
-		{
-			h=dict_getk(e,h.string);
-		}
-
 		if (!strcasecmp(h.string,"QT"))
 		{
 			return ocar(o);
@@ -647,13 +603,12 @@ tOBJ eval2(tOBJ o, Dict *e)
 			o.type  = LAMBDA;
 			return o;
 		}
-		else
-		{
-			//lookup procedure
-			return procall (h, o, e );
-		}
 	}
-	return r;
+	else
+	{
+		//lookup procedure
+		return procall (h, o, e );
+	}
 }
 
 tOBJ eval(tOBJ o, Dict *e)
@@ -676,7 +631,7 @@ void init_extend()
 		intf=0; 
 		env = makedict(200);
 
-		//loadop(env.dict); //experimental
+		loadop(env.dict); //experimental
 
 		set(env.dict, "PI",  makefloat (3.1415926));
 	

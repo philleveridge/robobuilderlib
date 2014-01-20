@@ -194,7 +194,7 @@ tOP oplist[] = {
 tOBJ makeop(int i)
 {
 	tOBJ r;
-	r.type=FUNC2;
+	r.type=FUNC;
 	r.fptr=&oplist[i];
 	return r;	
 }
@@ -214,17 +214,18 @@ tOBJ getOP2(Dict *e, char *str)
 	return dict_getk(e, str);	
 }
 
-int getOP(char *str)
+int getOPlevel(Dict *e, char *str)
 {
-	int i=0;
-	while (i<sizeof(oplist)/sizeof(tOP))
-	{
-		//printf ("%d %s\n", i,oplist[i].name);
-		if (!strcasecmp(oplist[i].name,str))
-			return i;
-		i++;
-	}
-	return -1;
+	tOBJ r =  dict_getk(e, str);
+	if (r.type != FUNC) return -1;
+	return ((tOPp)(r.fptr))->level;	
+}
+
+int getOPtype(Dict *e, char *str)
+{
+	tOBJ r =  dict_getk(e, str);
+	if (r.type != FUNC) return -1;
+	return ((tOPp)(r.fptr))->type;		
 }
 
 
@@ -323,7 +324,7 @@ tOBJ owhs(tOBJ r)
 {
 	//display all variables and types
 	//!WHOS
-	dict_print(env.dict); 
+	dict_print(env.dict,1);  //exclude any type FUNC
 	return emptyObj(); 
 }
 

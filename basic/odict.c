@@ -58,6 +58,7 @@ tOBJ makedict2(Dict *e, int n)
 	return r;
 }
 
+//tbd - make a sorted list - so search quicker
 int dict_add(Dict *d, char *key, tOBJ value)
 {
 	tOBJ t1;
@@ -81,6 +82,7 @@ int dict_add(Dict *d, char *key, tOBJ value)
 	return 0;
 }	
 
+//assume listed sorted and od binary search
 int dict_find(Dict *d, char *key)
 {
 	int i=0;
@@ -148,7 +150,7 @@ int dict_update(Dict *d, char *key, tOBJ value)
 	return dict_updateonly(d,key,value) || dict_add(d, key, value);
 }
 
-int dict_print(Dict *d)
+int dict_print(Dict *d, int f)
 {
 	int i=0;
 
@@ -158,6 +160,8 @@ int dict_print(Dict *d)
 	{
 		tOBJ t  = d->db[i].value;
 		char *st=objtype(t);
+
+		if (f && t.type==FUNC) {i++; continue;}
 
 		printf ("%7s [%s] ", d->db[i].key, st );
 
@@ -181,7 +185,7 @@ int dict_print(Dict *d)
 if (dbg>1)
 {
 	printf ("--\n");
-	dict_print(d->outer);
+	dict_print(d->outer,f);
 }
 	return 0;
 }

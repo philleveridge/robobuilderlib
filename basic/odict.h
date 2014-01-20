@@ -30,7 +30,7 @@ extern tOBJ  dict_getk		(Dict *d, char *key);
 extern tOBJ  dict_get		(Dict *d, int indx);
 extern int   dict_update	(Dict *d, char *key, tOBJ value);
 extern int   dict_updateonly    (Dict *d, char *key, tOBJ value);
-extern int   dict_print		(Dict *d);
+extern int   dict_print		(Dict *d, int f);
 
 #endif
 
