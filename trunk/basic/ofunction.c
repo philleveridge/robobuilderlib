@@ -143,11 +143,14 @@ tOP oplist[] = {
 	{"NTH",   40, NA,   2, onth}, //function two arg
 	{"NULL",  40, NA,   1, onull},  //function single arg
 	{"OR",    40, NA,   9, oor}, 
+	{"PEEK",  40, NA,   2, opeek}, 
 	{"PLUS",  40, NA,   9, oplus}, 
+	{"POP",   40, NA,   1, opop}, //function single arg
 	{"POSE",  40, NA,   1, opose}, //function single arg
 	{"PR",    40, NA,   9, opr}, 
 	{"PRINT", 40, NA,   9, opr},  
 	{"PSD",  40, NA,    0, opsd},  //const
+	{"PUSH",  40, NA,   2, opush},  //function single arg
 	{"PUTC",  40, NA,   1, oputch},  //function single arg
 	{"RBM",   40, NA,   1, orbmrf},
 	{"REP",  40, NA,    3, orep},   //function three args  <fMatrix, int, int>
@@ -168,6 +171,7 @@ tOP oplist[] = {
 	{"SIN",  40, NA,    1, osin},  //function single arg
 	{"SQRT", 40, NA,    1, osqrt}, //function single arg
 	{"STOA", 40, NA,    1, ostoa}, 
+	{"STACK",40, NA,    1, ostack}, 
 	{"SUBS", 40, NA,    1, osubst},  //function single arg
 	{"SUM",  40, NA,    1, osum},  //function <fMatrix>
 	{"TAN",  40, NA,    1, otan},  //function single arg
@@ -183,6 +187,33 @@ tOP oplist[] = {
 	{"ZERO", 40, NA,    2, ozero}    //function two args  <fint, int>
 };
 
+/**********************************************************/
+/*  AFunction PTRs                                        */
+/**********************************************************/
+
+tOBJ makeop(int i)
+{
+	tOBJ r;
+	r.type=FUNC2;
+	r.fptr=&oplist[i];
+	return r;	
+}
+
+void loadop (Dict *e)
+{
+	int i=0;
+	while (i<sizeof(oplist)/sizeof(tOP))
+	{
+		dict_add(e, oplist[i].name, makeop(i));
+		i++;
+	}	
+}
+
+tOBJ getOP2(Dict *e, char *str)
+{
+	return dict_getk(e, str);	
+}
+
 int getOP(char *str)
 {
 	int i=0;
@@ -195,6 +226,7 @@ int getOP(char *str)
 	}
 	return -1;
 }
+
 
 /**********************************************************/
 /*  Access variables (read/write)                         */
@@ -211,6 +243,8 @@ tOBJ get(Dict *ep, char *name)
 	return emptyObj();
 }
 
+//!> GETB "@A"
+//!> GETB "A"
 tOBJ getb(tOBJ n)
 {
 	tOBJ r;
@@ -246,6 +280,8 @@ int set(Dict * en, char *name, tOBJ r)
 	}
 }
 
+//!> SETB "@A" '(2 4 5 1 6)
+//!> SETB "A" 1
 tOBJ setb(tOBJ n, tOBJ r)
 {
 	char *name;
@@ -1906,7 +1942,6 @@ tOBJ oload(tOBJ  n)
 		printf ("? can't find file - %s\n",s);
 		return r;
 	}
-
 	while ( (ch=fgetc(fp))>=0)
 	{
 		m[cn++]=ch;
@@ -2303,6 +2338,40 @@ tOBJ oimg(tOBJ v, Dict *e)
 	}
 	return (emptyObj());
 }
+
+/***********************************************************************
+
+Stack
+
+***********************************************************************/
+
+tOBJ ostack(tOBJ a)
+{
+	if (a.type!=INTGR) return emptyObj();
+	return makestack(toint(a));
+}
+
+tOBJ opush(tOBJ a, tOBJ b)
+{
+	if (a.type!=STACK) return emptyObj();
+	if (push((tStackp)a.stk, b))
+		return b;
+	else
+		return emptyObj();
+}
+
+tOBJ opop(tOBJ a)
+{
+	if (a.type!=STACK) return emptyObj();
+	return pop((tStackp)a.stk);
+}
+
+tOBJ opeek(tOBJ a, tOBJ b)
+{
+	if (a.type!=STACK) return emptyObj();
+	return peek((tStackp)a.stk, toint(b));
+}
+
 
 /***********************************************************************
 

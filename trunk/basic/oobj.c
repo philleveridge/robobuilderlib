@@ -21,6 +21,7 @@
 #include "odict.h"
 #include "rbmread.h"
 #include "ofunction.h"
+#include "ostack.h"
 
 /**********************************************************/
 /* Objects                                                */
@@ -47,6 +48,10 @@ int freeobj(tOBJ *b)
 	if (b->type==RBM)
 	{
 		if (b->cnt==0) rbmdelete(b->mot);
+	}
+	if (b->type==STACK)
+	{
+		//if (b->cnt==0) stackdel(b->stack);
 	}
 	return 0;
 }
@@ -156,6 +161,10 @@ void printtype(FILE *fp, tOBJ r)
     {
          fprintf(fp, "FUNCTION");   
     }
+    else  if (r.type == FUNC2)
+    {
+         fprintf(fp, "FUNCTION Ptr %s\n", ((tOPp)(r.fptr))->name);  
+    }
     else if (r.type == RBM)
     {
          fprintf(fp, "RBM\n");  
@@ -168,6 +177,10 @@ void printtype(FILE *fp, tOBJ r)
     else  if (r.type == DICT)
     {
 	dict_print(r.dict);
+    }
+    else  if (r.type == STACK)
+    {
+	stackprint2(r.stk);
     }
     else  if (r.type == CELL)
     {
@@ -444,6 +457,8 @@ char *objtype(tOBJ t)
 	case DICT:  st="Dict  ";break;
 
 	case RBM:   st="RBM   ";break;
+
+	case STACK: st="STACK ";break;
 
 	case FUNC:  break;
 	}

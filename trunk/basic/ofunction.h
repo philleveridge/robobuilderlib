@@ -23,7 +23,9 @@ typedef struct ops {
 	};
 } tOP, *tOPp;
 
+
 extern tOP oplist[];
+extern void loadop (Dict *e);
 
 extern int  set   	(Dict *en, char *name, tOBJ r);
 extern tOBJ setb   	(tOBJ  s, tOBJ r);
@@ -92,11 +94,14 @@ extern tOBJ onot	(tOBJ  r);
 extern tOBJ onth	(tOBJ  r, tOBJ);
 extern tOBJ onull	(tOBJ  r);
 extern tOBJ oor     	(tOBJ  r, Dict *);
+extern tOBJ opeek   	(tOBJ  r, tOBJ);
 extern tOBJ oplus   	(tOBJ  r, Dict *);
 extern tOBJ opose	(tOBJ  r);
+extern tOBJ opop	(tOBJ  r);
 extern tOBJ opr    	(tOBJ  r, Dict *);
 extern tOBJ oprt	(tOBJ  r);
 extern tOBJ opsd	(tOBJ  r);
+extern tOBJ opush	(tOBJ  a, tOBJ b);
 extern tOBJ oputch	(tOBJ  a);
 extern tOBJ oqt		(tOBJ  r); 
 extern tOBJ orbmrf	(tOBJ  r);
@@ -115,6 +120,7 @@ extern tOBJ osetservo	(tOBJ  r, tOBJ, tOBJ);
 extern tOBJ osig	(tOBJ  r);
 extern tOBJ osin 	(tOBJ  r);
 extern tOBJ osqrt	(tOBJ  r);
+extern tOBJ ostack	(tOBJ  r);
 extern tOBJ ostoa	(tOBJ  r);
 extern tOBJ osubst	(tOBJ  r);
 extern tOBJ osum	(tOBJ  r);

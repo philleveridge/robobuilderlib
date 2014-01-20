@@ -19,39 +19,57 @@
 
 extern int dbg;
 
-
 /**********************************************************/
 /*  stack                                                 */
 /**********************************************************/
 
-tOBJ stackobj[MAXSTACK];
-int sop=0;
+tOBJ makestack(int n)
+{
+	tOBJ r;
+	tStackp  p=(tStackp)malloc(sizeof(tStack));
+	p->size=n;
+	p->noe=0;
+	p->objarray = malloc(sizeof(tOBJ)*n);
 
-unsigned char stackop[MAXSTACK];
-int oop=0;
+	if (dbg) printf ("Make stack %d\n", n);
 
+	r.type=STACK;
+	r.stk=(void *)p;
+	return r;
+}
 
-int push(tOBJ a)
+void delstack(tStackp p)
+{
+	printf ("Del stack\n");
+	if (p != NULL)
+	{
+		free(p->objarray);
+		free(p);
+		p=0;
+	}
+}
+
+int push(tStackp st, tOBJ a)
 {
 	if (dbg)  { printf ("PUSH %d = ", a.type); print(a); printf("\n"); }
 
-	if (sop<MAXSTACK-1)
+	if (st->noe < st->size)
 	{
-		stackobj[sop++] = a;
+		st->objarray[st->noe++] = a;
 		return 1;
 	}
 	return 0;
 }
 
-tOBJ pop()
+tOBJ pop(tStackp st)
 {
 	tOBJ e;
 	e.type=EMPTY;
 
-	if (sop>0)
+	if (st->noe>0)
 	{
-		e=stackobj[sop-1];
-		sop--;
+		e=st->objarray[st->noe-1];
+		st->noe--;
 	}
 
 	if (dbg) { printf ("POP %d = ", e.type);  print(e); printf("\n"); }
@@ -59,37 +77,43 @@ tOBJ pop()
 	return e;
 }
 
-tOBJ peek(int n)
+tOBJ peek(tStackp st, int n)
 {
 	tOBJ e;
 	e.type=EMPTY;
 
-	if (sop-1-n >= 0)
+	if (st->noe-1-n >= 0)
 	{
-		return stackobj[sop-1-n];
+		return st->objarray[st->noe-1-n];
 	}
 	return e;
 }
 
-void clear()
+void clear(tStackp st)
 {
-	sop=0;
+	st->noe=0;
 }
 
-void stackprint()
+void stackprint(tStackp st)
 {
 	int i;
 	printf ("Stack\n");
-	for (i=0;i<sop;i++)
+	for (i=0;i<st->noe;i++)
 	{
 		rprintf ("%d ", i);
-		print(stackobj[i]);
+		print(st->objarray[i]);
 		rprintfCRLF();
 	}
 }
 
-int stacksize()
+void stackprint2(tStackp st)
 {
-	return sop;
+	int i;
+	printf ("Stack %d / %d\n", st->noe, st->size);
+}
+
+int stacksize(tStackp st)
+{
+	return st->size;
 }
 
