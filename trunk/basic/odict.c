@@ -16,6 +16,7 @@
 #endif
 
 #include "odict.h"
+#include "ofunction.h"
 
 /**********************************************************/
 /*  Dictionary                                            */
@@ -29,16 +30,22 @@ Dict * newdict(int sz)
 	if (dbg>1) printf ("New dictionary (%d)\n",sz);
 	n = (Dict *)malloc(sizeof(Dict));
 	if (sz==0) sz=100; //default
-	n->sz=sz;
-	n->ip=0;
-	n->db = (Kvp *)malloc((n->sz) * sizeof(Kvp));
-	n->outer=NULL;
+	n->sz   = sz;
+	n->ip   = 0;
+	n->db   = (Kvp *)malloc((n->sz) * sizeof(Kvp));
+	n->outer= NULL;
 	return n;
 }
 
 int deldict(Dict *x)
 {
 	if (dbg) printf ("Delete dictionary\n");
+	if (x != NULL)
+	{
+		free(x->db);
+		free(x);
+		x=NULL;
+	}
 	return 0;
 }
 
@@ -58,43 +65,66 @@ tOBJ makedict2(Dict *e, int n)
 	return r;
 }
 
-//tbd - make a sorted list - so search quicker
+
 int dict_add(Dict *d, char *key, tOBJ value)
 {
-	tOBJ t1;
+       tOBJ t1;
 
-	if (d==NULL) return 0;
+       if (d==NULL) return 0;
 
-	if(dbg>1) printf ("Add %d %d\n", d->ip, d->sz);
+       if(dbg>1) printf ("Add %s %d %d\n", key, d->ip, d->sz);
+       int i=0;
 
-	if ((d->ip) < d->sz)
-	{
-		char *cp = d->db[d->ip].key;
-		strncpy(cp, key, 32);
+       if (d->ip==d->sz) {printf ("?error no space in dict [%s] %d/%d\n",key,d->ip,d->sz); return 0;}
 
-		t1 = cloneObj(value);
+       while (i < d->ip)
+       {
+              int c =strcmp(key, d->db[i].key);
+              if (c==0) {printf ("Already exists (%s %d)\n",key,i); i=d->ip; break;}
+              if (c>0) {i++; continue;}
+              if (c<0)
+              {      //insert gap here
+                     for (int j=d->ip; j>i ;j--)
+                     	d->db[j]=d->db[j-1];
+                     break;
+              }
+       }
+       //insert at i
+       char *cp = d->db[i].key;
+       strncpy(cp, key, 32);
+       t1 = cloneObj(value);
+       d->db[i].value = t1; // should be clone;
+       (d->ip)++;
+       return 1;
+}
+ 
 
-		d->db[d->ip].value = t1; // should be clone;
-		(d->ip)++;
-		return 1;
-	}
-	printf ("?error no space in dict \n");
-	return 0;
-}	
-
-//assume listed sorted and od binary search
+// listed sorted for binary search
 int dict_find(Dict *d, char *key)
 {
-	int i=0;
+	int low=0;
+	int high=d->ip-1;
+
 	if (d==NULL) return -1;
 
-	while (i<d->ip)
+	while (high>=low) 
 	{
-		if (strcmp(key, d->db[i].key)==0)
+		int i=low+(high-low)/2;
+		int c=strcmp(key, d->db[i].key);
+
+		if (dbg>2) printf ("%s [%d], [%d,%d,%d]\n", d->db[i].key, c, low, i,high);
+		if (c==0)
 		{
-			return i;
+		     return i;
 		}
-		i++;
+		if (c>0)
+		{
+		     low=i+1;
+		}
+		if (c<0)
+		{
+		     high=i-1;
+		}
 	}
 	return -1;
 }
@@ -147,6 +177,7 @@ int dict_updateonly(Dict *d, char *key, tOBJ value)
 
 int dict_update(Dict *d, char *key, tOBJ value)
 {
+	if (d==0) return 0;
 	return dict_updateonly(d,key,value) || dict_add(d, key, value);
 }
 
@@ -168,10 +199,10 @@ int dict_print(Dict *d, int f)
 		if (t.type==LAMBDA)
 		{
 			t.type=CELL;
-			print(t);
+			print(ocar(t));
 		}
 		else 
-		if (t.type==DICT || t.type==RBM || t.type==FMAT2)
+		if (t.type==DICT || t.type==RBM || t.type==FMAT2 )
 		{
 			printf (" +++");
 		}
@@ -182,11 +213,11 @@ int dict_print(Dict *d, int f)
 		printf ("\n");
 		i++;
 	}
-if (dbg>1)
-{
-	printf ("--\n");
-	dict_print(d->outer,f);
-}
+	if (dbg>1)
+	{
+		printf ("--\n");
+		dict_print(d->outer,f);
+	}
 	return 0;
 }
 

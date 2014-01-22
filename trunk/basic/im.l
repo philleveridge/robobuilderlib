@@ -13,16 +13,20 @@
   0 0 0 1 1 0 0 0 0 1 1 0 0 0 0 0 ;
   0 0 0 1 1 0 0 0 0 1 1 0 0 0 0 0 ;
   0 0 0 1 1 1 1 1 1 1 1 0 0 0 0 0 ;
-  0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0 ;
-  0 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 ;
+  0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 1 ;
+  0 0 0 0 0 1 1 1 1 0 0 0 0 0 0 1 ;
   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ;
   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ]
 )
 
-(FUNC PP (I) (FOR X '(0 15) (FOR Y '(0 15) (PR (IF (CELL I X Y) 'O '_  ) ; )) (PR)))
+; pretty print
 
-(PP IM)
+(FUNC PP (I)  (FOR X '(0 15) (FOR Y '(0 15) (PR (IF (CELL I X Y) 'O '_  ) ; )) (PR )))
 
+'(PP IM)
+
+; calculate centre of mass of image
+;
 (FUNC CENTER (I) 
      (SETQ SX 0.0 SY 0.0 SM (SUM IM)) 
      (FOR X '(0 15) 
@@ -31,7 +35,9 @@
      )
      (LIST (/ SX SM) (/ SY SM))
 )
-
+;
+; calculate orientation of image
+;
 (FUNC ORIENTATION (I) 
      (SETQ SA 0.0 SB 0.0 SC 0.0 (X0 Y0) (CENTER IM))
      (FOR X '(0 15) 

@@ -35,13 +35,10 @@ char *readword(char *s, char *w)
 	char c;
 	int n=0;
 	int sf=0;
-	int l=0;
 	while (*s != '\0')
 	{
 		c=*s++;
-		if (c==13 || c==10 || c==9 ) {l=0; continue;} // ignore CR & LFs
-		//if (c==';' && l==0) l=1;
-		//if (l==1) continue;
+		if (c==13 || c==10 || c==9) continue; // ignore tabs
 
 		if (c== '"')
 		{
@@ -382,7 +379,9 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 		}
 
 		if (n.type==STR || n.type==SYM)
+		{
 			dict_add((Dict*)e.dict, n.string, v);
+		}
 
 		arg=ocdr(arg);
 		x=ocdr(x);
@@ -552,7 +551,9 @@ tOBJ eval2(tOBJ o, Dict *e)
                         {
                                 tOBJ var = ocar(o); o=ocdr(o);
                                 if (var.type==SYM || var.type == STR)
+				{
                                         dict_add(e, var.string, emptyObj());
+				}
                         }
                         return emptyObj();
                 }
