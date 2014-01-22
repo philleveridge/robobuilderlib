@@ -1927,7 +1927,7 @@ tOBJ oload(tOBJ  n)
 
        	FILE *fp;
 	char *s = n.string;
-	int cn=0;
+	int cn=0,lc=0,cf;
 	//int sz=1024;
 	//char *m=malloc(sz);
 	char m[32000];
@@ -1943,12 +1943,17 @@ tOBJ oload(tOBJ  n)
 		printf ("? can't find file - %s\n",s);
 		return r;
 	}
+	
 	while ( (ch=fgetc(fp))>=0)
 	{
+		if (ch==10 || ch==13) {cf=0; lc=0; continue;   }
+		if (lc==0 && ch==';') {cf=1; continue;}
+		if (cf==1) continue;
 		m[cn++]=ch;
+		lc++;
 	}
 	m[cn]=0;
-	if (dbg) printf ("Loaded [%s] %d\n", m,cn);	
+	if (dbg>2) printf ("Loaded [%s] %d\n", m,cn);	
 	fclose(fp);
 
 	switch (m[0])
@@ -2147,7 +2152,7 @@ tOBJ ofor (tOBJ  o, Dict *e)
 	{
 		dict_update(e, ind.string, makeint(i));
 		r = obegin(o,e);
-		i = toint(dict_getk(e, ind.string));
+		//i = toint(dict_getk(e, ind.string));
 	}
 	return r;
 }
