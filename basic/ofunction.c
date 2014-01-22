@@ -341,16 +341,6 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 
 	if (dbg>1) {printf("math op : %d %d %d\n", o1.type, op, o2.type); } //debug info
 
-	if (op == EQL)
-	{
-		return makeint(compareObj(o1,o2));
-	}
-
-	if (op == NEQ)
-	{
-		return makeint(!compareObj(o1,o2));
-	}
-
 	if (op == PLUS && o1.type==CELL)
 	{
 		// {1 2} + 3 -> {1 2 3}
@@ -415,6 +405,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.type=EMPTY; //error
 			break;
 		}
+		return r;
 	}
 
 	if (o1.type==FLOAT || o2.type==FLOAT)
@@ -462,10 +453,20 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.type=EMPTY; //error
 			break;
 		}
+		return r;
 	}
 
+	if (op == EQL)
+	{
+		return makeint(compareObj(o1,o2));
+	}
 
-	if (o1.type==STR && o2.type==STR)
+	if (op == NEQ)
+	{
+		return makeint(!compareObj(o1,o2));
+	}
+
+	if (o1.type==STR && o2.type==STR && op==PLUS)
 	{
 		int n=strlen(o1.string)+strlen(o2.string)+1;
 		char *s=newstring1(n);
@@ -473,6 +474,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		strcat(s,o2.string);
 		r.type=STR;
 		r.string=s;
+		return r;
 	}
 
 	if (o1.type==FMAT2 && o2.type==FMAT2 && (op==PLUS || op==MINUS || op==DIVD || op==PROD))
@@ -481,7 +483,8 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		if (op==PLUS)  r.fmat2 = fadd2(o1.fmat2,o2.fmat2, '+') ;
 		if (op==MINUS) r.fmat2 = fadd2(o1.fmat2,o2.fmat2, '-') ;	
 		if (op==DIVD)  r.fmat2 = fadd2(o1.fmat2,o2.fmat2, '/') ;	
-		if (op==PROD)  r.fmat2 = fadd2(o1.fmat2,o2.fmat2, '*') ;		
+		if (op==PROD)  r.fmat2 = fadd2(o1.fmat2,o2.fmat2, '*') ;
+		return r;		
 	}
 
 	if (o1.type==FMAT2 && (o2.type==INTGR || o2.type==FLOAT) && op==PLUS)
@@ -2132,7 +2135,7 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 tOBJ ofor (tOBJ  o, Dict *e)
 {
 	//!FOR X '{3 5} {PR X}
-	int s,f;
+	int s,f,d;
 	tOBJ r=emptyObj();
 
 	tOBJ ind =ocar(o);
@@ -2148,11 +2151,21 @@ tOBJ ofor (tOBJ  o, Dict *e)
 	o=ocdr(o);
 	retflgset=0;
 
-	for (int i=s; (!retflgset && i<=f); i++) //=toint(dict_getk(e, ind.string))+1)
-	{
-		dict_update(e, ind.string, makeint(i));
-		r = obegin(o,e);
-		//i = toint(dict_getk(e, ind.string));
+	if (f>=s) {
+		for (int i=s; (!retflgset && i<=f); i++)
+		{
+			dict_update(e, ind.string, makeint(i));
+			r = obegin(o,e);
+			i = toint(dict_getk(e, ind.string));
+		}
+	}
+	else {
+		for (int i=s; (!retflgset && i>=f); i--)
+		{
+			dict_update(e, ind.string, makeint(i));
+			r = obegin(o,e);
+			i = toint(dict_getk(e, ind.string));
+		}
 	}
 	return r;
 }

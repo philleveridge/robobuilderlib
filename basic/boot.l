@@ -8,7 +8,10 @@
 ; short cut to load program being worked on
 ;
 
-(FUNC T () (LOAD "prop.l"))
+(FUNC T  () (LOAD "lispexamples/turtle.l"))
+(FUNC BW () (LOAD "lispexamples/prop.l"))
+(FUNC QN () (LOAD "lispexamples/queens.l"))
+(FUNC DR () (LOAD "lispexamples/doctor.l"))
 
 
 
