@@ -248,7 +248,9 @@ int readLine(char *line)
 	int lf=0;
 	char *start=line;
 	char *end=line;
+#ifdef LINUX
 	int hb2 = hbfc;
+#endif
 	
 	rprintfStr ("> ");
 	

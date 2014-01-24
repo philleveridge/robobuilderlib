@@ -24,7 +24,7 @@
 ))
 
 (SETQ EQ '(C = A + B * C))
-(I2P EQ)
+(PR EQ " -> " (I2P EQ))
 
 
 
