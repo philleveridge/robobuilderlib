@@ -32,67 +32,46 @@ extern int readLine(char *line);
 
 char *readword(char *s, char *w)
 {
-	char c;
-	int n=0;
-	int sf=0;
-	while (*s != '\0')
-	{
-		c=*s++;
-		if (c==13 || c==10 || c==9) continue; // ignore tabs
+       char c;
+       int n=0;
+       int sf=0;
+       while (*s != '\0')
+       {
+              c=*s++;
+              if (c==13 || c==10 || c==9) continue; // ignore tabs
 
-		if (c== '"')
-		{
-			if (sf==0)
-			{
-				sf=1;
-				*w++ = c;
-				continue;
-			}
-			else
-			{
-				break;
-			}
-		}
+              if (c== '"')
+              {
+                     if (sf==0)
+                     {
+                            sf=1;
+                            *w++ = c;
+                            continue;
+                     }
+                     else
+                            break;
+              }
 
-		if (	(c=='<' && *s =='>'  && n==0) 
-			|| (c=='<' && *s =='=' && n==0) 
-			|| (c=='.' && *s =='*' && n==0) 
-			|| (c=='.' && *s =='^' && n==0) 
-			|| (c=='>' && *s =='=' && n==0) )
-		{
-			*w++ = c;
-			*w++=*s++;
-			*w='\0';
-			return s;
-		}
-
-		if ((c=='-' || c=='+') && *s>='0' && *s<='9' && sf==0 && n==0)
-		{
-			*w++ = c;
-			continue;
-		}
-
-
-		if ( strchr("`'+-*/=:,;[]{}()<> ",c)>0  && sf==0)
-		{
-			if (c != ' ' && n==0) 
-			{
-				*w++=c;
-				while (*s==13 || *s==10 || *s==' ') s++; //skip trailing w/s
-			}
-			if (c != ' ' && n>0) 
-				s--;
-			if (c== ' ' && n==0) 
-				continue;
-
-			break;
-		}
-		*w++ = c;
-		n++;
-	}
-	*w='\0';
-	return s;
+              if ( strchr("`'*/=:,;[]{}() ",c)>0  && sf==0)
+              {
+                     if (c != ' ' && n==0)
+                     {
+                            *w++=c;
+                            while (*s==13 || *s==10 || *s==' ') s++; //skip trailing w/s
+                     }
+                     if (c != ' ' && n>0)
+                            s--;
+                     if (c== ' ' && n==0)
+                            continue;
+                     break;
+              }
+              *w++ = c;
+              n++;
+       }
+       *w='\0';
+       return s;
 }
+ 
 
 int isnum(char *s)
 {
@@ -353,10 +332,10 @@ tOBJ formula(tOBJ ae, Dict *e)
 	}	
 }
 
-
+extern int retflg;
 tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 {
-	tOBJ r, arg, body;
+	tOBJ arg, body;
 	tOBJ e= makedict2(env,0);
 
 	fn.type=CELL;
@@ -388,7 +367,11 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 	}
 	if (dbg) dict_print((Dict *)e.dict,1);
 
-	return obegin(body,(Dict *)e.dict);
+	retflg=0;
+	arg = obegin(body,(Dict *)e.dict);
+	retflg=0;
+
+	return arg;
 }
 
 tOBJ procall (tOBJ h, tOBJ o, Dict *e )
@@ -454,7 +437,6 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 
 tOBJ eval2(tOBJ o, Dict *e)
 {
-	tOBJ r=emptyObj();
 	tOBJ h;
 
 	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type==STR || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA)
@@ -561,9 +543,13 @@ tOBJ eval2(tOBJ o, Dict *e)
            	if (!strcasecmp(h.string,"IF"))
                 {
                         tOBJ test   = ocar(o); o=ocdr(o);
+			test = eval(test,e);
                         tOBJ conseq = ocar(o); o=ocdr(o);
                         tOBJ alt    = ocar(o); 
-                        if (toint(eval(test,e))==1)
+
+			if (       (test.type == INTGR && test.number != 0 ) 
+				|| (test.type == FLOAT && test.floatpoint != 0.0 ) 
+                                || (test.type != INTGR && test.type != FLOAT && test.type!=EMPTY)) 
                         {
                                 return eval(conseq,e);
                         }

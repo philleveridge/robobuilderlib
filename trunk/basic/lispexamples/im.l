@@ -23,7 +23,7 @@
 
 (FUNC PP (I)  (FOR X '(0 15) (FOR Y '(0 15) (PR (IF (CELL I X Y) 'O '_  ) ; )) (PR )))
 
-'(PP IM)
+(PP IM)
 
 ; calculate centre of mass of image
 ;

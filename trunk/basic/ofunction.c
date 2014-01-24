@@ -101,6 +101,7 @@ tOP oplist[] = {
 	{"ATOS",  40, NA,   1, oatos}, 
 	{"BEGIN", 40, NA,   9, obegin},  
 	{"BF",    40, NA,   1, obf},
+	{"BREAK",40, NA,    1, obreak}, 
 	{"CAR",  40, NA,    1, ocar},  //LIST BASED
 	{"CDR",  40, NA,    1, ocdr},  //function single arg
 	{"CELL", 40, NA,    3, omat},   //function three args   <fMatrix, int, int>
@@ -125,6 +126,7 @@ tOP oplist[] = {
 	{"HSUM", 40, NA,    1, ohsum},  //function <fMatrix>
 	{"IMAGE", 40, NA,   9, oimg},
 	{"IMP",  40, NA,    3, oimp},   //function two args   <string>, <int>, <int>
+	{"INT",  40, NA,    1, oint},  //function <fMatrix>
 	{"INV",  40, NA,    1, ominv},  //function <fMatrix>
 	{"KEY",   40, NA,   1, okey}, 
 	{"LAST", 40, NA,    1, olast},  //function single arg
@@ -181,10 +183,10 @@ tOP oplist[] = {
 	{"VSUM", 40, NA,    1, ovsum},  //function <fMatrix>
 	{"WAIT",  40, NA,   1, owait},  
 	{"WHILE", 40, NA,   9, owhile}, 
-	{"WHOS",  40, NA,   0, owhs},
-	{"ZERB", 40, NA,    5, ozerob},  //function four args   <fmatrix>, <int> <int> Mint> <int>
-	{"ZERD", 40, NA,    1, ozerod},  //function 1 args   <fmatrix>
-	{"ZERO", 40, NA,    2, ozero}    //function two args  <fint, int>
+	{"WHOS",  40, NA,   1, owhs},
+	{"ZERB", 40, NA,    5, ozerob},  //Zero Matrix bounded
+	{"ZERD", 40, NA,    1, ozerod},  //Zero matrix diaganol
+	{"ZERO", 40, NA,    2, ozero}    //Zero Matrx x,y
 };
 
 /**********************************************************/
@@ -235,8 +237,6 @@ int getOPtype(Dict *e, char *str)
 
 tOBJ get(Dict *ep, char *name)
 {
-	tOBJ r;
-
 	if (dict_contains(ep,name))
 	{
 		return dict_getk(ep, name);
@@ -324,7 +324,10 @@ tOBJ owhs(tOBJ r)
 {
 	//display all variables and types
 	//!WHOS
-	dict_print(env.dict,1);  //exclude any type FUNC
+	if (r.type==EMPTY)
+		dict_print(env.dict,1);  //exclude any type FUNC
+	else
+		dict_print(env.dict,toint(r));  //exclude any type FUNC
 	return emptyObj(); 
 }
 
@@ -433,6 +436,8 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			else
 				r.floatpoint = a / b; 
 			break;
+		case LMOD:
+			r.floatpoint = fmod(a,b) ; break;
 		case LT:
 			r.type=INTGR; r.number = a < b; break;
 		case EQL:
@@ -539,6 +544,15 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 
 	return r;
 }
+
+tOBJ oint(tOBJ a)
+{
+	tOBJ r;
+	r.type=INTGR;
+	r.number=toint(a);
+	return r;
+}
+
 
 tOBJ osin(tOBJ a)
 {
@@ -1477,18 +1491,35 @@ tOBJ opr(tOBJ a, Dict *e)
 	return t;
 }
 
+/*
+!> COND ('A 'B 'C)
+ = B
+!> COND (1 'B 'C)
+ = B
+!> COND (0 'B 'C)
+ = C
+!> COND (0 'A 0 'B 1 'E)
+ = E
+!> COND (0 'A 0 'B 1 )  
+ = 1
+!> COND ( '() 1 2)
+ = 2
+!> COND ( '(1) 1 2)
+*/
 tOBJ ocond(tOBJ o, Dict *e)
 {
-	// COND { {= X 1} 'ONE {= X 2} 'TWO ' 1 'NA}
-
 	tOBJ cond=emptyObj();
+	tOBJ act=emptyObj();
 	o=ocar(o);
 	while (o.type != EMPTY)
 	{
-		tOBJ cond = ocar(o); o=ocdr(o);
-		tOBJ act = ocar(o); o=ocdr(o);
-		if (dbg) {print (cond);printf ("?\n");}
-		if (toint(eval(cond,e))!=0) return eval(act,e);
+		cond = eval(ocar(o),e); o=ocdr(o);
+		act  = ocar(o); o=ocdr(o);
+		if (dbg) {println ("cond =", cond);}
+		if ((cond.type == INTGR && cond.number != 0 ) 
+		|| (cond.type != INTGR && cond.type!=EMPTY && cond.type!=FLOAT)
+		|| (cond.type == FLOAT && cond.floatpoint != 0.0 ) ) 
+			return (onull(act).number==1)?cond:eval(act,e);
 	}	
 	return cond;
 }
@@ -1642,10 +1673,10 @@ tOBJ orgt(tOBJ  r, tOBJ a)
 	return emptyObj();
 }
 
-
 tOBJ omid(tOBJ  r, tOBJ a, tOBJ  b)
 {
-	//!MID("testing",2,4) -> "est"
+	//!MID "testing" 2 4  -> "est"
+	//!MID "tes" 2        -> "es"
 	int p1=toint(a);
 	int p2=toint(b);
 	char *cp;
@@ -1653,7 +1684,7 @@ tOBJ omid(tOBJ  r, tOBJ a, tOBJ  b)
 	{
 		int ln = strlen(r.string);
 		if (p2==0) p2=ln;
-		if (ln>0 && p1>0 && p2>p1 && p2<=ln)
+		if (ln>0 && p1>0 && p2>=p1 && p2<=ln)
 		{
 			cp=newstring1(p2-p1+1);
 			strncpy(cp, (r.string)+p1-1,p2-p1+1);
@@ -2043,13 +2074,14 @@ LOOP functions
 
 ************************************************************************/
 
-int retflgset=0;
+int retflg=0;
+int brkflg=0;
 
 tOBJ obegin(tOBJ o, Dict *e)
 {
 	tOBJ r=emptyObj();
-	retflgset=0;
-	while (!retflgset && o.type != EMPTY)
+	retflg=0;
+	while (!(retflg || brkflg) && o.type != EMPTY)
 	{
 		tOBJ exp = ocar(o); o=ocdr(o);	
 		r=eval(exp,e);
@@ -2067,21 +2099,27 @@ tOBJ owhile  (tOBJ  o, Dict *e)
 
 	tOBJ cond =ocar(o);
 	o=ocdr(o);
-	retflgset=0;
-	while (	!retflgset && toint(eval(cond,e))!=0)
+	brkflg=0;
+	while (	!(retflg || brkflg) && toint(eval(cond,e))!=0)
 	{
 		//loop
 		r = obegin(o,e);
 	}
+	brkflg=0;
 	return r;
+}
+
+tOBJ obreak  (tOBJ  o)
+{
+	brkflg=1;
+	return o;
 }
 
 tOBJ oreturn  (tOBJ  o)
 {
-	retflgset=1;
+	retflg=1;
 	return o;
 }
-
 
 tOBJ ofore   (tOBJ  o, Dict *e)
 {
@@ -2115,7 +2153,7 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 
 	if (list.type == CELL)
 	{
-		retflgset=0;			
+		brkflg=0;			
 		do {
 			tOBJ value=ocar(list);
 			list=ocdr(list);
@@ -2125,7 +2163,8 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 			//loop
 			r = obegin(o,e);
 
-		} while (!retflgset && list.type != EMPTY);
+		} while (!(retflg || brkflg) && list.type != EMPTY);
+		brkflg=0;
 	}
 
 	return r;
@@ -2135,7 +2174,7 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 tOBJ ofor (tOBJ  o, Dict *e)
 {
 	//!FOR X '{3 5} {PR X}
-	int s,f,d;
+	int s,f;
 	tOBJ r=emptyObj();
 
 	tOBJ ind =ocar(o);
@@ -2149,10 +2188,10 @@ tOBJ ofor (tOBJ  o, Dict *e)
 	f=toint(eval(ocar(ocdr(range)),e));
 
 	o=ocdr(o);
-	retflgset=0;
+	brkflg=0;
 
 	if (f>=s) {
-		for (int i=s; (!retflgset && i<=f); i++)
+		for (int i=s; (!(retflg || brkflg) && i<=f); i++)
 		{
 			dict_update(e, ind.string, makeint(i));
 			r = obegin(o,e);
@@ -2160,13 +2199,14 @@ tOBJ ofor (tOBJ  o, Dict *e)
 		}
 	}
 	else {
-		for (int i=s; (!retflgset && i>=f); i--)
+		for (int i=s; (!(retflg || brkflg) && i>=f); i--)
 		{
 			dict_update(e, ind.string, makeint(i));
 			r = obegin(o,e);
 			i = toint(dict_getk(e, ind.string));
 		}
 	}
+	brkflg=0;
 	return r;
 }
 
