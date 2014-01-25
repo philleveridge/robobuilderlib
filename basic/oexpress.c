@@ -532,9 +532,10 @@ tOBJ eval2(tOBJ o, Dict *e)
                         while (o.type != EMPTY)
                         {
                                 tOBJ var = ocar(o); o=ocdr(o);
+                                tOBJ val = eval(ocar(o),e); o=ocdr(o);
                                 if (var.type==SYM || var.type == STR)
 				{
-                                        dict_add(e, var.string, emptyObj());
+                                        dict_add(e, var.string, val);
 				}
                         }
                         return emptyObj();
@@ -590,6 +591,8 @@ tOBJ eval2(tOBJ o, Dict *e)
 			o.type  = LAMBDA;
 			return o;
 		}
+		else
+			printf ("? unknown symbol [%s]\n", h.string);	
 	}
 	else
 	{

@@ -22,7 +22,7 @@
 
 (def CHT  (X Y T) (AND (= X (ROUND (CAR T))) (= Y (ROUND (CAR (CDR T))))))
 (def CHL  (X Y L) (AND (= X (CAR L)) (= Y (CAR (CDR L)))))
-(def MOVE (T A D) (WITH X Y R) (SETQ (X Y R) T ) (LIST ( + X (* D (COS A))) (+ Y (* D (SIN A))) (+ A R) ))
+(def MOVE (T A D) (WITH X 0 Y  0 R 0 ) (SETQ (X Y R) T ) (LIST ( + X (* D (COS A))) (+ Y (* D (SIN A))) (+ A R) ))
 (def PG   ()      (FOR X '(1 10) (FOR Y '(1 10) (IF (CHT X Y TURTLE) (PR 'x ;) (PR '_ ;))) (PR)))
 
 (setq TURTLE '(1 1 0.1))
