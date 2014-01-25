@@ -25,24 +25,25 @@
   )
 ))
 
+'(DO (PR "ae  = " AE)(PR "OPD = ";) (PST OPD)(PR "OPS = ";) (PST OPS))
+
 (DEF PST (X) (FOREACH Y X (PR Y ".." ;)) (PR ""))
 
 ;stack based version
 (DEF I2P2 (AE) 
-  (WITH OPD (STACK 5) OPS (STACK 5) SCAN 1 STUFF 1) 
+  (WITH OPD (STACK 5) OPS (STACK 5)) 
   (IF (ATOM AE) (RETURN AE) 
   (DO 
-     (WHILE STUFF
+     (WHILE 1
         (IF   (NULL AE) (RETURN 'UNEXP))
         (PUSH OPD (IF (ATOM (CAR AE)) (CAR AE) (I2P (CAR AE))))  
-        (SETQ AE (CDR AE) SCAN 1)
-
-        (WHILE SCAN    '(DO (PR "ae  = " AE)(PR "OPD = ";) (PST OPD)(PR "OPS = ";) (PST OPS))
+        (SETQ AE (CDR AE))
+        (WHILE 1    
            (IF (AND (NULL AE) (=  (LEN OPS) 0)) 
 	      (RETURN (POP OPD)))
            (IF (OR (NULL AE)  (<= (WEIGHT (CAR AE)) (WEIGHT (PEEK OPS 0))))
               (DO (SETQ B (POP OPD) A (POP OPD)) (PUSH OPD (LIST (OPC (POP OPS)) A B)))
-              (DO (PUSH OPS (CAR AE)) (SETQ SCAN 0))
+              (DO (PUSH OPS (CAR AE)) (BREAK))
 	   )
         )
         (SETQ AE (CDR AE))
@@ -51,8 +52,8 @@
 ))
 
 (SETQ EQ '(C = A + B * C))
-(PR EQ " -> " (I2P EQ))
+'(PR EQ " -> " (I2P EQ))
 
-(PR "new = " (I2P2 EQ))
+(PR EQ " -> " (I2P2 EQ))
 
 

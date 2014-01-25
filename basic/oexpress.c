@@ -52,7 +52,7 @@ char *readword(char *s, char *w)
                             break;
               }
 
-              if ( strchr("`'*/=:,;[]{}() ",c)>0  && sf==0)
+              if ( strchr("`'*/:,;[]{}() ",c)>0  && sf==0)
               {
                      if (c != ' ' && n==0)
                      {
