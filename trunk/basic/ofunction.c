@@ -988,6 +988,7 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 		while (b.type != EMPTY)
 		{
 			tOBJ arg= ocar(b);
+			arg.q=1;
 			tOBJ n  = procall (a, arg, env.dict);		
 			b=ocdr(b);
 			r=append(r,n);
