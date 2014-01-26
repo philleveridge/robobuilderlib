@@ -4,8 +4,7 @@
 
 ;LIST based
 (DEF I2P (AE) 
-  (WITH OPD '() OPS (LIST 'DUMMY) SCAN 1 STUFF 1) 
-  (SETQ SCAN 1 STUFF 1)
+  (WITH OPD  (OPS (LIST 'DUMMY)) (SCAN 1) (STUFF 1) )
   (IF (ATOM AE) (RETURN AE) 
   (DO 
      (WHILE STUFF 
@@ -31,7 +30,7 @@
 
 ;stack based version
 (DEF I2P2 (AE) 
-  (WITH OPD (STACK 5) OPS (STACK 5)) 
+  (WITH (OPD (STACK 5)) (OPS (STACK 5))) 
   (IF (ATOM AE) (RETURN AE) 
   (DO 
      (WHILE 1

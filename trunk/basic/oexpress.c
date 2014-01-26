@@ -532,10 +532,17 @@ tOBJ eval2(tOBJ o, Dict *e)
                         while (o.type != EMPTY)
                         {
                                 tOBJ var = ocar(o); o=ocdr(o);
-                                tOBJ val = eval(ocar(o),e); o=ocdr(o);
-                                if (var.type==SYM || var.type == STR)
+				if (var.type==CELL) {
+					tOBJ n   = ocar(var);
+		                        tOBJ val = eval(ocar(ocdr((var))),e); 
+		                        if (n.type==SYM || n.type == STR)
+					{
+		                                dict_add(e, n.string, val);
+					}
+				}
+				else
 				{
-                                        dict_add(e, var.string, val);
+                                        dict_add(e, var.string, emptyObj());
 				}
                         }
                         return emptyObj();

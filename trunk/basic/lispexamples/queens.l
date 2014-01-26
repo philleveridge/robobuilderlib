@@ -12,7 +12,7 @@
                                                          (CONFLICT N M (CDR BOARD)))))
 
 (DEF QUEEN (SIZE) 
-  (WITH N 0 M 0 BOARD 0 F 0) 
+  (WITH N M BOARD F) 
   (FOR N (1 SIZE) 
      (SETQ F 0)
      (FOR M (1 SIZE) 
