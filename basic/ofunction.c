@@ -170,6 +170,7 @@ tOP oplist[] = {
 	{"SETK",  40, NA,   1, oset}, //function single arg
 	{"SETSERVO", 40, NA,3, osetservo}, //function single arg
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
+	{"SIGN", 40, NA,    1, osign},  //sigmoid functon
 	{"SIN",  40, NA,    1, osin},  //function single arg
 	{"SQRT", 40, NA,    1, osqrt}, //function single arg
 	{"STOA", 40, NA,    1, ostoa}, 
@@ -550,6 +551,16 @@ tOBJ oint(tOBJ a)
 	tOBJ r;
 	r.type=INTGR;
 	r.number=toint(a);
+	return r;
+}
+
+tOBJ osign(tOBJ a)
+{
+	tOBJ r;
+	int i=toint(a);
+	r.type=INTGR;
+	if (i==0) r.number=0;
+	else r.number=(i>0)?1:-1;
 	return r;
 }
 
@@ -953,6 +964,10 @@ tOBJ oapply(tOBJ a, tOBJ b)
 !> MAPCAR {LAMBDA {X} {+ X 1}} '{1 2 3 4}
  = {2 3 4 5}
 */
+// MAPCAR SIN '(0.100000 0.200000 0.300000)
+// FUNC   FOO  (X) (+ 1.0 X)
+// MAPCAR FOO '(0.100000 0.200000 0.300000)
+
 tOBJ omapcar(tOBJ a, tOBJ b)
 {
 	tOBJ r=emptyObj(), v;
@@ -960,9 +975,19 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 
 	a=eval(a,env.dict);
 
+	if (a.type==FUNC && ((tOPp)(a.fptr))->nop>1)
+	{
+		printf ("?too many params\n"); return emptyObj();
+	}
+	else
+	if (a.type!=LAMBDA && a.type!=FUNC)
+	{
+		printf ("?err\n"); return emptyObj();
+	}
+
 	if (b.type==FMAT2)
 	{
-		// FUNC FOO {X} {+ 1.0 X}
+
 		// MAPCAR 'FOO [ 1 2 ; 3 4 ]
 		int i=0, j=0;
 		// create new matrix
@@ -975,6 +1000,7 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 			{
 				v.type=FLOAT;
 				v.floatpoint =fget2(b.fmat2,i,j);
+				if (a.type==FUNC) v=append(emptyObj(),v);
 				tOBJ n  = procall (a, v, env.dict);	
 				fset2(r.fmat2,i,j,tofloat(n));			
 			}
@@ -983,12 +1009,12 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 	}
 	else if (b.type==CELL)
 	{
-		// FUNC FOO {X} {+ X 1}
-		// MAPCAR FOO '{2 3 4}
+		// MAPCAR FOO '(2 3 4)
 		while (b.type != EMPTY)
 		{
 			tOBJ arg= ocar(b);
 			arg.q=1;
+			if (a.type==FUNC) arg=append(emptyObj(),arg);
 			tOBJ n  = procall (a, arg, env.dict);		
 			b=ocdr(b);
 			r=append(r,n);

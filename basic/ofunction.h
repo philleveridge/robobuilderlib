@@ -121,6 +121,7 @@ extern tOBJ oserv	(tOBJ  r);
 extern tOBJ oset	(tOBJ  r);
 extern tOBJ osetservo	(tOBJ  r, tOBJ, tOBJ);
 extern tOBJ osig	(tOBJ  r);
+extern tOBJ osign	(tOBJ  r);
 extern tOBJ osin 	(tOBJ  r);
 extern tOBJ osqrt	(tOBJ  r);
 extern tOBJ ostack	(tOBJ  r);

@@ -11,7 +11,7 @@
 (TRIP C)
 
 (FUNC MATE (X Y C1 C2) 
-   (WITH T 0)
+   (WITH T )
    (IF (OR (NULL X) (NULL Y)) (RETURN '()))
    (SETQ T (IF (> C1 0)(CAR X) (CAR Y)))
    (CONS T (MATE (CDR X) (CDR Y) (- C1 1) C2))
