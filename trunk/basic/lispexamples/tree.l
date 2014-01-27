@@ -3,9 +3,8 @@
 ;state space
 (setq STATE '( 
 	(TIMIS     (LOGOJ 111) (ARAD 118))
-	(LOGOJ     (TIMIS 111))
 	(ZERIN     (ARAD 75)   (ORADCA 71))
-	(LUGO      (MECHA 70)  (TIMIS 111))
+	(LUGOJ     (MEHAD 70)  (TIMIS 111))
 	(FAGARAS   (SIBIU 99)  (BUCHAREST 211))
 	(ARAD      (ZERIN 75)  (SIBIU 140)   (TIMIS 118))
 	(RIMNI     (SIBIU 80)  (PITESTI 97)  (PLACE 145))
@@ -13,6 +12,18 @@
 	(BUCHAREST (URZI 85)   (PITESTI 101) (FAGARAS 211))
 	(SIBIU     (ARAD 140)  (ORADCA 151)  (FAGARAS 99) (RIMNI 80))
 ))
+
+; Direct distances to bucharest from Arad
+(setq H '(
+	(ARAD      366)
+	(TIMIS     329)
+	(LOGOJ     244)
+	(ZERIN     374)
+	(SIBIU     253)
+	(RIMNI     193)
+	(FAGARAS   176)
+	(PITESTI   100)
+	(BUCHAREST 0)))
 
 (func GPATH (x) 
 	(FOREACH y STATE 
@@ -25,6 +36,17 @@
                  (SETQ MP (CAR (CDR x)) BS x) 
             ))
        '(PR "Best SP=" MP BS )  BS)
+
+(func HVAL (x) (FOREACH y H (IF (= (CAR y) x) (RETURN (CADR y)))) '1000)
+
+(func CHOICE-AS (f) 
+        (WITH (LC 1000) BS x C ) 
+        (FOREACH x f 
+	    (SETQ C (+ (NTH 2 x) (HVAL (CAR x))))
+            (IF (< C LC) 
+                 (SETQ LC C BS x) 
+            ))
+       '(PR "Best A*=" LC BS) BS)
 
 (func CHOICE-LC (f) 
         (WITH (LC 500) BS x) 
@@ -50,15 +72,15 @@
 
    (WHILE (NOT (NULL FRONTIER)) 
 
-       	(SETQ top (IF (= meth 'LC) (CHOICE-LC FRONTIER) (CHOICE-SP FRONTIER)))
+       	(SETQ top (COND ( (= meth 'LC) (CHOICE-LC FRONTIER) 
+                          (= meth 'SP) (CHOICE-SP FRONTIER)
+                          (= meth 'AS) (CHOICE-AS FRONTIER))))
 
 	(IF (NULL top) (RETURN 'FAIL))
 
       	(setq FRONTIER (REMOVE top FRONTIER))
   	(SETQ EXPLORED (CONS top EXPLORED))
 	(SETQ (ns pl cost path) top)
-
-	'(PR "frontier = " FRONTIER " Explore= " EXPLORED)
 
        	(IF (NOT (NULL (SETQ action  (GPATH ns)) ))
         (DO
@@ -83,6 +105,7 @@
 ;init arad - goal bucharest
 (PR (GSEARCH 'ARAD 'BUCHAREST' 'LC))
 (PR (GSEARCH 'ARAD 'BUCHAREST' 'SP))
+(PR (GSEARCH 'ARAD 'BUCHAREST' 'AS))
 'done
 
 
