@@ -103,6 +103,7 @@ tOP oplist[] = {
 	{"BF",    40, NA,   1, obf},
 	{"BREAK", 40, NA,   1, obreak}, 
 	{"CAR",   40, NA,   1, ocar},  //LIST BASED
+	{"CADR",  40, NA,   1, ocadr},  //LIST BASED
 	{"CDR",   40, NA,   1, ocdr},  //function single arg
 	{"CELL",  40, NA,   3, omat},   //function three args   <fMatrix, int, int>
 	{"COL",   40, NA,   1, ocol},   //function single arg    <fMatrix>
@@ -1202,6 +1203,11 @@ tOBJ ocdr (tOBJ a)
 		}
 	}
 	return r;
+}
+
+tOBJ ocadr (tOBJ a)
+{
+	return ocar(ocdr(a));
 }
 
 tOBJ otype (tOBJ a)

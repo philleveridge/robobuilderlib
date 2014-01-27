@@ -54,6 +54,7 @@ extern tOBJ obegin  	(tOBJ  r, Dict *);
 extern tOBJ obf		(tOBJ  r);
 extern tOBJ obreak	(tOBJ  r);
 extern tOBJ ocar	(tOBJ  r);
+extern tOBJ ocadr	(tOBJ  r);
 extern tOBJ ocdr	(tOBJ  r);
 extern tOBJ ocol	(tOBJ  r);
 extern tOBJ ocond   	(tOBJ  r, Dict *);
