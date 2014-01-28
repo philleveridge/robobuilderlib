@@ -169,7 +169,7 @@ cm:
 		if ((t=c) and (g=f+3)) or ((t=h) and (g=f-3)) then good
 	else
 		'take - must be diaganol
-		if ((t=c) and ((g=f+4) or (g=g+2)) and ((g/3-f/3)=1)) then good
+		if ((t=c) and ((g=f+4) or (g=f+2)) and ((g/3-f/3)=1)) then good
 		if ((t=h) and ((g=f-4) or (g=f-2)) and ((f/3-g/3)=1)) then good
 	endif
 	return
