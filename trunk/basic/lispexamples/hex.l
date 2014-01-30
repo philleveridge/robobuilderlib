@@ -20,6 +20,8 @@
       0
 )
 
+(func CS (PUTC 27) (PR "[2J"))
+
 (func MOVE (P M B) 
          (WITH (L '()) T F) 
 	 (SETQ (F T) M)
@@ -28,7 +30,8 @@
          L)
 
 (func HEX() 
-  (setq BOARD '(C C C _ _ _ H H H))
+  (setq BOARD '(C C C _ _ _ H H H) STORE '())
+
   (WHILE 1
 	  (PB BOARD)
 	  (Setq C 0)
@@ -45,11 +48,15 @@
 		             (PR "***** Bad move") 	  
 		             (SETQ BOARD (MOVE 'H M BOARD) loop 0))
           )
+
+	  (SETQ STORE (CONS BOARD STORE)) '(PR STORE)
+   	   
 	  (PR "My move : " )
-	  (Setq C 0)
-	  (FOR M '(0 78) (SETQ C ( + C (CHECKM 'C M BOARD))))
-	  (PR "valid moves for Computer = " C)
+	  (Setq C 0 MM 0)
+	  (FOR M '(0 78) (IF (CHECKM 'C M BOARD) (DO (INC C) (SETQ MM M))))
+	  (PR "valid moves for Computer = " C " .. " MM)
           (IF (= C 0) (BREAK "You Win"))
+	  (SETQ BOARD (MOVE 'C (LIST (/ MM 10) (MOD MM 10)) BOARD))
 ;
 ; need to add logic here to pick best move
 ;
