@@ -35,8 +35,6 @@ extern tOBJ get   	(Dict *ep, char *name);
 extern tOBJ getb   	(tOBJ  r);
 extern tOBJ omath 	(tOBJ o1, tOBJ o2, int op);
 
-extern tOBJ ecar	(tOBJ  r);
-extern tOBJ ecdr	(tOBJ  r);
 extern tOBJ oabs	(tOBJ  r);
 extern tOBJ oacos	(tOBJ  r);
 extern tOBJ oacx	(tOBJ  r);
@@ -54,7 +52,9 @@ extern tOBJ obegin  	(tOBJ  r, Dict *);
 extern tOBJ obf		(tOBJ  r);
 extern tOBJ obreak	(tOBJ  r);
 extern tOBJ ocar	(tOBJ  r);
+extern tOBJ ocaar	(tOBJ  r);
 extern tOBJ ocadr	(tOBJ  r);
+extern tOBJ ocadar	(tOBJ  r);
 extern tOBJ ocdr	(tOBJ  r);
 extern tOBJ ocol	(tOBJ  r);
 extern tOBJ ocond   	(tOBJ  r, Dict *);

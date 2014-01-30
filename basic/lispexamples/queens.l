@@ -1,40 +1,54 @@
 !DO 
-(FUNC THREAT (I J A B)
-(PR "threat: " I J A B)
-(OR (= I A)
-    (= J B)
-    (= (- I J) (- A B))
-    (= (+ I J) (+ A B))
-)
-)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; QUEEN 8
+; Board=((8 4) (7 2) (6 7) (5 3) (4 6) (3 8) (2 5) (1 1))
+; Q _ _ _ _ _ _ _ 
+; _ _ _ _ Q _ _ _ 
+; _ _ _ _ _ _ _ Q 
+; _ _ _ _ _ Q _ _ 
+; _ _ Q _ _ _ _ _ 
+; _ _ _ _ _ _ Q _ 
+; _ Q _ _ _ _ _ _ 
+; _ _ _ Q _ _ _ _ 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(FUNC THREAT (I J A B)  (OR (= I A) (= J B) (= (- I J) (- A B)) (= (+ I J) (+ A B)) ))
+
 (FUNC CONFLICT (N M BOARD) (IF  (NOT (NULL BOARD)) 
-    (OR (THREAT N M (CAR (CAR BOARD)) (CAR (CDR (CAR BOARD))))
-                                                         (CONFLICT N M (CDR BOARD)))))
+    (OR (THREAT N M (CAAR BOARD) (CADAR BOARD))   (CONFLICT N M (CDR BOARD)))))
 
-(DEF QUEEN (SIZE) 
-  (WITH N M BOARD F) 
-  (FOR N (1 SIZE) 
-     (SETQ F 0)
-     (FOR M (1 SIZE) 
-       (PRINT N M ;)
-       (IF (NOT (CONFLICT N M BOARD)) 
-              (DO (SETQ BOARD (CONS (LIST N M) BOARD) M SIZE) (PR 'OK BOARD) F 1)
-       )
-     )
-     (IF (= F 0) (SETQ M (CAR (CDR (CAR BOARD))) N (CAR (CAR BOARD)) BOARD (CDR BOARD)))
-   )
-  (PR "Board=" BOARD) (PBOARD SIZE BOARD))
-
-'( CONFLICT 2 2 '((2 0) (1 0) )  )
-'( THREAT 2 2 1 0                )
-'( PBOARD 4 '((1 2))             )
 
 (DEF PBOARD (SIZE BOARD) 
   (FOR N (1 SIZE) 
     (FOR M (1 SIZE) 
        (IF (NULL (MEMBER (LIST N M) BOARD))  (PRINT '_ ;) (PRINT 'Q ;))
     )
-    (PR)
-  ))
+  (PR)))
+
+
+(DEF QUEEN (SIZE) 
+  (WITH N M BOARD F) 
+  (SETQ N 1)
+  (WHILE  (<= N SIZE)
+     (SETQ M 1 F 0)
+     (WHILE (<= M SIZE) 
+        '(PRINT N M ;)
+        (IF (NOT (CONFLICT N M BOARD)) 
+              (DO (SETQ BOARD (CONS (LIST N M) BOARD) F 1) '(PR 'OK BOARD))
+        )
+
+	(WHILE  (AND (NOT (NULL BOARD)) (= F 0) (>= M SIZE)) 
+            (SETQ M (CADAR BOARD) N (CAAR BOARD) BOARD (CDR BOARD))
+        )
+
+        (INC M)
+     )
+     (INC N)
+  )
+  (PR "Board=" BOARD) (PBOARD SIZE BOARD))
+
+
+(QUEEN 8)
 
 
