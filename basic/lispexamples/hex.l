@@ -29,18 +29,25 @@
               (SETQ L (CONS (COND ( (= I F) '_ (= I T) P (NTH I B)) ) L )))  
          L)
 
-(func HEX() 
-  (setq BOARD '(C C C _ _ _ H H H) STORE '())
+(func CMPB (A B) (OR (= A B) ) 
+             (= A (LIST (NTH 2 B) (NTH 1 B) (CAR B) 
+                        (NTH 5 B) (NTH 4 B) (NTH 3 B) 
+                        (NTH 8 B) (NTH 7 B) (NTH 6 B))))
+
+
+(func HEX() (WITH STORE )
+(WHILE 1
+  (setq BOARD '(C C C _ _ _ H H H) )
 
   (WHILE 1
 	  (PB BOARD)
 	  (Setq C 0)
 	  (FOR M '(10 87) (SETQ C ( + C (CHECKM 'H M BOARD))))
 	  (PR "valid moves for Human = " C)
-          (IF (= C 0) (BREAK "You Loose"))
+          (IF (= C 0) (BREAK (PR "You Loose")))
 	  (setq loop 1)
           (WHILE loop
-		  (PR "Input your move : " ;)
+		  (PR "Input your move (or Q): " ;)
 		  (SETQ M (READ))
 		  (IF (= (CAR M) 'Q) (RETURN 'Quitter))
 		  (PR "From " (CAR M) " To " (CADR M))
@@ -49,19 +56,26 @@
 		             (SETQ BOARD (MOVE 'H M BOARD) loop 0))
           )
 
+	  (PR "test " (SETQ m (FOREACH b STORE (IF (CMPB b BOARD) (BREAK 1)) )))
+
 	  (SETQ STORE (CONS BOARD STORE)) '(PR STORE)
    	   
 	  (PR "My move : " )
 	  (Setq C 0 MM 0)
 	  (FOR M '(0 78) (IF (CHECKM 'C M BOARD) (DO (INC C) (SETQ MM M))))
 	  (PR "valid moves for Computer = " C " .. " MM)
-          (IF (= C 0) (BREAK "You Win"))
+          (IF (= C 0) (PR (BREAK "You Win")))
 	  (SETQ BOARD (MOVE 'C (LIST (/ MM 10) (MOD MM 10)) BOARD))
 ;
 ; need to add logic here to pick best move
 ;
   )
-)
+  (PR "Again ?")
+  (IF (= (READ) '(N)) (RETURN 'DONE))
+))
+
+(PR "tst = " (CMPB '(C C C _ _ _ H H H) '(C C C _ _ _ H H H) ))
+(PR "tst x " (CMPB '(_ C C _ _ _ H _ _) '(C C _ _ _ _ _ _ H) ))
 
 (HEX)
 

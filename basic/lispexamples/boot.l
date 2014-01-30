@@ -15,6 +15,7 @@
 (FUNC TR  () (LOAD "tree.l"))
 (FUNC IML () (LOAD "im.l"))
 (FUNC I2  () (LOAD "i2p.l"))
+(FUNC HX  () (LOAD "hex.l"))
 
 
 
