@@ -1625,8 +1625,10 @@ tOBJ oget(tOBJ a)
 {
 	//> !GETK '{A B}
 	//> !GETK 'A
-	//SET ENV {DICT '{{AZ 1.0} {BZ 2.0}}}
+	//SETQ ENV {DICT '{{AZ 1.0} {BZ 2.0}}}
 	//GETK '{ENV 'AZ}
+
+
 	tOBJ r=emptyObj();
 	if (a.type==CELL)
 	{
@@ -1639,12 +1641,11 @@ tOBJ oget(tOBJ a)
 
 		if (name.type==DICT)
 		{
-			tOBJ en = name;
-			name = eval(ocar(ocdr(a)),en.dict);
-
-			if (name.type==STR || name.type==SYM )
+			tOBJ en  = name;
+			tOBJ val = eval(ocar(ocdr(a)),env.dict);
+			if (val.type==STR || val.type==SYM )
 			{
-				r = get(en.dict, name.string);
+				r = get(en.dict, val.string);
 			}
 		}	
 	}
@@ -2224,13 +2225,27 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 		}
 		brkflg=0;
 	}
+	else
+	if (list.type == DICT)
+	{
+		//SETQ E (DICT '(("A" 1) ("B" 2)))
+		//FOREACH X E (PR X (GETK '(E X)))
+		Dict *p=list.dict;
+		brkflg=0;
+		for (int i=0; (!(retflg || brkflg) && (i<p->ip)); i++)
+		{
+			dict_update(e, ind.string, makestring(p->db[i].key));
+			r = obegin(o,e);
+		}		
+		brkflg=0;
+	}
 	return r;
 }
 
 
 tOBJ ofor (tOBJ  o, Dict *e)
 {
-	//!FOR X '{3 5} {PR X}
+	//!FOR X '(3 5) (PR X)
 	int s,f;
 	tOBJ r=emptyObj();
 
