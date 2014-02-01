@@ -2294,6 +2294,8 @@ extern int gkp;
 extern int imready;
 extern int pbrunning;
 
+extern int vj (char *f) ;
+
 tOBJ oimg(tOBJ v, Dict *e)
 {
 	//!IMAGE "command" {parameters}
@@ -2307,6 +2309,14 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"UNLOCK"))
 		{
 			rellock();
+		}
+		else
+		if (!strcmp(cmd.string,"F-DETECT"))
+		{
+			if (v.type==STR || v.type==SYM) 
+				vj(v.string);
+			else
+				vj("Face.pgm");
 		}
 		else
 		if (!strcmp(cmd.string,"LOAD") || !strcmp(cmd.string,"NORM")) //  IMAG LOAD 8 "Text"
