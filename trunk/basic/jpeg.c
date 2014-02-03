@@ -277,6 +277,32 @@ int loadimage(char *ifile, int sz, int *f)
 	return 0;
 }
 
+unsigned char*loadimage2(char *ifile)
+{
+	unsigned char *p=0;
+	unsigned char *img = BMap;
+
+	if (loadJpg(ifile)!=0)
+		return -1;
+
+	printf ("Loaded %d,%d\n", Height, Width);
+
+	p=(unsigned char*) malloc (sizeof(unsigned char)*Height*Width);	
+
+	for (int y=0; y<Height; y++)
+	{
+		for (int x=0; x<Width; x++)
+		{
+			unsigned char b=*img++;
+			unsigned char g=*img++;
+			unsigned char r=*img++;
+
+			p[y*Width + x] = (r + b + g)/3;  // straight grey scale
+		}
+	}	
+	return p;
+}
+
 //ie filterimage("test.jpeg", scene, 16, 0, 0, 0, 255, 255, 255)
 int filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f)
 {

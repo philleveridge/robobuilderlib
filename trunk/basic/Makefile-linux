@@ -17,8 +17,8 @@ CCX = g++
 COMMON = -mmcu=$(MCU)
 
 ## Compile options common for all C compilation units.
-#CFLAGS = $(COMMON) -D AVR
-CFLAGS = -D LINUX -D PARSE -D IMAGE 
+#CFLAGS = $(COMMON) -D AVR 
+CFLAGS = -D LINUX -D PARSE -D IMAGE  -D VJ
 CFLAGS += -g -Wall  -std=gnu99 -funsigned-char  # -gdwarf-2 -funsigned-bitfields -fpack-struct -fshort-enums
 CFLAGS += -MD -MP -MT $(*F).o -MF dep/$(@F).d 
 
@@ -44,9 +44,9 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 ## Objects that must be built in order to link
 
-OBJECTS = basic.o edit.o fix_fft.o linux.o linux-remote.o express.o  functions.o  lists.o commands.o matrix.o network.o fmatrix.o fnetwork.o jpeg.o  cmap.o trex.o oobj.o ostring.o ocells.o ostack.o  ofunction.o odict.o oexpress.o rbmread.o vj.a
+OBJECTS = basic.o edit.o fix_fft.o linux.o linux-remote.o express.o  functions.o  lists.o commands.o matrix.o network.o fmatrix.o fnetwork.o jpeg.o  cmap.o trex.o oobj.o ostring.o ocells.o ostack.o  ofunction.o odict.o oexpress.o rbmread.o
 
-LIBS =  vj.a -lpthread -lm -ljpeg 
+LIBS =  vj_cpp/vj.a -lpthread -lm -ljpeg 
 
 
 ## Objects explicitly added by the user
@@ -60,9 +60,6 @@ all: $(TARGET)
 %.o: %.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
 
-vj.a:
-	$(MAKE) -C vj_cpp 
-	cp vj_cpp/vj.a .
 		
 ##Link
 $(TARGET): $(OBJECTS)

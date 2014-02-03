@@ -5,7 +5,7 @@ TARGET=rbasic
 INCLUDES=-include /usr/include/errno.h
 LDFLAGS=
 
-CFLAGS =  -D LINUX -D PARSE -D OMNIMA -D IMAGE
+CFLAGS =  -D LINUX -D PARSE -D OMNIMA -D IMAGE -D VJ
 CFLAGS += -g -Wall -gdwarf-2 -std=gnu99 -funsigned-char  # -funsigned-bitfields -fpack-struct -fshort-enums
 
 REV = $(shell svnversion -n .)
@@ -13,8 +13,8 @@ CFLAGS += -D VER='"rbasic v=$(REV)\r\nCommands: i r l c z q s V R F $\r\n"'
 
 OBJECTS = edit.o fix_fft.o  linux.o  lists.o express.o functions.o commands.o linux-remote.o basic.o matrix.o network.o fnetwork.o fmatrix.o trex.o oobj.o ostring.o ocells.o ostack.o odict.o rbmread.o ofunction.o  oexpress.o jpeg.o cmap.o
 
-LIBS = -lpthread -lm -ljpeg
-
+#LIBS =  vj_cpp/vj.a -lpthread -lm -ljpeg  -lstdc++
+LIBS =   vj_cpp/vj.a -lpthread -lm -ljpeg -lstdc++
 
 
 all: $(TARGET)
@@ -23,14 +23,11 @@ all: $(TARGET)
 	$(CC) $(INCLUDES) $(CFLAGS) -c $<
 
 $(TARGET): $(OBJECTS)
-	 $(CC) $(LDFLAGS) $(OBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)
+	$(MAKE) -C vj_cpp 
+	$(CXX) $(LDFLAGS) $(OBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)
 
 
 #openwrt package makefile
-world: compile
-
-compile: $(OBJECTS)
-	 $(CC) $(LDFLAGS) $(OBJECTS) $(LIBDIRS) $(LIBS) -o $(TARGET)
 
 clean:
 	rm -f *.o 

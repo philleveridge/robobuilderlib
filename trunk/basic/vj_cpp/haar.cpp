@@ -60,6 +60,8 @@ float n_features = 0;
 
 int iter_counter = 0;
 
+extern int dbg;
+
 /* compute integral images */
 void integralImages( MyImage *src, MyIntImage *sum, MyIntImage *sqsum );
 
@@ -201,7 +203,7 @@ std::vector<MyRect> detectObjects( MyImage* _img, MySize minSize, MySize maxSize
       setImageForCascadeClassifier( cascade, sum1, sqsum1);
 
       /* print out for each scale of the image pyramid */
-      printf("detecting faces, iter := %d\n", iter_counter);
+      if (dbg) printf("detecting faces, iter := %d\n", iter_counter);
 
       /****************************************************
        * Process the current scale with the cascaded fitler.
