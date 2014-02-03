@@ -2254,7 +2254,7 @@ tOBJ ofor (tOBJ  o, Dict *e)
 
 	if (ind.type != SYM) return emptyObj();
 
-	tOBJ range =ocar(o);
+	tOBJ range =eval(ocar(o),e);
 
 	s=toint(eval(ocar(range),e));
 	f=toint(eval(ocar(ocdr(range)),e));
@@ -2294,7 +2294,29 @@ extern int gkp;
 extern int imready;
 extern int pbrunning;
 
-extern int vj (char *f) ;
+#ifdef VJ
+typedef struct
+{
+    int x;
+    int y;
+    int width;
+    int height;
+}
+MyRect;
+extern int    vj     (char *f) ;
+extern int    vj_img (int w, int h, int m, unsigned char *A);
+extern MyRect vj_get (int i) ;
+#else
+int vj     (char *f)                        {return 0;}
+int vj_img (int w, int h, int m, unsigned char *A) {return 0;}
+#endif
+
+extern int Height;
+extern int Width;
+extern int Depth;
+extern int *frame;
+extern int loadJpg(char* Name);
+extern unsigned char*loadimage2(char *ifile);
 
 tOBJ oimg(tOBJ v, Dict *e)
 {
@@ -2313,10 +2335,39 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"F-DETECT"))
 		{
-			if (v.type==STR || v.type==SYM) 
-				vj(v.string);
+			tOBJ a=ocar(v); 
+			if (a.type==STR || a.type==SYM) 
+			{
+				unsigned char *p = loadimage2(a.string);
+
+				int s, m=0;
+				for (int i=0; i<Width*Height; i++) if (p[i]>m) m=p[i];
+
+				if (dbg) printf("%d,%d [%d]\n", Width, Height, m);
+
+				s = vj_img (Width, Height, m, p);
+
+				tOBJ ret=emptyObj();
+
+				printf("Found [%d]\n", s);
+			
+				for (int i=0; i<s; i++)
+				{
+					MyRect r=vj_get(i);
+					if (dbg) printf ("%d, %d, %d, %d\n", r.x,r.y,r.width,r.height);
+					ret = append(ret, makeint(r.x));
+					ret = append(ret, makeint(r.y));
+					ret = append(ret, makeint(r.width));
+					ret = append(ret, makeint(r.height));
+				}
+
+
+				if (p != NULL) free(p);
+
+				return ret;
+			}
 			else
-				vj("Face.pgm");
+				vj("Face.pgm"); //default test
 		}
 		else
 		if (!strcmp(cmd.string,"LOAD") || !strcmp(cmd.string,"NORM")) //  IMAG LOAD 8 "Text"

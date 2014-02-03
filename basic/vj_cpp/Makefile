@@ -1,6 +1,8 @@
-GCC ?= g++
 
 HEADERS := image.h haar.h stdio-wrapper.h
+
+CC = gcc
+GCC = g++
 
 all: build
 
@@ -22,11 +24,7 @@ rectangles.o: rectangles.cpp $(HEADERS)
 	$(GCC) -o $@ -c $<
 
 vj: main.o haar.o image.o stdio-wrapper.o rectangles.o
-	ar rvs vj.a *.o
-
-
-run: build
-	./vj
+	$(AR) rvs vj.a *.o
 
 clean:
 	rm -f vj.a *.o Output.pgm

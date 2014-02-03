@@ -30,7 +30,7 @@ define Package/rbasic
   DEFAULT:=y
   TITLE:=Robobuilder Basic Language
   URL:=http://code.google.com/p/robobuilderlib/
-  DEPENDS:=+libpthread +libjpeg
+  DEPENDS:=+libpthread +libjpeg +libstdcpp
 endef
 
 define Build/Prepare

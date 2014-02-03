@@ -45,40 +45,31 @@ using namespace std;
 #ifdef __cplusplus
 extern "C" {
 #endif
-int  vj(char *f);
+
+extern int dbg;
+int    vj     (char *f);
+int    vj_img (int w, int h, int max, unsigned char *A);
+MyRect vj_get (int i) ;
+
 #ifdef __cplusplus
 }
 #endif
 
-//int main (int argc, char *argv[]) 
-int vj (char *file) 
-{
+extern int iter_counter;
 
-	int flag;
-	
+std::vector<MyRect>  vj (MyImage imageObj) 
+{
 	int mode = 1;
 	int i;
+	MyImage *image = &imageObj;
+
+	if (dbg) printf("-- entering main function --\r\n");
 
 	/* detection parameters */
 	float scaleFactor = 1.2;
 	int minNeighbours = 1;
 
-
-	printf("-- entering main function --\r\n");
-
-	printf("-- loading image --\r\n");
-
-	MyImage imageObj;
-	MyImage *image = &imageObj;
-
-	flag = readPgm(file, image);
-	if (flag == -1)
-	{
-		printf( "Unable to open input image %s\n",file);
-		return 1;
-	}
-
-	printf("-- loading cascade classifier --\r\n");
+	if (dbg)printf("-- loading cascade classifier --\r\n");
 
 	myCascade cascadeObj;
 	myCascade *cascade = &cascadeObj;
@@ -91,15 +82,60 @@ int vj (char *file)
 	cascade->orig_window_size.height = 24;
 	cascade->orig_window_size.width = 24;
 
-
-	printf("-- read text Classifier --\r\n");
+	if (dbg) printf("-- read text Classifier --\r\n");
 	readTextClassifier();
 
-	std::vector<MyRect> result;
+	if (dbg) printf("-- detecting faces --\r\n");
 
-	printf("-- detecting faces --\r\n");
+	iter_counter=0;
 
-	result = detectObjects(image, minSize, maxSize, cascade, scaleFactor, minNeighbours);
+	std::vector<MyRect> result = detectObjects(image, minSize, maxSize, cascade, scaleFactor, minNeighbours);
+
+	/* delete image and free classifier */
+	releaseTextClassifier();
+
+	return result;
+}
+
+std::vector<MyRect> lastresult;
+
+MyRect vj_get(int i) {return lastresult[i];}
+
+int vj_img (int w, int h, int max, unsigned char *A) 
+{
+	if (dbg) printf("-- entering main -img function --\r\n");
+
+	MyImage imageObj;
+	imageObj.width    =w;
+	imageObj.height   =h;
+	imageObj.data     =A;
+	imageObj.maxgrey  =max;
+	imageObj.flag     =1;
+
+	lastresult = vj (imageObj);
+
+	return lastresult.size();
+}
+
+int vj (char *file)  // pgm file
+{
+	int i, mode = 1;
+
+	/* detection parameters */
+	float scaleFactor = 1.2;
+	int minNeighbours = 1;
+
+	if (dbg) printf("-- loading image --\r\n");
+
+	MyImage imageObj;
+	MyImage *image = &imageObj;
+
+	if (readPgm(file, image) == -1)
+	{
+		printf( "Unable to open input image %s\n",file);
+		return 1;
+	}
+	std::vector<MyRect> result = vj (imageObj);
 
 	for(i = 0; i < result.size(); i++ )
 	{
@@ -107,14 +143,11 @@ int vj (char *file)
 		drawRectangle(image, r);
 	}
 
-	printf("-- saving output --\r\n"); 
-	flag = writePgm((char *)OUTPUT_FILENAME, image); 
+	if (dbg) printf("-- saving output --\r\n"); 
+	writePgm((char *)OUTPUT_FILENAME, image); 
 
-	printf("-- image saved --\r\n");
+	if (dbg) printf("-- image saved --\r\n");
 
-	/* delete image and free classifier */
-	releaseTextClassifier();
 	freeImage(image);
-
 	return 0;
 }
