@@ -2350,17 +2350,29 @@ tOBJ oimg(tOBJ v, Dict *e)
 				tOBJ ret=emptyObj();
 
 				printf("Found [%d]\n", s);
-			
+				MyRect r;
 				for (int i=0; i<s; i++)
 				{
-					MyRect r=vj_get(i);
-					if (dbg) printf ("%d, %d, %d, %d\n", r.x,r.y,r.width,r.height);
+					r=vj_get(i);
+
+				if (dbg); printf ("%d, %d, %d, %d\n", r.x,r.y,r.width,r.height);			
+
 					ret = append(ret, makeint(r.x));
 					ret = append(ret, makeint(r.y));
 					ret = append(ret, makeint(r.width));
 					ret = append(ret, makeint(r.height));
 				}
 
+				if (toint(ocar(ocdr(v)))>0)
+				{
+					char *g1 =  " .:-=+*#%@";
+					int l=strlen(g1);
+					for (int i=r.y; i<r.y+r.height; i++) 
+					{
+						for (int j=r.x; j<r.x+r.width; j++) {printf ("%c ", g1[(p[j+i*Width])/25]);}
+						printf ("\n");	
+					}
+				}
 
 				if (p != NULL) free(p);
 
