@@ -57,6 +57,28 @@ MyRect vj_get (int i) ;
 
 extern int iter_counter;
 
+int initf=0;
+
+void vj_init()
+{
+	if (initf==0)
+	{
+		initf=1;
+		if (dbg) printf("-- read text Classifier --\r\n");
+		readTextClassifier();
+	}
+}
+
+void vj_Del()
+{
+	if (initf)
+	{
+		/* delete image and free classifier */
+		releaseTextClassifier();
+		initf=0;
+	}
+}
+
 std::vector<MyRect>  vj (MyImage imageObj) 
 {
 	int mode = 1;
@@ -64,6 +86,7 @@ std::vector<MyRect>  vj (MyImage imageObj)
 	MyImage *image = &imageObj;
 
 	if (dbg) printf("-- entering main function --\r\n");
+	vj_init();
 
 	/* detection parameters */
 	float scaleFactor = 1.2;
@@ -82,17 +105,11 @@ std::vector<MyRect>  vj (MyImage imageObj)
 	cascade->orig_window_size.height = 24;
 	cascade->orig_window_size.width = 24;
 
-	if (dbg) printf("-- read text Classifier --\r\n");
-	readTextClassifier();
-
 	if (dbg) printf("-- detecting faces --\r\n");
 
 	iter_counter=0;
 
 	std::vector<MyRect> result = detectObjects(image, minSize, maxSize, cascade, scaleFactor, minNeighbours);
-
-	/* delete image and free classifier */
-	releaseTextClassifier();
 
 	return result;
 }
@@ -104,6 +121,8 @@ MyRect vj_get(int i) {return lastresult[i];}
 int vj_img (int w, int h, int max, unsigned char *A) 
 {
 	if (dbg) printf("-- entering main -img function --\r\n");
+
+	vj_init();
 
 	MyImage imageObj;
 	imageObj.width    =w;
@@ -121,10 +140,6 @@ int vj (char *file)  // pgm file
 {
 	int i, mode = 1;
 
-	/* detection parameters */
-	float scaleFactor = 1.2;
-	int minNeighbours = 1;
-
 	if (dbg) printf("-- loading image --\r\n");
 
 	MyImage imageObj;
@@ -135,6 +150,9 @@ int vj (char *file)  // pgm file
 		printf( "Unable to open input image %s\n",file);
 		return 1;
 	}
+
+	vj_init();
+
 	std::vector<MyRect> result = vj (imageObj);
 
 	for(i = 0; i < result.size(); i++ )
@@ -145,9 +163,9 @@ int vj (char *file)  // pgm file
 
 	if (dbg) printf("-- saving output --\r\n"); 
 	writePgm((char *)OUTPUT_FILENAME, image); 
-
 	if (dbg) printf("-- image saved --\r\n");
 
+	vj_Del();
 	freeImage(image);
 	return 0;
 }
