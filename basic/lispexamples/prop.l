@@ -1,220 +1,64 @@
 !DO
- 
-(FUNC FUNCPROP (L)
-(  FOREACH X L (SET 'E (CONS (LIST X 0) E)))
-      (DICT E)
+(SET RULES
+'(
+(RULE IDENTIFY1 (IF (ANIMAL HAS HAIR ))                 (THEN (ANIMAL IS MAMMAL)))
+(RULE IDENTIFY2 (IF (ANIMAL GIVES MILK ))               (THEN (ANIMAL IS MAMMAL)))
+(RULE IDENTIFY3 (IF (ANIMAL HAS FEATHER ))              (THEN (ANIMAL IS BIRD)))
+(RULE IDENTIFY4 (IF (ANIMAL FLIES ) (ANIMAL LAYS EGGS)) (THEN (ANIMAL IS BIRD)))
 )
-(FUNC PUTPROP (I V P) (SETK  (LIST I P V)))
-(FUNC REMPROP (I P)   (SETK  (LIST I P )))
-(FUNC GETPROP (I P )  (GETK  (LIST I P )))
- 
-(FUNC PRPROP (i)  (PR (GETPROP i "COLOUR")))
- 
-(SETQ false 0 true 1 nil '())
-
-(WITH B1 B2 B3 B4 TABLE  HAND)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; basic facts about block world
- 
-(FUNC SETFACTS()
-  (SETQ PLAN '())
-
-  (SETQ B1    (FUNCPROP '(TYPE POSITION SIZE SUPPORTED-BY DIRECTLY-SUPPORTS COLOUR )))
-  (SETQ B2    (FUNCPROP '(TYPE POSITION SIZE SUPPORTED-BY DIRECTLY-SUPPORTS COLOUR )))
-  (SETQ B3    (FUNCPROP '(TYPE POSITION SIZE SUPPORTED-BY DIRECTLY-SUPPORTS COLOUR )))
-  (SETQ B4    (FUNCPROP '(TYPE POSITION SIZE SUPPORTED-BY DIRECTLY-SUPPORTS COLOUR )))
-  (SETQ TABLE (FUNCPROP '(TYPE DIRECTLY-SUPPORTS )))
-  (SETQ HAND  (FUNCPROP '(GRASPING POSITION)))
-
-  (PUTPROP 'B1 'BLOCK   'TYPE)
-  (PUTPROP 'B1 '(1 1 0) 'POSITION)
-  (PUTPROP 'B1 '(2 2 2) 'SIZE)
-  (PUTPROP 'B1 'TABLE   'SUPPORTED-BY)
-  (PUTPROP 'B1 '(B2)    'DIRECTLY-SUPPORTS)
-  (PUTPROP 'B1 'RED     'COLOUR)
- 
-  (PUTPROP 'B2 'BLOCK   'TYPE)
-  (PUTPROP 'B2 '(1 1 2) 'POSITION)
-  (PUTPROP 'B2 '(2 2)   'SIZE)
-  (PUTPROP 'B2 'B1      'SUPPORTED-BY)
-  (PUTPROP 'B2 'BLUE    'COLOUR)
- 
-  (PUTPROP 'B3 'BLOCK   'TYPE)
-  (PUTPROP 'B3 '(1 1 2) 'POSITION)
-  (PUTPROP 'B3 '(2 2)   'SIZE)
-  (PUTPROP 'B3 'TABLE   'SUPPORTED-BY)
-  (PUTPROP 'B3 '(B4)    'DIRECTLY-SUPPORTS)
-  (PUTPROP 'B3 'GREEN   'COLOUR)
- 
-  (PUTPROP 'B4 'PYRAMID 'TYPE)
-  (PUTPROP 'B4 '(1 1 2) 'POSITION)
-  (PUTPROP 'B4 '(2 2)   'SIZE)
-  (PUTPROP 'B4 'B3      'SUPPORTED-BY)
-  (PUTPROP 'B4 'BLUE    'COLOUR)
- 
-  (PUTPROP 'TABLE '(B1 B3)  'DIRECTLY-SUPPORTS)
- 
-  (PUTPROP 'HAND  nil      'GRASPING)
-  (PUTPROP 'HAND  '(1 1 1) 'POSITION)
-  (PR 'DONE)
 )
  
-(FUNC SHOWFACTS ()
-  (FOREACH X '(B1 B2 B3 B4 TABLE HAND) (PR X ;) (PRPROP X "COLOUR"))
-  'DONE
+(SETQ FACTS '((ANIMAL IS CHEETAH) (ANIMAL HAS DARK SPOTS) (ANIMAL EATS MEAT)))
+ 
+(FUNC REM    (NEW) (DO (IF (NOT (MEMBER NEW FACTS)) (SETQ FACTS (CONS NEW FACTS))) (PR "new facts = " FACTS)))
+ 
+(FUNC RECALL (F) (IF (MEMBER F FACTS) 1 0))
+ 
+(FUNC TESTIF  (R)
+   (SETQ IFS (CDR (CAR (CDR (CDR R)))) F 1)
+   (PR "If=" IFS)
+   (WHILE (AND F (NOT (NULL IFS)) )
+      (IF (RECALL (CAR IFS)) (DO (SETQ F 0) (CAR IFS)) (SETQ IFS (CDR IFS))  )
+   )
 )
  
- 
-;;; simulated block world
-;
-;-----
-;    |
-;   HAND
-;
-;   ----      ^
-;   |B2|     /B4\
-;   ----     ----
-;   ----     ----
-;   |B1|     |B3|
-;   ----     ----
-; ==================
- 
- 
-(FUNC PUTON (obj sup)
-  (SETQ PLAN ())
-  (WITH (place 0))
-    (IF (SETQ place (FINDSPACE sup obj)) (PUTAT obj place)
-        (SETQ place (MAKESPACE sup obj)) (PUTAT obj place)
-    )
-    (REV PLAN)
-)
-   
-(FUNC PUTAT (obj pl)
-     ;(PR "DBG: PUTAT" obj pl)
-     (GRASP obj)
-     (MOVEOBJ obj pl)
-     (UNGRASP obj)
-)
- 
-(FUNC GRASP (obj)
-;(PR "DBG: GRASP" obj)
-(WITH (k 0))
-  (IF (= obj (GETPROP 'HAND 'GRASPING)) 
-      nil
+(FUNC USETHEN (R)
+ (DO
+  (SETQ THENS (CDR (CAR (CDR (CDR (CDR R))))) F 1)
+  (PR "Then= " THENS)
+  (WHILE (AND F (NOT (NULL THENS)))
   (DO
-    (IF    (GETPROP obj 'DIRECTLY-SUPPORTS)       (CLEARTOP obj)
-           (SETQ k (GETPROP 'HAND 'GRASPING))     (GETPROPridof k))
-    (MOVEHAND (TOPCENTRE obj))
-    (PUTPROP 'HAND obj 'GRASPING)
-    (SETQ PLAN (CONS (LIST 'GRASP obj) PLAN))
-  )
-  )
+    (IF (NOT (NULL (REM (CAR THENS)))) (DO (SETQ F 0) (PR "Rule matches .. " " Deduces: " (CAR THENS))))
+    (SETQ THENS (CDR THENS))
+  ))
+)
 )
  
-(FUNC MOVEOBJ (obj ns)
-;(PR "DBG: MOVEOBJ" obj ns)
-   (REMOVESUPPORT obj)
-   (MOVEHAND (NEWTOPCENTRE obj ns))
-   (PUTPROP obj ns 'POSITION)
-   (ADDSUPPORT obj ns)
-   (SETQ PLAN (CONS (LIST 'MOVEOBJ obj ns) PLAN))
+(FUNC TRYRULE (R) (DO (PR R) (IF (NOT (NULL (TESTIF R))) (USETHEN R))))
+ 
+(PR "t1 " (RECALL '(ANIMAL EATS VEG)))
+(PR "t2 " ; ) (REM '(ANIMAL HAS HAIR))
+(PR "t3 " ; ) (REM '(ANIMAL GIVES MILK))
+ 
+(PR "t4 " (TESTIF  '(RULE IDENTIFY4 (IF (ANIMAL FLIES ) (ANIMAL LAYS EGGS)) (THEN (ANIMAL IS BIRD)))))
+ 
+(PR "t5 " (TESTIF '(RULE IDENTIFY2 (IF (ANIMAL EATS MEAT ))               (THEN (ANIMAL IS MAMMAL)))))
+ 
+(PR "t6 " (USETHEN '(RULE IDENTIFY4 (IF (ANIMAL FLIES ) (ANIMAL LAYS EGGS)) (THEN (ANIMAL IS BIRD)))))
+ 
+(PR "t7 " (TRYRULE '(RULE IDENTIFY2 (IF (ANIMAL GIVES MILK ))               (THEN (ANIMAL IS MAMMAL)))))
+ 
+(PR "t8 " (TRYRULE '(RULE IDENTIFY2 (IF (ANIMAL EATS MEAT ))               (THEN (ANIMAL IS MAMMAL)))))
+ 
+(FUNC STEPF ()
+     (SETQ RL RULES)
+     (WHILE  RL
+         (SETQ T (TRYRULE (CAR RL))  RL (CDR RL))
+     )
+     (PR T))
+ 
+(STEPF)
+ 
+(
+FUNC TESTIFP (FACT R1 R2)
 )
- 
-(FUNC MOVEHAND (pos)
-;(PR "DBG: MOVEHAND" pos)
-(PUTPROP 'HAND pos 'POSITION)
-)
- 
-(FUNC UNGRASP (obj) 
-;(PR "DBG: UNGRASP " obj )
-  (IF  (GETPROP obj 'SUPPORTED-BY)
-       (DO (remprop 'HAND 'GRASPING)
-           (SETQ PLAN (CONS (LIST 'UNGRASP obj) PLAN))
-       )
-       nil
-  )
-)
- 
-(FUNC GETRIDOF (obj)
-;(PR "DBG: getridoff" obj)
-(PUTAT obj (FINDSPACE 'TABLE obj))
-)
- 
-(FUNC CLEARTOP (obj)
-;(PR "DBG: CLEARTOP" obj)
-  (map GETRIDOF (GETPROP obj 'DIRECTLY-SUPPORTS))
-)
- 
-(FUNC REMOVESUPPORT (obj)
-;(PR "DBG: REMOVESUPPORT" obj)
-   (SETQ sup (GETPROP obj 'SUPPORTED-BY))
-   (IF sup (PUTPROP sup (del obj (GETPROP sup 'DIRECTLY-SUPPORTS)) 'DIRECTLY-SUPPORTS))
-   (PUTPROP obj null 'SUPPORTED-BY)
-)
- 
-(FUNC ADDSUPPORT (obj pl)
-;(PR "DBG: ADDSUPPORT" obj pl)
-(SETQ sup (GETOBJUNDER pl))
-;(PR "DBG: ADDSUPPORT " sup " - " (GETPROP sup 'TYPE))
- 
-(IF (OR (= sup 'TABLE) (= (GETPROP sup 'TYPE) 'BOX) (= (GETPROP sup 'TYPE) 'BLOCK))
-       (PUTPROP sup (CONS obj (GETPROP sup 'DIRECTLY-SUPPORTS)) 'DIRECTLY-SUPPORTS))
-(PUTPROP obj sup 'SUPPORTED-BY)
-)
- 
-(FUNC MAKESPACE (sup obj)
-;(PR "DBG: MAKESPACE" sup obj)
-(WITH  (p 0) (n 0) (j 0) (fl true))
-(SETQ j (GETPROP sup 'DIRECTLY-SUPPORTS))
-(WHILE fl
-;(PR "DBG: MAKESPACE =" j)
-   (SETQ n (CAR j))
-   (SETQ j (CDR j))
-   (GETRIDOF n)
-   (IF (= p (FINDSPACE sup obj)) (SETQ fl false))
-)
-p
-)
-
- 
-(FUNC FINDSPACE (sup obj)
-;(PR "DBG: FINDSPACE" sup obj)
-(WITH k)
-    (IF (= sup 'TABLE)          (LIST 'space 'above sup 'for obj)
-        (SETQ k (GETPROP sup 'DIRECTLY-SUPPORTS))
-                ( DO
-              (PR sup " supports " k)
-              (PR "type 't' IF FINDSPACE wins")
-              (IF (NOT (= (KEY 1) "T")) nil (LIST 'space 'above sup 'for obj))
-                )
-        (LIST 'space 'above sup 'for obj)
-    )
-)
- 
-(FUNC GETOBJUNDER (pl)
-;(PR "DBG: GETOBJUNDER" pl)
-(CAR (cddr pl)))
- 
-(FUNC TOPCENTRE (obj) 
-;(PR "DBG: TOPCENTRE" obj)
-(LIST 'TOPCENTRE obj))
- 
-(FUNC NEWTOPCENTRE (obj pl)
-;(PR "DBG: NEWTOPCENTRE" obj pl)
-(LIST 'NEWTOPCENTRE obj pl))
- 
-(SETFACTS)
- 
-(PR "Blockworld! - initial state")
-(PR "")
-(SHOWFACTS)
- 
-(PR "")
-(PR "Commands : (SETFACTS)      - reset facts")
-(PR "           (SHOWFACTS)     - show facts")
-(PR "           (PUTON 'B1 'B3) - put 'B1 on 'B3 and show PLAN")
-'Ready
-
-
