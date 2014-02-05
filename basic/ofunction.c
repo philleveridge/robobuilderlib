@@ -1132,7 +1132,7 @@ tOBJ oconv (tOBJ a, tOBJ b)
 		return r;
 
 	r.type=FMAT2;
-	r.fmat2=fconvolve2(a.fmat2,b.fmat2) ;		
+	r.fmat2=fconvolve(a.fmat2,b.fmat2) ;		
 	return r;
 }
 
