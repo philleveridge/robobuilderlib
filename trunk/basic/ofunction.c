@@ -56,6 +56,7 @@ extern long	getvar(char n);
 #include "oexpress.h"
 
 #include "ofunction.h"
+#include "opflow.h"
 
 
 #include "trex.h"
@@ -122,6 +123,7 @@ tOP oplist[] = {
 	{"EYE",   40, NA,   2, oeye},   //function two args  <fint, int>
 	{"FOR",   40, NA,   9, ofor}, 
 	{"FOREACH",40, NA,  9, ofore}, 
+	{"GAUS",  40, NA,   3, ogaus}, //mean, variance, x value
 	{"GETB",  40, NA,   1, getb}, //function single arg
 	{"GETK",  40, NA,   1, oget}, //function single arg
 	{"GETSERVO",40, NA, 1, ogetservo}, //function single arg
@@ -147,6 +149,7 @@ tOP oplist[] = {
 	{"NOT",   40, NA,   1, onot},  //function single arg
 	{"NTH",   40, NA,   2, onth}, //function two arg
 	{"NULL",  40, NA,   1, onull},  //function single arg
+	{"OPFLOW",40, NA,   2, OpticFlow}, 
 	{"OR",    40, NA,   9, oor}, 
 	{"PEEK",  40, NA,   2, opeek}, 
 	{"PLUS",  40, NA,   9, oplus}, 
@@ -283,6 +286,7 @@ int set(Dict * en, char *name, tOBJ r)
 	{
 		return dict_update(en, name, r);
 	}
+	return -1;
 }
 
 //!> SETB "@A" '(2 4 5 1 6)
@@ -693,6 +697,18 @@ tOBJ osqrt(tOBJ a)
 	tOBJ r;
 	r.type=FLOAT;
 	r.floatpoint=sqrt(tofloat(a));
+	return r;
+}
+
+tOBJ ogaus(tOBJ m, tOBJ v, tOBJ x)
+{
+	tOBJ r;
+	float mean =tofloat(m);  // mu
+	float var  =tofloat(v);  // sigma^2
+	float xv   =tofloat(x);
+	float Pi = 3.1414;
+	r.type=FLOAT;
+	r.floatpoint=(1/sqrt(2*Pi*var)) * exp( -0.5 * ((xv-mean)* (xv-mean))/var);
 	return r;
 }
 
@@ -2366,7 +2382,6 @@ tOBJ oimg(tOBJ v, Dict *e)
 				if (toint(ocar(ocdr(v)))>0)
 				{
 					char *g1 =  " .:-=+*#%@";
-					int l=strlen(g1);
 					for (int i=r.y; i<r.y+r.height; i++) 
 					{
 						for (int j=r.x; j<r.x+r.width; j++) {printf ("%c ", g1[(p[j+i*Width])/25]);}
