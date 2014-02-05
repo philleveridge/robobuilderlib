@@ -83,6 +83,7 @@ extern int Get_AD_PSD();
 extern void  Acc_GetData ();
 extern int readservos(int n);
 
+extern int dbg;
 
 
 

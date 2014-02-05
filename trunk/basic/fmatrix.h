@@ -23,13 +23,14 @@ extern int 	fmatprint2(fMatrix *A);
 
 extern float 	fget2(fMatrix *M, int c, int r);
 extern void 	fset2(fMatrix *M, int c, int r, float v);
+extern void     fmatzero(fMatrix *A) ;  
 
 extern fMatrix *fadd2(fMatrix *A, fMatrix *B, char op) ; 
 extern fMatrix *ftranspose2(fMatrix *A) ; 
 extern fMatrix *fmultiply2(fMatrix *A,fMatrix *B)   ;
 extern fMatrix *freplicate2(fMatrix *A, int m, int n);
 extern fMatrix *fmatsum2(fMatrix *A, int mode)  ; 
-extern fMatrix *fconvolve2(fMatrix *A, fMatrix *B) ; 
+extern fMatrix *fconvolve(fMatrix *A, fMatrix *B) ; 
 extern fMatrix *fimport2(char m2, int c, int r);
 extern fMatrix *fmatzerodiag2(fMatrix *A) ;
 extern fMatrix *fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2);
@@ -39,6 +40,8 @@ extern fMatrix *cofactors(fMatrix *num, int f) ;
 extern fMatrix *trans(fMatrix *num, fMatrix *fac, int r);
 extern float   detrminant(fMatrix *a, int k) ;
 extern fMatrix *inverse(fMatrix *s);
+
+extern fMatrix *fmatscale(fMatrix *A, float k) ;  
 
 extern float   fsum(fMatrix *A);
 

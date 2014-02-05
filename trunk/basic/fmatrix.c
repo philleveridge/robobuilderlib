@@ -329,85 +329,40 @@ float fsum(fMatrix *A)
 	return x;
 }
 
-fMatrix *fconvolve2(fMatrix *A, fMatrix *B)  
-{	
+
+/*
+SETQ A [0 0 0 0 1 1 1 1 0 0 ]
+SETQ K [-1 1]
+CONV A K
+*/
+
+fMatrix *fconvolve(fMatrix *A, fMatrix *B)  
+{
+	// A convoled with B, B is kernel	
 	fMatrix *R;
 	int w=A->w;
 	int h=A->h;
-	int mx,my;
+	int i,j,k,l;
 
-	int szB=(B->w)*(B->h);	
+	R = newmatrix(w, h);
 
-	R = newmatrix(w, h);  
-
-	if (szB==9) // 3x3 kernel
+	for (i=0; i<A->h; i++)
 	{
-		for (my=0;my<h; my++)
+		for (j=0; j<A->w; j++)
 		{
-			for (mx=0;mx<w; mx++)
+			float p=0.0f;
+			for (k=0; k<B->h; k++)
 			{
-				float p=0.0f;
-
-				p += fget2(A,mx-1,my-1)*fget2(B,0,0);
-				p += fget2(A,mx,my-1)  *fget2(B,1,0);
-				p += fget2(A,mx+1,my-1)*fget2(B,2,0);
-
-				p += fget2(A,mx-1,my)  *fget2(B,0,1);
-				p += fget2(A,mx,my)    *fget2(B,1,1);
-				p += fget2(A,mx+1,my)  *fget2(B,2,1);
-
-				p += fget2(A,mx-1,my+1)*fget2(B,0,2);
-				p += fget2(A,mx,my+1)  *fget2(B,1,2);
-				p += fget2(A,mx+1,my+1)*fget2(B,2,2);
-
-				fset2(R,mx,my,p);
+				for (l=0; l<B->w; l++)
+				{
+					p += fget2(A,j+l,i+k)*fget2(B,l,k);
+				}
 			}
-		}
-	}
-	
-	if (szB==2 && B->w==2 ) // 2x1 kernel
-	{
-		for (my=0;my<h; my++)
-		{
-			for (mx=0;mx<w; mx++)
-			{
-				fset2(R,mx,my, abs(fget2(A,mx,my)*fget2(B,0,0) 
-					+ fget2(A,mx+1,my)*fget2(B,1,0)));
-			}
+			fset2(R,j,i,p);
 		}
 	}
 
-	if (szB==2 && B->w==1 ) //  1x2 kernel
-	{
-		for (my=0;my<h; my++)
-		{
-			for (mx=0;mx<w; mx++)
-			{
-				fset2(R,mx,my,abs(fget2(A,mx,my)*fget2(B,0,0) + fget2(A,mx,my+1)*fget2(B,0,1)));
-			}
-		}
-	}
-
-	if (szB==4) // 2x2 kernel
-	{
-		for (my=0;my<h; my++)
-		{
-			for (mx=0;mx<w; mx++)
-			{
-				float p=0.0f;
-
-				if (mx<w-1) 
-					p += fget2(A,mx,my)*fget2(B,0,0) + fget2(A,mx+1,my)*fget2(B,1,0);
-
-				if (my<h-1) 
-					p += fget2(A,mx+1,my)*fget2(B,0,1) + fget2(A,mx+1,my+1)*fget2(B,1,1);
-
-				fset2(R,mx,my,p);
-			}
-		}
-	}
-
-	return R;	
+	return R;
 }
 
 fMatrix   *fimport2(char m2, int c, int r)
@@ -434,6 +389,25 @@ fMatrix *fmatzerodiag2(fMatrix *A)
 		fset2(R,i,i,0.0f);
 	}
 	return R;
+}
+
+fMatrix *fmatscale(fMatrix *A, float k)   
+{	
+	fMatrix *R;
+	int i;
+	R = fmatcp(A); // clone
+	for (i=0; i<A->h*A->w; i++)
+	{
+		R->fstore[i] *= k;
+	}
+	return R;
+}
+
+void fmatzero(fMatrix *A)   
+{
+	int i;
+	for (i=0; i<A->w*A->h; i++) 
+		A->fstore[i]=0.0f;	
 }
 
 fMatrix *fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)   
