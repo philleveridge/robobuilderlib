@@ -19,7 +19,6 @@
 //#include "lists.h"
 
 int abs(int);
-extern int  dbg;
 
 int fm=0;
 int fs=0;
@@ -227,6 +226,8 @@ fMatrix *fmultiply2(fMatrix *A,fMatrix *B)
 	wb=B->w;
 	hb=B->h;
 
+	if (dbg) (" Matrix mullt (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
+
 	if (wa != hb) 
 	{
 		printf ("Bad Matrix size (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
@@ -334,31 +335,45 @@ float fsum(fMatrix *A)
 SETQ A [0 0 0 0 1 1 1 1 0 0 ]
 SETQ K [-1 1]
 CONV A K
+
+CONV IM (GAUSK 7 1)
 */
 
 fMatrix *fconvolve(fMatrix *A, fMatrix *B)  
 {
 	// A convoled with B, B is kernel	
-	fMatrix *R;
+	fMatrix *R, *t;
 	int w=A->w;
 	int h=A->h;
 	int i,j,k,l;
 
 	R = newmatrix(w, h);
 
+	if (B->w > A->w ) { t=A; A=B; B=t; } //swap
+
 	for (i=0; i<A->h; i++)
 	{
 		for (j=0; j<A->w; j++)
 		{
-			float p=0.0f;
+			double p=0.0f;
+			int wk=(B->w)/2;
+			int hk=(B->h)/2;
+			
 			for (k=0; k<B->h; k++)
 			{
 				for (l=0; l<B->w; l++)
 				{
-					p += fget2(A,j+l,i+k)*fget2(B,l,k);
+//if (dbg) printf ("%d,%d - (%d,%d) %f %f %f\n",j,i,l,k, fget2(A,j+l-wk,i+k-hk), fget2(B,l,k), p);
+
+					if (j+l-wk >=0 && j+l-wk < A->w && i+k-hk>=0 && i+k-hk < A->h)
+					{
+
+
+						p += (double)fget2(A,j+l-wk,i+k-hk)*(double)fget2(B,l,k);
+					}
 				}
 			}
-			fset2(R,j,i,p);
+			fset2(R,j,i,(float)p);
 		}
 	}
 
@@ -381,9 +396,8 @@ fMatrix   *fimport2(char m2, int c, int r)
 
 fMatrix *fmatzerodiag2(fMatrix *A)   
 {	
-	fMatrix *R;
 	int i, h=A->h;
-	R = fmatcp(A); // clone
+	fMatrix *R = fmatcp(A); // clone
 	for (i=0; i<h; i++)
 	{
 		fset2(R,i,i,0.0f);
@@ -393,12 +407,28 @@ fMatrix *fmatzerodiag2(fMatrix *A)
 
 fMatrix *fmatscale(fMatrix *A, float k)   
 {	
-	fMatrix *R;
 	int i;
-	R = fmatcp(A); // clone
-	for (i=0; i<A->h*A->w; i++)
+	fMatrix *R = fmatcp(A); // clone
+
+	//printf ("[%d,%d] scale by %f\n", A->w,A->h,k);
+
+	for (i=0; i<(A->h*A->w); i++)
 	{
-		R->fstore[i] *= k;
+		R->fstore[i] = A->fstore[i]*k;
+	}
+	return R;
+}
+
+fMatrix *fmatflip(fMatrix *A)   
+{	
+	int i,j;
+	fMatrix *R = fmatcp(A); // clone
+	for (i=0; i<(A->h/2); i++)
+	{
+		for (j=0; j<A->w; j++)
+		{
+			R->fstore[j + i*A->w] = R->fstore[j + (A->h-i-1)*A->w];
+		}
 	}
 	return R;
 }
@@ -406,6 +436,8 @@ fMatrix *fmatscale(fMatrix *A, float k)
 void fmatzero(fMatrix *A)   
 {
 	int i;
+	//printf ("zero %d,%d\n", A->w,A->h);
+
 	for (i=0; i<A->w*A->h; i++) 
 		A->fstore[i]=0.0f;	
 }
@@ -643,6 +675,25 @@ fMatrix *trans(fMatrix *num, fMatrix *fac, int r)
   return inv;
 }
 
+fMatrix *gausian(int Kernel_Size, int gaus_sigma)
+{
+	fMatrix *n = newmatrix(Kernel_Size, Kernel_Size);
+	int k = (Kernel_Size-1)/2; 
+	double Pi=3.14159265359	;
+	double gs2=(double)(2*gaus_sigma*gaus_sigma);
+	double gs3=(double)(gaus_sigma*gaus_sigma*gaus_sigma);
+	double Tpigs3=2.0*Pi*gs3;
+
+	for (int i=1; i<=Kernel_Size; i++)
+	{
+	    	for (int j=1; j<=Kernel_Size; j++) 
+		{
+			fset2(n, j-1, i-1, (float)( -( (j-k-1)/(Tpigs3) ) * exp ( - ( (i-k-1)*(i-k-1) + (j-k-1)*(j-k-1) )/ (gs2) )));
+	    	}
+	}
+	return n;
+}
+
 
 /*
 octave:1> i=[1 2;3 4]
@@ -663,6 +714,18 @@ i
 fMatrix *inverse(fMatrix *s)
 {
 	fMatrix *res=NULL;
+	//printf("\nMATRIX inverse (%d,%d)\n",s->w,s->h);
+
+	if (s->w==2 && s->h==2)
+	{
+		res = newmatrix(2,2);
+		float det = s->fstore[0]* s->fstore[3] - s->fstore[1] * s->fstore[2];
+		res->fstore[0]=s->fstore[3]/det;
+		res->fstore[1]=-(s->fstore[1])/det;
+		res->fstore[2]=-(s->fstore[2])/det;
+		res->fstore[3]=s->fstore[0]/det;
+		return res;
+	}
 
 	if (detrminant(s, s->w) ==  0)
 		printf("\nMATRIX IS NOT INVERSIBLE\n");

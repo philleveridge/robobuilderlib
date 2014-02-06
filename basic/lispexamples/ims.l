@@ -77,5 +77,8 @@
 
 (FUNC PP (I) (FOR X '(0 15) (FOR Y '(0 15) (PR (IF (> (CELL I X Y) .5) 'O '_  ) ; )) (PR)))
 
-(PP (/ (PLUS IM IM2 IM3 IM4) 4))
+'(PP (/ (PLUS IM IM2 IM3 IM4) 4))
+(PP IM)
+(PP IM2)
+'(OPFLOW IM IM2)
 

@@ -42,6 +42,8 @@ extern float   detrminant(fMatrix *a, int k) ;
 extern fMatrix *inverse(fMatrix *s);
 
 extern fMatrix *fmatscale(fMatrix *A, float k) ;  
+extern fMatrix *fmatflip(fMatrix *A); 
+extern fMatrix *gausian(int Kernel_Size, int gaus_sigma);
 
 extern float   fsum(fMatrix *A);
 

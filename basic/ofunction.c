@@ -124,6 +124,7 @@ tOP oplist[] = {
 	{"FOR",   40, NA,   9, ofor}, 
 	{"FOREACH",40, NA,  9, ofore}, 
 	{"GAUS",  40, NA,   3, ogaus}, //mean, variance, x value
+	{"GAUSK", 40, NA,   2, ogausk}, //mean, variance
 	{"GETB",  40, NA,   1, getb}, //function single arg
 	{"GETK",  40, NA,   1, oget}, //function single arg
 	{"GETSERVO",40, NA, 1, ogetservo}, //function single arg
@@ -712,6 +713,14 @@ tOBJ ogaus(tOBJ m, tOBJ v, tOBJ x)
 	return r;
 }
 
+tOBJ ogausk(tOBJ ks, tOBJ gs)
+{
+	tOBJ r;
+	r.type=FMAT2;
+	r.fmat2 = gausian(toint(ks),toint(gs)); 
+	return r;
+}
+
 tOBJ ornd(tOBJ a)
 {
 	tOBJ r;
@@ -1128,11 +1137,11 @@ tOBJ oconv (tOBJ a, tOBJ b)
 	tOBJ r;
 	r.type=EMPTY;
 
-	if (a.type != FMAT2 && b.type!=FMAT2)
-		return r;
-
-	r.type=FMAT2;
-	r.fmat2=fconvolve(a.fmat2,b.fmat2) ;		
+	if (a.type == FMAT2 &&  b.type==FMAT2)
+	{
+		r.type=FMAT2;
+		r.fmat2=fconvolve(a.fmat2,b.fmat2) ;	
+	}	
 	return r;
 }
 

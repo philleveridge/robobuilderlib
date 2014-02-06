@@ -14,6 +14,7 @@
 (FUNC DR  () (LOAD "doctor.l"))
 (FUNC TR  () (LOAD "tree.l"))
 (FUNC IML () (LOAD "im.l"))
+(FUNC IMS () (LOAD "ims.l"))
 (FUNC I2  () (LOAD "i2p.l"))
 (FUNC HX  () (LOAD "hex.l"))
 (FUNC RU  () (LOAD "rules.l"))

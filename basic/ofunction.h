@@ -70,6 +70,7 @@ extern tOBJ oeye	(tOBJ  r, tOBJ s);
 extern tOBJ ofore    	(tOBJ  r, Dict *);
 extern tOBJ ofor     	(tOBJ  r, Dict *);
 extern tOBJ ogaus     	(tOBJ  ,tOBJ, tOBJ);
+extern tOBJ ogausk     	(tOBJ  ,tOBJ);
 extern tOBJ oget     	(tOBJ  r);
 extern tOBJ ogetservo	(tOBJ  r, tOBJ );
 extern tOBJ ohsum2   	(tOBJ  r);
