@@ -174,6 +174,7 @@ tOBJ tokenise(char *s)
 			if (buffer[0]=='"')
 			{
 				top->head = makestring(buffer+1);
+				top->head.q=1;
 			}
 			else
 			if (buffer[0]=='[')
@@ -209,6 +210,11 @@ tOBJ read_from(tOBJ *r)
 	{
 		h=ocar(*r);
 		*r=ocdr(*r);
+
+		if (h.type==SYM && h.q==1)
+		{	
+			qf=1;	
+		}
 
 		if (h.type==SYM && !strcmp(h.string, "'"))
 		{	
@@ -255,7 +261,7 @@ tOBJ formula(tOBJ ae, Dict *e)
 	tOBJ ops=emptyObj();
 	tOBJ opd=emptyObj();
 
-	tOBJ dummy=ostoa(makestring("DUMMY"));
+	tOBJ dummy=makestring("DUMMY");
 
 	if (oatom(ae).number==1) {return ae;}
 	ops = append(emptyObj(),dummy);
@@ -357,7 +363,7 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 			v=eval(ocar(x),env);
 		}
 
-		if (n.type==STR || n.type==SYM)
+		if (n.type==SYM)
 		{
 			dict_add((Dict*)e.dict, n.string, v);
 		}
@@ -427,7 +433,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 		}		
 	}
 
-	if (h.type==SYM || h.type==STR)
+	if (h.type==SYM)
 		printf ("? unknown symbol [%s]\n", h.string);
 	else
 		printf ("? unknown\n");
@@ -439,7 +445,7 @@ tOBJ eval2(tOBJ o, Dict *e)
 {
 	tOBJ h;
 
-	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type==STR || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA)
+	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA)
 	{
 		o.q=0;
 		return o;
@@ -457,155 +463,10 @@ tOBJ eval2(tOBJ o, Dict *e)
 	{
 		h=dict_getk(e,h.string);
 	}
+	//lookup procedure
 
-	if (h.type==SYM)
-	{
-		if (!strcasecmp(h.string,"QT"))
-		{
-			return ocar(o);
-		}
-		else
-		if (!strcasecmp(h.string,"EVAL"))
-		{
-			return eval(eval(ocar(o),e),e);
-		}
-		else
-		if (!strcasecmp(h.string,"INC"))
-		{
-			tOBJ var = ocar(o); 
-			tOBJ expr =omath(dict_getk(e,var.string), makeint(1), PLUS);
-			dict_update(e, var.string, expr);
-			return expr;
-		}
-		else
-		if (!strcasecmp(h.string,"DEC"))
-		{
-			tOBJ var = ocar(o); 
-			tOBJ expr =omath(dict_getk(e,var.string), makeint(1), MINUS);
-			dict_update(e, var.string, expr);
-			return expr;
-		}
-		else
-		if (!strcasecmp(h.string,"READ"))
-		{
-			tOBJ var = eval(ocar(o),e);
-			if (var.type==STR)   return tokenise(var.string);
-			if (var.type==EMPTY) 
-			{
-				char ibf[1024];
-				printf("?");
-				readLine(ibf);
-				return tokenise(ibf);
-			}
-		}
-		else
-		if (!strcasecmp(h.string,"SET") || !strcasecmp(h.string,"SETQ"))
-		{
-			tOBJ exp = emptyObj();
-			while (o.type != EMPTY)
-			{
-				tOBJ var = ocar(o); o=ocdr(o);
-				exp = eval(ocar(o),e); o=ocdr(o);
+	return procall (h, o, e );
 
-				if (!strcasecmp(h.string,"SET")) var=eval(var,e);
-
-				if (var.type==SYM || var.type == STR)
-					dict_update(e, var.string, exp);
-				else
-				if (var.type==CELL && exp.type==CELL)
-				{
-					while (var.type != EMPTY)
-					{
-						tOBJ v1 = ocar(var); var=ocdr(var);
-						tOBJ v2 = ocar(exp); exp=ocdr(exp);
-			 			if (v1.type==SYM || var.type == STR)
-							dict_update(e, v1.string, v2);
-					}
-				}
-			}
-			return exp;
-		
-		}
-		else
-                if (!strcasecmp(h.string,"WITH"))
-                {
-                        while (o.type != EMPTY)
-                        {
-                                tOBJ var = ocar(o); o=ocdr(o);
-				if (var.type==CELL) {
-					tOBJ n   = ocar(var);
-		                        tOBJ val = eval(ocar(ocdr((var))),e); 
-		                        if (n.type==SYM || n.type == STR)
-					{
-		                                dict_add(e, n.string, val);
-					}
-				}
-				else
-				{
-                                        dict_add(e, var.string, emptyObj());
-				}
-                        }
-                        return emptyObj();
-                }
-		else
-           	if (!strcasecmp(h.string,"IF"))
-                {
-                        tOBJ test   = ocar(o); o=ocdr(o);
-			test = eval(test,e);
-                        tOBJ conseq = ocar(o); o=ocdr(o);
-                        tOBJ alt    = ocar(o); 
-
-			if (       (test.type == INTGR && test.number != 0 ) 
-				|| (test.type == FLOAT && test.floatpoint != 0.0 ) 
-                                || (test.type != INTGR && test.type != FLOAT && test.type!=EMPTY)) 
-                        {
-                                return eval(conseq,e);
-                        }
-                        else
-                        {
-                                return eval(alt,e);
-                        }
-                }
-		if (!strcasecmp(h.string,"FORM"))
-		{
-			return formula(o,e);
-		}
-		else
-		if (!strcasecmp(h.string,"LET"))
-		{
-			//LET VAR = FORMULA
-			tOBJ var = ocar(o); o=ocdr(o);
-			tOBJ eq =  ocar(o); o=ocdr(o);
-			if (eq.type != STR && strcmp(eq.string,"=")) {printf ("err\n"); return emptyObj();}
-			eq = formula(o,e);
-			dict_update(e, var.string, eq);
-			return eq;
-		}
-		else
-		if (!strcasecmp(h.string,"FUNC") || !strcasecmp(h.string,"DEF"))
-		{
-			//!FUNC ABC {X Y} {PLUS X Y}
-			tOBJ fn = ocar(o); o=ocdr(o);
-			o.type  = LAMBDA;
-			set(e, fn.string, o);
-			printf ("Function %s\n", fn.string);
-			return o;
-		}
-		else
-		if (!strcasecmp(h.string,"LAMBDA"))
-		{
-			//!LAMBA {X Y} {PLUS X Y}
-			o.type  = LAMBDA;
-			return o;
-		}
-		else
-			printf ("? unknown symbol [%s]\n", h.string);	
-	}
-	else
-	{
-		//lookup procedure
-		return procall (h, o, e );
-	}
 }
 
 tOBJ eval(tOBJ o, Dict *e)
@@ -626,10 +487,8 @@ void init_extend()
 	if (intf)
 	{
 		intf=0; 
-		env = makedict(200);
-
-		loadop(env.dict); //experimental
-
+		env = makedict(500);
+		loadop(env.dict);
 		set(env.dict, "PI",  makefloat (3.1415926));
 	
 		//seed the RND Gen

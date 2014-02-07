@@ -51,23 +51,6 @@ char* strrev(char* str)
 	return str;
 }
 
-//int chartoi(const char *string)
-//{
-//	int i;
-//	i=0;
-//	while(*string)
-//	{
-//		// i<<3 is equivalent of multiplying by 2*2*2 or 8
-//		// so i<<3 + i<<1 means multiply by 10
-//		i=(i<<3) + (i<<1) + (*string - '0');
-//		string++;
-//
-//		// Dont increment i!
-//
-//	}
-//	return(i);
-//}
-
 int myatoi (char* string)
 {
 	int sign = 1;

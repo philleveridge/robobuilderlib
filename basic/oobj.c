@@ -33,7 +33,7 @@ int freeobj(tOBJ *b)
 	{
 		if (b->cnt==0) delmatrix(b->fmat2);
 	}
-	if (b->type==STR)
+	if (b->type==SYM)
 	{
 		if (b->cnt==0) delstring(b->string);
 	}
@@ -71,7 +71,7 @@ int compareObj(tOBJ a, tOBJ b)
 	//SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2};
 	if (a.type == INTGR) return a.number==b.number;
 	if (a.type == FLOAT) return a.floatpoint==b.floatpoint;
-	if (a.type == STR || a.type == SYM )   return !strcmp(a.string,b.string);
+	if (a.type == SYM )   return !strcmp(a.string,b.string);
 	if (a.type == EMPTY) return 1;
 
 	if (a.type == CELL)
@@ -90,7 +90,7 @@ tOBJ cloneObj(tOBJ z)
 {
 	tOBJ r = z; // needs fixing for dynamic typees
 
-	if (r.type==STR)
+	if (r.type==SYM)
 	{
 		r.string = newstring(z.string);
 	}
@@ -127,7 +127,7 @@ void printtype(FILE *fp, tOBJ r)
     {
             fprintf(fp, "%f", r.floatpoint);
     }
-    else if (r.type == STR)
+    else if (r.type == SYM)
     {
 		char ch, *cp=r.string;
 		while ( (ch=*cp++) != '\0')
@@ -141,10 +141,6 @@ void printtype(FILE *fp, tOBJ r)
 			}
 			fputc(ch,fp);
 		}
-    }
-    else if (r.type == SYM)
-    {
-            fputs(r.string,fp);
     }
     else if (r.type == BOOLN)
     {
@@ -420,7 +416,6 @@ char *objtype(tOBJ t)
 	{  
 	case INTGR: st="Int   "; break;
 	case FLOAT: st="Float "; break;
-	case STR:   st="String"; break;
 	case FMAT2: st="Matrix"; break;
 	case CELL:  st="List  "; break;
 	case SYM:   st="Symbol"; break;

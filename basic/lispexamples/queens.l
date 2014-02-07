@@ -20,9 +20,9 @@
 
 
 (DEF PBOARD (SIZE BOARD) 
-  (FOR N (1 SIZE) 
-    (FOR M (1 SIZE) 
-       (IF (NULL (MEMBER (LIST N M) BOARD))  (PRINT '_ ;) (PRINT 'Q ;))
+  (FOR 'N '(1 SIZE) 
+    (FOR 'M '(1 SIZE) 
+       (IF (NULL (MEMBER (LIST N M) BOARD))  (PR '_ ;) (PR 'Q ;))
     )
   (PR)))
 

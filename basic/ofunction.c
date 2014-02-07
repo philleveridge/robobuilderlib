@@ -99,7 +99,6 @@ tOP oplist[] = {
 	{"ASSN",  40, NA,   1, oasso},  //function single arg
 	{"ATAN",  40, NA,   1, oatan}, //function single arg
 	{"ATOM",  40, NA,   1, oatom},  //function single arg
-	{"ATOS",  40, NA,   1, oatos}, 
 	{"BEGIN", 40, NA,   9, obegin},  
 	{"BF",    40, NA,   1, obf},
 	{"BREAK", 40, NA,   1, obreak}, 
@@ -114,29 +113,38 @@ tOP oplist[] = {
 	{"CONS",  40, NA,   2, ocons},  //function single arg
 	{"CONV",  40, NA,   2, oconv},  //function three args   <fMatrix>
 	{"COS",   40, NA,   1, ocos},  //function single arg
+	{"DEC",   40, NA,   9, odec}, 
+	{"DEF"   ,40, NA,   9, ofunc}, 
 	{"DET",   40, NA,   1, omdet},  //function <fMatrix>
 	{"DICT",  40, NA,   1, odict},// 
 	{"DO",    40, NA,   9, obegin},  
 	{"DSIG",  40, NA,   1, odsig}, //sigmoid functon
+	{"EVAL",  40, NA,   9, oeval}, 
 	{"EXIT",  40, NA,   0, oexit},
 	{"EXP",   40, NA,   1, oexp},  //function single arg
 	{"EYE",   40, NA,   2, oeye},   //function two args  <fint, int>
 	{"FOR",   40, NA,   9, ofor}, 
 	{"FOREACH",40, NA,  9, ofore}, 
+	{"FORM"  ,40, NA,   9, oform}, 
+	{"FUNC"  ,40, NA,   9, ofunc}, 
 	{"GAUS",  40, NA,   3, ogaus}, //mean, variance, x value
 	{"GAUSK", 40, NA,   2, ogausk}, //mean, variance
 	{"GETB",  40, NA,   1, getb}, //function single arg
-	{"GETK",  40, NA,   1, oget}, //function single arg
+	{"GETK",  40, NA,   2, oget}, //function single arg
 	{"GETSERVO",40, NA, 1, ogetservo}, //function single arg
 	{"H2SM",  40, NA,   1, ohsum2},  //function <fMatrix>
 	{"HSUM",  40, NA,   1, ohsum},  //function <fMatrix>
+	{"IF"    ,40, NA,   9, oif}, 
 	{"IMAGE", 40, NA,   9, oimg},
+	{"INC",   40, NA,   9, oinc}, 
 	{"IMP",   40, NA,   3, oimp},   //function two args   <string>, <int>, <int>
 	{"INT",   40, NA,   1, oint},  //function <fMatrix>
 	{"INV",   40, NA,   1, ominv},  //function <fMatrix>
 	{"KEY",   40, NA,   1, okey}, 
+	{"LAMBDA",40, NA,   9, olambda}, 
 	{"LAST",  40, NA,   1, olast},  //function single arg
 	{"LEN",   40, NA,   1, olen},  //function single arg
+	{"LET"   ,40, NA,   9, olet}, 
 	{"LFT",   40, NA,   2, olft},//
 	{"LIST",  40, NA,   9, olist},   
 	{"LOAD",  40, NA,   1, oload},//
@@ -161,7 +169,9 @@ tOP oplist[] = {
 	{"PSD",   40, NA,   0, opsd},  //const
 	{"PUSH",  40, NA,   2, opush},  //function single arg
 	{"PUTC",  40, NA,   1, oputch},  //function single arg
+	{"QT",    40, NA,   9, oquote}, 
 	{"RBM",   40, NA,   1, orbmrf},
+	{"READ"  ,40, NA,   9, oread}, 
 	{"REP",   40, NA,   3, orep},   //function three args  <fMatrix, int, int>
 	{"RETURN",40, NA,   1, oreturn}, 
 	{"REV",   40, NA,   1, orev},  //function single arg
@@ -173,14 +183,15 @@ tOP oplist[] = {
 	{"SAVE",  40, NA,   2, osave},//
 	{"SCELL", 40, NA,   5, omats},   //function three args   <fMatrix, int, int>
 	{"SERVO", 40, NA,   0, oserv}, //function single arg
+	{"SET"   ,40, NA,   9, oset}, 
 	{"SETB",  40, NA,   2, setb}, //function single arg
-	{"SETK",  40, NA,   1, oset}, //function single arg
+	{"SETK",  40, NA,   1, osetk}, //function single arg
+	{"SETQ"  ,40, NA,   9, osetq}, 
 	{"SETSERVO", 40, NA,3, osetservo}, //function single arg
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
 	{"SIGN", 40, NA,    1, osign},  //sigmoid functon
 	{"SIN",  40, NA,    1, osin},  //function single arg
 	{"SQRT", 40, NA,    1, osqrt}, //function single arg
-	{"STOA", 40, NA,    1, ostoa}, 
 	{"STACK",40, NA,    1, ostack}, 
 	{"SUBS", 40, NA,    1, osubst},  //function single arg
 	{"SUM",  40, NA,    1, osum},  //function <fMatrix>
@@ -191,6 +202,7 @@ tOP oplist[] = {
 	{"VSUM", 40, NA,    1, ovsum},  //function <fMatrix>
 	{"WAIT", 40, NA,    1, owait},  
 	{"WHILE",40, NA,    9, owhile}, 
+	{"WITH"  ,40, NA,   9, owith}, 
 	{"WHOS", 40, NA,    1, owhs},
 	{"ZERB", 40, NA,    5, ozerob},  //Zero Matrix bounded
 	{"ZERD", 40, NA,    1, ozerod},  //Zero matrix diaganol
@@ -258,7 +270,7 @@ tOBJ getb(tOBJ n)
 {
 	tOBJ r;
 	char *name;
-	if (n.type != STR) 
+	if (n.type != SYM) 
 		return emptyObj();
 
 	name=n.string;
@@ -295,7 +307,7 @@ int set(Dict * en, char *name, tOBJ r)
 tOBJ setb(tOBJ n, tOBJ r)
 {
 	char *name;
-	if (n.type != STR) 
+	if (n.type != SYM) 
 		return emptyObj();
 
 	name=n.string;
@@ -337,6 +349,8 @@ tOBJ owhs(tOBJ r)
 		dict_print(env.dict,1);  //exclude any type FUNC
 	else
 		dict_print(env.dict,toint(r));  //exclude any type FUNC
+
+	printf ("Total size= %d (%d)\n",((Dict *) (env.dict))->ip, ((Dict *) (env.dict))->sz);
 	return emptyObj(); 
 }
 
@@ -480,13 +494,13 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		return makeint(!compareObj(o1,o2));
 	}
 
-	if (o1.type==STR && o2.type==STR && op==PLUS)
+	if (o1.type==SYM && o2.type==SYM && op==PLUS)
 	{
 		int n=strlen(o1.string)+strlen(o2.string)+1;
 		char *s=newstring1(n);
 		strcat(s,o1.string);
 		strcat(s,o2.string);
-		r.type=STR;
+		r.type=SYM;
 		r.string=s;
 		return r;
 	}
@@ -802,7 +816,7 @@ tOBJ oimp (tOBJ a, tOBJ b, tOBJ c)
 	tOBJ r;
 	r.type=EMPTY;
 
-	if (a.type != STR)
+	if (a.type != SYM)
 		return r;
 
 	r.type=FMAT2;
@@ -1258,7 +1272,7 @@ tOBJ olen (tOBJ a)
 	//!LEN {1 2 3} -> 3
 	tOBJ r=makeint(0);
 
-	if (a.type==STR)
+	if (a.type==SYM)
 		r=makeint(strlen(a.string));
 
 	if (a.type==CELL)
@@ -1393,7 +1407,7 @@ tOBJ onull(tOBJ a)
 	tOBJ r=makeint(0);	
 	if ((a.type==EMPTY) 
 	|| (a.type==CELL && ((a.cell==NULL || ((tCELLp)(a.cell))->head.type==EMPTY)) )
-	|| (a.type==STR  && (a.string==NULL || *(a.string)=='\0')))	
+	|| (a.type==SYM  && (a.string==NULL || *(a.string)=='\0')))	
 		r = makeint(1);		
 	return r;
 }
@@ -1599,7 +1613,7 @@ tOBJ ocond(tOBJ o, Dict *e)
 
 
 
-tOBJ oset(tOBJ a)
+tOBJ osetk(tOBJ a)
 {
 /*
 SETK '{A 2 B 3}
@@ -1646,33 +1660,17 @@ SETK '{ENV 'BZ 2.9}
 	return r;
 }
 
-tOBJ oget(tOBJ a)
+tOBJ oget(tOBJ a, tOBJ b)
 {
 	//> !GETK '{A B}
 	//> !GETK 'A
-	//SETQ ENV {DICT '{{AZ 1.0} {BZ 2.0}}}
-	//GETK '{ENV 'AZ}
-
+	//SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))
+	//GETK ENV 'AZ
 
 	tOBJ r=emptyObj();
-	if (a.type==CELL)
+	if (a.type==DICT && b.type==SYM)
 	{
-		tOBJ name = eval(ocar(a),env.dict);
-
-		if (name.type==SYM )
-		{
-			r = get(env.dict, name.string);
-		}
-
-		if (name.type==DICT)
-		{
-			tOBJ en  = name;
-			tOBJ val = eval(ocar(ocdr(a)),env.dict);
-			if (val.type==STR || val.type==SYM )
-			{
-				r = get(en.dict, val.string);
-			}
-		}	
+		r = get(a.dict, b.string);
 	}
 	if (a.type==SYM)
 	{
@@ -1712,7 +1710,7 @@ tOBJ olft(tOBJ  r, tOBJ a)
 	//!LFT("test",2) -> "te"
 	int p=toint(a);
 	char *cp;
-	if (r.type==STR || r.type==SYM)
+	if (r.type==SYM)
 	{
 		int ln = strlen(r.string);
 		if (ln>0 && p>0 && ln>p)
@@ -1732,7 +1730,7 @@ tOBJ orgt(tOBJ  r, tOBJ a)
 	//!RGT("test",2) -> "st"
 	int p=toint(a);
 	char *cp;
-	if (r.type==STR|| r.type==SYM)
+	if (r.type==SYM)
 	{
 		int ln = strlen(r.string);
 		if (ln>0 && p>0 && ln>p)
@@ -1754,7 +1752,7 @@ tOBJ omid(tOBJ  r, tOBJ a, tOBJ  b)
 	int p1=toint(a);
 	int p2=toint(b);
 	char *cp;
-	if (r.type==STR|| r.type==SYM)
+	if (r.type==SYM)
 	{
 		int ln = strlen(r.string);
 		if (p2==0) p2=ln;
@@ -1768,18 +1766,6 @@ tOBJ omid(tOBJ  r, tOBJ a, tOBJ  b)
 		}
 	}
 	return emptyObj();
-}
-
-tOBJ ostoa(tOBJ  r)
-{
-	if (r.type==STR) r.type=SYM;
-	return r;
-}
-
-tOBJ oatos(tOBJ  r)
-{
-	if (r.type==SYM) r.type=STR;
-	return r;
 }
 
 /**********************************************************
@@ -1807,7 +1793,7 @@ tOBJ orex(tOBJ  a, tOBJ r)
 	TRexChar sTemp[200];
 	const TRexChar *error = NULL;
 
-	if (!(a.type==STR && r.type==STR)) // two strings needed
+	if (r.type!=SYM) // two strings needed
 		return emptyObj();
 	
 	x = trex_compile(_TREXC(r.string),&error);
@@ -2040,7 +2026,7 @@ tOBJ oload(tOBJ  n)
 	//char *m=malloc(sz);
 	char m[32000];
 	int ch;
-	if (n.type != STR)
+	if (n.type != SYM)
 	{
 		printf ("? requires filename\n");
 		return r;
@@ -2092,7 +2078,7 @@ tOBJ osave(tOBJ  f, tOBJ r)
        	FILE *fp;
 	char *s;
 
-	if (f.type==STR) 
+	if (f.type==SYM) 
 		s = f.string;
 	else
 		return emptyObj();
@@ -2131,7 +2117,7 @@ tOBJ odict(tOBJ  lst)
 			tOBJ n = ocar(pair);
 			tOBJ v = ocar(ocdr(pair));
 
-			if (n.type==STR ||n.type==SYM  )
+			if (n.type==SYM )
 				dict_add(r.dict, n.string, v);
 
 			lst=ocdr(lst); 
@@ -2361,7 +2347,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"F-DETECT"))
 		{
 			tOBJ a=ocar(v); 
-			if (a.type==STR || a.type==SYM) 
+			if (a.type==SYM) 
 			{
 				unsigned char *p = loadimage2(a.string);
 
@@ -2417,12 +2403,12 @@ tOBJ oimg(tOBJ v, Dict *e)
         			printf("error = expect int size 1-%d\n", (int)sqrt(SCENESZ)); 
 				return emptyObj();
 			}
-			if (file.type != STR)
+			if (file.type != SYM)
 			{
 				file = makestring("test.jpg"); //should read from env
 			}
 
-			if (file.type==STR && loadimage(file.string, sz, &scene[0])==0)
+			if (file.type==SYM && loadimage(file.string, sz, &scene[0])==0)
 			{
 				if (!strcmp(cmd.string,"NORM"))
 				{
@@ -2502,7 +2488,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 			int c = toint(ocar(v)); v=ocdr(v);
 			int d = toint(ocar(v));
 
-			if (colour.type==STR)
+			if (colour.type==SYM)
 			{
 				r  = makeint(add_color(colour.string, a,b,c,d));
 			}
@@ -2512,7 +2498,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"RAW"))
 		{
 			tOBJ file= ocar(v);
-			if (file.type==STR) loadJpg(file.string);
+			if (file.type==SYM) loadJpg(file.string);
 		}
 		else
 		if (!strcmp(cmd.string,"PROC"))
@@ -2638,7 +2624,7 @@ void brainf(char *s)
 
 tOBJ obf(tOBJ v)
 {
-	if (v.type==STR)
+	if (v.type==SYM)
 		brainf(v.string);
 	else
 		printf("need a string argument");
@@ -2658,7 +2644,7 @@ tOBJ orbmrf(tOBJ v)
 {
 	tOBJ r=emptyObj();
 	Motion *m;
-	if (v.type==STR) 
+	if (v.type==SYM) 
 	{ 
 		m = rbmload(v.string) ;
 		rbmprint (m);
@@ -2675,7 +2661,7 @@ tOBJ omatr(tOBJ n, tOBJ v, tOBJ file)
 	// !MAT STORE 8 "test.txt"
 	int val;
 
-	if (n.type==STR && v.type==INTGR && file.type==INTGR)
+	if (n.type==SYM && v.type==INTGR && file.type==INTGR)
 	{
 		if (!strcmp(n.string,"LOAD"))
 		{
@@ -2694,6 +2680,162 @@ tOBJ omatr(tOBJ n, tOBJ v, tOBJ file)
 }
 
 
+/***********************************************************************
+
+key functions
+
+************************************************************************/
+
+tOBJ oquote(tOBJ o, Dict *e) 
+{
+	return ocar(o);
+}
+
+tOBJ oeval(tOBJ o, Dict *e) 
+{
+	return eval(eval(ocar(o),e),e);
+}
+
+tOBJ oinc(tOBJ o, Dict *e) 
+{
+	tOBJ var = ocar(o); 
+	tOBJ expr =omath(dict_getk(e,var.string), makeint(1), PLUS);
+	dict_update(e, var.string, expr);
+	return expr;
+}
+
+tOBJ odec(tOBJ o, Dict *e) 
+{
+	tOBJ var = ocar(o); 
+	tOBJ expr =omath(dict_getk(e,var.string), makeint(1), MINUS);
+	dict_update(e, var.string, expr);
+	return expr;
+}
+
+tOBJ oread(tOBJ o, Dict *e) 
+{
+	tOBJ var = eval(ocar(o),e);
+	if (var.type==SYM)   return tokenise(var.string);
+	if (var.type==EMPTY) 
+	{
+		char ibf[1024];
+		printf("?");
+		readLine(ibf);
+		return tokenise(ibf);
+	}
+        return emptyObj();
+}
+
+tOBJ osetx(tOBJ o, Dict *e, int f) 
+{
+	tOBJ exp = emptyObj();
+	while (o.type != EMPTY)
+	{
+		tOBJ var = ocar(o); o=ocdr(o);
+		exp = eval(ocar(o),e); o=ocdr(o);
+
+		if (f) var=eval(var,e);
+
+		if (var.type==SYM)
+			dict_update(e, var.string, exp);
+		else
+		if (var.type==CELL && exp.type==CELL)
+		{
+			while (var.type != EMPTY)
+			{
+				tOBJ v1 = ocar(var); var=ocdr(var);
+				tOBJ v2 = ocar(exp); exp=ocdr(exp);
+	 			if (v1.type==SYM)
+					dict_update(e, v1.string, v2);
+			}
+		}
+	}
+	return exp;
+}
+
+tOBJ oset(tOBJ o, Dict *e) 
+{
+	return osetx(o, e, 1);
+}
+
+tOBJ osetq(tOBJ o, Dict *e) 
+{
+	return osetx(o, e, 0);
+}
+
+tOBJ owith(tOBJ o, Dict *e) 
+{
+        while (o.type != EMPTY)
+        {
+                tOBJ var = ocar(o); o=ocdr(o);
+		if (var.type==CELL) {
+			tOBJ n   = ocar(var);
+                        tOBJ val = eval(ocar(ocdr((var))),e); 
+                        if (n.type==SYM)
+			{
+                                dict_add(e, n.string, val);
+			}
+		}
+		else
+		{
+                        dict_add(e, var.string, emptyObj());
+		}
+        }
+        return emptyObj();
+}
+
+
+tOBJ oif(tOBJ o, Dict *e) 
+{
+        tOBJ test   = ocar(o); o=ocdr(o);
+	test = eval(test,e);
+        tOBJ conseq = ocar(o); o=ocdr(o);
+        tOBJ alt    = ocar(o); 
+
+	if (       (test.type == INTGR && test.number != 0 ) 
+		|| (test.type == FLOAT && test.floatpoint != 0.0 ) 
+                || (test.type != INTGR && test.type != FLOAT && test.type!=EMPTY)) 
+        {
+                return eval(conseq,e);
+        }
+        else
+        {
+                return eval(alt,e);
+        }
+}
+
+tOBJ oform(tOBJ o, Dict *e) 
+{
+	return formula(o,e);
+}
+
+tOBJ olet(tOBJ o, Dict *e) 
+{
+	//LET VAR = FORMULA
+	tOBJ var = ocar(o); o=ocdr(o);
+	tOBJ eq =  ocar(o); o=ocdr(o);
+	if (eq.type != SYM && strcmp(eq.string,"=")) {printf ("err\n"); return emptyObj();}
+	eq = formula(o,e);
+	dict_update(e, var.string, eq);
+	return eq;
+}
+
+tOBJ ofunc(tOBJ o, Dict *e) 
+{
+	//!FUNC ABC {X Y} {PLUS X Y}
+	tOBJ fn = ocar(o); o=ocdr(o);
+	o.type  = LAMBDA;
+	set(e, fn.string, o);
+	printf ("Function %s\n", fn.string);
+	return o;
+}
+
+tOBJ olambda(tOBJ o, Dict *e) 
+{
+	//!LAMBA {X Y} {PLUS X Y}
+	o.type  = LAMBDA;
+	return o;
+}
 
 
 
