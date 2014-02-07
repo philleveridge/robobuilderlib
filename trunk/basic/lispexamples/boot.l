@@ -9,7 +9,7 @@
 ;
 
 (FUNC T   () (LOAD "turtle.l"))
-(FUNC BW  () (LOAD "prop.l"))
+(FUNC BW  () (LOAD "bw.l"))
 (FUNC QN  () (LOAD "queens.l"))
 (FUNC DR  () (LOAD "doctor.l"))
 (FUNC TR  () (LOAD "tree.l"))
@@ -19,6 +19,7 @@
 (FUNC HX  () (LOAD "hex.l"))
 (FUNC RU  () (LOAD "rules.l"))
 (FUNC MZ  () (LOAD "maze.l"))
+(FUNC GE  () (LOAD "gene.l"))
 
 
 

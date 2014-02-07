@@ -2,13 +2,13 @@
 
 (DEF MATCH (P D)
 '(PR "P=" P " D=" D)
-(COND ((AND (NULL P) (NULL D))                               1
-       (OR  (NULL P) (NULL D))                               0
-       (OR  (= (CAR P) '>) (= (CAR P) (CAR D)))              (MATCH (CDR P) (CDR D))
-       (AND (= (LFT (CAR P) 1) '>) (MATCH (CDR P) (CDR D)))  (SET (MID (CAR P) 2) (CAR D))
-       (= (CAR P) '+)                                        (COND ((MATCH (CDR P) (CDR D)) 1 (MATCH P (CDR D))))
-       (= (LFT (CAR P) 1) '+) (COND ((MATCH (CDR P) (CDR D)) (SET (MID (CAR P) 2) (LIST (CAR D)))
-                                     (MATCH P (CDR P))       (SET (MID (CAR P) 2) (CONS (CAR D) (MID (CAR P) 2)))))
+(COND ((AND (NULL P) (NULL D))                                 1
+       (OR  (NULL P) (NULL D))                                 0
+       (OR  (= (CAR P) '>) (= (CAR P) (CAR D)))                (MATCH (CDR P) (CDR D))
+       (AND (= (LFT (CAR P) 1) '>) (MATCH (CDR P) (CDR D)))    (SET (MID (CAR P) 2) (CAR D))
+       (=   (CAR P) '+)                                        (COND ((MATCH (CDR P) (CDR D)) 1 (MATCH P (CDR D))))
+       (=   (LFT (CAR P) 1) '+) (COND ((MATCH (CDR P) (CDR D)) (SET (MID (CAR P) 2) (CAR D))
+                                       (MATCH P (CDR P))       (SET (MID (CAR P) 2) (CONS (CAR D) (MID (CAR P) 2)))))
       )
 ))
 
@@ -29,9 +29,9 @@
 )
 
 (SETQ DATA  '(
-   ((I AM WORRIED ABOUT +L )  	("What are you worried about " L "?") )
+   ((I AM WORRIED ABOUT +L )  	(("What are you worried about " L "?") ))
 
-   ((+ MOTHER +)              	("Tell me more about your family"))
+   ((+ MOTHER +)              	(("Tell me more about your family")))
 
    ((+ COMPUTER +)            	(("Are you afarid of computers?")
                               	("Do computers worry you ?")
@@ -59,17 +59,18 @@
 				("What other reasons might there be ?")))
 
    ( (WHY DONT YOU +L)          (("Do you believe I don't " L " ?")
-				("Perhaps I will" L " in good time.")
+				("Perhaps I will " L " in good time.")
 				("Should you " L " yourself ?")
 				("You want me to " L " ?")))
 ))
 
 (func GETRES (data inp)
    (FOREACH x data 
+
         (IF (MATCH (CAR x) inp)  
             (IF  (> (LEN (CADR x)) 1) 
-                 (RETURN (CONS 'PR (NTH (INT (* (LEN (CADR x)) (RND))) (CADR x) )))  
-                 (RETURN (CONS 'PR (CADR x)))
+                 (RETURN (CONS 'PR (NTH (INT (* (LEN (CADR x)) (RND))) (CADR x) )) ) 
+                 (RETURN (CONS 'PR (CAR (CADR x))))
             ) 
         )
    ) 0 )
@@ -82,7 +83,7 @@
 (DEF DOCTOR ()
 (SETQ LP 1)
 (WHILE LP
-  (SETQ INP (READ))
+  (SETQ INP (READ) ANS "")
   (COND ( (= (CAR INP) 'BYE)             (RETURN "See you")
           (SETQ ANS (GETRES DATA INP))   (EVAL ANS)
           (PR "TELL ME MORE"))

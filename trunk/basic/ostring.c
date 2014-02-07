@@ -51,7 +51,7 @@ void delstring(char *s)
 tOBJ makestring(char *s)
 {
 	tOBJ r;
-	r.type=STR;
+	r.type=SYM;
 	r.string = newstring(s);
 	r.cnt=0;
 	r.q=0;

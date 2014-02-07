@@ -32,6 +32,7 @@ Dict * newdict(int sz)
 	if (sz==0) sz=100; //default
 	n->sz   = sz;
 	n->ip   = 0;
+	n->cf	= 0;
 	n->db   = (Kvp *)malloc((n->sz) * sizeof(Kvp));
 	n->outer= NULL;
 	return n;
@@ -66,14 +67,24 @@ tOBJ makedict2(Dict *e, int n)
 }
 
 
+char *covertToUpper(char *str){
+    char *newstr, *p;
+    p = newstr = strdup(str);
+    while(*p++=toupper(*p));
+
+    return newstr;
+}
+
 int dict_add(Dict *d, char *key, tOBJ value)
 {
-       tOBJ t1;
+	tOBJ t1;
 
-       if (d==NULL) return 0;
+	if (d==NULL) return 0;
 
-       if(dbg>1) printf ("Add %s %d %d\n", key, d->ip, d->sz);
-       int i=0;
+	key = covertToUpper(key);
+
+	if(dbg>1) printf ("Add %s %d %d\n", key, d->ip, d->sz);
+	int i=0;
 
        if (d->ip==d->sz) {printf ("?error no space in dict [%s] %d/%d\n",key,d->ip,d->sz); return 0;}
 
@@ -95,6 +106,7 @@ int dict_add(Dict *d, char *key, tOBJ value)
        t1 = cloneObj(value);
        d->db[i].value = t1; // should be clone;
        (d->ip)++;
+       free(key);
        return 1;
 }
  
@@ -106,6 +118,8 @@ int dict_find(Dict *d, char *key)
 	int high=d->ip-1;
 
 	if (d==NULL) return -1;
+
+	key = covertToUpper(key);
 
 	while (high>=low) 
 	{

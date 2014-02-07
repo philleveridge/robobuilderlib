@@ -5,7 +5,7 @@
 #include "rbmread.h"
 
 
-enum  TYPE  {SYM, INTGR, BOOLN, FUNC, FLOAT, STR, CELL, EMPTY, FMAT2, DICT, LAMBDA, RBM, STACK};
+enum  TYPE  {SYM, INTGR, BOOLN, FUNC, FLOAT, CELL, EMPTY, FMAT2, DICT, LAMBDA, RBM, STACK};
 
 typedef struct object {
         int   		type;

@@ -23,15 +23,12 @@
 )
  
 (FUNC USETHEN (R)
- (DO
   (SETQ THENS (CDR (CAR (CDR (CDR (CDR R))))) F 1)
   (PR "Then= " THENS)
   (WHILE (AND F (NOT (NULL THENS)))
-  (DO
     (IF (NOT (NULL (REM (CAR THENS)))) (DO (SETQ F 0) (PR "Rule matches .. " " Deduces: " (CAR THENS))))
     (SETQ THENS (CDR THENS))
-  ))
-)
+  )
 )
  
 (FUNC TRYRULE (R) (DO (PR R) (IF (NOT (NULL (TESTIF R))) (USETHEN R))))
@@ -51,6 +48,7 @@
 (PR "t8 " (TRYRULE '(RULE IDENTIFY2 (IF (ANIMAL EATS MEAT ))               (THEN (ANIMAL IS MAMMAL)))))
  
 (FUNC STEPF ()
+	(PR "Step")
      (SETQ RL RULES)
      (WHILE  RL
          (SETQ T (TRYRULE (CAR RL))  RL (CDR RL))
