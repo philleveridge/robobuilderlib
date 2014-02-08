@@ -70,24 +70,24 @@ extern long	getvar(char n);
 #define isalpha(c)  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_')
 
 tOP oplist[] = { 
-/* 0 */	{"+",    10, PLUS,  2, NULL},
-	{"-",    10, MINUS, 2, NULL},
-	{"/",    20, DIVD,  2, NULL},
-	{"*",    20, MULT,  2, NULL},
-/* 5 */	{".*",   20, PROD,  2, NULL},
-	{".^",   20, POWR,  2, NULL},
-	{"&",    8,  LAND,  2, NULL},
-	{"|",    8,  LOR,   2, NULL},
-	{"MOD",  8,  LMOD,  2, NULL},
-/*10 */	{"<",    5,  LT,    2, NULL},
-	{">",    5,  GT,    2, NULL},
-	{"=",    5,  EQL,   2, NULL},
-	{"<>",   5,  NEQ,   2, NULL},
-	{"<=",   5,  LTE,   2, NULL},
-	{">=",   5,  GTE,   2, NULL},
-	{"(",    50, OBR,   1, NULL},
-	{")",    50, CBR,   1, NULL},
-	{",",    50, COMMA, 1, NULL},
+/* 0 */	{"+",     10, PLUS, 2, NULL},
+	{"-",     10, MINUS,2, NULL},
+	{"/",     20, DIVD, 2, NULL},
+	{"*",     20, MULT, 2, NULL},
+/* 5 */	{".*",    20, PROD, 2, NULL},
+	{".^",    20, POWR, 2, NULL},
+	{"&",     8,  LAND, 2, NULL},
+	{"|",     8,  LOR,  2, NULL},
+	{"MOD",   8,  LMOD, 2, NULL},
+/*10 */	{"<",     5,  LT,   2, NULL},
+	{">",     5,  GT,   2, NULL},
+	{"=",     5,  EQL,  2, NULL},
+	{"<>",    5,  NEQ,  2, NULL},
+	{"<=",    5,  LTE,  2, NULL},
+	{">=",    5,  GTE,  2, NULL},
+	{"(",     50, OBR,  1, NULL},
+	{")",     50, CBR,  1, NULL},
+	{",",     50, COMMA,1, NULL},
 	{"ABS",   40, NA,   1, oabs},  //function single arg
 	{"ACCX",  40, NA,   0, oacx},  //const
 	{"ACCY",  40, NA,   0, oacy},  //const
@@ -108,6 +108,7 @@ tOP oplist[] = {
 	{"CADAR", 40, NA,   1, ocadar},  //LIST BASED
 	{"CDR",   40, NA,   1, ocdr},  //function single arg
 	{"CELL",  40, NA,   3, omat},   //function three args   <fMatrix, int, int>
+	{"CLEAR", 40, NA,   9, oclear},   //function three args   <fMatrix, int, int>
 	{"COL",   40, NA,   1, ocol},   //function single arg    <fMatrix>
 	{"COND",  40, NA,   9, ocond}, 
 	{"CONS",  40, NA,   2, ocons},  //function single arg
@@ -202,7 +203,7 @@ tOP oplist[] = {
 	{"VSUM", 40, NA,    1, ovsum},  //function <fMatrix>
 	{"WAIT", 40, NA,    1, owait},  
 	{"WHILE",40, NA,    9, owhile}, 
-	{"WITH"  ,40, NA,   9, owith}, 
+	{"WITH" ,40, NA,    9, owith}, 
 	{"WHOS", 40, NA,    1, owhs},
 	{"ZERB", 40, NA,    5, ozerob},  //Zero Matrix bounded
 	{"ZERD", 40, NA,    1, ozerod},  //Zero matrix diaganol
@@ -1597,7 +1598,7 @@ tOBJ ocond(tOBJ o, Dict *e)
 {
 	tOBJ cond=emptyObj();
 	tOBJ act=emptyObj();
-	o=ocar(o);
+	//o=ocar(o);
 	while (o.type != EMPTY)
 	{
 		cond = eval(ocar(o),e); o=ocdr(o);
@@ -1610,8 +1611,6 @@ tOBJ ocond(tOBJ o, Dict *e)
 	}	
 	return cond;
 }
-
-
 
 tOBJ osetk(tOBJ a)
 {
@@ -2686,6 +2685,85 @@ key functions
 
 ************************************************************************/
 
+tOBJ formula(tOBJ ae, Dict *e)
+{
+	// ( V op V )
+	// V op V op V
+	// F (arg) -tbd
+	// 
+	tOBJ ops=makestack(10);
+	tOBJ opd=makestack(10);
+
+	if (oatom(ae).number==1) {return ae;}
+
+	while (1)
+	{
+		if (onull(ae).number==1) return emptyObj();
+
+		if (oatom(ocar(ae)).number==1) 
+			push (opd.stk, ocar(ae)); 
+		else
+			push (opd.stk, formula(ocar(ae),e));
+
+		ae = ocdr(ae);
+		while (1)
+		{
+			int wa=-1,wb=-1;
+			if (dbg) {okey(makeint(2)); println ("ae =", ae); }
+
+			if (onull(ae).number==1 && stacksize(ops.stk)==0 ) 
+				return pop(opd.stk);
+
+			tOBJ a = ocar(ae);
+			tOBJ b = peek(ops.stk,0); 
+
+			if (dbg) {println ("a =", a); println ("b =", b);}
+
+			if (a.type==SYM)
+				wa=getOPlevel(e, a.string); 
+
+			if (wa<0)
+			{ 
+				ae = ocons(a,ae);
+				wa=0;
+			}
+
+			if (b.type==SYM)
+				wb=getOPlevel(e, b.string);
+
+			if (onull(ae).number==1 ||  (wa <= wb))
+			{
+ 				if (dbg) {printf ("P1 : %d %d\n",wa,wb); }
+
+				tOBJ opc =  peek(ops.stk,0);
+				if (dbg) println ("opc =", opc);
+
+				if (opc.type==SYM)
+					wa=getOPtype(e, opc.string);
+				else
+					wa=0;
+
+				a = eval(pop(opd.stk),e);
+				b = eval(pop(opd.stk),e);
+
+				tOBJ ans= omath(a, b, wa);
+
+				push(opd.stk,ans);
+				pop(ops.stk); 
+			}
+			else
+			{
+				if (dbg) {printf ("P2 : %d %d\n",wa,wb); }
+				push(ops.stk,a);
+				break;
+			}
+
+		}
+		ae = ocdr(ae);
+	}	
+}
+
+
 tOBJ oquote(tOBJ o, Dict *e) 
 {
 	return ocar(o);
@@ -2835,6 +2913,15 @@ tOBJ olambda(tOBJ o, Dict *e)
 	//!LAMBA {X Y} {PLUS X Y}
 	o.type  = LAMBDA;
 	return o;
+}
+
+tOBJ oclear(tOBJ o, Dict *e) 
+{
+	int n=e->sz;
+	deldict(e);
+	e = newdict(n);
+	if (n> 200) loadop(e);
+	return emptyObj();
 }
 
 

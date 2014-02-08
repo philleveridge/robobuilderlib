@@ -84,9 +84,9 @@
 (SETQ LP 1)
 (WHILE LP
   (SETQ INP (READ) ANS "")
-  (COND ( (= (CAR INP) 'BYE)             (RETURN "See you")
+  (COND  (= (CAR INP) 'BYE)             (RETURN "See you")
           (SETQ ANS (GETRES DATA INP))   (EVAL ANS)
-          (PR "TELL ME MORE"))
+          (PR "TELL ME MORE")
   )
 ))
  

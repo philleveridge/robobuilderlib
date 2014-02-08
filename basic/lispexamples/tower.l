@@ -6,11 +6,11 @@
 
 
 (FUNC TRANSFER (FROM TO SPARE NUMBER) 
-     (COND ( (= NUMBER 1) (MOVEDISK FROM TO) 
+     (COND  (= NUMBER 1) (MOVEDISK FROM TO) 
              1 (APPEND (TRANSFER FROM SPARE TO (- NUMBER 1)) 
                        (MOVEDISK FROM TO) 
                        (TRANSFER SPARE TO FROM (- NUMBER 1)))
-           ))
+           )
 )
 
 

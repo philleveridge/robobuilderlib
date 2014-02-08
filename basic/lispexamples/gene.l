@@ -26,7 +26,7 @@
 
 (SETQ C '(A T C G T T A C G))
 
-(FUNC DNA ( X  ) (COND ((= X 'A) 'U  (= X 'G) 'C (= X 'C) 'G (= X 'T) 'A)))
+(FUNC DNA ( X  ) (COND (= X 'A) 'U  (= X 'G) 'C (= X 'C) 'G (= X 'T) 'A))
 
 (PR C " --> " (MAPCAR DNA C))
 

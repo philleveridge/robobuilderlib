@@ -12,9 +12,9 @@
       (IF (OR (= P (NTH T Y)) (<> P (NTH F Y))) (RETURN 0))
       (IF (= (NTH T Y) '_) 
              (IF (OR (AND (= P 'C) (= T (+ F 3) ))  (AND (= P 'H) (= T (- F 3) ))) (RETURN 1))
-	     (COND ( 
+	     (COND
                   (AND (= P 'C)  (OR (= T (+ F 4)) (= T (+ F 2))) (= (- (/ T 3) (/ F 3)) 1)) (RETURN 1)
-                  (AND (= P 'H)  (OR (= T (- F 4)) (= T (- F 2))) (= (- (/ F 3) (/ T 3)) 1)) (RETURN 1))
+                  (AND (= P 'H)  (OR (= T (- F 4)) (= T (- F 2))) (= (- (/ F 3) (/ T 3)) 1)) (RETURN 1)
 	     )
       )
       0
@@ -26,7 +26,7 @@
          (WITH (L '()) T F) 
 	 (SETQ (F T) M)
          (FOR I '(8 0) 
-              (SETQ L (CONS (COND ( (= I F) '_ (= I T) P (NTH I B)) ) L )))  
+              (SETQ L (CONS (COND  (= I F) '_ (= I T) P (NTH I B)) ) L ))  
          L)
 
 (func CMPB (A B) (OR (= A B) ) 
