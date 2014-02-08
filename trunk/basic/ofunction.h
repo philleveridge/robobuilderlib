@@ -55,6 +55,7 @@ extern tOBJ ocaar	(tOBJ  r);
 extern tOBJ ocadr	(tOBJ  r);
 extern tOBJ ocadar	(tOBJ  r);
 extern tOBJ ocdr	(tOBJ  r);
+extern tOBJ oclear	(tOBJ  v, Dict *e);
 extern tOBJ ocol	(tOBJ  r);
 extern tOBJ ocond   	(tOBJ  r, Dict *);
 extern tOBJ ocons	(tOBJ  r, tOBJ a);

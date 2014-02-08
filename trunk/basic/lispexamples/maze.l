@@ -14,10 +14,10 @@
 (func PW (X S G) 
    (SETQ W (CAAR X) H (CADAR X) O (CADR X)) 
    (FOR I '(1 H) 
-        (FOR J '(1 W) (COND ( (MEMBER (LIST J I) O) (PR '# ;)
+        (FOR J '(1 W) (COND  (MEMBER (LIST J I) O) (PR '# ;)
                               (= S (LIST J I))      (PR 'S ;)
                               (= G (LIST J I))      (PR 'G ;)
-                              (PR '_ ;)))) 
+                              (PR '_ ;)))
    (PR)))
 
 

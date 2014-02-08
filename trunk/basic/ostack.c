@@ -114,6 +114,6 @@ void stackprint2(tStackp st)
 
 int stacksize(tStackp st)
 {
-	return st->size;
+	return st->noe;
 }
 

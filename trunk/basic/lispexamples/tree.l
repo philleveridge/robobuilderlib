@@ -72,9 +72,9 @@
 
    (WHILE (NOT (NULL FRONTIER)) 
 
-       	(SETQ top (COND ( (= meth 'LC) (CHOICE-LC FRONTIER) 
+       	(SETQ top (COND   (= meth 'LC) (CHOICE-LC FRONTIER) 
                           (= meth 'SP) (CHOICE-SP FRONTIER)
-                          (= meth 'AS) (CHOICE-AS FRONTIER))))
+                          (= meth 'AS) (CHOICE-AS FRONTIER)))
 
 	(IF (NULL top) (RETURN 'FAIL))
 

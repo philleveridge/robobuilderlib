@@ -252,92 +252,6 @@ tOBJ parse(char *s)
 	return L;
 }
 
-tOBJ formula(tOBJ ae, Dict *e)
-{
-	// ( V op V )
-	// V op V op V
-	// F (arg) -tbd
-	// 
-	tOBJ ops=emptyObj();
-	tOBJ opd=emptyObj();
-
-	tOBJ dummy=makestring("DUMMY");
-
-	if (oatom(ae).number==1) {return ae;}
-	ops = append(emptyObj(),dummy);
-
-	while (1)
-	{
-		if (dbg) {println ("o=", ae); }
-
-		if (onull(ae).number==1) return emptyObj();
-
-		if (oatom(ocar(ae)).number==1) 
-			opd = ocons(ocar(ae),opd);
-		else
-			opd = ocons(formula(ocar(ae),e),opd);
-
-		ae = ocdr(ae);
-		while (1)
-		{
-			int wa=-1,wb=-1;
-			if (dbg) {okey(makeint(2)); println ("ae =", ae); println (" opd=", opd); println ("ops=", ops);  }
-			if (onull(ae).number==1 && compareObj(ocar(ops),dummy)==1 ) 
-				return ocar(opd);
-
-			tOBJ a = ocar(ae);
-			tOBJ b = ocar(ops);	
-			if (dbg) {println ("a =", a); println ("b =", b);}
-
-			if (a.type==SYM)
-				wa=getOPlevel(e, a.string); 
-
-			if (wa<0)
-			{ 
-				ae = ocons(a,ae);
-				wa=0;
-			}
-
-			if (a.type==SYM)
-				wb=getOPlevel(e, b.string);
-
-			if (onull(ae).number==1 ||  (wa <= wb))
-			{
- 				if (dbg) {printf ("P1 : %d %d\n",wa,wb); }
-
-				tOBJ opc =  ocar(ops);
-				if (dbg) println ("opc =", opc);
-
-				if (opc.type==SYM)
-					wa=getOPtype(e, opc.string);
-				else
-					wa=0;
-
-				a = eval(ocar(ocdr(opd)),e);
-				b = eval(ocar(opd),e);
-
-				if (dbg) {println ("a1 =", a); println ("a2 =",b);}
-
-				tOBJ ans= omath(a, b, wa);
-
-				if (dbg) println ("ans =", ans);
-
-				opd = append(ocdr(ocdr(opd)),ans);
-
-				ops=ocdr(ops);
-			}
-			else
-			{
-				if (dbg) {printf ("P2 : %d %d\n",wa,wb); }
-				ops=ocons(a,ops);
-				break;
-			}
-
-		}
-		ae = ocdr(ae);
-	}	
-}
-
 extern int retflg;
 tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 {
@@ -382,9 +296,13 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 
 tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 {
+	if (h.type==SYM && dict_contains(e, h.string))
+	{
+		h=dict_getk(e,h.string);
+	}
+
 	if (h.type==LAMBDA)
 	{
-		//!ABC 2 4
 		return callfn(h, o, e);
 	}
 
@@ -436,7 +354,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 	if (h.type==SYM)
 		printf ("? unknown symbol [%s]\n", h.string);
 	else
-		printf ("? unknown\n");
+		printf ("? unknown (%s)\n",objtype(h));
 
 	return emptyObj();
 }
@@ -459,10 +377,6 @@ tOBJ eval2(tOBJ o, Dict *e)
 	h=ocar(o);
 	o=ocdr(o);
 
-	if (h.type==SYM && dict_contains(e, h.string))
-	{
-		h=dict_getk(e,h.string);
-	}
 	//lookup procedure
 
 	return procall (h, o, e );

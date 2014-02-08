@@ -1,6 +1,6 @@
 !DO
-(DEF WEIGHT (OP) (COND ((= OP 'DUMMY) -1              (= OP '=) 0     (= OP '+) 1      (= OP '*)  2      (PR 'NOP)  )))
-(DEF OPC    (OP) (COND ((= OP 'DUMMY) (PR 'DUMMY-HIT) (= OP '=) 'SETQ (= OP '+) 'PLUS  (= OP '*) 'TIMES  (PR 'NOP)  )))
+(DEF WEIGHT (OP) (COND (= OP 'DUMMY) -1              (= OP '=) 0     (= OP '+) 1      (= OP '*)  2      (PR 'NOP)  ))
+(DEF OPC    (OP) (COND (= OP 'DUMMY) (PR 'DUMMY-HIT) (= OP '=) 'SETQ (= OP '+) 'PLUS  (= OP '*) 'TIMES  (PR 'NOP)  ))
 
 ;LIST based
 (DEF I2P (AE) 
@@ -23,8 +23,6 @@
      )
   )
 ))
-
-'(DO (PR "ae  = " AE)(PR "OPD = ";) (PST OPD)(PR "OPS = ";) (PST OPS))
 
 (DEF PST (X) (FOREACH Y X (PR Y ".." ;)) (PR ""))
 
