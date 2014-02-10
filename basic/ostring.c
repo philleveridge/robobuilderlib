@@ -16,6 +16,7 @@
 #endif
 
 
+#include "mem.h"
 #include "oobj.h"
 
 extern int dbg;
@@ -28,8 +29,8 @@ char *newstring(char *s)
 {
 	char *r;
 	int n=strlen(s);
-	if (dbg) printf ("New String [%d]\n",n);
-	r=(char *)malloc(n*sizeof(char)+1);
+	if (dbg) printf ("New String [%d - %s]\n",n,s);
+	r=(char *)bas_malloc(n*sizeof(char)+1);
 	strcpy(r, s);
 	return r;
 }
@@ -38,14 +39,14 @@ char *newstring1(int n)
 {
 	char *r;
 	if (dbg) printf ("New String [%d]\n",n);
-	r=(char *)malloc(n*sizeof(char)+1);
+	r=(char *)bas_malloc(n*sizeof(char)+1);
 	return r;
 }
 
 void delstring(char *s)
 {
-	if (dbg) printf ("Del String \n");
-	free(s);
+	if (dbg) printf ("Del String (%s)\n", s);
+	bas_free(s);
 }
 
 tOBJ makestring(char *s)

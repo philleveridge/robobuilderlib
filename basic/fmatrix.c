@@ -12,6 +12,7 @@
 #include "linux.h"
 #endif
 
+#include "mem.h"
 #include "fmatrix.h"
 
 //#include "express.h"
@@ -32,7 +33,7 @@ Floating point Matrix library
 
 fMatrix *newmatrix(int c, int r)
 {
-	fMatrix *n = (fMatrix *)malloc(sizeof(fMatrix));
+	fMatrix *n = (fMatrix *)bas_malloc(sizeof(fMatrix));
 	int i;
 	if (dbg) printf ("New Matrix %d,%d\n",c,r);
 	n->h=r;
@@ -41,7 +42,7 @@ fMatrix *newmatrix(int c, int r)
 
 	//allocate space
 
-	n->fstore = (float *)malloc(r*c*sizeof(float));
+	n->fstore = (float *)bas_malloc(r*c*sizeof(float));
 
 	if (n->fstore==0)
 	{
@@ -64,7 +65,8 @@ int delmatrix(fMatrix *m)
 
 	m->h=0;
 	m->w=0;	
-	free(m->fstore);
+	bas_free(m->fstore);
+	bas_free(m);
 	return 0;
 }
 

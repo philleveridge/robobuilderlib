@@ -149,7 +149,6 @@ tOBJ tokenise(char *s)
 {
 	char buffer[1024];
 
-
 	tOBJ r= makeCell();
 	tCELLp top = (tCELLp)r.cell; 
 	top->head = emptyObj();
@@ -157,7 +156,6 @@ tOBJ tokenise(char *s)
 
 	while (*s != '\0')
 	{		
-		tCELLp next;
 		s = readword(s, buffer);
 
 		if (buffer[0]== 0) 
@@ -184,7 +182,6 @@ tOBJ tokenise(char *s)
 			}
 			else{
 				top->head = makestring(buffer);
-				top->head.type=SYM;
 			}
 		}
 
@@ -192,18 +189,21 @@ tOBJ tokenise(char *s)
 
 		if (s != NULL && *s != '\0')
 		{
-			next=newCell();
+			tCELLp next=newCell();
 			next->head=emptyObj();
 			top->tail=next;	
 			top=next;
 		}	
 	}
+
+if (dbg) printf ("\nend of input\n\n");
+
 	return r;
 }
 
 tOBJ read_from(tOBJ *r)
 {
-	tOBJ h, L = emptyObj();
+	tOBJ h, n, L= emptyObj();
 	int qf=0;
 
 	while (r->type!=EMPTY)
@@ -226,8 +226,11 @@ tOBJ read_from(tOBJ *r)
 			tOBJ t=read_from(r);
 	
 			t.q=qf;	
-			L=append(L,t );
+			n=append(L,t );
 			qf=0;
+			freeobj(&t);
+			freeobj(&L);
+			L=n;
 		}
 		else
 		if (h.type==SYM && !strcmp(h.string, ")"))
@@ -237,18 +240,25 @@ tOBJ read_from(tOBJ *r)
 		else
 		{
 			h.q=qf;	qf=0;
-			L=append(L,h);	
+			n=append(L,h);
+			freeobj(&L);
+			L=n;	
 		}
 	}
+	//freeobj(&h);
+if (dbg) printf ("\nend of read\n\n");
+
 	return L;
 }
 
 tOBJ parse(char *s)
 {
-	tOBJ L,r;	
-	if (dbg) printf ("parse 2 %s\n", s); 
+	tOBJ L,r,t;	
+	if (dbg) printf ("\nparse 2 %s\n", s); 
 	r = tokenise(s);
-	L = read_from(&r);	
+	t = r;
+	L = read_from(&r);
+	freeobj(&t);	
 	return L;
 }
 
@@ -296,6 +306,8 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 
 tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 {
+	if (h.type==EMPTY) return h;
+
 	if (h.type==SYM && dict_contains(e, h.string))
 	{
 		h=dict_getk(e,h.string);
@@ -366,7 +378,7 @@ tOBJ eval2(tOBJ o, Dict *e)
 	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA)
 	{
 		o.q=0;
-		return o;
+		return cloneObj(o);
 	}
 
 	if (o.type==SYM)
@@ -379,14 +391,20 @@ tOBJ eval2(tOBJ o, Dict *e)
 
 	//lookup procedure
 
-	return procall (h, o, e );
+	tOBJ n= procall (h, o, e );
+
+	//freeobj(&h);
+	
+	return n;
 
 }
 
 tOBJ eval(tOBJ o, Dict *e)
 {
-	if (dbg) {println ("eval - ",o);}
+	if (dbg) {println ("eval - ",o); }
+ 	bas_mem();
 	tOBJ r=eval2(o,e);
+ 	bas_mem();
 	if (dbg) {println ("ret  - ",r);}
 	return r;
 }
@@ -403,16 +421,18 @@ void init_extend()
 		intf=0; 
 		env = makedict(500);
 		loadop(env.dict);
-		set(env.dict, "PI",  makefloat (3.1415926));
-	
-		//seed the RND Gen
-		srand ( (unsigned)time ( NULL ) );
 
-		eval_oxpr("FUNC FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
-
-		if (access("boot.l",F_OK) != -1)
+		if (dbg==0)
 		{
-			oload(makestring("boot.l"));
+			set(env.dict, "PI",  makefloat (3.1415926));	
+			//seed the RND Gen
+			srand ( (unsigned)time ( NULL ) );
+			eval_oxpr("FUNC FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
+
+			if (access("boot.l",F_OK) != -1)
+			{
+				oload(makestring("boot.l"));
+			}
 		}
 	}
 }
@@ -420,12 +440,17 @@ void init_extend()
 tOBJ eval_oxpr(char *s)
 {
 	init_extend();
-	return eval(parse(s), env.dict);
+	tOBJ e=parse(s);
+	tOBJ f = eval(e, env.dict);
+	freeobj(&e);
+	return f;
 }
 
 void extend(char *s)
 {
-	println (" = ", eval_oxpr(s));
+	tOBJ v=eval_oxpr(s);
+	println (" = ", v);
+	freeobj(&v);
 }
 
 int countb(char *s)
@@ -448,6 +473,9 @@ int countb(char *s)
 void repl()
 {
 	char inputbuffer[MAX];
+
+	if (dbg) { for (int g=6; g<8; g++) testme(g); 	sigcatch();  }
+
 	init_extend();
 	while (1)
 	{

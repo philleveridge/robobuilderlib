@@ -8,9 +8,7 @@
 #include "linux.h"
 
 #include "oobj.h"
-
-extern int dbg;
-
+#include "mem.h"
 #include "rbmread.h"
 
 
@@ -44,7 +42,7 @@ void rbmdelete(Motion *m)
 {
 	if (m != 0)
 	{
-		if (m->sc != 0) free (m->sc);
+		if (m->sc != 0) bas_free (m->sc);
 		m->sc=0;
 		if (dbg) printf ("Del RBM\n");
 	}
@@ -102,7 +100,7 @@ Motion *rbmload(char *fn)
 
         char line[MAXC];
         FILE *tr;
-	Motion *mot = (Motion *)malloc(sizeof(Motion));
+	Motion *mot = (Motion *)bas_malloc(sizeof(Motion));
 	int Lg=0;
 	mot->no_servos=0;
 	mot->no_scenes=0;

@@ -17,6 +17,7 @@
 
 #include "odict.h"
 #include "ofunction.h"
+#include "mem.h"
 
 /**********************************************************/
 /*  Dictionary                                            */
@@ -28,12 +29,12 @@ Dict * newdict(int sz)
 {
 	Dict *n;
 	if (dbg>1) printf ("New dictionary (%d)\n",sz);
-	n = (Dict *)malloc(sizeof(Dict));
+	n = (Dict *)bas_malloc(sizeof(Dict));
 	if (sz==0) sz=100; //default
 	n->sz   = sz;
 	n->ip   = 0;
 	n->cf	= 0;
-	n->db   = (Kvp *)malloc((n->sz) * sizeof(Kvp));
+	n->db   = (Kvp *)bas_malloc((n->sz) * sizeof(Kvp));
 	n->outer= NULL;
 	return n;
 }
@@ -43,12 +44,28 @@ int deldict(Dict *x)
 	if (dbg) printf ("Delete dictionary\n");
 	if (x != NULL)
 	{
-		free(x->db);
-		free(x);
+		bas_free(x->db);
+		bas_free(x);
 		x=NULL;
 	}
 	return 0;
 }
+
+Dict *clonedict(Dict *x)
+{
+	Dict *r=newdict(x->sz);
+	r->ip   = x->ip;
+	r->cf	= x->cf;
+	r->outer= x->outer;
+
+	for (int i=0; i<r->ip; i++)
+	{
+		strncpy(r->db[i].key, x->db[i].key, 32);
+		r->db[i].value = cloneObj(x->db[i].value);
+	}
+	return r;
+}
+
 
 tOBJ makedict(int n)
 {
@@ -77,8 +94,6 @@ char *covertToUpper(char *str){
 
 int dict_add(Dict *d, char *key, tOBJ value)
 {
-	tOBJ t1;
-
 	if (d==NULL) return 0;
 
 	key = covertToUpper(key);
@@ -103,10 +118,8 @@ int dict_add(Dict *d, char *key, tOBJ value)
        //insert at i
        char *cp = d->db[i].key;
        strncpy(cp, key, 32);
-       t1 = cloneObj(value);
-       d->db[i].value = t1; // should be clone;
+       d->db[i].value = cloneObj(value);
        (d->ip)++;
-       free(key);
        return 1;
 }
  
@@ -160,7 +173,7 @@ tOBJ dict_getk(Dict *d, char *key)
 	i=dict_find(d, key);
 
 	if (i>=0) 
-		return d->db[i].value;
+		return cloneObj(d->db[i].value);
 
 	return dict_getk(d->outer,key);
 }
@@ -169,7 +182,7 @@ tOBJ dict_get(Dict *d, int indx)
 {
 	if (d==NULL) return emptyObj();	
 	if (indx >=0 && indx <d->ip)
-		return d->db[indx].value;
+		return cloneObj(d->db[indx].value);
 	return emptyObj();
 }
 
@@ -180,7 +193,9 @@ int dict_updateonly(Dict *d, char *key, tOBJ value)
 	i=dict_find(d, key);
 	if (i>=0) 
 	{
+		tOBJ t = d->db[i].value;
 		d->db[i].value = cloneObj(value); // clone it?
+		freeobj(&t);
 		return 1;
 	}
 	else

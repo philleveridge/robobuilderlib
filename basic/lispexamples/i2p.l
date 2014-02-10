@@ -31,7 +31,7 @@
   (WITH (OPD (STACK 5)) (OPS (STACK 5))) 
   (IF (ATOM AE) (RETURN AE) 
   (DO 
-     (WHILE 1
+     (WHILE 1 
         (IF   (NULL AE) (RETURN 'UNEXP))
         (PUSH OPD (IF (ATOM (CAR AE)) (CAR AE) (I2P (CAR AE))))  
         (SETQ AE (CDR AE))

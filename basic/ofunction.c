@@ -351,7 +351,10 @@ tOBJ owhs(tOBJ r)
 	else
 		dict_print(env.dict,toint(r));  //exclude any type FUNC
 
-	printf ("Total size= %d (%d)\n",((Dict *) (env.dict))->ip, ((Dict *) (env.dict))->sz);
+	printf ("Total size= %d (%d) - Mem %d\n",((Dict *) (env.dict))->ip, ((Dict *) (env.dict))->sz, bas_mem());
+
+	if (dbg) bas_show();
+	
 	return emptyObj(); 
 }
 
@@ -1572,6 +1575,7 @@ tOBJ opr(tOBJ a, Dict *e)
 			t=eval(v,e);
 			print(t);
 			f=1;
+			//freeobj(&t);
 		}
 		a=ocdr(a);
 	}
@@ -2144,6 +2148,7 @@ tOBJ obegin(tOBJ o, Dict *e)
 	{
 		tOBJ exp = ocar(o); o=ocdr(o);	
 		r=eval(exp,e);
+		//freeobj(&exp);
 	}
 	return r;
 }
@@ -2810,9 +2815,12 @@ tOBJ osetx(tOBJ o, Dict *e, int f)
 	while (o.type != EMPTY)
 	{
 		tOBJ var = ocar(o); o=ocdr(o);
-		exp = eval(ocar(o),e); o=ocdr(o);
+		tOBJ z=ocar(o);
+		exp = eval(z,e); 
+		o=ocdr(o);
+		//freeobj(&z);
 
-		if (f) var=eval(var,e);
+		if (f) {tOBJ t=var; var=eval(var,e); /*freeobj(&t); */}
 
 		if (var.type==SYM)
 			dict_update(e, var.string, exp);

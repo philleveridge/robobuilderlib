@@ -2,6 +2,8 @@
 #include <string.h>
 #include <jpeglib.h>
 
+#include "mem.h"
+
 int Height;
 int Width;
 int Depth;
@@ -287,7 +289,7 @@ unsigned char*loadimage2(char *ifile)
 
 	printf ("Loaded %d,%d\n", Height, Width);
 
-	p=(unsigned char*) malloc (sizeof(unsigned char)*Height*Width);	
+	p=(unsigned char*) bas_malloc (sizeof(unsigned char)*Height*Width);	
 
 	for (int y=0; y<Height; y++)
 	{
