@@ -16,6 +16,7 @@
 #endif
 
 #include "ostack.h"
+#include "mem.h"
 
 extern int dbg;
 
@@ -26,10 +27,10 @@ extern int dbg;
 tOBJ makestack(int n)
 {
 	tOBJ r;
-	tStackp  p=(tStackp)malloc(sizeof(tStack));
+	tStackp  p=(tStackp)bas_malloc(sizeof(tStack));
 	p->size=n;
 	p->noe=0;
-	p->objarray = malloc(sizeof(tOBJ)*n);
+	p->objarray = bas_malloc(sizeof(tOBJ)*n);
 
 	if (dbg) printf ("Make stack %d\n", n);
 
@@ -49,13 +50,28 @@ void delstack(tStackp p)
 	}
 }
 
+tStackp clonestack(tStackp x)
+{
+	tStackp  p=(tStackp)bas_malloc(sizeof(tStack));
+	p->size=x->size;
+	p->noe=x->noe;
+	p->objarray = bas_malloc(sizeof(tOBJ)*p->size);
+
+	for(int i=0; i<p->noe; i++)
+	{
+		p->objarray[i] =cloneObj(x->objarray[i]	);
+	}
+
+	return p;
+}
+
 int push(tStackp st, tOBJ a)
 {
 	if (dbg)  { printf ("PUSH %d = ", a.type); print(a); printf("\n"); }
 
 	if (st->noe < st->size)
 	{
-		st->objarray[st->noe++] = a;
+		st->objarray[st->noe++] = cloneObj(a);
 		return 1;
 	}
 	return 0;
@@ -74,7 +90,7 @@ tOBJ pop(tStackp st)
 
 	if (dbg) { printf ("POP %d = ", e.type);  print(e); printf("\n"); }
 
-	return e;
+	return cloneObj(e);
 }
 
 tOBJ peek(tStackp st, int n)
@@ -84,7 +100,7 @@ tOBJ peek(tStackp st, int n)
 
 	if (st->noe-1-n >= 0)
 	{
-		return st->objarray[st->noe-1-n];
+		return  cloneObj(st->objarray[st->noe-1-n]);
 	}
 	return e;
 }

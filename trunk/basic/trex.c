@@ -52,6 +52,8 @@ static const TRexChar *g_nnames[] =
 #define TREX_SYMBOL_BEGINNING_OF_STRING ('^')
 #define TREX_SYMBOL_ESCAPE_CHAR ('\\')
 
+#include "mem.h"
+
 
 typedef int TRexNodeType;
 
@@ -530,17 +532,17 @@ static const TRexChar *trex_matchnode(TRex* exp,TRexNode *node,const TRexChar *s
 /* public api */
 TRex *trex_compile(const TRexChar *pattern,const TRexChar **error)
 {
-	TRex *exp = (TRex *)malloc(sizeof(TRex));
+	TRex *exp = (TRex *)bas_malloc(sizeof(TRex));
 	exp->_eol = exp->_bol = NULL;
 	exp->_p = pattern;
 	exp->_nallocated = (int)scstrlen(pattern) * sizeof(TRexChar);
-	exp->_nodes = (TRexNode *)malloc(exp->_nallocated * sizeof(TRexNode));
+	exp->_nodes = (TRexNode *)bas_malloc(exp->_nallocated * sizeof(TRexNode));
 	exp->_nsize = 0;
 	exp->_matches = 0;
 	exp->_nsubexpr = 0;
 	exp->_first = trex_newnode(exp,OP_EXPR);
 	exp->_error = error;
-	exp->_jmpbuf = malloc(sizeof(jmp_buf));
+	exp->_jmpbuf = bas_malloc(sizeof(jmp_buf));
 	if(setjmp(*((jmp_buf*)exp->_jmpbuf)) == 0) {
 		int res = trex_list(exp);
 		exp->_nodes[exp->_first].left = res;
@@ -563,7 +565,7 @@ TRex *trex_compile(const TRexChar *pattern,const TRexChar **error)
 			scprintf(_SC("\n"));
 		}
 #endif
-		exp->_matches = (TRexMatch *) malloc(exp->_nsubexpr * sizeof(TRexMatch));
+		exp->_matches = (TRexMatch *) bas_malloc(exp->_nsubexpr * sizeof(TRexMatch));
 		memset(exp->_matches,0,exp->_nsubexpr * sizeof(TRexMatch));
 	}
 	else{
@@ -576,10 +578,10 @@ TRex *trex_compile(const TRexChar *pattern,const TRexChar **error)
 void trex_free(TRex *exp)
 {
 	if(exp)	{
-		if(exp->_nodes) free(exp->_nodes);
-		if(exp->_jmpbuf) free(exp->_jmpbuf);
-		if(exp->_matches) free(exp->_matches);
-		free(exp);
+		if(exp->_nodes) bas_free(exp->_nodes);
+		if(exp->_jmpbuf) bas_free(exp->_jmpbuf);
+		if(exp->_matches) bas_free(exp->_matches);
+		bas_free(exp);
 	}
 }
 

@@ -18,5 +18,6 @@ extern tOBJ peek 	(tStackp p, int n);
 extern void clear	(tStackp p);
 extern void stackprint	(tStackp p);
 extern int  stacksize 	(tStackp p);
+extern tStackp clonestack(tStackp x);
 
 #endif

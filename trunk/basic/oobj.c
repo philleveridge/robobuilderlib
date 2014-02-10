@@ -29,30 +29,43 @@
 
 int freeobj(tOBJ *b)
 {
+	if (dbg) printf ("free obj - %d %s\n", b->cnt, objtype(*b));
+
 	if (b->type==FMAT2)
 	{
+		if (dbg) printf ("free mat\n");
 		if (b->cnt==0) delmatrix(b->fmat2);
 	}
-	if (b->type==SYM)
+	else if (b->type==SYM)
 	{
+		if (dbg) printf ("free SYM %s\n",b->string);
 		if (b->cnt==0) delstring(b->string);
 	}
-	if (b->type==CELL)
+	else if (b->type==CELL || b->type==LAMBDA  )
 	{
+		if (dbg) printf ("free cell\n");
 		if (b->cnt==0) delCell(b->cell);
 	}
-	if (b->type==DICT)
+	else if (b->type==DICT)
 	{
+		if (dbg) printf ("free dict\n");
 		if (b->cnt==0) deldict(b->dict);
 	}
-	if (b->type==RBM)
+	else if (b->type==RBM)
 	{
 		if (b->cnt==0) rbmdelete(b->mot);
 	}
-	if (b->type==STACK)
+	else if (b->type==STACK)
 	{
 		if (b->cnt==0) delstack(b->stk);
+	}	
+	else 
+	{
+		if (dbg) printf ("nothing to free\n");
 	}
+	b->type=EMPTY;
+	b->q=0;
+	b->cnt=0;
 	return 0;
 }
 
@@ -61,6 +74,7 @@ tOBJ emptyObj()
 	tOBJ r;
 	r.type=EMPTY;
 	r.q=0;
+	r.cnt=0;
 	return r;
 }
 
@@ -94,22 +108,31 @@ tOBJ cloneObj(tOBJ z)
 	{
 		r.string = newstring(z.string);
 	}
-	if (r.type==CELL || r.type==LAMBDA)
+	else if (r.type==CELL || r.type==LAMBDA)
 	{
 		r.cell = cloneCell((tCELLp)z.cell);
 	}
-	if (r.type==FMAT2)
+	else if (r.type==FMAT2)
 	{
-		//TBD
+		r.fmat2 = fmatcp(z.fmat2);
 	}
-	if (r.type==RBM)
+	else if (r.type==STACK)
 	{
-		//TBD
+		r.stk =  clonestack(z.stk); 		
 	}
-	if (r.type==STACK)
+	else if (r.type==DICT)
 	{
-		//TBD
+		r.dict =  clonedict(z.dict); 		
 	}
+	else if (r.type==RBM)
+	{
+		if (dbg) printf ("RBM clone TBD\n");
+	}
+	else 
+	{
+		//if (dbg) printf ("nothing to clone\n");
+	}
+
 	return r;
 }
 
@@ -257,6 +280,7 @@ tOBJ makefloat(float f)
 	r.type=FLOAT;
 	r.floatpoint=f;
 	r.q=0;
+	r.cnt=0;
 	return r;
 }
 
@@ -266,6 +290,7 @@ tOBJ makefloati(int i)
 	r.type=FLOAT;
 	r.floatpoint=(float)i;
 	r.q=0;
+	r.cnt=0;
 	return r;
 }
 
@@ -287,6 +312,7 @@ tOBJ makeint(int i)
 	r.type=INTGR;
 	r.number=i;
 	r.q=0;
+	r.cnt=0;
 	return r;
 }
 

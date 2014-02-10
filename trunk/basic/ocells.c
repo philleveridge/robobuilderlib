@@ -16,8 +16,8 @@
 #endif
 
 #include "ocells.h"
+#include "mem.h"
 
-extern int dbg;
 
 /**********************************************************/
 /*  CELLS                                                 */
@@ -26,16 +26,16 @@ extern int dbg;
 
 tCELLp newCell()
 {
-	if (dbg>1) printf ("New CELL\n");	
-	return (tCELLp)malloc(sizeof(tCELL));
+	if (dbg) printf ("New CELL\n");	
+	return (tCELLp)bas_malloc(sizeof(tCELL));
 }
 
 void delCell(tCELLp p)
 {
-	if (dbg>1)  printf ("Delete CELL\n");	
+	if (dbg)  printf ("Delete CELL\n");	
 	freeobj(&p->head);
 	if (p->tail !=NULL) delCell((tCELLp)p->tail);
-	free(p);
+	bas_free(p);
 }
 
 tOBJ makeCell()
