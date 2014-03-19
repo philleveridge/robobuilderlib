@@ -332,8 +332,11 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 		{
 		case 0:
 			return (*p->func)(emptyObj());
-		case 1:	
-			return (*p->func)(eval(ocar(o),e));
+		case 1:	{
+			tOBJ r=eval(ocar(o),e);
+			tOBJ z=(*p->func)(r);
+			return z;
+			}
 		case 2:	
 			{
 			tOBJ a = ocar(o); o=ocdr(o);
@@ -354,8 +357,9 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			tOBJ c = ocar(o); o=ocdr(o);
 			tOBJ d = ocar(o); o=ocdr(o);
 			tOBJ g = ocar(o); 
-			return (*p->func5)(eval(a,e),eval(b,e)
+			tOBJ r= (*p->func5)(eval(a,e),eval(b,e)
 				,eval(c,e),eval(d,e),eval(g,e));
+			return r;
 			}
 		default:
 			return (*p->funce)(o,e);
@@ -378,7 +382,13 @@ tOBJ eval2(tOBJ o, Dict *e)
 	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA)
 	{
 		o.q=0;
-		return cloneObj(o);
+		if (o.type==SYM)
+			return cloneObj(o);
+
+		if (o.type==CELL || o.type==FMAT2)
+			o.cnt++;
+
+		return o;
 	}
 
 	if (o.type==SYM)
@@ -413,6 +423,7 @@ tOBJ env;
 static int  intf=1;
 
 tOBJ eval_oxpr(char *s);
+void extend(char *s);
 
 void init_extend()
 {
@@ -427,6 +438,7 @@ void init_extend()
 			set(env.dict, "PI",  makefloat (3.1415926));	
 			//seed the RND Gen
 			srand ( (unsigned)time ( NULL ) );
+
 			eval_oxpr("FUNC FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
 
 			if (access("boot.l",F_OK) != -1)
@@ -448,9 +460,14 @@ tOBJ eval_oxpr(char *s)
 
 void extend(char *s)
 {
-	tOBJ v=eval_oxpr(s);
+	init_extend();
+	tOBJ e=parse(s);
+	tOBJ v = eval(e, env.dict);
 	println (" = ", v);
+	if (dbg) printf("-- free return value\n");
 	freeobj(&v);
+	if (dbg) printf("-- free parse output\n");
+	freeobj(&e);
 }
 
 int countb(char *s)
@@ -474,7 +491,8 @@ void repl()
 {
 	char inputbuffer[MAX];
 
-	if (dbg) { for (int g=6; g<8; g++) testme(g); 	sigcatch();  }
+	if (dbg) { for (int g=1; g<12; g++) testme(g); 	sigcatch();  }
+	//if (dbg) { testme(5); 	sigcatch();  }
 
 	init_extend();
 	while (1)

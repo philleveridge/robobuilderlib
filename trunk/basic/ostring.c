@@ -45,6 +45,7 @@ char *newstring1(int n)
 
 void delstring(char *s)
 {
+	if (s==0) return;
 	if (dbg) printf ("Del String (%s)\n", s);
 	bas_free(s);
 }

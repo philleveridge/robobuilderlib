@@ -32,10 +32,12 @@ tCELLp newCell()
 
 void delCell(tCELLp p)
 {
-	if (dbg)  printf ("Delete CELL\n");	
+	if (p==NULL) return;
+	if (dbg)  println ("Delete CELL -", p->head);	
 	freeobj(&p->head);
 	if (p->tail !=NULL) delCell((tCELLp)p->tail);
-	bas_free(p);
+	if ( p!=NULL) bas_free(p);
+	
 }
 
 tOBJ makeCell()
