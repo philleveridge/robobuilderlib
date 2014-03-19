@@ -1245,6 +1245,7 @@ tOBJ ocdr (tOBJ a)
 		{
 			r.type=CELL;
 			r.cell=p->tail;
+			r.cnt=1;
 		}
 	}
 	return r;
@@ -1572,10 +1573,11 @@ tOBJ opr(tOBJ a, Dict *e)
 		}
 		else
 		{
+			freeobj(&t);
 			t=eval(v,e);
 			print(t);
 			f=1;
-			//freeobj(&t);
+
 		}
 		a=ocdr(a);
 	}
@@ -2147,6 +2149,7 @@ tOBJ obegin(tOBJ o, Dict *e)
 	while (!(retflg || brkflg) && o.type != EMPTY)
 	{
 		tOBJ exp = ocar(o); o=ocdr(o);	
+		freeobj(&r);
 		r=eval(exp,e);
 		//freeobj(&exp);
 	}
@@ -2816,6 +2819,7 @@ tOBJ osetx(tOBJ o, Dict *e, int f)
 	{
 		tOBJ var = ocar(o); o=ocdr(o);
 		tOBJ z=ocar(o);
+		freeobj(&exp);
 		exp = eval(z,e); 
 		o=ocdr(o);
 		//freeobj(&z);

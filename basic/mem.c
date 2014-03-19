@@ -82,14 +82,32 @@ void bas_show()
 Test harness for memory leeks
 
 ***************************************************************************/
+	
+int tot;
+
+void testheader(int n)
+{
+	printf ("\n--------------------------------------------------------------------------\ntest %d\n\n",n);
+	bas_show();
+	fflush(stdout);
+}
+
+void testfooter()
+{	bas_show(); 
+	printf ("\nUSED MEM LOC  %d\n", memlc-tot); tot=memlc;
+	fflush(stdout);
+}
 
 void testme(int tn)
 {
+
 	tOBJ r,L,t;
-	bas_show();
+	bas_show(); 
+	tot=memlc;
 
 if (tn==0 || tn==1) 
-{	printf ("\ntest 1\n\n");
+{	
+	testheader(1);
 	r = tokenise("");
 	bas_show();
 	t=r;
@@ -98,11 +116,12 @@ if (tn==0 || tn==1)
 	freeobj(&t);
 	bas_show();
 	freeobj(&L);
-	bas_show();
+	testfooter();
 }
 
 if (tn==0 || tn==2) 
-{	printf ("\ntest 2\n\n");
+{		
+	testheader(2);
 	r = tokenise("test a token");
 	bas_show();
 	t=r;
@@ -111,11 +130,12 @@ if (tn==0 || tn==2)
 	freeobj(&t);
 	bas_show();
 	freeobj(&L);
-	bas_show();
+	testfooter();
 }
 
 if (tn==0 || tn==3) 
-{	printf ("\ntest 3\n\n");
+{		
+	testheader(3);
 	r = tokenise("test ( this is ) a token");
 	bas_show();
 	t=r;
@@ -124,103 +144,90 @@ if (tn==0 || tn==3)
 	freeobj(&t);
 	bas_show();
 	freeobj(&L);
-	bas_show();	
+	testfooter();
 }
 
 if (tn==0 || tn==4) 
-{	printf ("\ntest 4\n\n");
-	r = parse("PR 'Hello 'hi");
-	bas_show();
-	freeobj(&r);
-	bas_show();
+{		
+	testheader(4);
+	extend("PR 'Hello 'hi");
+	testfooter();
 }
 
 if (tn==0 || tn==5) 
-{	printf ("\ntest 5\n\n");
-	r = parse("PR 'Hello 'Hi");
-	bas_show();
-	L = eval(r, env.dict);
-	freeobj(&r);
-	bas_show();
-	freeobj(&L);
-	bas_show();
+{		
+	testheader(51);
+	extend("PR (SIN 0.5)");
+	testfooter();
+
+	testheader(52);
+	extend("PR '(1 2 3)");
+	testfooter();
+
+	testheader(53);
+	extend("CAR '(1 2 3)");
+	testfooter();
+
+	testheader(54);
+	extend("CDR '(1 2 3)");
+	testfooter();
 }
 
 if (tn==0 || tn==6) 
-{	printf ("\ntest 6\n\n");
-	r = parse("PR [1 2;3 4]");
-	bas_show();
-	L = eval(r, env.dict);
-	freeobj(&r);
-	bas_show();
-	freeobj(&L);
-	bas_show();
+{	
+	testheader(6);
+	extend("PR [1 2;3 4]");
+	testfooter();
 }
 
 if (tn==0 || tn==7) 
-{	printf ("\ntest 7\n\n");
-	r = parse("DO (SETQ X 'Hello) (PR X)");
-	bas_show();
-	L = eval(r, env.dict);
-	freeobj(&r);
-	bas_show();
-	freeobj(&L);
-	bas_show();
+{	
+	testheader(7);
+	extend("DO (SETQ X 'Hello)");
+	testfooter();
+
+	testheader(71);
+	extend("DO (SETQ Y 'Hi-there) (SETQ Y 1.5) (SETQ Y 'Hello)");
+	testfooter();
+
+	testheader(72);
+	extend("DO (SETQ Z '(1 2 3)) (SETQ Z (CDR Z)) (PR Z)");
+	testfooter();
+
+        dbg=0;print(eval(parse("WHOS"),env.dict));dbg=1;
+	bas_show(); tot=memlc;
 }
 
 if (tn==0 || tn==8) 
-{	//printf ("\ntest 8-a\n\n");
-	//r = tokenise("DO (SETQ X 'Hi-there) (PR X) (SETQ X 'Hello)");
-	//bas_show();
-	//t=r;
-	//L = read_from(&r);
-	//bas_show();
-	//freeobj(&t);
-	//bas_show();
-	//freeobj(&L);
-	//bas_show();
-
-	printf ("\ntest 8\n\n");
-	r = parse("DO (SETQ X 'Hi-there) (SETQ X 1.5) (SETQ X 'Hello)");
-	bas_show();
-	L = eval(r, env.dict);
-	freeobj(&r);
-	bas_show();
-	freeobj(&L);
-	bas_show();
+{	
+	testheader(8);
+	extend("FOR X '(1 8) (PR X)");
+	testfooter();
 }
 
 if (tn==0 || tn==9) 
-{	printf ("\ntest 9\n\n");
-	r = parse("PR [1 2; 3 4]");
-	bas_show();
-	L = eval(r, env.dict);
-	freeobj(&r);
-	bas_show();
-	freeobj(&L);
-	bas_show();
+{	
+	testheader(9);
+	extend("FUNC FOO (X) (+ X 1))");
+	testfooter();
+
+	testheader(91);
+	extend("PR (FOO 5)");
+	testfooter();
 }
 
 if (tn==0 || tn==10) 
-{	printf ("\ntest 10\n\n");
-	r = parse("DO (SETQ S (STACK 5)) (PUSH S 'Hello) (POP S) ");
-	bas_show();
-	L = eval(r, env.dict);
-	freeobj(&r);
-	bas_show();
-	freeobj(&L);
-	bas_show();
+{	
+	testheader(10);
+	extend("DO (SETQ S (STACK 5)) (PUSH S 'Hello) (POP S) ");
+	testfooter();
 }
 
 if (tn==0 || tn==11) 
-{	printf ("\ntest 11\n\n");
-	r = parse("DO (SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))) (PR ENV) (SETK '(ENV AZ 'Hello))");
-	bas_show();
-	L = eval(r, env.dict);
-	freeobj(&r);
-	bas_show();
-	freeobj(&L);
-	bas_show();
+{	
+	testheader(11);
+	extend("DO (SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))) (PR ENV) (SETK '(ENV AZ 'Hello))");
+	testfooter();
 }
 
 printf ("\nDONE\n\n");

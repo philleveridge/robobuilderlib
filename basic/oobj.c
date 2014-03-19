@@ -29,7 +29,15 @@
 
 int freeobj(tOBJ *b)
 {
+	if (b==NULL) return;
 	if (dbg) printf ("free obj - %d %s\n", b->cnt, objtype(*b));
+
+	if (b->cnt>0)
+	{
+		if (dbg) printf ("copy not a clone\n");
+		b->cnt = b->cnt-1;
+		return 1;
+	}
 
 	if (b->type==FMAT2)
 	{
@@ -133,6 +141,7 @@ tOBJ cloneObj(tOBJ z)
 		//if (dbg) printf ("nothing to clone\n");
 	}
 
+	r.cnt=0;
 	return r;
 }
 

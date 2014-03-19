@@ -58,6 +58,7 @@ fMatrix *newmatrix(int c, int r)
 
 int delmatrix(fMatrix *m)
 {
+	if (m==0) return -1;
 	if (dbg) printf ("Del Matrix [%d,%d]\n", m->w, m->h);
 
 	if (m->h<=0 || m->w<=0 || m->fstore==0)
