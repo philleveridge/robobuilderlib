@@ -2822,7 +2822,6 @@ tOBJ osetx(tOBJ o, Dict *e, int f)
 		freeobj(&exp);
 		exp = eval(z,e); 
 		o=ocdr(o);
-		//freeobj(&z);
 
 		if (f) {tOBJ t=var; var=eval(var,e); /*freeobj(&t); */}
 
