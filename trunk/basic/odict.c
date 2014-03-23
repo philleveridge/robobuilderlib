@@ -44,6 +44,10 @@ int deldict(Dict *x)
 	if (dbg) printf ("Delete dictionary\n");
 	if (x != NULL)
 	{
+		for (int i=0; i<x->ip; i++)
+		{
+			freeobj(&x->db[i].value);
+		}
 		bas_free(x->db);
 		bas_free(x);
 		x=NULL;
@@ -98,7 +102,7 @@ int dict_add(Dict *d, char *key, tOBJ value)
 
 	key = covertToUpper(key);
 
-	if(dbg>1) printf ("Add %s %d %d\n", key, d->ip, d->sz);
+	if(dbg) printf ("Add %s %d %d\n", key, d->ip, d->sz);
 	int i=0;
 
        if (d->ip==d->sz) {printf ("?error no space in dict [%s] %d/%d\n",key,d->ip,d->sz); return 0;}

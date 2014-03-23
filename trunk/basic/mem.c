@@ -265,18 +265,38 @@ if (tn==0 || tn==12)
 {
 
 	testheader(12);	
-	extend("FUNC ROUND (X) (INT (+ 0.5 X))");
+	extend("FUNC TST (X) (CAR X)");
 	testfooter();
 
 	testheader(121);		
-	extend("DEF CHT  (X Y T) (AND (= X (ROUND (CAR T))) (= Y (ROUND (CAR (CDR T)))))");
+	extend("TST '(1 2 3)");
 	testfooter();
 
 	testheader(122);		
-	extend("CHT 1 2 '(1.1 2.1 0.1)");
+	extend("SETQ S '(1 2 3)");
 	testfooter();
 
 	testheader(123);		
+	extend("TST S");
+	testfooter();
+}
+
+if (tn==0 || tn==13) 
+{
+
+	testheader(13);	
+	extend("FUNC ROUND (X) (INT (+ 0.5 X))");
+	testfooter();
+
+	testheader(131);		
+	extend("DEF CHT  (X Y T) (AND (= X (ROUND (CAR T))) (= Y (ROUND (CAR (CDR T)))))");
+	testfooter();
+
+	testheader(132);		
+	extend("CHT 1 2 '(1.1 2.1 0.1)");
+	testfooter();
+
+	testheader(133);		
 	extend("CHT 1 2 '(1.8 2.1 0.1)");
 	testfooter();
 
