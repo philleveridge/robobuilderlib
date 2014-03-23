@@ -26,7 +26,7 @@ extern int dbg;
 
 tOBJ makestack(int n)
 {
-	tOBJ r;
+	tOBJ r=emptyObj();
 	tStackp  p=(tStackp)bas_malloc(sizeof(tStack));
 	p->size=n;
 	p->noe=0;
@@ -41,11 +41,11 @@ tOBJ makestack(int n)
 
 void delstack(tStackp p)
 {
-	printf ("Del stack\n");
+	if (dbg) printf ("Del stack\n");
 	if (p != NULL)
 	{
-		free(p->objarray);
-		free(p);
+		bas_free(p->objarray);
+		bas_free(p);
 		p=0;
 	}
 }
@@ -79,8 +79,7 @@ int push(tStackp st, tOBJ a)
 
 tOBJ pop(tStackp st)
 {
-	tOBJ e;
-	e.type=EMPTY;
+	tOBJ e=emptyObj();
 
 	if (st->noe>0)
 	{
@@ -90,7 +89,7 @@ tOBJ pop(tStackp st)
 
 	if (dbg) { printf ("POP %d = ", e.type);  print(e); printf("\n"); }
 
-	return cloneObj(e);
+	return e; //cloneObj(e);
 }
 
 tOBJ peek(tStackp st, int n)

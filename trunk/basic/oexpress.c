@@ -276,7 +276,8 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 
 	while (onull(arg).number==0)
 	{
-		tOBJ n=ocar(arg);tOBJ v;
+		tOBJ n=ocar(arg);
+		tOBJ v;
 
 		if (oatom(x).number)
 		{
@@ -294,12 +295,16 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 
 		arg=ocdr(arg);
 		x=ocdr(x);
+
+		freeobj(&v);
 	}
 	if (dbg) dict_print((Dict *)e.dict,1);
 
 	retflg=0;
 	arg = obegin(body,(Dict *)e.dict);
 	retflg=0;
+
+	freeobj(&e);
 
 	return arg;
 }
@@ -315,7 +320,9 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 
 	if (h.type==LAMBDA)
 	{
-		return callfn(h, o, e);
+		tOBJ r= callfn(h, o, e);
+		freeobj(&h);
+		return r;
 	}
 
 	if (h.type==FUNC)
@@ -323,9 +330,12 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 		tOPp p = (tOPp)h.fptr;
 		if (p->type != NA && p->type != CBR && p->type != OBR)
 		{
-			tOBJ a = ocar(o); o=ocdr(o);
-			tOBJ b = ocar(o); 					
-			return omath(eval(a,e),eval(b,e),p->type);
+			tOBJ a = eval(ocar(o),e); o=ocdr(o);
+			tOBJ b = eval(ocar(o),e); 					
+			tOBJ r = omath(a,b,p->type);
+			freeobj(&b);
+			freeobj(&a);
+			return r;
 		}
 		else//call
 		switch(p->nop)
@@ -333,32 +343,44 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 		case 0:
 			return (*p->func)(emptyObj());
 		case 1:	{
-			tOBJ r=eval(ocar(o),e);
-			tOBJ z=(*p->func)(r);
-			return z;
+			tOBJ a=eval(ocar(o),e);
+			tOBJ r=(*p->func)(a);
+			freeobj(&a);
+			return r;
 			}
 		case 2:	
 			{
-			tOBJ a = ocar(o); o=ocdr(o);
-			tOBJ b = ocar(o); 
-			return (*p->func2)(eval(a,e),eval(b,e));
+			tOBJ a = eval(ocar(o),e); o=ocdr(o);
+			tOBJ b = eval(ocar(o),e); 
+			tOBJ r = (*p->func2)(a,b);
+			freeobj(&b);
+			freeobj(&a);
+			return r;
 			}
 		case 3:	
 			{
-			tOBJ a = ocar(o); o=ocdr(o);
-			tOBJ b = ocar(o); o=ocdr(o);
-			tOBJ c = ocar(o); 
-			return (*p->func3)(eval(a,e),eval(b,e),eval(c,e));
+			tOBJ a = eval(ocar(o),e); o=ocdr(o);
+			tOBJ b = eval(ocar(o),e); o=ocdr(o);
+			tOBJ c = eval(ocar(o),e); 
+			tOBJ r = (*p->func3)(a,b,c);
+			freeobj(&c);
+			freeobj(&b);
+			freeobj(&a);
+			return r;
 			}
 		case 5:	
 			{
-			tOBJ a = ocar(o); o=ocdr(o);
-			tOBJ b = ocar(o); o=ocdr(o);
-			tOBJ c = ocar(o); o=ocdr(o);
-			tOBJ d = ocar(o); o=ocdr(o);
-			tOBJ g = ocar(o); 
-			tOBJ r= (*p->func5)(eval(a,e),eval(b,e)
-				,eval(c,e),eval(d,e),eval(g,e));
+			tOBJ a = eval(ocar(o,e)); o=ocdr(o);
+			tOBJ b = eval(ocar(o,e)); o=ocdr(o);
+			tOBJ c = eval(ocar(o,e)); o=ocdr(o);
+			tOBJ d = eval(ocar(o,e)); o=ocdr(o);
+			tOBJ g = eval(ocar(o,e)); 
+			tOBJ r= (*p->func5)(a,b,v,d,g);
+			freeobj(&g);
+			freeobj(&d);
+			freeobj(&c);
+			freeobj(&b);
+			freeobj(&a);
 			return r;
 			}
 		default:
@@ -379,13 +401,13 @@ tOBJ eval2(tOBJ o, Dict *e)
 {
 	tOBJ h;
 
-	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA)
+	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA|| o.type==STACK)
 	{
 		o.q=0;
 		if (o.type==SYM)
 			return cloneObj(o);
 
-		if (o.type==CELL || o.type==FMAT2)
+		if (o.type==CELL || o.type==FMAT2 || o.type==STACK)
 			o.cnt++;
 
 		return o;
@@ -393,20 +415,14 @@ tOBJ eval2(tOBJ o, Dict *e)
 
 	if (o.type==SYM)
 	{
-		return dict_getk(e, o.string);
+		tOBJ a=dict_getc(e, o.string);
+		if (a.type==CELL)
+			return a;
+		else	
+			return cloneObj(a);
 	}
 
-	h=ocar(o);
-	o=ocdr(o);
-
-	//lookup procedure
-
-	tOBJ n= procall (h, o, e );
-
-	//freeobj(&h);
-	
-	return n;
-
+	return n= procall (ocar(o), ocdr(o), e );	//lookup procedure
 }
 
 tOBJ eval(tOBJ o, Dict *e)
@@ -439,7 +455,7 @@ void init_extend()
 			//seed the RND Gen
 			srand ( (unsigned)time ( NULL ) );
 
-			eval_oxpr("FUNC FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
+			extend("FUNC FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
 
 			if (access("boot.l",F_OK) != -1)
 			{
@@ -464,7 +480,7 @@ void extend(char *s)
 	tOBJ e=parse(s);
 	tOBJ v = eval(e, env.dict);
 	println (" = ", v);
-	if (dbg) printf("-- free return value\n");
+	if (dbg) printf("-- free return value\n"); 
 	freeobj(&v);
 	if (dbg) printf("-- free parse output\n");
 	freeobj(&e);
@@ -491,8 +507,8 @@ void repl()
 {
 	char inputbuffer[MAX];
 
-	if (dbg) { for (int g=1; g<12; g++) testme(g); 	sigcatch();  }
-	//if (dbg) { testme(5); 	sigcatch();  }
+	//if (dbg) { for (int g=1; g<13; g++) testme(g); 	sigcatch();  }
+	if (dbg) { testme(12); 	sigcatch();  }
 
 	init_extend();
 	while (1)

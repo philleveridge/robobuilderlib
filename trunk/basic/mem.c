@@ -36,7 +36,7 @@ int find(void *x)
 
 void *bas_malloc (size_t Size) 
 {
-	if (dbg) {printf ("malloc %d (%d)\n", Size,memlc);}
+	if (dbg) {printf ("malloc %d (%d)\n", Size,memlc); fflush(stdout);}
 	void *p = malloc(Size);
 	if (memlc<MAXLIST-1)
 	{
@@ -57,7 +57,7 @@ void *bas_realloc(size_t Size, void *ptr)
 void bas_free   (void *ptr)
 {
 	int n=find(ptr);
-	if (dbg) {printf ("bas free - %d %u\n",n, (n>=0)?memlist[n].size:n);}
+	if (dbg) {printf ("bas free - %d %u\n",n, (n>=0)?memlist[n].size:n); 	fflush(stdout);}
 	if (n>=0) {
 		mem_counter -= memlist[n].size;
 		for (int i=n; i<memlc-1; i++) memlist[i]=memlist[i+1];
@@ -68,13 +68,14 @@ void bas_free   (void *ptr)
 
 int bas_mem()
 {
-	if (dbg) {printf ("mem=%d - elements = %d\n", mem_counter, memlc);}
+	if (dbg) {printf ("mem=%d - elements = %d\n", mem_counter, memlc); 	fflush(stdout);}
 	return mem_counter;
 }
 
 void bas_show()
 {
 	printf("\n\n"); for (int i=0; i<memlc; i++) printf("%d) %d\n", i, memlist[i].size); printf("\n\n"); 
+	fflush(stdout);
 }
 
 /**************************************************************************
@@ -182,20 +183,21 @@ if (tn==0 || tn==6)
 
 if (tn==0 || tn==7) 
 {	
-	testheader(7);
-	extend("DO (SETQ X 'Hello)");
-	testfooter();
+	//testheader(7);
+	//extend("DO (SETQ X 'Hello)");
+	//testfooter();
 
-	testheader(71);
-	extend("DO (SETQ Y 'Hi-there) (SETQ Y 1.5) (SETQ Y 'Hello)");
-	testfooter();
+	//testheader(71);
+	//extend("DO (SETQ Y 'Hi-there) (SETQ Y 1.5) (SETQ Y 'Hello)");
+	//testfooter();
 
 	testheader(72);
-	extend("DO (SETQ Z '(1 2 3)) (SETQ Z (CDR Z)) (PR Z)");
+	extend("SETQ Z '(1 2 3)");
 	testfooter();
 
-        dbg=0;print(eval(parse("WHOS"),env.dict));dbg=1;
-	bas_show(); tot=memlc;
+	testheader(73);
+	extend("CDR Z");
+	testfooter();
 }
 
 if (tn==0 || tn==8) 
@@ -212,24 +214,73 @@ if (tn==0 || tn==9)
 	testfooter();
 
 	testheader(91);
-	extend("PR (FOO 5)");
+	extend("FOO 5");
+	testfooter();
+
+	testheader(92);
+	extend("FOO (FOO 5)");
 	testfooter();
 }
 
 if (tn==0 || tn==10) 
-{	
+{
+
 	testheader(10);
-	extend("DO (SETQ S (STACK 5)) (PUSH S 'Hello) (POP S) ");
+	extend("STACK 5");
+	testfooter();
+
+	testheader(101);
+	extend("SETQ S (STACK 5)");
+	testfooter();
+	
+	testheader(102);
+	extend("PUSH S 'Hello");
+	testfooter();
+
+	testheader(103);
+	extend("POP S");
 	testfooter();
 }
 
 if (tn==0 || tn==11) 
-{	
+{
 	testheader(11);
-	extend("DO (SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))) (PR ENV) (SETK '(ENV AZ 'Hello))");
+	extend("SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))");
+	testfooter();
+	
+	testheader(111);
+	extend("PR ENV");
+	testfooter();
+
+	testheader(112);
+	extend("SETK '(ENV AZ 'Hello)");
+	testfooter();
+
+	testheader(113);
+	extend("GETK ENV AZ");
 	testfooter();
 }
 
+if (tn==0 || tn==12) 
+{
+
+	testheader(12);	
+	extend("FUNC ROUND (X) (INT (+ 0.5 X))");
+	testfooter();
+
+	testheader(121);		
+	extend("DEF CHT  (X Y T) (AND (= X (ROUND (CAR T))) (= Y (ROUND (CAR (CDR T)))))");
+	testfooter();
+
+	testheader(122);		
+	extend("CHT 1 2 '(1.1 2.1 0.1)");
+	testfooter();
+
+	testheader(123);		
+	extend("CHT 1 2 '(1.8 2.1 0.1)");
+	testfooter();
+
+}
 printf ("\nDONE\n\n");
 
 }

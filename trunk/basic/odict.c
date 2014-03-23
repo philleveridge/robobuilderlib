@@ -178,6 +178,21 @@ tOBJ dict_getk(Dict *d, char *key)
 	return dict_getk(d->outer,key);
 }
 
+tOBJ dict_getc(Dict *d, char *key)
+{
+	int i;
+	if (d==NULL) 
+		return emptyObj();
+
+	i=dict_find(d, key);
+
+	if (i>=0) 
+		return copyObj(d->db[i].value);
+
+	return dict_getc(d->outer,key);
+}
+
+
 tOBJ dict_get(Dict *d, int indx)
 {
 	if (d==NULL) return emptyObj();	

@@ -35,7 +35,6 @@ int freeobj(tOBJ *b)
 	if (b->cnt>0)
 	{
 		if (dbg) printf ("copy not a clone\n");
-		b->cnt = b->cnt-1;
 		return 1;
 	}
 
@@ -108,9 +107,17 @@ int compareObj(tOBJ a, tOBJ b)
 	return 0;
 }
 
+tOBJ copyObj(tOBJ z)
+{
+	tOBJ r = z; 
+	if (r.type==CELL || r.type==FMAT2 || r.type==STACK || r.type==SYM  || r.type==RBM   || r.type==DICT)
+		r.cnt+=1;
+	return r;
+}
+
 tOBJ cloneObj(tOBJ z)
 {
-	tOBJ r = z; // needs fixing for dynamic typees
+	tOBJ r = z; 
 
 	if (r.type==SYM)
 	{
@@ -126,6 +133,7 @@ tOBJ cloneObj(tOBJ z)
 	}
 	else if (r.type==STACK)
 	{
+		//if (dbg) printf ("clone STACK\n");
 		r.stk =  clonestack(z.stk); 		
 	}
 	else if (r.type==DICT)
@@ -236,13 +244,13 @@ tOBJ fprint(FILE *fp, tOBJ r)
     {
         struct cell  *c = r.cell;
         fprintf(fp,"(");  
-        print(c->head);
+        fprint (fp, c->head);
                 
         while (c->tail != (void *)0)
         {
                 c=c->tail;
                 fprintf(fp, " ");
-                print(c->head);
+                fprint(fp,c->head);
         }
         fprintf(fp,")");
     }
@@ -251,6 +259,45 @@ tOBJ fprint(FILE *fp, tOBJ r)
 		printtype(fp, r);
     }
     return r;
+}
+
+int sprint(char *sp, tOBJ r)
+{
+    int n=0;
+    if (r.q==1) sp[n++]='\'';
+
+    if (r.type == CELL)
+    {
+        struct cell  *c = r.cell;
+        sp[n++]=='(';
+        n += sprint (sp, c->head);
+                
+        while (c->tail != (void *)0)
+        {
+                c=c->tail;
+        	sp[n++]=' ';
+                n += sprint(sp,c->head);
+        }
+        sp[n++]=')';
+    }
+    else if (r.type == INTGR)
+    {
+            sprintf(sp, "%d", r.number);
+    }
+    else if (r.type == FLOAT)
+    {
+            sprintf(sp, "%f", r.floatpoint);
+    }
+    else if (r.type == SYM)
+    {
+            sprintf(sp, "%S", r.string);
+    }
+    else
+    {
+	sprintf(sp,"%s", "X");
+    }
+    sp[n]='\0';
+    return n;
 }
 
 tOBJ print(tOBJ r)
