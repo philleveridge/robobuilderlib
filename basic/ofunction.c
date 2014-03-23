@@ -131,7 +131,7 @@ tOP oplist[] = {
 	{"GAUS",  40, NA,   3, ogaus}, //mean, variance, x value
 	{"GAUSK", 40, NA,   2, ogausk}, //mean, variance
 	{"GETB",  40, NA,   1, getb}, //function single arg
-	{"GETK",  40, NA,   2, oget}, //function single arg
+	{"GETK",  40, NA,   9, ogetk}, //function single arg
 	{"GETSERVO",40, NA, 1, ogetservo}, //function single arg
 	{"H2SM",  40, NA,   1, ohsum2},  //function <fMatrix>
 	{"HSUM",  40, NA,   1, ohsum},  //function <fMatrix>
@@ -161,14 +161,14 @@ tOP oplist[] = {
 	{"NULL",  40, NA,   1, onull},  //function single arg
 	{"OPFLOW",40, NA,   2, OpticFlow}, 
 	{"OR",    40, NA,   9, oor}, 
-	{"PEEK",  40, NA,   2, opeek}, 
+	{"PEEK",  40, NA,   9, opeek}, 
 	{"PLUS",  40, NA,   9, oplus}, 
-	{"POP",   40, NA,   1, opop}, //function single arg
+	{"POP",   40, NA,   9, opop}, //function single arg
 	{"POSE",  40, NA,   1, opose}, //function single arg
 	{"PR",    40, NA,   9, opr}, 
 	{"PRINT", 40, NA,   9, opr},  
 	{"PSD",   40, NA,   0, opsd},  //const
-	{"PUSH",  40, NA,   2, opush},  //function single arg
+	{"PUSH",  40, NA,   9, opush},  //function single arg
 	{"PUTC",  40, NA,   1, oputch},  //function single arg
 	{"QT",    40, NA,   9, oquote}, 
 	{"RBM",   40, NA,   1, orbmrf},
@@ -1618,68 +1618,82 @@ tOBJ ocond(tOBJ o, Dict *e)
 	return cond;
 }
 
-tOBJ osetk(tOBJ a)
-{
 /*
-SETK '{A 2 B 3}
-GETK 'A
-> PRINT A,B
-SET ENZ {DICT '{{"a" 1} {"b" 2.3}}}
-set env {DICT '{{AZ 1.0} {BZ 2.0}}}
-GETK '{ENV 'AZ}
-SETK '{ENV 'BZ 2.9}
+SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))
+GETK ENV 'AZ
 */
+tOBJ osetk(tOBJ a, Dict *e)
+{
 	tOBJ r=emptyObj();
-	tOBJ en=emptyObj();
-	tOBJ value=emptyObj();
 
 	if (a.type==CELL)
 	{
-		while(1) {
-			tOBJ name = eval(ocar(a),env.dict);
-			if (name.type ==DICT)
-			{
-				en   = name;
-				name = ocar(ocdr(a));
-				a    = ocdr(a);
-			}
+		//SETK '(ENV BZ 2.9)
+		tOBJ name = ocar(a);
+		tOBJ en=emptyObj();
 
-			if (name.type==EMPTY) break;
-			if (name.type==SYM)
-			{
-				//value = eval(ocar(ocdr(a)), en.dict);
-				value = ocar(ocdr(a));
-				if (en.type==EMPTY)
-				{
-					set(en.dict, name.string, value);
-				}
-				else
-				{
-					dict_update(en.dict, name.string, value);
-				}
-			}
-			a = ocdr(ocdr(a));
+		if (name.type != SYM)
+		{
+			return emptyObj();
 		}
-		r=value;
+
+		en   = dict_getc(e, name.string);;
+		name = ocar(ocdr(a));
+		a    = ocdr(a);
+
+		if (name.type==SYM && en.type==DICT)
+		{
+			r = eval(ocar(ocdr(a)), e);
+			dict_update(en.dict, name.string, r);
+		}
 	}	
 	return r;
 }
 
-tOBJ oget(tOBJ a, tOBJ b)
+tOBJ ogetk(tOBJ o, Dict *e)
 {
-	//> !GETK '{A B}
-	//> !GETK 'A
-	//SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))
-	//GETK ENV 'AZ
-
+	tOBJ a=ocar(o); o=ocdr(o);
+	tOBJ b=ocar(o);
 	tOBJ r=emptyObj();
-	if (a.type==DICT && b.type==SYM)
+
+	if (a.type==SYM && b.type==EMPTY)
 	{
-		r = get(a.dict, b.string);
-	}
-	if (a.type==SYM)
-	{
+		//GETK A
 		r = get(env.dict, a.string);
+	}
+
+	if (a.type==SYM && b.type!=EMPTY)
+	{
+		//GETK ENV 'AZ
+		b=eval(b,e);
+		a = dict_getc(e, a.string);
+
+		if (a.type==DICT && b.type==SYM)
+		{
+			r = dict_getk(a.dict, b.string);
+		}
+		freeobj(&b);
+	}	
+	return r;
+}
+
+tOBJ oget(tOBJ a)
+{
+	//GETK '(ENV AZ)
+	tOBJ r=emptyObj();
+	if (a.type==CELL) 
+	{
+		tOBJ en=ocar(a);
+		tOBJ var=ocar(ocdr(a));
+
+		if (en.type==SYM && var.type==SYM)
+		{
+			en = dict_getc(env.dict, a.string);
+			if (en.type==DICT)
+			{
+				r = get(en.dict, var.string);
+			}
+		}
 	}	
 	return r;
 }
@@ -2151,7 +2165,6 @@ tOBJ obegin(tOBJ o, Dict *e)
 		tOBJ exp = ocar(o); o=ocdr(o);	
 		freeobj(&r);
 		r=eval(exp,e);
-		//freeobj(&exp);
 	}
 	return r;
 }
@@ -2572,24 +2585,57 @@ tOBJ ostack(tOBJ a)
 	return makestack(toint(a));
 }
 
-tOBJ opush(tOBJ a, tOBJ b)
+tOBJ opush(tOBJ o, Dict *e)
 {
-	if (a.type!=STACK) return emptyObj();
-	if (push((tStackp)a.stk, b))
-		return b;
-	else
+	tOBJ a=ocar(o); o=ocdr(o);
+	tOBJ b= emptyObj();
+
+	if (a.type != SYM)
 		return emptyObj();
+
+	a=dict_getc(e, a.string); //copy
+
+	if (a.type==STACK) 
+	{
+		b=eval(ocar(o),e); 
+
+		if (!push((tStackp)a.stk, b))
+		{
+			freeobj(&b);
+			b= emptyObj();
+		}
+	}
+	return b;
 }
 
-tOBJ opop(tOBJ a)
+tOBJ opop(tOBJ o, Dict *e)
 {
-	if (a.type!=STACK) return emptyObj();
-	return pop((tStackp)a.stk);
+if (dbg) printf("-----pop called\n");
+	tOBJ a=ocar(o); 
+	tOBJ r= emptyObj();
+
+	if (a.type != SYM)
+		return r;
+
+	a=dict_getc(e, a.string); //copy
+
+	if (a.type!=STACK) return r;
+	r = pop((tStackp)a.stk);
+	return r;
 }
 
-tOBJ opeek(tOBJ a, tOBJ b)
+tOBJ opeek(tOBJ o, Dict *e)
 {
-	if (a.type!=STACK) return emptyObj();
+	tOBJ a= ocar(o); o=ocdr(o);
+	tOBJ b= ocar(o);
+	tOBJ r= emptyObj();
+
+	if (a.type != SYM)
+		return r;
+
+	a=dict_getc(e, a.string); //copy
+
+	if (a.type!=STACK) return r;
 	return peek((tStackp)a.stk, toint(b));
 }
 
@@ -2823,7 +2869,7 @@ tOBJ osetx(tOBJ o, Dict *e, int f)
 		exp = eval(z,e); 
 		o=ocdr(o);
 
-		if (f) {tOBJ t=var; var=eval(var,e); /*freeobj(&t); */}
+		if (f) {tOBJ t=var; var=eval(var,e); freeobj(&t); }
 
 		if (var.type==SYM)
 			dict_update(e, var.string, exp);
