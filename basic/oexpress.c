@@ -370,12 +370,12 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			}
 		case 5:	
 			{
-			tOBJ a = eval(ocar(o,e)); o=ocdr(o);
-			tOBJ b = eval(ocar(o,e)); o=ocdr(o);
-			tOBJ c = eval(ocar(o,e)); o=ocdr(o);
-			tOBJ d = eval(ocar(o,e)); o=ocdr(o);
-			tOBJ g = eval(ocar(o,e)); 
-			tOBJ r= (*p->func5)(a,b,v,d,g);
+			tOBJ a = eval(ocar(o),e); o=ocdr(o);
+			tOBJ b = eval(ocar(o),e); o=ocdr(o);
+			tOBJ c = eval(ocar(o),e); o=ocdr(o);
+			tOBJ d = eval(ocar(o),e); o=ocdr(o);
+			tOBJ g = eval(ocar(o),e); 
+			tOBJ r= (*p->func5)(a,b,c,d,g);
 			freeobj(&g);
 			freeobj(&d);
 			freeobj(&c);
@@ -422,7 +422,7 @@ tOBJ eval2(tOBJ o, Dict *e)
 			return cloneObj(a);
 	}
 
-	return n= procall (ocar(o), ocdr(o), e );	//lookup procedure
+	return procall (ocar(o), ocdr(o), e );	//lookup procedure
 }
 
 tOBJ eval(tOBJ o, Dict *e)
@@ -507,8 +507,8 @@ void repl()
 {
 	char inputbuffer[MAX];
 
-	//if (dbg) { for (int g=1; g<13; g++) testme(g); 	sigcatch();  }
-	if (dbg) { testme(12); 	sigcatch();  }
+	if (dbg) { for (int g=1; g<14; g++) testme(g); 	sigcatch();  }
+	//if (dbg) { testme(12); 	sigcatch();  }
 
 	init_extend();
 	while (1)

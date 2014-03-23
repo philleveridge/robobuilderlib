@@ -2931,10 +2931,12 @@ tOBJ oif(tOBJ o, Dict *e)
 		|| (test.type == FLOAT && test.floatpoint != 0.0 ) 
                 || (test.type != INTGR && test.type != FLOAT && test.type!=EMPTY)) 
         {
+		freeobj(&test);
                 return eval(conseq,e);
         }
         else
         {
+		freeobj(&test);
                 return eval(alt,e);
         }
 }
