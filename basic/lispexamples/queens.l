@@ -33,9 +33,9 @@
   (WHILE  (<= N SIZE)
      (SETQ M 1 F 0)
      (WHILE (<= M SIZE) 
-        '(PRINT N M ;)
+        (PRINT N M ;)
         (IF (NOT (CONFLICT N M BOARD)) 
-              (DO (SETQ BOARD (CONS (LIST N M) BOARD) F 1) '(PR 'OK BOARD))
+              (DO (PR 'Y ) (SETQ BOARD (CONS (LIST N M) BOARD) F 1) '(PR 'OK BOARD)) (PR 'N)
         )
 
 	(WHILE  (AND (NOT (NULL BOARD)) (= F 0) (>= M SIZE)) 
@@ -49,6 +49,6 @@
   (PR "Board=" BOARD) (PBOARD SIZE BOARD))
 
 
-(QUEEN 8)
+;(QUEEN 8)
 
 

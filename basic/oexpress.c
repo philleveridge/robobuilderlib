@@ -304,6 +304,11 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 	arg = obegin(body,(Dict *)e.dict);
 	retflg=0;
 
+	if (arg.cnt>0)
+	{
+		arg=cloneObj(arg);
+	}
+
 	freeobj(&e);
 
 	return arg;
@@ -507,8 +512,8 @@ void repl()
 {
 	char inputbuffer[MAX];
 
-	if (dbg) { for (int g=1; g<14; g++) testme(g); 	sigcatch();  }
-	//if (dbg) { testme(12); 	sigcatch();  }
+	if (dbg) { for (int g=1; g<17; g++) testme(g); 	sigcatch();  }
+	//if (dbg) { testme(16); 	sigcatch();  }
 
 	init_extend();
 	while (1)
