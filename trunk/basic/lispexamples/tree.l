@@ -50,11 +50,11 @@
 
 (func CHOICE-LC (f) 
         (WITH (LC 500) BS x) 
-        (FOREACH x f 
+        (FOREACH x f (PR x)
             (IF (< (NTH 2 x) LC) 
                  (SETQ LC (NTH 2 x) BS x) 
             ))
-       '(PR "Best LC=" LC BS) BS)
+       (PR "Best LC=" LC BS) BS)
 
 (func REMOVE (a b) 
 	(WITH nn z) 
@@ -70,11 +70,15 @@
    (PR "starting from .. " init " going to " goal )  (PR meth)
    (setq FRONTIER (LIST (LIST init 0 0)) EXPLORED '())
 
+(PR 'front= FRONTIER)
+
    (WHILE (NOT (NULL FRONTIER)) 
 
        	(SETQ top (COND   (= meth 'LC) (CHOICE-LC FRONTIER) 
                           (= meth 'SP) (CHOICE-SP FRONTIER)
                           (= meth 'AS) (CHOICE-AS FRONTIER)))
+
+(PR 'top= top)
 
 	(IF (NULL top) (RETURN 'FAIL))
 
@@ -98,15 +102,15 @@
 )
 
 ;testing
-'(SETQ   B1 (CHOICE-LC '( (A 2 5) (B 5 7 ) (C 1 23))))
-'(PR "test " (REMOVE B1 '( (A 2) (B 1) (C 3))))
-'(PR (GSEARCH 'ARAD 'ZERIN'))
+;'(SETQ   B1 (CHOICE-LC '( (A 2 5) (B 5 7 ) (C 1 23))))
+;'(PR "test " (REMOVE B1 '( (A 2) (B 1) (C 3))))
+;'(PR (GSEARCH 'ARAD 'ZERIN'))
 
 ;init arad - goal bucharest
-(PR (GSEARCH 'ARAD 'BUCHAREST' 'LC))
-(PR (GSEARCH 'ARAD 'BUCHAREST' 'SP))
-(PR (GSEARCH 'ARAD 'BUCHAREST' 'AS))
-'done
+;(PR (GSEARCH 'ARAD 'BUCHAREST' 'LC))
+;(PR (GSEARCH 'ARAD 'BUCHAREST' 'SP))
+;(PR (GSEARCH 'ARAD 'BUCHAREST' 'AS))
+;'done
 
 
 

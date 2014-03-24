@@ -281,6 +281,8 @@ if (tn==0 || tn==12)
 	testfooter();
 }
 
+
+
 if (tn==0 || tn==13) 
 {
 
@@ -301,6 +303,36 @@ if (tn==0 || tn==13)
 	testfooter();
 
 }
+
+if (tn==0 || tn==14) 
+{
+
+	testheader(14);	
+	extend("LIST 1.0 2.0 3.0");
+	testfooter();
+}
+
+if (tn==0 || tn==15) 
+{
+
+	testheader(15);	
+	extend("CONS 1 '(1 2 3)");
+	testfooter();
+}
+
+if (tn==0 || tn==16) 
+{
+
+	testheader(16);	
+	extend("DEF FOO (X) (PR X)");
+	testfooter();
+
+	testheader(161);	
+	extend("FOO '(1 2 3)");
+	testfooter();
+}
+
+
 printf ("\nDONE\n\n");
 
 }

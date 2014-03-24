@@ -239,16 +239,20 @@ tOBJ getOP2(Dict *e, char *str)
 
 int getOPlevel(Dict *e, char *str)
 {
-	tOBJ r =  dict_getk(e, str);
-	if (r.type != FUNC) return -1;
-	return ((tOPp)(r.fptr))->level;	
+	tOBJ r =  dict_getc(e, str);
+	int n=-1;
+	if (r.type == FUNC)
+		n=  ((tOPp)(r.fptr))->level;	
+	return n;
 }
 
 int getOPtype(Dict *e, char *str)
 {
-	tOBJ r =  dict_getk(e, str);
-	if (r.type != FUNC) return -1;
-	return ((tOPp)(r.fptr))->type;		
+	tOBJ r =  dict_getc(e, str);
+	int n=-1;
+	if (r.type == FUNC) 
+		n = ((tOPp)(r.fptr))->type;	
+	return n;	
 }
 
 
@@ -1304,17 +1308,18 @@ tOBJ olen (tOBJ a)
 
 tOBJ ocons (tOBJ a, tOBJ b)
 {
-	//!CONS 1 '{2 3} -> {1 2 3}
+	//CONS 1 '(1 2 3)
 	tOBJ r=emptyObj();
 
         if (b.type==CELL)
         {
+		b=cloneObj(b);
                 r=makeCell2(a, b.cell);
         }
 	if (b.type==EMPTY)
 	{
 		r=makeCell();
-		((tCELLp)(r.cell))->head=a;
+		((tCELLp)(r.cell))->head=cloneObj(a);
 	}
 	return r;
 }
@@ -1494,8 +1499,11 @@ tOBJ olist(tOBJ o, Dict *e)
 	tOBJ r=emptyObj();
 	while (o.type != EMPTY)
 	{
-		tOBJ exp = ocar(o); o=ocdr(o);	
-		r = append(r, eval(exp, e));
+		tOBJ exp = eval(ocar(o),e); o=ocdr(o);	
+		tOBJ rn  = append(r, exp );
+		freeobj(&exp);
+		freeobj(&r);
+		r=rn;
 	}
 	return r;
 }
@@ -1607,6 +1615,7 @@ tOBJ ocond(tOBJ o, Dict *e)
 	//o=ocar(o);
 	while (o.type != EMPTY)
 	{
+		freeobj(&cond);
 		cond = eval(ocar(o),e); o=ocdr(o);
 		act  = ocar(o); o=ocdr(o);
 		if (dbg) {println ("cond =", cond);}
@@ -1712,7 +1721,7 @@ tOBJ onth(tOBJ a, tOBJ lst)
 			lst = ocdr(lst);
 			cnt--;
 		}
-		return ocar(lst);
+		return cloneObj(ocar(lst));
 	}
 	return emptyObj();
 }
@@ -2183,6 +2192,7 @@ tOBJ owhile  (tOBJ  o, Dict *e)
 	while (	!(retflg || brkflg) && toint(eval(cond,e))!=0)
 	{
 		//loop
+		freeobj(&r);
 		r = obegin(o,e);
 	}
 	brkflg=0;
@@ -2297,6 +2307,7 @@ tOBJ ofor (tOBJ  o, Dict *e)
 		for (int i=s; (!(retflg || brkflg) && i<=f); i++)
 		{
 			dict_update(e, ind.string, makeint(i));
+			freeobj(&r);
 			r = obegin(o,e);
 			i = toint(dict_getk(e, ind.string));
 		}
@@ -2305,6 +2316,7 @@ tOBJ ofor (tOBJ  o, Dict *e)
 		for (int i=s; (!(retflg || brkflg) && i>=f); i--)
 		{
 			dict_update(e, ind.string, makeint(i));
+			freeobj(&r);
 			r = obegin(o,e);
 			i = toint(dict_getk(e, ind.string));
 		}
@@ -2744,15 +2756,18 @@ tOBJ formula(tOBJ ae, Dict *e)
 	// ( V op V )
 	// V op V op V
 	// F (arg) -tbd
-	// 
-	tOBJ ops=makestack(10);
-	tOBJ opd=makestack(10);
+	// LET A = 6
+	// LET A = 1 + 2
+	// LET A = 1 + 2 + 4
 
 	if (oatom(ae).number==1) {return ae;}
 
+	tOBJ ops=makestack(10);
+	tOBJ opd=makestack(10);
+
 	while (1)
 	{
-		if (onull(ae).number==1) return emptyObj();
+		if (onull(ae).number==1) {freeobj(&ops); freeobj(&opd); return emptyObj();}
 
 		if (oatom(ocar(ae)).number==1) 
 			push (opd.stk, ocar(ae)); 
@@ -2766,7 +2781,11 @@ tOBJ formula(tOBJ ae, Dict *e)
 			if (dbg) {okey(makeint(2)); println ("ae =", ae); }
 
 			if (onull(ae).number==1 && stacksize(ops.stk)==0 ) 
-				return pop(opd.stk);
+			{
+				tOBJ r = pop(opd.stk);
+				freeobj(&ops); freeobj(&opd); freeobj(&ae);
+				return r;
+			}
 
 			tOBJ a = ocar(ae);
 			tOBJ b = peek(ops.stk,0); 
@@ -2774,16 +2793,23 @@ tOBJ formula(tOBJ ae, Dict *e)
 			if (dbg) {println ("a =", a); println ("b =", b);}
 
 			if (a.type==SYM)
+			{
 				wa=getOPlevel(e, a.string); 
-
-			if (wa<0)
-			{ 
-				ae = ocons(a,ae);
-				wa=0;
+				if (wa<0)
+				{ 
+					tOBJ nae = ocons(a,ae);
+					freeobj(&ae);
+					ae=nae;
+					wa=0;
+				}
+				//freeobj(&a);
 			}
 
 			if (b.type==SYM)
+			{
 				wb=getOPlevel(e, b.string);
+				freeobj(&b);
+			}
 
 			if (onull(ae).number==1 ||  (wa <= wb))
 			{
@@ -2797,6 +2823,9 @@ tOBJ formula(tOBJ ae, Dict *e)
 				else
 					wa=0;
 
+				//freeobj(&a);
+				//freeobj(&b);
+
 				a = eval(pop(opd.stk),e);
 				b = eval(pop(opd.stk),e);
 
@@ -2804,17 +2833,37 @@ tOBJ formula(tOBJ ae, Dict *e)
 
 				push(opd.stk,ans);
 				pop(ops.stk); 
+
+				//freeobj(&a);
+				//freeobj(&b);
+				freeobj(&opc);
 			}
 			else
 			{
 				if (dbg) {printf ("P2 : %d %d\n",wa,wb); }
 				push(ops.stk,a);
+				//freeobj(&a);
+				//freeobj(&b);
 				break;
 			}
 
 		}
 		ae = ocdr(ae);
-	}	
+	}
+	freeobj(&ops); 
+	freeobj(&opd); 
+}
+
+
+tOBJ olet(tOBJ o, Dict *e) 
+{
+	//LET VAR = FORMULA
+	tOBJ var = ocar(o); o=ocdr(o);
+	tOBJ eq =  ocar(o); o=ocdr(o);
+	if (eq.type != SYM && strcmp(eq.string,"=")) {printf ("err\n"); return emptyObj();}
+	eq = formula(o,e);
+	dict_update(e, var.string, eq);
+	return eq;
 }
 
 
@@ -2910,6 +2959,7 @@ tOBJ owith(tOBJ o, Dict *e)
 			{
                                 dict_add(e, n.string, val);
 			}
+			freeobj(&val);
 		}
 		else
 		{
@@ -2946,16 +2996,6 @@ tOBJ oform(tOBJ o, Dict *e)
 	return formula(o,e);
 }
 
-tOBJ olet(tOBJ o, Dict *e) 
-{
-	//LET VAR = FORMULA
-	tOBJ var = ocar(o); o=ocdr(o);
-	tOBJ eq =  ocar(o); o=ocdr(o);
-	if (eq.type != SYM && strcmp(eq.string,"=")) {printf ("err\n"); return emptyObj();}
-	eq = formula(o,e);
-	dict_update(e, var.string, eq);
-	return eq;
-}
 
 tOBJ ofunc(tOBJ o, Dict *e) 
 {
