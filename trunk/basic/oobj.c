@@ -264,25 +264,37 @@ tOBJ fprint(FILE *fp, tOBJ r)
 int sprint(char *sp, tOBJ r)
 {
     int n=0;
+
+//	sprintf(sp, "this is a test"); return 0;
+
     if (r.q==1) sp[n++]='\'';
 
     if (r.type == CELL)
     {
         struct cell  *c = r.cell;
-        sp[n++]=='(';
-        n += sprint (sp, c->head);
-                
+        sp[n++]='(';
+   	sp[n]  ='\0';
+
+        n += sprint (sp+n, c->head);                
         while (c->tail != (void *)0)
         {
                 c=c->tail;
         	sp[n++]=' ';
-                n += sprint(sp,c->head);
+                n += sprint(sp+n,c->head);
         }
         sp[n++]=')';
+   	sp[n]='\0';
+	return n;
     }
     else if (r.type == INTGR)
     {
             sprintf(sp, "%d", r.number);
+
+    }
+    else if (r.type == EMPTY)
+    {
+            sprintf(sp, "NULL");
+
     }
     else if (r.type == FLOAT)
     {
@@ -290,13 +302,13 @@ int sprint(char *sp, tOBJ r)
     }
     else if (r.type == SYM)
     {
-            sprintf(sp, "%S", r.string);
+            sprintf(sp, "%s", r.string);
     }
     else
     {
-	sprintf(sp,"%s", "X");
+	sprintf(sp+n,"%s", "X");
     }
-    sp[n]='\0';
+    n=strlen(sp);
     return n;
 }
 
