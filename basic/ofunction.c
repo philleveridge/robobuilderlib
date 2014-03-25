@@ -1236,6 +1236,7 @@ tOBJ ocar (tOBJ a)
 	if (a.type==CELL)
 	{
 		r=((tCELLp)(a.cell))->head;
+		r.cnt=1;
 	}
 	return r;
 }
@@ -2208,7 +2209,7 @@ tOBJ obreak  (tOBJ  o)
 tOBJ oreturn  (tOBJ  o)
 {
 	retflg=1;
-	return o;
+	return cloneObj(o);
 }
 
 tOBJ ofore   (tOBJ  o, Dict *e)
@@ -2242,14 +2243,15 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 	else
 	if (list.type == CELL)
 	{
+		//FOREACH X '( (A 1) (B 2) (C 3)) (PR (CAR X))
+
 		brkflg=0;			
 		do {
 			tOBJ value=ocar(list);
 			list=ocdr(list);
-
-			dict_update(e, ind.string, value);
-		
+			dict_update(e, ind.string, value);		
 			//loop
+			freeobj(&r);
 			r = obegin(o,e);
 
 		} while (!(retflg || brkflg) && list.type != EMPTY);

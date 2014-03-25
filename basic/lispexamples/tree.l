@@ -57,7 +57,6 @@
        (PR "Best LC=" LC BS) BS)
 
 (func REMOVE (a b) 
-	(WITH nn z) 
 	(FOREACH z b (IF (NOT (= (CAR z) (CAR a))) 
 			(SETQ nn (CONS z nn)))) nn)
 
@@ -70,24 +69,22 @@
    (PR "starting from .. " init " going to " goal )  (PR meth)
    (setq FRONTIER (LIST (LIST init 0 0)) EXPLORED '())
 
-(PR 'front= FRONTIER)
-
    (WHILE (NOT (NULL FRONTIER)) 
 
        	(SETQ top (COND   (= meth 'LC) (CHOICE-LC FRONTIER) 
                           (= meth 'SP) (CHOICE-SP FRONTIER)
                           (= meth 'AS) (CHOICE-AS FRONTIER)))
 
-(PR 'top= top)
-
 	(IF (NULL top) (RETURN 'FAIL))
 
       	(setq FRONTIER (REMOVE top FRONTIER))
+
   	(SETQ EXPLORED (CONS top EXPLORED))
+
 	(SETQ (ns pl cost path) top)
 
        	(IF (NOT (NULL (SETQ action  (GPATH ns)) ))
-        (DO
+        (DO     
 		(SETQ path (CONS ns path))
 		(IF (=  ns goal) (DO (PR "Cost=" cost) (RETURN (REV path)) ))
 		(inc pl)
@@ -113,6 +110,7 @@
 ;'done
 
 
+;REMOVE '(AB 1 2) '( (CD 2 3) (AB 1 2) (AB 3 4))
 
 
 

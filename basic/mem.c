@@ -86,6 +86,44 @@ Test harness for memory leeks
 	
 int tot;
 
+extern int memlc;
+void test_extend(char *s, char *expected, int nob)
+{
+	char buffer[100];
+	init_extend();
+	int tc=memlc;
+	*buffer=0;
+
+	dbg=0;
+	tOBJ e=parse(s);
+	dbg=1;
+
+	tOBJ v = eval(e, env.dict);
+	println (" = ", v);
+	
+	sprint(buffer, v);
+
+	printf("-- free return value\n"); 
+	freeobj(&v);
+	printf("-- free parse output\n");
+	freeobj(&e);
+
+	printf("-- used %d\n", memlc-tc);
+	if (nob != (memlc-tc))
+	{
+		printf("-- ERROR [ %d ] != %d\n", memlc-tc, nob);
+	}
+
+	if (!(expected==NULL || *expected==0))
+	{
+		if (strcmp(buffer,expected))
+		{
+			printf("-- ERROR [ %s ] != [ %s ]\n", expected, buffer);
+		}
+	}
+
+}
+
 void testheader(int n)
 {
 	printf ("\n--------------------------------------------------------------------------\ntest %d\n\n",n);
@@ -151,74 +189,74 @@ if (tn==0 || tn==3)
 if (tn==0 || tn==4) 
 {		
 	testheader(4);
-	extend("PR 'Hello 'hi");
+	test_extend("PR 'Hello 'hi", "hi", 0);
 	testfooter();
 }
 
 if (tn==0 || tn==5) 
 {		
 	testheader(51);
-	extend("PR (SIN 0.5)");
+	test_extend("PR (SIN 0.5)", "0.479426", 0);
 	testfooter();
 
 	testheader(52);
-	extend("PR '(1 2 3)");
+	test_extend("PR '(1 2 3)", "(1 2 3)", 0);
 	testfooter();
 
 	testheader(53);
-	extend("CAR '(1 2 3)");
+	test_extend("CAR '(1 2 3)", "1", 0);
 	testfooter();
 
 	testheader(54);
-	extend("CDR '(1 2 3)");
+	test_extend("CDR '(1 2 3)", "(2 3)", 0);
 	testfooter();
 }
 
 if (tn==0 || tn==6) 
 {	
 	testheader(6);
-	extend("PR [1 2;3 4]");
+	test_extend("PR [1 2;3 4]", "", 0);
 	testfooter();
 }
 
 if (tn==0 || tn==7) 
 {	
 	//testheader(7);
-	//extend("DO (SETQ X 'Hello)");
+	//test_extend("DO (SETQ X 'Hello)");
 	//testfooter();
 
 	//testheader(71);
-	//extend("DO (SETQ Y 'Hi-there) (SETQ Y 1.5) (SETQ Y 'Hello)");
+	//test_extend("DO (SETQ Y 'Hi-there) (SETQ Y 1.5) (SETQ Y 'Hello)");
 	//testfooter();
 
 	testheader(72);
-	extend("SETQ Z '(1 2 3)");
+	test_extend("SETQ Z '(1 2 3)", "(1 2 3)", 3);
 	testfooter();
 
 	testheader(73);
-	extend("CDR Z");
+	test_extend("CDR Z", "(2 3)", 0);
 	testfooter();
 }
 
 if (tn==0 || tn==8) 
 {	
 	testheader(8);
-	extend("FOR X '(1 8) (PR X)");
+	test_extend("FOR X '(1 8) (PR X)", "", 0);
 	testfooter();
 }
 
 if (tn==0 || tn==9) 
 {	
 	testheader(9);
-	extend("FUNC FOO (X) (+ X 1))");
+	test_extend("FUNC FOO (X) (+ X 1))", "", 9);
 	testfooter();
 
 	testheader(91);
-	extend("FOO 5");
+	test_extend("FOO 5", "6", 0);
 	testfooter();
 
 	testheader(92);
-	extend("FOO (FOO 5)");
+	test_extend("FOO (FOO 5)", "7", 0);
 	testfooter();
 }
 
@@ -226,38 +264,38 @@ if (tn==0 || tn==10)
 {
 
 	testheader(10);
-	extend("STACK 5");
+	test_extend("STACK 5", "", 0);
 	testfooter();
 
 	testheader(101);
-	extend("SETQ S (STACK 5)");
+	test_extend("SETQ S (STACK 5)", "", 2);
 	testfooter();
 	
 	testheader(102);
-	extend("PUSH S 'Hello");
+	test_extend("PUSH S 'Hello", "Hello", 1);
 	testfooter();
 
 	testheader(103);
-	extend("POP S");
+	test_extend("POP S", "Hello", -1);
 	testfooter();
 }
 
 if (tn==0 || tn==11) 
 {
 	testheader(11);
-	extend("SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))");
+	test_extend("SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))", "", 2);
 	testfooter();
 	
 	testheader(111);
-	extend("PR ENV");
+	test_extend("PR ENV", "", 0);
 	testfooter();
 
 	testheader(112);
-	extend("SETK '(ENV AZ 'Hello)");
+	test_extend("SETK '(ENV AZ 'Hello)", "", 1);
 	testfooter();
 
 	testheader(113);
-	extend("GETK ENV AZ");
+	test_extend("GETK ENV 'AZ", "Hello", 0);
 	testfooter();
 }
 
@@ -265,19 +303,19 @@ if (tn==0 || tn==12)
 {
 
 	testheader(12);	
-	extend("FUNC TST (X) (CAR X)");
+	test_extend("FUNC TST (X) (CAR X)", "", 8);
 	testfooter();
 
 	testheader(121);		
-	extend("TST '(1 2 3)");
+	test_extend("TST '(1 2 3)", "1", 0);
 	testfooter();
 
 	testheader(122);		
-	extend("SETQ S '(1 2 3)");
+	test_extend("SETQ S '(1 2 3)", "(1 2 3)", 1);
 	testfooter();
 
 	testheader(123);		
-	extend("TST S");
+	test_extend("TST S", "1", 0);
 	testfooter();
 }
 
@@ -287,19 +325,19 @@ if (tn==0 || tn==13)
 {
 
 	testheader(13);	
-	extend("FUNC ROUND (X) (INT (+ 0.5 X))");
+	test_extend("FUNC ROUND (X) (INT (+ 0.5 X))", "", 12);
 	testfooter();
 
 	testheader(131);		
-	extend("DEF CHT  (X Y T) (AND (= X (ROUND (CAR T))) (= Y (ROUND (CAR (CDR T)))))");
+	test_extend("DEF CHT  (X Y T) (AND (= X (ROUND (CAR T))) (= Y (ROUND (CAR (CDR T)))))", "", 39);
 	testfooter();
 
 	testheader(132);		
-	extend("CHT 1 2 '(1.1 2.1 0.1)");
+	test_extend("CHT 1 2 '(1.1 2.1 0.1)", "", 0);
 	testfooter();
 
 	testheader(133);		
-	extend("CHT 1 2 '(1.8 2.1 0.1)");
+	test_extend("CHT 1 2 '(1.8 2.1 0.1)", "", 0);
 	testfooter();
 
 }
@@ -308,7 +346,7 @@ if (tn==0 || tn==14)
 {
 
 	testheader(14);	
-	extend("LIST 1.0 2.0 3.0");
+	test_extend("LIST 1.0 2.0 3.0", "(1.000000 2.000000 3.000000)", 0);
 	testfooter();
 }
 
@@ -316,7 +354,7 @@ if (tn==0 || tn==15)
 {
 
 	testheader(15);	
-	extend("CONS 1 '(1 2 3)");
+	test_extend("CONS 1 '(1 2 3)", "(1 1 2 3)", 0);
 	testfooter();
 }
 
@@ -324,11 +362,22 @@ if (tn==0 || tn==16)
 {
 
 	testheader(16);	
-	extend("DEF FOO (X) (PR X)");
+	test_extend("DEF BAR (X) (PR X)", "", 8);
 	testfooter();
 
 	testheader(161);	
-	extend("FOO '(1 2 3)");
+	test_extend("BAR '(1 2 3)", "(1 2 3)", 0);
+	testfooter();
+}
+
+if (tn==0 || tn==17) 
+{
+	testheader(17);	
+	test_extend("CAR '( (AB 1) (AC 2) )", "(AB 1)", 0);
+	testfooter();
+
+	testheader(171);	
+	test_extend("CAR '( (AB 1) (AC 2) )", "(AB 1)", 0);
 	testfooter();
 }
 

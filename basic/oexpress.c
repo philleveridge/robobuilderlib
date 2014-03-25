@@ -479,9 +479,11 @@ tOBJ eval_oxpr(char *s)
 	return f;
 }
 
+extern int memlc;
 void extend(char *s)
 {
 	init_extend();
+int tc=memlc;
 	tOBJ e=parse(s);
 	tOBJ v = eval(e, env.dict);
 	println (" = ", v);
@@ -489,6 +491,8 @@ void extend(char *s)
 	freeobj(&v);
 	if (dbg) printf("-- free parse output\n");
 	freeobj(&e);
+
+printf("-- used %d\n", memlc-tc);
 }
 
 int countb(char *s)
@@ -512,8 +516,8 @@ void repl()
 {
 	char inputbuffer[MAX];
 
-	if (dbg) { for (int g=1; g<17; g++) testme(g); 	sigcatch();  }
-	//if (dbg) { testme(16); 	sigcatch();  }
+	if (dbg) { testme(0); 	sigcatch();  }
+	//if (dbg) { testme(17); 	sigcatch();  }
 
 	init_extend();
 	while (1)
