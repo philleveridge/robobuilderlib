@@ -316,6 +316,7 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 
 tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 {
+	tOBJ r;
 	if (h.type==EMPTY) return h;
 
 	if (h.type==SYM && dict_contains(e, h.string))
@@ -325,7 +326,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 
 	if (h.type==LAMBDA)
 	{
-		tOBJ r= callfn(h, o, e);
+		r= callfn(h, o, e);
 		freeobj(&h);
 		return r;
 	}
@@ -349,7 +350,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			return (*p->func)(emptyObj());
 		case 1:	{
 			tOBJ a=eval(ocar(o),e);
-			tOBJ r=(*p->func)(a);
+			r=(*p->func)(a);
 			freeobj(&a);
 			return r;
 			}
@@ -357,7 +358,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			{
 			tOBJ a = eval(ocar(o),e); o=ocdr(o);
 			tOBJ b = eval(ocar(o),e); 
-			tOBJ r = (*p->func2)(a,b);
+			r = (*p->func2)(a,b);
 			freeobj(&b);
 			freeobj(&a);
 			return r;
@@ -367,7 +368,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			tOBJ a = eval(ocar(o),e); o=ocdr(o);
 			tOBJ b = eval(ocar(o),e); o=ocdr(o);
 			tOBJ c = eval(ocar(o),e); 
-			tOBJ r = (*p->func3)(a,b,c);
+			r = (*p->func3)(a,b,c);
 			freeobj(&c);
 			freeobj(&b);
 			freeobj(&a);
@@ -380,7 +381,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			tOBJ c = eval(ocar(o),e); o=ocdr(o);
 			tOBJ d = eval(ocar(o),e); o=ocdr(o);
 			tOBJ g = eval(ocar(o),e); 
-			tOBJ r= (*p->func5)(a,b,c,d,g);
+			r= (*p->func5)(a,b,c,d,g);
 			freeobj(&g);
 			freeobj(&d);
 			freeobj(&c);
@@ -398,6 +399,8 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 		printf ("? unknown symbol [%s]\n", h.string);
 	else
 		printf ("? unknown (%s)\n",objtype(h));
+
+	freeobj(&h);
 
 	return emptyObj();
 }
@@ -483,16 +486,15 @@ extern int memlc;
 void extend(char *s)
 {
 	init_extend();
-int tc=memlc;
+	int tc=memlc;
 	tOBJ e=parse(s);
 	tOBJ v = eval(e, env.dict);
 	println (" = ", v);
-	if (dbg) printf("-- free return value\n"); 
 	freeobj(&v);
-	if (dbg) printf("-- free parse output\n");
 	freeobj(&e);
-
+#ifdef MEM_DEBUG
 printf("-- used %d\n", memlc-tc);
+#endif
 }
 
 int countb(char *s)

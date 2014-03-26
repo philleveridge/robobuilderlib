@@ -4,9 +4,9 @@
 (  FOREACH X L (SETQ E (CONS (LIST X 0) E)))
       (DICT E)
 )
-(FUNC PUTPROP (I V P) (SETK  (LIST I P V)))
-(FUNC REMPROP (I P)   (SETK  (LIST I P )))
-(FUNC GETPROP (I P )  (GETK  (EVAL I) P ))
+(FUNC PUTPROP (I V P) (SETK  I P V))
+(FUNC REMPROP (I P)   (SETK  I P ))
+(FUNC GETPROP (I P )  (GETK  I P ))
  
 (FUNC PRPROP (i)  (PR (GETPROP i "COLOUR")))
  

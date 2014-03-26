@@ -265,8 +265,6 @@ int sprint(char *sp, tOBJ r)
 {
     int n=0;
 
-//	sprintf(sp, "this is a test"); return 0;
-
     if (r.q==1) sp[n++]='\'';
 
     if (r.type == CELL)
