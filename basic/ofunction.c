@@ -2876,7 +2876,10 @@ tOBJ oquote(tOBJ o, Dict *e)
 
 tOBJ oeval(tOBJ o, Dict *e) 
 {
-	return eval(eval(ocar(o),e),e);
+	tOBJ a=eval(ocar(o),e);
+	tOBJ c=eval(a,e);
+	freeobj(&a);
+	return c;
 }
 
 tOBJ oinc(tOBJ o, Dict *e) 
