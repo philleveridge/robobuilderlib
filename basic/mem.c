@@ -10,9 +10,13 @@
 #include "ofunction.h"
 #include "oexpress.h"
 
+#ifdef MEM_DEBUG
+
 //
 // memory allocation for debug purposes
 //
+
+
 unsigned int mem_counter=0;
 
 typedef struct mem {
@@ -78,15 +82,7 @@ void bas_show()
 	fflush(stdout);
 }
 
-/**************************************************************************
 
-Test harness for memory leeks
-
-***************************************************************************/
-	
-int tot;
-
-extern int memlc;
 void test_extend(char *s, char *expected, int nob)
 {
 	char buffer[100];
@@ -123,6 +119,81 @@ void test_extend(char *s, char *expected, int nob)
 	}
 
 }
+
+
+#else
+
+int memlc=0;
+
+void *bas_malloc (size_t Size) 
+{
+	if (dbg) {printf ("malloc\n"); fflush(stdout);}
+	void *p = malloc(Size);
+	return p;
+}
+
+void *bas_realloc(size_t Size, void *ptr)
+{
+	// tbd
+	return realloc(Size, ptr);
+}
+
+void bas_free   (void *ptr)
+{
+	if (dbg) {printf ("bas free \n"); fflush(stdout);}
+	free (ptr);
+}
+
+int bas_mem()
+{
+	return 0;
+}
+
+void bas_show()
+{
+}
+
+void test_extend(char *s, char *expected, int nob)
+{
+	char buffer[100];
+	init_extend();
+	*buffer=0;
+
+	dbg=0;
+	tOBJ e=parse(s);
+	dbg=1;
+
+	tOBJ v = eval(e, env.dict);
+	println (" = ", v);
+	
+	sprint(buffer, v);
+
+	printf("-- free return value\n"); 
+	freeobj(&v);
+	printf("-- free parse output\n");
+	freeobj(&e);
+
+	if (!(expected==NULL || *expected==0))
+	{
+		if (strcmp(buffer,expected))
+		{
+			printf("-- ERROR [ %s ] != [ %s ]\n", expected, buffer);
+		}
+	}
+
+}
+
+#endif
+
+
+/**************************************************************************
+
+Test harness for memory leeks
+
+***************************************************************************/
+	
+
+int tot;
 
 void testheader(int n)
 {
@@ -291,11 +362,11 @@ if (tn==0 || tn==11)
 	testfooter();
 
 	testheader(112);
-	test_extend("SETK '(ENV AZ 'Hello)", "", 1);
+	test_extend("SETK 'ENV 'AZ 'Hello", "", 1);
 	testfooter();
 
 	testheader(113);
-	test_extend("GETK ENV 'AZ", "Hello", 0);
+	test_extend("GETK 'ENV 'AZ", "Hello", 0);
 	testfooter();
 }
 
@@ -360,7 +431,6 @@ if (tn==0 || tn==15)
 
 if (tn==0 || tn==16) 
 {
-
 	testheader(16);	
 	test_extend("DEF BAR (X) (PR X)", "", 8);
 	testfooter();
@@ -381,11 +451,29 @@ if (tn==0 || tn==17)
 	testfooter();
 }
 
+if (tn==0 || tn==18) 
+{
+	testheader(18);	
+	test_extend("COND 'A 'B 'C", "B", 0);
+	testfooter();
+
+	testheader(181);	
+	test_extend("COND 1 'B 'C", "B", 0);
+	testfooter();
+
+	testheader(182);	
+	test_extend("COND 0 'A 0 'B 1 'E", "E", 0);
+	testfooter();
+}
+
+if (tn==0 || tn==19) 
+{
+	testheader(19);	
+	test_extend("PLUS 'ABC 'DE", "ABCDE", 0);
+	testfooter();
+}
 
 printf ("\nDONE\n\n");
 
 }
-
-
-
 

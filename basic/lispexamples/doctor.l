@@ -1,15 +1,14 @@
 !DO
 
 (DEF MATCH (P D)
-'(PR "P=" P " D=" D)
-(COND ((AND (NULL P) (NULL D))                                 1
+(COND (AND (NULL P) (NULL D))                                 1
        (OR  (NULL P) (NULL D))                                 0
        (OR  (= (CAR P) '>) (= (CAR P) (CAR D)))                (MATCH (CDR P) (CDR D))
        (AND (= (LFT (CAR P) 1) '>) (MATCH (CDR P) (CDR D)))    (SET (MID (CAR P) 2) (CAR D))
-       (=   (CAR P) '+)                                        (COND ((MATCH (CDR P) (CDR D)) 1 (MATCH P (CDR D))))
-       (=   (LFT (CAR P) 1) '+) (COND ((MATCH (CDR P) (CDR D)) (SET (MID (CAR P) 2) (CAR D))
-                                       (MATCH P (CDR P))       (SET (MID (CAR P) 2) (CONS (CAR D) (MID (CAR P) 2)))))
-      )
+       (=   (CAR P) '+)                                        (COND (MATCH (CDR P) (CDR D)) 1 (MATCH P (CDR D)))
+       (=   (LFT (CAR P) 1) '+) (COND (MATCH (CDR P) (CDR D)) (SET (MID (CAR P) 2) (CAR D))
+                                       (MATCH P (CDR P))       (SET (MID (CAR P) 2) (CONS (CAR D) (MID (CAR P) 2))))
+      
 ))
 
 ;tests
@@ -66,7 +65,6 @@
 
 (func GETRES (data inp)
    (FOREACH x data 
-
         (IF (MATCH (CAR x) inp)  
             (IF  (> (LEN (CADR x)) 1) 
                  (RETURN (CONS 'PR (NTH (INT (* (LEN (CADR x)) (RND))) (CADR x) )) ) 
@@ -90,9 +88,9 @@
   )
 ))
  
-'( GETRES DATA '(A YES B) )
+;(PR ( GETRES DATA '(A YES B) ))
 
-(DOCTOR)
+;(DOCTOR)
 
 
 

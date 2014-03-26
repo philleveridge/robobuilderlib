@@ -186,7 +186,7 @@ tOP oplist[] = {
 	{"SERVO", 40, NA,   0, oserv}, //function single arg
 	{"SET"   ,40, NA,   9, oset}, 
 	{"SETB",  40, NA,   2, setb}, //function single arg
-	{"SETK",  40, NA,   1, osetk}, //function single arg
+	{"SETK",  40, NA,   9, osetk}, //function single arg
 	{"SETQ"  ,40, NA,   9, osetq}, 
 	{"SETSERVO", 40, NA,3, osetservo}, //function single arg
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
@@ -368,10 +368,8 @@ tOBJ owhs(tOBJ r)
 
 tOBJ omath(tOBJ o1, tOBJ o2, int op)
 {
-	tOBJ r;
+	tOBJ r = emptyObj();
 	int i;
-	r.type=EMPTY;
-
 
 	if (dbg>1) {printf("math op : %d %d %d\n", o1.type, op, o2.type); } //debug info
 
@@ -506,10 +504,12 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	{
 		int n=strlen(o1.string)+strlen(o2.string)+1;
 		char *s=newstring1(n);
-		strcat(s,o1.string);
+		strcpy(s,o1.string);
 		strcat(s,o2.string);
 		r.type=SYM;
 		r.string=s;
+		r.q=0;
+		r.cnt=0;
 		return r;
 	}
 
@@ -1307,7 +1307,7 @@ tOBJ olen (tOBJ a)
 	return r;
 }
 
-tOBJ ocons (tOBJ a, tOBJ b)
+tOBJ ocons(tOBJ a, tOBJ b)
 {
 	//CONS 1 '(1 2 3)
 	tOBJ r=emptyObj();
@@ -1509,6 +1509,8 @@ tOBJ olist(tOBJ o, Dict *e)
 	return r;
 }
 
+//PLUS 'A 'B 'C
+//PLUS 1 2 3 4
 tOBJ oplus(tOBJ o, Dict *e)
 {
 	tOBJ r = eval(ocar(o),e); 
@@ -1516,8 +1518,12 @@ tOBJ oplus(tOBJ o, Dict *e)
 
 	while (o.type != EMPTY)
 	{
-		tOBJ exp = ocar(o); o=ocdr(o);	
-		r = omath(r, eval(exp, e), PLUS);
+		tOBJ a = eval(ocar(o), e);
+		o=ocdr(o);	
+		tOBJ b = omath(r, a, PLUS);
+		freeobj(&a);
+		freeobj(&r);
+		r=b;
 	}
 	return r;
 }
@@ -1559,9 +1565,12 @@ tOBJ oappend(tOBJ o, Dict *e)
 		tOBJ exp = eval(ocar(o),e); o=ocdr(o);	
 		while (exp.type != EMPTY)
 		{
-			r = append(r, ocar(exp));
+			tOBJ t = append(r, ocar(exp));
 			exp=ocdr(exp);
+			freeobj(&r);
+			r=t;
 		}
+		freeobj(&exp);
 	}
 	return r;
 }
@@ -1595,25 +1604,25 @@ tOBJ opr(tOBJ a, Dict *e)
 }
 
 /*
-!> COND ('A 'B 'C)
+!> COND 'A 'B 'C
  = B
-!> COND (1 'B 'C)
+!> COND 1 'B 'C
  = B
-!> COND (0 'B 'C)
+!> COND 0 'B 'C
  = C
-!> COND (0 'A 0 'B 1 'E)
+!> COND 0 'A 0 'B 1 'E
  = E
-!> COND (0 'A 0 'B 1 )  
+!> COND 0 'A 0 'B 1   
  = 1
-!> COND ( '() 1 2)
+!> COND  '() 1 2
  = 2
-!> COND ( '(1) 1 2)
+!> COND  '(1) 1 2
 */
 tOBJ ocond(tOBJ o, Dict *e)
 {
 	tOBJ cond=emptyObj();
 	tOBJ act=emptyObj();
-	//o=ocar(o);
+
 	while (o.type != EMPTY)
 	{
 		freeobj(&cond);
@@ -1623,67 +1632,77 @@ tOBJ ocond(tOBJ o, Dict *e)
 		if ((cond.type == INTGR && cond.number != 0 ) 
 		|| (cond.type != INTGR && cond.type!=EMPTY && cond.type!=FLOAT)
 		|| (cond.type == FLOAT && cond.floatpoint != 0.0 ) ) 
-			return (onull(act).number==1)?cond:eval(act,e);
+		{
+			if (onull(act).number==1)
+			{
+				return cond;
+			}
+			else
+			{
+				freeobj(&cond);
+				return eval(act,e);
+			}
+		}
 	}	
 	return cond;
 }
 
 /*
 SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))
-GETK ENV 'AZ
+GETK 'ENV 'AZ
+SETK 'ENV 'AZ 5.0
 */
-tOBJ osetk(tOBJ a, Dict *e)
+tOBJ osetk(tOBJ o, Dict *e)
 {
+	tOBJ a=eval(ocar(o),e); o=ocdr(o);
+	tOBJ b=eval(ocar(o),e); o=ocdr(o);
+	tOBJ c=eval(ocar(o),e);
 	tOBJ r=emptyObj();
 
-	if (a.type==CELL)
+	if (a.type==SYM && b.type==SYM)
 	{
-		//SETK '(ENV BZ 2.9)
-		tOBJ name = ocar(a);
-		tOBJ en=emptyObj();
+		//SETK 'ENV 'BZ 2.9
 
-		if (name.type != SYM)
+		tOBJ en = dict_getc(e, a.string);
+
+		if (en.type==DICT)
 		{
-			return emptyObj();
+			dict_update(en.dict, b.string, c);
+			r=cloneObj(c);
 		}
+	}
 
-		en   = dict_getc(e, name.string);;
-		name = ocar(ocdr(a));
-		a    = ocdr(a);
+	freeobj(&a);
+	freeobj(&b);
+	freeobj(&c);
 
-		if (name.type==SYM && en.type==DICT)
-		{
-			r = eval(ocar(ocdr(a)), e);
-			dict_update(en.dict, name.string, r);
-		}
-	}	
 	return r;
 }
 
 tOBJ ogetk(tOBJ o, Dict *e)
 {
-	tOBJ a=ocar(o); o=ocdr(o);
-	tOBJ b=ocar(o);
+	tOBJ a=eval(ocar(o),e); o=ocdr(o);
+	tOBJ b=eval(ocar(o),e);
 	tOBJ r=emptyObj();
 
 	if (a.type==SYM && b.type==EMPTY)
 	{
-		//GETK A
+		//GETK 'A
 		r = get(env.dict, a.string);
 	}
 
 	if (a.type==SYM && b.type!=EMPTY)
 	{
-		//GETK ENV 'AZ
-		b=eval(b,e);
-		a = dict_getc(e, a.string);
+		//GETK 'ENV 'AZ
+		tOBJ t = dict_getc(e, a.string);
 
-		if (a.type==DICT && b.type==SYM)
+		if (t.type==DICT && b.type==SYM)
 		{
-			r = dict_getk(a.dict, b.string);
+			r = dict_getk(t.dict, b.string);
 		}
 		freeobj(&b);
-	}	
+	}
+	freeobj(&a);	
 	return r;
 }
 
@@ -2236,6 +2255,7 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 				v.type=FLOAT;
 				v.floatpoint =fget2(list.fmat2,i,j);
 				dict_update(e, ind.string, v);
+				freeobj(&r);
 				r = obegin(o,e);		
 			}
 		}
@@ -2278,6 +2298,7 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 		for (int i=0; (!(retflg || brkflg) && (i<p->ip)); i++)
 		{
 			dict_update(e, ind.string, makestring(p->db[i].key));
+			freeobj(&r);
 			r = obegin(o,e);
 		}		
 		brkflg=0;
@@ -2769,7 +2790,7 @@ tOBJ formula(tOBJ ae, Dict *e)
 
 	while (1)
 	{
-		if (onull(ae).number==1) {freeobj(&ops); freeobj(&opd); return emptyObj();}
+		if (onull(ae).number==1) {freeobj(&ops); freeobj(&opd); dbg=0; return emptyObj();}
 
 		if (oatom(ocar(ae)).number==1) 
 			push (opd.stk, ocar(ae)); 
@@ -2785,7 +2806,7 @@ tOBJ formula(tOBJ ae, Dict *e)
 			if (onull(ae).number==1 && stacksize(ops.stk)==0 ) 
 			{
 				tOBJ r = pop(opd.stk);
-				freeobj(&ops); freeobj(&opd); freeobj(&ae);
+				freeobj(&ops); freeobj(&opd); freeobj(&ae); dbg=0;
 				return r;
 			}
 
@@ -2804,7 +2825,6 @@ tOBJ formula(tOBJ ae, Dict *e)
 					ae=nae;
 					wa=0;
 				}
-				//freeobj(&a);
 			}
 
 			if (b.type==SYM)
@@ -2825,27 +2845,22 @@ tOBJ formula(tOBJ ae, Dict *e)
 				else
 					wa=0;
 
-				//freeobj(&a);
-				//freeobj(&b);
-
 				a = eval(pop(opd.stk),e);
 				b = eval(pop(opd.stk),e);
 
 				tOBJ ans= omath(a, b, wa);
 
 				push(opd.stk,ans);
-				pop(ops.stk); 
-
-				//freeobj(&a);
-				//freeobj(&b);
+				
+				tOBJ x = pop(ops.stk); 
+				freeobj(&x);
 				freeobj(&opc);
 			}
 			else
 			{
 				if (dbg) {printf ("P2 : %d %d\n",wa,wb); }
 				push(ops.stk,a);
-				//freeobj(&a);
-				//freeobj(&b);
+				freeobj(&a);
 				break;
 			}
 

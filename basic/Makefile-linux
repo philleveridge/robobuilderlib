@@ -18,7 +18,7 @@ COMMON = -mmcu=$(MCU)
 
 ## Compile options common for all C compilation units.
 #CFLAGS = $(COMMON) -D AVR 
-CFLAGS = -D LINUX -D PARSE -D IMAGE  -D VJ
+CFLAGS = -D MEM_DEBUG -D LINUX -D PARSE -D IMAGE  -D VJ
 CFLAGS += -g -Wall  -std=gnu99 -funsigned-char  # -gdwarf-2 -funsigned-bitfields -fpack-struct -fshort-enums
 CFLAGS += -MD -MP -MT $(*F).o -MF dep/$(@F).d 
 
