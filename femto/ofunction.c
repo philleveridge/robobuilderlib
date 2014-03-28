@@ -40,7 +40,7 @@ tOP oplist[] = {
 //	{".^",    20, POWR, 2, NULL},
 //	{"&",     8,  LAND, 2, NULL},
 //	{"|",     8,  LOR,  2, NULL},
-	{"MOD",   8,  LMOD, 2, NULL},
+//	{"MOD",   8,  LMOD, 2, NULL},
 /*10 */	{"<",     5,  LT,   2, NULL},
 	{">",     5,  GT,   2, NULL},
 	{"=",     5,  EQL,  2, NULL},
@@ -169,7 +169,7 @@ tOP oplist[] = {
 	{"WHOS", 40, NA,    1, owhs},
 //	{"ZERB", 40, NA,    5, ozerob},  //Zero Matrix bounded
 //	{"ZERD", 40, NA,    1, ozerod},  //Zero matrix diaganol
-//	{"ZERO", 40, NA,    2, ozero}    //Zero Matrx x,y
+	{"ZERO", 40, NA,    2, ozero}    //Zero Matrx x,y
 };
 
 /**********************************************************/
@@ -1796,7 +1796,12 @@ tOBJ ogetservo(tOBJ a, tOBJ b)
 	//> !GETSERVO 10
 	int id=toint(a);
 	int d1=toint(b);
+
+rprintf ("s=%d %d\n", id,d1);
+
 	wckReadPos(id, d1);
+
+rprintf ("r=%d %d\n", response[0], response[1]);
 	return makeint(response[1]);
 }
 
@@ -1899,7 +1904,7 @@ tOBJ okey(tOBJ a)
 {
 	tOBJ r;
 	r.type=INTGR;
-	r.number = getByte();
+	r.number = GetByte();
 	switch(toint(a)) 
 	{
 	case 1:

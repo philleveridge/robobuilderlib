@@ -41,30 +41,6 @@ extern void putWck (BYTE b);
 
 
 //------------------------------------------------------------------------------
-// UART1 Transmit  Routine
-//------------------------------------------------------------------------------
-
-#define	RXC				7
-#define RX_COMPLETE		(1<<RXC)
-
-
-void putByte (BYTE b)
-{
-	while ( (UCSR1A & DATA_REGISTER_EMPTY) == 0 );
-	UDR1 = b;
-}
-
-//------------------------------------------------------------------------------
-// UART1 recieve (from PC)
-//------------------------------------------------------------------------------
-
-int getByte()
-{
-	while(!(UCSR1A & RX_COMPLETE)) ;
-	return UDR1;
-}
-
-//------------------------------------------------------------------------------
 // Initialise Ports
 //------------------------------------------------------------------------------
 void HW_init(void) {
@@ -263,6 +239,15 @@ void SW_init(void) {
 	
 	RUN_LED1_ON;
 	RUN_LED2_ON;
+/*
+	gIRReady = FALSE;			// clear IR vales
+	IRState = IR_IDLE;
+
+	gMSEC=0;
+	gSEC=0;
+	gMIN=0;
+	gHOUR=0;
+*/
 }
 
 #define PF1_BTN_PRESSED 1
@@ -388,6 +373,8 @@ int main(void)
 		
 	sound_init();
 	tilt_setup();				// initialise acceleromter
+
+	//Acc_init();				    // initialise acceleromter
 	
 	//call self test
 	

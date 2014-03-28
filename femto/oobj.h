@@ -33,16 +33,12 @@ extern int  compareObj	(tOBJ a, tOBJ b);
 extern tOBJ cloneObj	(tOBJ z);
 extern tOBJ copyObj	(tOBJ z);
 
-
 /**********************************************************/
 /*  print                                                 */
 /**********************************************************/
 
-//extern void printtype	(FILE *fp, tOBJ r);
-//extern tOBJ fprint	(FILE *fp, tOBJ r);
 extern tOBJ print	(tOBJ r);
 extern tOBJ println	(char *s,  tOBJ r);
-extern int  sprint      (char *sp, tOBJ r);
 extern void pp		(tOBJ x, int n);
 
 /**********************************************************/
