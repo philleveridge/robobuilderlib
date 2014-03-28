@@ -4,7 +4,7 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 #include "global.h"
-#include "Macro.h"
+#include "macro.h"
 #include "math.h"
 #include "accelerometer.h"
 
@@ -459,6 +459,12 @@ void Acc_init(void)
 
 //==============================================================//
 //==============================================================//
+
+void Acc_GetData(void)
+{
+	//?
+}
+
 void AccGetData(void)
 {
 	signed char	bTmp = 0;

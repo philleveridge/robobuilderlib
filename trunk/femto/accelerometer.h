@@ -8,3 +8,5 @@ extern void tilt_read();
 extern volatile int x_value;
 extern volatile int y_value;
 extern volatile int z_value;
+
+extern void Acc_GetData(void);

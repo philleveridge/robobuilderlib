@@ -4,13 +4,20 @@
 //   by l3v3rz
 //==============================================================================
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
-#include "Main.h"
-#include "Macro.h"
+
+#include "main.h"
+#include "rprintf.h"
+#include "uart.h"
+
+#include "macro.h"
 #include "adc.h"
 #include "global.h"
 #include "accelerometer.h"
+
+
 
 #define BR115200			7 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
@@ -301,7 +308,7 @@ void ProcButton(void)
 		//look to see if PF2 held down
 		gBtn_val = 0;
 		
-		printline("charge mode - testing");
+		rprintf("charge mode - testing\n");
 		
 		for (cnt=0; cnt<10; cnt++)
 		{
@@ -309,21 +316,21 @@ void ProcButton(void)
 			delay_ms(50);
 			Get_VOLTAGE();
 			DetectPower();
-			printint (gVOLTAGE); printline(" mV");
+			rprintf ("%d mV\n", gVOLTAGE);
 			PWR_LED2_OFF;   // RED off
 			delay_ms(50);
 		}
 				
 		if(F_PS_PLUGGED)
 		{	
-			printline("Plugged in - charging");		
+			rprintf("Plugged in - charging\n");		
 			BreakModeCmdSend();		// put servo in breakmode (power off)
 			ChargeNiMH();  			//initiate battery charging	
-			printline("Complete");	
+			rprintf("Complete\n");	
 		}	
 		else
 		{
-			printline("Not plugged in");
+			rprintf("Not plugged in\n");
 			PWR_LED2_ON	;	
 		}
 	}
@@ -369,6 +376,10 @@ int main(void)
 {
 	HW_init();					// Initialise ATMega Ports
 	SW_init();					// Initialise software states	
+
+	uartInit();					// initialize UART (serial port)
+	uartSetBaudRate(115200);	// set UART speed to 115200 baud
+	rprintfInit(uartSendByte);  // configure rprintf to use UART for output
 			
 	sei();						// enable interrupts	
 	TIMSK |= 0x01;		

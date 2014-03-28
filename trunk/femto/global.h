@@ -25,7 +25,7 @@
 #include "avrlibdefs.h"
 // global AVRLIB types definitions
 #include "avrlibtypes.h"
-#define WIN32
+
 // project/system dependent defines
 
 // CPU clock speed

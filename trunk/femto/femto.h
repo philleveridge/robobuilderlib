@@ -1,34 +1,37 @@
-#define bool  int
-#define true  1
-#define false 0
-#define null  (void *)0
+#ifndef FEMTO_H
+#define FEMTO_H
+
+
+#include "oobj.h"
+#include "ocells.h"
+#include "ostring.h"
+#include "odict.h"
+#include "ostack.h"
+#include "ostring.h"
+#include "ofunction.h"
+
+#include "oexpress.h"
+
+extern tOBJ env;   
+
+extern void 	readLine	(char *, int n);
 
 #define DEBUG(a)   if(dbg) {a;}
 
-enum  TYPE {SYMBOL, INT, BOOL, FUNCTION, SPECIAL, FLOAT, STRING, CELL, EMPTY, ERROR};
 
-typedef struct object {
-	int   type;
-	bool  q;
-	union { float 	floatpoint; 
-	        int 	number; 
-			char 	*string;
-			void 	*cell;
-			void 	*func;
-		};
-} tOBJ;
+//battery.c
+extern volatile WORD   gticks;
+extern volatile WORD   g10MSEC;
+extern volatile WORD   g10Mtimer;
+extern volatile BYTE   gSEC;
+extern volatile BYTE   gMIN;
+extern void     delay_ms(int ms);
 
-typedef struct cell { 
-	tOBJ 			head;		
-	struct cell*  	tail;		
-} tCELL, *tCELLp; 
+//main.c
+extern void putByte (BYTE b);
+extern int  getByte ();
 
-typedef tOBJ (*PFP)(tCELLp);
+#define NULL (void *)0
 
-tOBJ throw(int n);
-extern int dbg;
+#endif
 
-extern void printline(char *c);  
-extern void printint(int);  	
-extern void printstr(char*);	
-extern void printnumber(int n, int w, char pad)  ;

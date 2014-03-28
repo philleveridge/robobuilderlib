@@ -2,7 +2,10 @@
 // Interface to the IR controller
 //==============================================================================
 
-#include "avrlibtypes.h"
+#ifndef IR_H
+#define IR_H
+
+//#include "avrlibtypes.h"
 
 extern volatile BYTE	gIRReady;				// IR message received
 extern volatile BYTE	gIRData;				// Data from IR
@@ -21,3 +24,4 @@ extern BYTE	IRState;							// state or IR receive:
 
 // get the next char from the IR receiver, or -1 if none (getchar-style)
 int irGetByte(void);
+#endif
