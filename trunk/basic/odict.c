@@ -46,6 +46,7 @@ int deldict(Dict *x)
 	{
 		for (int i=0; i<x->ip; i++)
 		{
+			bas_free(x->db[i].key);
 			freeobj(&x->db[i].value);
 		}
 		bas_free(x->db);
@@ -64,7 +65,10 @@ Dict *clonedict(Dict *x)
 
 	for (int i=0; i<r->ip; i++)
 	{
-		strncpy(r->db[i].key, x->db[i].key, 32);
+		int n = strlen (x->db[i].key) + 1;         
+		r->db[i].key = bas_malloc(n*sizeof(char)); 
+
+		strncpy(r->db[i].key, x->db[i].key, n);
 		r->db[i].value = cloneObj(x->db[i].value);
 	}
 	return r;
@@ -105,26 +109,27 @@ int dict_add(Dict *d, char *key, tOBJ value)
 	//if(dbg) printf ("Add %s %d %d\n", key, d->ip, d->sz);
 	int i=0;
 
-       if (d->ip==d->sz) {printf ("?error no space in dict [%s] %d/%d\n",key,d->ip,d->sz); return 0;}
+	if (d->ip==d->sz) {printf ("?error no space in dict [%s] %d/%d\n",key,d->ip,d->sz); return 0;}
 
-       while (i < d->ip)
-       {
-              int c =strcmp(key, d->db[i].key);
-              if (c==0) {printf ("Already exists (%s %d)\n",key,i); i=d->ip; break;}
-              if (c>0) {i++; continue;}
-              if (c<0)
-              {      //insert gap here
-                     for (int j=d->ip; j>i ;j--)
-                     	d->db[j]=d->db[j-1];
-                     break;
-              }
-       }
-       //insert at i
-       char *cp = d->db[i].key;
-       strncpy(cp, key, 32);
-       d->db[i].value = cloneObj(value);
-       (d->ip)++;
-       return 1;
+	while (i < d->ip)
+	{
+	      int c =strcmp(key, d->db[i].key);
+	      if (c==0) {printf ("Already exists (%s %d)\n",key,i); i=d->ip; break;}
+	      if (c>0) {i++; continue;}
+	      if (c<0)
+	      {      //insert gap here
+		     for (int j=d->ip; j>i ;j--)
+		     	d->db[j]=d->db[j-1];
+		     break;
+	      }
+	}
+	//insert at i
+	int n = strlen(key) + 1 ;
+	d->db[i].key = (char *)bas_malloc(sizeof(char)*n);
+	strncpy(d->db[i].key , key, n);
+	d->db[i].value = cloneObj(value);
+	(d->ip)++;
+	return 1;
 }
  
 
@@ -267,6 +272,25 @@ int dict_print(Dict *d, int f)
 		dict_print(d->outer,f);
 	}
 	return 0;
+}
+
+int dict_size(Dict *d)
+{
+	if (d==NULL) return 0;
+	return d->ip;
+}
+
+char *dict_findval(Dict *d, tOBJ x, int n)
+{
+	for (int i=0; i<d->ip; i++)
+	{
+		if (compareObj(x, d->db[i].value))
+		{
+			if (n<=0) return d->db[i].key;
+			n--;
+		}
+	}
+	return NULL;
 }
 
 

@@ -11,7 +11,7 @@ CFLAGS += -g -Wall -gdwarf-2 -std=gnu99 -funsigned-char  # -funsigned-bitfields 
 REV = $(shell svnversion -n .)
 CFLAGS += -D VER='"rbasic v=$(REV)\r\nCommands: i r l c z q s V R F $\r\n"'
 
-OBJECTS = edit.o fix_fft.o  linux.o  lists.o express.o functions.o commands.o linux-remote.o basic.o matrix.o network.o fnetwork.o fmatrix.o trex.o oobj.o ostring.o ocells.o ostack.o odict.o rbmread.o ofunction.o  oexpress.o jpeg.o cmap.o opflow.o
+OBJECTS = edit.o fix_fft.o  linux.o  lists.o express.o functions.o commands.o linux-remote.o basic.o matrix.o network.o fnetwork.o fmatrix.o trex.o oobj.o ostring.o ocells.o ostack.o odict.o rbmread.o ofunction.o mem.o oexpress.o jpeg.o cmap.o opflow.o
 
 #LIBS =  vj_cpp/vj.a -lpthread -lm -ljpeg  -lstdc++
 LIBS =   vj_cpp/vj.a -lpthread -lm -ljpeg -lstdc++

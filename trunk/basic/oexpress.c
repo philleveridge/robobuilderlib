@@ -196,8 +196,6 @@ tOBJ tokenise(char *s)
 		}	
 	}
 
-if (dbg) printf ("\nend of input\n\n");
-
 	return r;
 }
 
@@ -245,16 +243,13 @@ tOBJ read_from(tOBJ *r)
 			L=n;	
 		}
 	}
-	//freeobj(&h);
-if (dbg) printf ("\nend of read\n\n");
-
 	return L;
 }
 
 tOBJ parse(char *s)
 {
 	tOBJ L,r,t;	
-	if (dbg) printf ("\nparse 2 %s\n", s); 
+	if (dbg) printf ("\nparse  %s\n", s); 
 	r = tokenise(s);
 	t = r;
 	L = read_from(&r);
@@ -317,17 +312,19 @@ tOBJ callfn(tOBJ  fn, tOBJ x, Dict *env)
 tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 {
 	tOBJ r;
+	int f=0;
 	if (h.type==EMPTY) return h;
 
 	if (h.type==SYM && dict_contains(e, h.string))
 	{
 		h=dict_getk(e,h.string);
+		f=1; 
 	}
 
 	if (h.type==LAMBDA)
 	{
 		r= callfn(h, o, e);
-		freeobj(&h);
+		if (f) freeobj(&h);
 		return r;
 	}
 
@@ -400,7 +397,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 	else
 		printf ("? unknown (%s)\n",objtype(h));
 
-	freeobj(&h);
+	if (f) freeobj(&h);
 
 	return emptyObj();
 }
@@ -435,11 +432,11 @@ tOBJ eval2(tOBJ o, Dict *e)
 
 tOBJ eval(tOBJ o, Dict *e)
 {
-	if (dbg) {println ("eval - ",o); }
- 	bas_mem();
+	if (dbg) {bas_mem(); println ("eval - ",o); }
+
 	tOBJ r=eval2(o,e);
- 	bas_mem();
-	if (dbg) {println ("ret  - ",r);}
+
+	if (dbg) { bas_mem(); println ("ret  - ",r);}
 	return r;
 }
 
@@ -454,7 +451,7 @@ void init_extend()
 	if (intf)
 	{
 		intf=0; 
-		env = makedict(500);
+		env = makedict(200);
 		loadop(env.dict);
 
 		if (dbg==0)

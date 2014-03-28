@@ -301,7 +301,7 @@ if (tn==0 || tn==7)
 	//testfooter();
 
 	testheader(72);
-	test_extend("SETQ Z '(1 2 3)", "(1 2 3)", 3);
+	test_extend("SETQ Z '(1 2 3)", "(1 2 3)", 4);
 	testfooter();
 
 	testheader(73);
@@ -312,14 +312,14 @@ if (tn==0 || tn==7)
 if (tn==0 || tn==8) 
 {	
 	testheader(8);
-	test_extend("FOR X '(1 8) (PR X)", "", 0);
+	test_extend("FOR X '(1 8) (PR X)", "", 1);
 	testfooter();
 }
 
 if (tn==0 || tn==9) 
 {	
 	testheader(9);
-	test_extend("FUNC FOO (X) (+ X 1))", "", 9);
+	test_extend("FUNC FOO (X) (+ X 1))", "", 10);
 	testfooter();
 
 	testheader(91);
@@ -339,7 +339,7 @@ if (tn==0 || tn==10)
 	testfooter();
 
 	testheader(101);
-	test_extend("SETQ S (STACK 5)", "", 2);
+	test_extend("SETQ S (STACK 5)", "", 3);
 	testfooter();
 	
 	testheader(102);
@@ -354,7 +354,7 @@ if (tn==0 || tn==10)
 if (tn==0 || tn==11) 
 {
 	testheader(11);
-	test_extend("SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))", "", 2);
+	test_extend("SETQ ENV (DICT '((AZ 1.0) (BZ 2.0)))", "", 5);
 	testfooter();
 	
 	testheader(111);
@@ -374,7 +374,7 @@ if (tn==0 || tn==12)
 {
 
 	testheader(12);	
-	test_extend("FUNC TST (X) (CAR X)", "", 8);
+	test_extend("FUNC TST (X) (CAR X)", "", 9);
 	testfooter();
 
 	testheader(121);		
@@ -396,11 +396,11 @@ if (tn==0 || tn==13)
 {
 
 	testheader(13);	
-	test_extend("FUNC ROUND (X) (INT (+ 0.5 X))", "", 12);
+	test_extend("FUNC ROUND (X) (INT (+ 0.5 X))", "", 13);
 	testfooter();
 
 	testheader(131);		
-	test_extend("DEF CHT  (X Y T) (AND (= X (ROUND (CAR T))) (= Y (ROUND (CAR (CDR T)))))", "", 39);
+	test_extend("DEF CHT  (X Y T) (AND (= X (ROUND (CAR T))) (= Y (ROUND (CAR (CDR T)))))", "", 40);
 	testfooter();
 
 	testheader(132);		
@@ -432,7 +432,7 @@ if (tn==0 || tn==15)
 if (tn==0 || tn==16) 
 {
 	testheader(16);	
-	test_extend("DEF BAR (X) (PR X)", "", 8);
+	test_extend("DEF BAR (X) (PR X)", "", 9);
 	testfooter();
 
 	testheader(161);	
@@ -470,6 +470,22 @@ if (tn==0 || tn==19)
 {
 	testheader(19);	
 	test_extend("PLUS 'ABC 'DE", "ABCDE", 0);
+	testfooter();
+}
+
+if (tn==0 || tn==20) 
+{
+
+	testheader(20);	
+	test_extend("MAPCAR SIN '(0.100000 0.200000 0.300000)", "", 0);
+	testfooter();
+
+	testheader(201);	
+	test_extend("MAPCAR (LAMBDA (X) (+ X 1)) '(1 2 3 4)", "(2 3 4 5)", 0);
+	testfooter();
+
+	testheader(202);	
+	test_extend("MAPCAR SIN [0.1 0.2 ; 0.3 0.4 ]", "", 0);
 	testfooter();
 }
 

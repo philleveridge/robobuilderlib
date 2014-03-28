@@ -15,16 +15,16 @@
 /// \code #include "buffer.h" \endcode
 /// \par Overview
 ///		This byte-buffer structure provides an easy and efficient way to store
-///		and process a stream of bytes.  You can create as many buffers as you
+///		and process a stream of bytes.  You can create as many buffers as you
 ///		like (within memory limits), and then use this common set of functions to
-///		access each buffer.  The buffers are designed for FIFO operation (first
-///		in, first out).  This means that the first byte you put in the buffer
-///		will be the first one you get when you read out the buffer.  Supported
+///		access each buffer.  The buffers are designed for FIFO operation (first
+///		in, first out).  This means that the first byte you put in the buffer
+///		will be the first one you get when you read out the buffer.  Supported
 ///		functions include buffer initialize, get byte from front of buffer, add
-///		byte to end of buffer, check if buffer is full, and flush buffer.  The
+///		byte to end of buffer, check if buffer is full, and flush buffer.  The
 ///		buffer uses a circular design so no copying of data is ever necessary.
 ///		This buffer is not dynamically allocated, it has a user-defined fixed
-///		maximum size.  This buffer is used in many places in the avrlib code.
+///		maximum size.  This buffer is used in many places in the avrlib code.
 //
 // This code is distributed under the GNU Public License
 //		which can be found at http://www.gnu.org/licenses/gpl.txt

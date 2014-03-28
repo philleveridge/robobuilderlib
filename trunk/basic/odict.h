@@ -8,7 +8,7 @@
 #include "oobj.h"
 
 typedef struct kvp {
-	char key[32];
+	char *key;
 	tOBJ value;
 } Kvp;
 
@@ -21,6 +21,7 @@ typedef struct dict {
 } Dict;
 
 extern Dict *newdict		(int n);
+extern Dict *clonedict          (Dict *x);
 extern int   deldict		(Dict *x);
 extern tOBJ  makedict		(int n);
 extern tOBJ  makedict2		(Dict *e,int n);
@@ -33,7 +34,8 @@ extern tOBJ  dict_get		(Dict *d, int indx);
 extern int   dict_update	(Dict *d, char *key, tOBJ value);
 extern int   dict_updateonly    (Dict *d, char *key, tOBJ value);
 extern int   dict_print		(Dict *d, int f);
-extern Dict  *clonedict         (Dict *x);
+extern char *dict_findval	(Dict *d, tOBJ x, int n);
+extern int   dict_size		(Dict *d);
 
 #endif
 
