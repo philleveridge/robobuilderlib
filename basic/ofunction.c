@@ -996,7 +996,7 @@ tOBJ odsig(tOBJ a)
 
 tOBJ oapply(tOBJ a, tOBJ b)
 {
-	// APPLY 'PLUS '{2 3 4} -> 9
+	// APPLY 'PLUS '(2 3 4) -> 9
 
 	tOBJ r=emptyObj();
 	if (dbg) printf ("APPLY -\n");
@@ -1009,18 +1009,15 @@ tOBJ oapply(tOBJ a, tOBJ b)
 	return r;
 }
 /*
-!> MAPCAR 'FACT '{1 2 3 4}
- = {1 2 6 24}
-!> MAPCAR {LAMBDA {X} {+ X 1}} '{1 2 3 4}
- = {2 3 4 5}
+MAPCAR SIN '(0.100000 0.200000 0.300000)
+MAPCAR 'FACT '(1 2 3 4)
+MAPCAR (LAMBDA (X) (+ X 1)) '(1 2 3 4)
+MAPCAR SIN [0.1 0.2 ; 0.3 0.4 ]
 */
-// MAPCAR SIN '(0.100000 0.200000 0.300000)
-// FUNC   FOO  (X) (+ 1.0 X)
-// MAPCAR FOO '(0.100000 0.200000 0.300000)
 
 tOBJ omapcar(tOBJ a, tOBJ b)
 {
-	tOBJ r=emptyObj(), v;
+	tOBJ r=emptyObj();
 	if (dbg) printf ("Mapcar -\n");
 
 	a=eval(a,env.dict);
@@ -1037,7 +1034,7 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 
 	if (b.type==FMAT2)
 	{
-
+		tOBJ v=emptyObj();
 		// MAPCAR 'FOO [ 1 2 ; 3 4 ]
 		int i=0, j=0;
 		// create new matrix
@@ -1048,28 +1045,51 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 		{
 			for (j=0;j<b.fmat2->h; j++)
 			{
-				v.type=FLOAT;
-				v.floatpoint =fget2(b.fmat2,i,j);
-				if (a.type==FUNC) v=append(emptyObj(),v);
+				v =makefloat(fget2(b.fmat2,i,j));
+				
+				if (a.type==FUNC) 
+				{
+					tOBJ t =append(emptyObj(),v);
+					freeobj(&v);
+					v=t;
+				}
 				tOBJ n  = procall (a, v, env.dict);	
-				fset2(r.fmat2,i,j,tofloat(n));			
+				fset2(r.fmat2,i,j,tofloat(n));		
+				freeobj(&n);	
+				freeobj(&v);	
 			}
 		}
-		freeobj(&env);
+
 	}
 	else if (b.type==CELL)
 	{
 		// MAPCAR FOO '(2 3 4)
 		while (b.type != EMPTY)
 		{
-			tOBJ arg= ocar(b);
+			tOBJ arg= ocar(b); b=ocdr(b);
 			arg.q=1;
-			if (a.type==FUNC) arg=append(emptyObj(),arg);
+			if (a.type==FUNC) 
+			{
+				tOBJ ta = append(emptyObj(),arg);
+				freeobj(&arg);
+				arg=ta;
+
+			}
+			else
+			{
+				arg=cloneObj(arg);
+			}
+
 			tOBJ n  = procall (a, arg, env.dict);		
-			b=ocdr(b);
-			r=append(r,n);
+			tOBJ t =append(r,n);
+
+			freeobj(&r);
+			freeobj(&n);
+			freeobj(&arg);
+			r=t;
 		}
 	}
+	freeobj(&a);
 	return r;
 }
 
@@ -2387,7 +2407,7 @@ extern unsigned char*loadimage2(char *ifile);
 tOBJ oimg(tOBJ v, Dict *e)
 {
 	//!IMAGE "command" {parameters}
-	//comand : "UNLOCK" "LOAD" "FILT" "RAW" "THRE" "COLOR" "PROC" "REG" "SHOW" 
+	//comand : "UNLOCK" "F-DETECT" "LOAD" "FILT" "RAW" "THRESH" "COLOR" "PROC" "REG" "SHOW" "WAIT"
 	
 	tOBJ cmd = ocar(v);
 	v=ocdr(v);
@@ -2422,11 +2442,15 @@ tOBJ oimg(tOBJ v, Dict *e)
 					r=vj_get(i);
 
 				if (dbg); printf ("%d, %d, %d, %d\n", r.x,r.y,r.width,r.height);			
-
-					ret = append(ret, makeint(r.x));
-					ret = append(ret, makeint(r.y));
-					ret = append(ret, makeint(r.width));
-					ret = append(ret, makeint(r.height));
+					tOBJ t= append(ret, makeint(r.x));
+					freeobj(&ret); ret=t;
+					t = append(ret, makeint(r.y));
+					freeobj(&ret); ret=t;
+					t = append(ret, makeint(r.width));
+					freeobj(&ret); ret=t;
+					t = append(ret, makeint(r.height));
+					freeobj(&ret); 
+					ret=t;
 				}
 
 				if (toint(ocar(ocdr(v)))>0)
@@ -2645,7 +2669,6 @@ tOBJ opush(tOBJ o, Dict *e)
 
 tOBJ opop(tOBJ o, Dict *e)
 {
-if (dbg) printf("-----pop called\n");
 	tOBJ a=ocar(o); 
 	tOBJ r= emptyObj();
 
@@ -2781,7 +2804,7 @@ tOBJ formula(tOBJ ae, Dict *e)
 	// F (arg) -tbd
 	// LET A = 6
 	// LET A = 1 + 2
-	// LET A = 1 + 2 + 4
+	// LET A = A + 2 + 4
 
 	if (oatom(ae).number==1) {return ae;}
 
@@ -2790,7 +2813,7 @@ tOBJ formula(tOBJ ae, Dict *e)
 
 	while (1)
 	{
-		if (onull(ae).number==1) {freeobj(&ops); freeobj(&opd); dbg=0; return emptyObj();}
+		if (onull(ae).number==1) {freeobj(&ops); freeobj(&opd); return emptyObj();}
 
 		if (oatom(ocar(ae)).number==1) 
 			push (opd.stk, ocar(ae)); 
@@ -2801,12 +2824,14 @@ tOBJ formula(tOBJ ae, Dict *e)
 		while (1)
 		{
 			int wa=-1,wb=-1;
-			if (dbg) {okey(makeint(2)); println ("ae =", ae); }
+			if (dbg) { /*okey(makeint(2)); */ println ("ae =", ae); }
 
 			if (onull(ae).number==1 && stacksize(ops.stk)==0 ) 
 			{
 				tOBJ r = pop(opd.stk);
-				freeobj(&ops); freeobj(&opd); freeobj(&ae); dbg=0;
+				freeobj(&ops); 
+				freeobj(&opd); 
+				freeobj(&ae);
 				return r;
 			}
 
@@ -2845,8 +2870,13 @@ tOBJ formula(tOBJ ae, Dict *e)
 				else
 					wa=0;
 
-				a = eval(pop(opd.stk),e);
-				b = eval(pop(opd.stk),e);
+				freeobj(&a);
+
+				tOBJ a1=pop(opd.stk);
+				tOBJ b1=pop(opd.stk);
+
+				a = eval(a1,e);
+				b = eval(b1,e);
 
 				tOBJ ans= omath(a, b, wa);
 
@@ -2855,6 +2885,10 @@ tOBJ formula(tOBJ ae, Dict *e)
 				tOBJ x = pop(ops.stk); 
 				freeobj(&x);
 				freeobj(&opc);
+				freeobj(&a);
+				freeobj(&b);
+				freeobj(&a1);
+				freeobj(&b1);
 			}
 			else
 			{
@@ -2916,7 +2950,7 @@ tOBJ odec(tOBJ o, Dict *e)
 tOBJ oread(tOBJ o, Dict *e) 
 {
 	tOBJ var = eval(ocar(o),e);
-	if (var.type==SYM)   return tokenise(var.string);
+	if (var.type==SYM)   {tOBJ t = tokenise(var.string); freeobj(&var); return t; }
 	if (var.type==EMPTY) 
 	{
 		char ibf[1024];
