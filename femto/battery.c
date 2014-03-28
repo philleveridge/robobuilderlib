@@ -1,8 +1,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-
-#include "Main.h"
-#include "Macro.h"
+#include "rprintf.h"
+#include "main.h"
+#include "macro.h"
 #include "adc.h"
 
 extern volatile BYTE   MIC_SAMPLING;
@@ -170,12 +170,9 @@ void ChargeNiMH(void)
 	gMIN_DCOUNT = 5;
 	while(gMIN_DCOUNT)
 	{
-	    if (gSEC%5==0)
+	    	if (gSEC%5==0)
 		{
-			printnumber(gMIN, 2,'0');
-			printstr(":");
-			printnumber(gSEC,2,'0');
-			printline (" short 40ms charge pulses");
+			rprintf ("%d:%d short 40ms charge pulses\n", gMIN, gSEC);
 		}
 		PWR_LED2_OFF;
 		PWR_LED1_ON;
@@ -195,10 +192,7 @@ void ChargeNiMH(void)
 	{
 		if (gSEC%5==0)
 		{
-			printnumber(gMIN,2,'0');
-			printstr(":");
-			printnumber(gSEC, 2, '0');
-			printline (" full charge power");
+			rprintf ("%d:%d full charge power\n", gMIN, gSEC);
 		}
 		PWR_LED2_OFF;
 		if(g10MSEC > 500)	
@@ -214,7 +208,7 @@ void ChargeNiMH(void)
 	}
 	CHARGE_DISABLE;
 	F_CHARGING = 0;
-	printline ("Done");
+	rprintfProgStr(PSTR("Done\n"));
 }
 
 
@@ -258,9 +252,9 @@ void SelfTest1(void)
 	PWR_LED2_ON;	delay_ms(60);	PWR_LED2_OFF;
 	RUN_LED1_ON;	delay_ms(60);	RUN_LED1_OFF;
 	RUN_LED2_ON;	delay_ms(60);	RUN_LED2_OFF;
-	ERR_LED_ON;		delay_ms(60);	ERR_LED_OFF;
+	ERR_LED_ON;	delay_ms(60);	ERR_LED_OFF;
 
-	PF2_LED_ON;		delay_ms(60);	PF2_LED_OFF;
+	PF2_LED_ON;	delay_ms(60);	PF2_LED_OFF;
 	PF1_LED2_ON;	delay_ms(60);	PF1_LED2_OFF;
 	PF1_LED1_ON;	delay_ms(60);	PF1_LED1_OFF;
 }

@@ -1,5 +1,5 @@
 ###############################################################################
-# Makefile for the project RobobuilderIR
+# Makefile for the  Robobuilder micro lisp
 ###############################################################################
 
 ## General Flags
@@ -33,6 +33,8 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 LDFLAGS = $(COMMON)
 LDFLAGS +=  -Wl,-Map=DCMP.map
 
+LIBS = -lm
+
 
 ## Intel Hex file production flags
 HEX_FLASH_FLAGS = -R .eeprom
@@ -43,7 +45,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
 ## Objects that must be built in order to link
-OBJECTS = main.o accelerometer.o adc.o battery.o femto.o ir.o wckmotion.o 
+OBJECTS = main.o uart.o buffer.o accelerometer.o rprintf.o adc.o battery.o fmatrix.o ir.o wckmotion.o ocells.o  odict.o ofunction.o  oobj.o  ostack.o  ostring.o  mem.o oexpress.o femto.o 
 
 ## Objects explicitly added by the user
 LINKONLYOBJECTS = 

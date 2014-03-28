@@ -1,12 +1,15 @@
-#include "Macro.h"
+#include "macro.h"
 #include <avr/io.h>
+
+#include "rprintf.h"
 #include "femto.h"
+
 
 #define	RXC				7
 #define RX_COMPLETE		(1<<RXC)
 #define HEADER			0xFF 
 #define TIME_OUT		100
-#define NULL			'\0'
+
 #define DATA_REGISTER_EMPTY (1<<UDRE)
 
 extern volatile WORD   g10Mtimer;
@@ -86,8 +89,8 @@ void wckSyncPosSend(BYTE LastID, BYTE SpeedLevel, BYTE *TargetArray, BYTE Index)
 
 // if flag set read initial positions
 
-static BYTE cpos[32];
-static BYTE nos=0;
+BYTE cpos[32];
+BYTE nos=0;
 
 int getservo(int id)
 {
@@ -166,10 +169,32 @@ void standup (int n)
 //
 /**************************************************************************************************/
 
+int response[32];
+
+int wckReadPos(int id, int d1)
+{
+	return -1;
+}
+
+int wckPassive(int id)
+{
+	return -1;
+}
+
+int wckMovePos(int id, int pos, int torq)
+{
+	return -1;
+}
+
+tOBJ throw (int n)
+{
+	return makeint(n);
+}
+
 tOBJ getServo(tCELLp p)   // i.e. (getServo 15)
 {
-	tOBJ r; r.type=INT;
-	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
+	tOBJ r; r.type=INTGR;
+	if (p->head.type==INTGR && p->head.number>=0 && p->head.number<=31)
 	{
 		wckSendOperCommand(0xa0|(p->head.number), NULL);
 		int b1 = getWck(TIME_OUT);
@@ -187,15 +212,15 @@ tOBJ getServo(tCELLp p)   // i.e. (getServo 15)
 
 tOBJ wckwriteIO(tCELLp p)   // i.e. (wckwriteIO 15 true true)
 {
-	tOBJ r; r.type=INT;
-	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
+	tOBJ r; r.type=INTGR;
+	if (p->head.type==INTGR && p->head.number>=0 && p->head.number<=31)
 	{
 		int id = p->head.number;
 		p=p->tail;
-		if (p->head.type != BOOL) return throw(3);
+		if (p->head.type != INTGR) return throw(3);
 		int b1 = p->head.number;
 		p=p->tail;
-		if (p->head.type != BOOL) return throw(3);
+		if (p->head.type != INTGR) return throw(3);
 		int b2 = p->head.number;
 		
         wckSendSetCommand((7 << 5) | (id % 31), 0x64, ((b1) ? 1 : 0) | ((b2) ? 2 : 0), 0);
@@ -222,8 +247,8 @@ tOBJ wckstandup(tCELLp p)   // i.e. (standup)
 
 tOBJ passiveServo(tCELLp p)   // i.e. (passiveServo 15)
 {
-	tOBJ r; r.type=INT;
-	if (p->head.type==INT && p->head.number>=0 && p->head.number<=31)
+	tOBJ r; r.type=INTGR;
+	if (p->head.type==INTGR && p->head.number>=0 && p->head.number<=31)
 	{
 		wckSendOperCommand(0xc0|(p->head.number), 0x10);
 		int b1 = getWck(TIME_OUT);
@@ -240,7 +265,7 @@ tOBJ passiveServo(tCELLp p)   // i.e. (passiveServo 15)
 }
 tOBJ sendServo(tCELLp p)   // i.e. (sendServo 12 50 4)
 {
-	tOBJ r; r.type=INT;
+	tOBJ r; r.type=INTGR;
 	int sid = p->head.number;
 	p=p->tail;
 	int pos = p->head.number;
@@ -280,14 +305,14 @@ tOBJ synchServo(tCELLp p)   // i.e. (sycnServo lastid torq '(positions))
 		for (int i=0; i<lastid+1; i++)
 		{
 			int n;
-			if (p == null)
+			if (p == NULL)
 			{
 				return throw(0);
 			}
-			if (p->head.type==INT)
+			if (p->head.type==INTGR)
 			{
 				n=p->head.number;							
-				DEBUG(printint(n); printstr("-");)				
+				DEBUG(rprintf("- %d",n);)				
 				pos[i] = n;
 			}
 			else
@@ -306,7 +331,7 @@ tOBJ synchServo(tCELLp p)   // i.e. (sycnServo lastid torq '(positions))
 	return r;
 }
 
-tOBJ len(tCELLp);
+extern tOBJ olen(tOBJ a);
 
 tOBJ moveServo(tCELLp p)   // i.e. (moveServo time frames '(positions))
 {
@@ -321,13 +346,13 @@ tOBJ moveServo(tCELLp p)   // i.e. (moveServo time frames '(positions))
 	if (p->head.type == CELL)
 	{
 		p=(tCELLp)(p->head.cell);
-		tOBJ l = len(p);
-		if (l.type==INT)
+		tOBJ l = olen(p->head);
+		if (l.type==INTGR)
 		{
 			BYTE bytearray[l.number];
 			for (n=0; n<l.number; n++)
 			{
-				if (p->head.type != INT) return throw(1);
+				if (p->head.type != INTGR) return throw(1);
 				bytearray[n] = p->head.number;
 				p=p->tail;
 			}
