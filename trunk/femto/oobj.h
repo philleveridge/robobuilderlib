@@ -11,9 +11,9 @@ extern int dbg;
 enum  TYPE  {SYM, INTGR, BOOLN, FUNC, FLOAT, CELL, EMPTY, FMAT2, DICT, LAMBDA, RBM, STACK};
 
 typedef struct object {
-        int   		type;
+        unsigned char  	type;
 	unsigned char 	cnt;
-	int		q;
+	unsigned char	q;
         union { 
 		float   floatpoint; 
                 int     number; 

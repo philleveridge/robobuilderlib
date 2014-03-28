@@ -170,7 +170,8 @@ void printtype(tOBJ r)
     }
     else if (r.type == FLOAT)
     {
-            rprintf("%f", r.floatpoint);
+	rprintfFloat(6, (double)r.floatpoint);
+            //rprintf("%f", r.floatpoint);
     }
     else if (r.type == SYM)
     {

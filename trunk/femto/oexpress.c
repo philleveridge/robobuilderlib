@@ -335,7 +335,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 	if (h.type==FUNC)
 	{
 		tOPp p = (tOPp)h.fptr;
-		if (p->type != NA && p->type != CBR && p->type != OBR)
+		if (p->type != NA)
 		{
 			tOBJ a = eval(ocar(o),e); o=ocdr(o);
 			tOBJ b = eval(ocar(o),e); 					
@@ -454,7 +454,7 @@ void init_extend()
 		//seed the RND Gen
 		//srand ( (unsigned)time ( NULL ) );
 
-		//extend("FUNC FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
+		//extend("DEF FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
 	}
 }
 

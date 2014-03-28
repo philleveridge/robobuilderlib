@@ -12,6 +12,18 @@
 #include "linux.h"
 #endif
 
+#ifdef AVR
+#include <avr/io.h>
+#include <avr/pgmspace.h>
+#include <avr/eeprom.h> 
+#include <avr/interrupt.h>
+
+#include "rprintf.h"
+#include "uart.h"
+#include "main.h"
+#include "macro.h"
+#endif
+
 #include "femto.h"
 #include "mem.h"
 #include "fmatrix.h"
@@ -32,7 +44,6 @@ fMatrix *newmatrix(int c, int r)
 {
 	fMatrix *n = (fMatrix *)bas_malloc(sizeof(fMatrix));
 	int i;
-	if (dbg) printf ("New Matrix %d,%d\n",c,r);
 	n->h=r;
 	n->w=c;
 	n->fstore = 0;
@@ -43,7 +54,7 @@ fMatrix *newmatrix(int c, int r)
 
 	if (n->fstore==0)
 	{
-		printf ("out of space  (%d)\n",fs);
+		rprintf ("out of space  (%d)\n",fs);
 	}
 	else
 	{
@@ -56,8 +67,6 @@ fMatrix *newmatrix(int c, int r)
 int delmatrix(fMatrix *m)
 {
 	if (m==0) return -1;
-	if (dbg) printf ("Del Matrix [%d,%d]\n", m->w, m->h);
-
 	if (m->h<=0 || m->w<=0 || m->fstore==0)
 		return 0;
 
@@ -76,8 +85,6 @@ fMatrix *fmatcp(fMatrix *A) // clone
 	int h=A->h;
 
 	n = newmatrix(w, h);
-
-	if (dbg) printf ("sz=%d\n",h*w);
 
   	for (i=0; i<h*w; i++)
 		n->fstore[i]=A->fstore[i];
@@ -139,14 +146,14 @@ int fmatprint2(fMatrix *A)
 	int i,j,n=0;
 	if (A != NULL)
 	{
-		printf ("Matrix %dx%d\n", A->w, A->h);
+		rprintf ("Matrix %dx%d\n", A->w, A->h);
 		for (j=0; j<A->h;j++)
 		{
 			for (i=0; i<A->w; i++)
 			{
-				printf ("%3f ", A->fstore[i+j*A->w]);
+				rprintf ("%3f ", A->fstore[i+j*A->w]);
 			}
-			if (j+1<A->h) printf ("\n");
+			if (j+1<A->h) rprintfCRLF ();
 		}
 	}
 	return n;
@@ -156,12 +163,12 @@ float fget2(fMatrix *M, int c, int r)
 {
 	if (c>=0 && r>=0 && c<M->w && r<M->h && M->fstore!=0)
 	{
-		//printf ("ok- %d, %d %f\n", M->w, M->h, M->fstore[c+r*M->w]);
+		//rprintf ("ok- %d, %d %f\n", M->w, M->h, M->fstore[c+r*M->w]);
 		return  M->fstore[c+r*(M->w)];
 	}
 	else
 	{
-		if (dbg) printf ("err- %d, %d\n", M->w, M->h);
+		if (dbg) rprintf ("err- %d, %d\n", M->w, M->h);
 		return 0.0;
 	}
 }
@@ -183,11 +190,11 @@ fMatrix *fadd2(fMatrix *A, fMatrix *B, char op)
 	wb=B->w;
 	hb=B->h;
 
-	if (dbg) printf ("matrix add (%c)\n",op);
+	if (dbg) rprintf ("matrix add (%c)\n",op);
 
 	if (wa!=wb || ha!=hb)
 	{
-		if (dbg) printf ("size does not match (%d,%d) - (%d,%d)\n", wa,ha,wb,hb);
+		if (dbg) rprintf ("size does not match (%d,%d) - (%d,%d)\n", wa,ha,wb,hb);
 		//return R;
 	}
 
@@ -221,7 +228,7 @@ fMatrix *ftranspose2(fMatrix *A)
 	int mx,my;
 	fMatrix *R;
 
-	if (dbg) printf ("transpose %d,%d\n",w,h);
+	if (dbg) rprintf ("transpose %d,%d\n",w,h);
 
 	R = newmatrix(h, w);
 
@@ -250,7 +257,7 @@ fMatrix *fmultiply2(fMatrix *A,fMatrix *B)
 
 	if (wa != hb) 
 	{
-		printf ("Bad Matrix size (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
+		rprintf ("Bad Matrix size (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
 		return NULL; //bad array size
 	}
 
@@ -280,7 +287,7 @@ fMatrix *freplicate2(fMatrix *A, int m, int n)
 	int hx=h*n;
 	float *p,*pt;
 
-	if (dbg) printf ("rep [%d,%d]\n", m,n);
+	if (dbg) rprintf ("rep [%d,%d]\n", m,n);
 
 	R = newmatrix(wx, hx);
 
@@ -383,7 +390,7 @@ fMatrix *fconvolve(fMatrix *A, fMatrix *B)
 			{
 				for (l=0; l<B->w; l++)
 				{
-//if (dbg) printf ("%d,%d - (%d,%d) %f %f %f\n",j,i,l,k, fget2(A,j+l-wk,i+k-hk), fget2(B,l,k), p);
+//if (dbg) rprintf ("%d,%d - (%d,%d) %f %f %f\n",j,i,l,k, fget2(A,j+l-wk,i+k-hk), fget2(B,l,k), p);
 
 					if (j+l-wk >=0 && j+l-wk < A->w && i+k-hk>=0 && i+k-hk < A->h)
 					{
@@ -424,7 +431,7 @@ fMatrix *fmatscale(fMatrix *A, float k)
 	int i;
 	fMatrix *R = fmatcp(A); // clone
 
-	//printf ("[%d,%d] scale by %f\n", A->w,A->h,k);
+	//rprintf ("[%d,%d] scale by %f\n", A->w,A->h,k);
 
 	for (i=0; i<(A->h*A->w); i++)
 	{
@@ -450,7 +457,7 @@ fMatrix *fmatflip(fMatrix *A)
 void fmatzero(fMatrix *A)   
 {
 	int i;
-	//printf ("zero %d,%d\n", A->w,A->h);
+	//rprintf ("zero %d,%d\n", A->w,A->h);
 
 	for (i=0; i<A->w*A->h; i++) 
 		A->fstore[i]=0.0f;	
@@ -527,7 +534,7 @@ fMatrix *Cholesky(fMatrix *s, float ztol)
 		{
 			if (d<0.0)
 			{
-				printf("Matrix not positive-definite [%f]\n", d);
+				rprintf("Matrix not positive-definite [%f]\n", d);
 				return NULL; //bad array size
 			}
 			fset2(r,i,i,(float)sqrt(d));					
@@ -728,7 +735,7 @@ i
 fMatrix *finverse(fMatrix *s)
 {
 	fMatrix *res=NULL;
-	//printf("\nMATRIX inverse (%d,%d)\n",s->w,s->h);
+	//rprintf("\nMATRIX inverse (%d,%d)\n",s->w,s->h);
 
 	if (s->w==2 && s->h==2)
 	{
@@ -742,7 +749,7 @@ fMatrix *finverse(fMatrix *s)
 	}
 
 	if (detrminant(s, s->w) ==  0)
-		printf("\nMATRIX IS NOT INVERSIBLE\n");
+		rprintfStr("\nMATRIX IS NOT INVERSIBLE\n");
 	else
 		return cofactors(s, s->w);
         return res;
