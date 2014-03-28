@@ -4,13 +4,15 @@
 #include "oobj.h"
 #include "odict.h"
 
+
+
 enum  MATHOP	{NA, PLUS, MINUS, DIVD, MULT, LAND, LOR, OBR, CBR, LT, GT, EQL, NEQ, COMMA, PROD, POWR, GTE, LTE, LMOD};
 
 typedef struct ops {
-        char		*name;
-	int		level;
+        const prog_char name[7];
+	unsigned int	level;
 	unsigned char   type;
-	int		nop;
+	unsigned int	nop;
 	union {
 		tOBJ	(*func)(tOBJ);
 		tOBJ	(*func2)(tOBJ, tOBJ);

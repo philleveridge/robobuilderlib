@@ -42,6 +42,7 @@
 #define RPRINTF_H
 
 #define RPRINTF_COMPLEX
+#define RPRINTF_FLOAT
 
 //#define RPRINTF_COMPLEX
 

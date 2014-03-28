@@ -94,7 +94,7 @@ tOP oplist[] = {
 //	{"GAUSK", 40, NA,   2, ogausk}, //mean, variance
 //	{"GETB",  40, NA,   1, getb}, //function single arg
 //	{"GETK",  40, NA,   9, ogetk}, //function single arg
-	{"GETSERVO",40, NA, 1, ogetservo}, //function single arg
+	{"GETS",  40, NA,   1, ogetservo}, //function single arg
 //	{"H2SM",  40, NA,   1, ohsum2},  //function <fMatrix>
 //	{"HSUM",  40, NA,   1, ohsum},  //function <fMatrix>
 	{"IF"    ,40, NA,   9, oif}, 
@@ -150,7 +150,7 @@ tOP oplist[] = {
 //	{"SETB",  40, NA,   2, setb}, //function single arg
 //	{"SETK",  40, NA,   9, osetk}, //function single arg
 	{"SETQ"  ,40, NA,   9, osetq}, 
-	{"SETSERVO", 40, NA,3, osetservo}, //function single arg
+	{"SETS", 40, NA,    3, osetservo}, //function single arg
 //	{"SIG",  40, NA,    1, osig},  //sigmoid functon
 //	{"SIGN", 40, NA,    1, osign},  //sigmoid functon
 //	{"SIN",  40, NA,    1, osin},  //function single arg
@@ -195,12 +195,13 @@ void loadop (Dict *e)
 	int i=0;
 	while (i<getopsize())
 	{
-		rprintf ("%d %s\n", i, oplist[i].name);
-		dict_add(e, oplist[i].name, makeop(i));
+		char buff[10];
+		strcpy(buff,oplist[i].name);
+		rprintf ("%d %s\n", i, buff);
+		dict_add(e, buff, makeop(i));
 		i++;
 	}	
 }
-
 
 tOBJ getOP2(Dict *e, char *str)
 {
