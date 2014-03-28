@@ -21,20 +21,14 @@ volatile WORD	gMIN_DCOUNT;
 
 volatile WORD   gPSplugCount;
 volatile WORD   gPSunplugCount;
-volatile WORD	gPwrLowCount;
-
- //main.c
-extern void putByte();			
-
-//femto.c
-extern void printline(char *c);  
-extern void printint(int);  	
-extern void printstr(char*);	
-extern void printnumber(int n, int w, char pad)  ;
+volatile WORD	gPwrLowCount;		
 
 //adc.c
 extern BYTE	gAD_Ch_Index;
 void ADC_set(BYTE );
+
+//wckmotion.c
+extern void putWck (BYTE b);
 
 //------------------------------------------------------------------------------
 // set wck modules to btreak mode
@@ -49,10 +43,10 @@ void BreakModeCmdSend(void)
 	Data2 = 0x20;
 	CheckSum = (Data1^Data2)&0x7f;
 
-	putByte(HEADER);
-	putByte(Data1);
-	putByte(Data2);
-	putByte(CheckSum);
+	putWck(HEADER);
+	putWck(Data1);
+	putWck(Data2);
+	putWck(CheckSum);
 } 
 
 //------------------------------------------------------------------------------

@@ -88,11 +88,11 @@ void readLine(char *s, int n)
 	*s=0;
 }
 
-char buff[100];
+BYTE EEMEM FIRMWARE        	[64];  	// leave blank - used by Robobuilder OS
+BYTE EEMEM BASIC_PROG_SPACE	[256];  // global env dictonary to be stored in EEPROM
 
 void femto()
 {
-	//initialise();
 	rprintfProgStr(PSTR("Femto v0.1\n"));
 	repl();
 }

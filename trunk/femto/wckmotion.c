@@ -8,7 +8,7 @@
 #define	RXC				7
 #define RX_COMPLETE		(1<<RXC)
 #define HEADER			0xFF 
-#define TIME_OUT		100
+#define TIME_OUT		500
 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
 
@@ -35,8 +35,31 @@ int getWck(WORD timeout)
 
 void putWck (BYTE b)
 {
-	while ( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
-	UDR0 = b;
+//	while ( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
+//	UDR0 = b;
+
+	while(!(UCSR0A&(1<<UDRE))); 	// wait until data register is empty
+	UDR0=b;
+}
+
+//////////////////////////////// Serial Interface Functions ///////////////////////////
+
+void wckInit(unsigned int ubrr)
+{
+	while ((UCSR0A & (1 << TXC)) == 0) ; //wait until any transmission complete
+
+	/* Dis-able receiver and transmitter */
+	UCSR0B &= ~((1<<RXEN)|(1<<TXEN));
+
+	/* Set baud rate */
+	UBRR0H = (unsigned char)(ubrr>>8);
+	UBRR0L = (unsigned char)ubrr;
+	
+	/* Set frame format: 8data, 2stop bit */
+	//UCSR0C = (1<<USBS)|(3<<UCSZ0);
+
+	/* Enable receiver and transmitter */
+	UCSR0B = (1<<RXEN)|(1<<TXEN);
 }
 
 /******************************************************************************/
@@ -173,127 +196,69 @@ int response[32];
 
 int wckReadPos(int id, int d1)
 {
-	return -1;
+	if (id>=0 && id<=31)
+	{
+		wckSendOperCommand(0xa0|id, NULL);
+		response[0] = getWck(TIME_OUT);
+		response[1] = getWck(TIME_OUT);
+		if (response[0]<0 || response[1]<0) return 0;
+		return 1;
+	}
+	return 0;
 }
 
 int wckPassive(int id)
 {
-	return -1;
-}
-
-int wckMovePos(int id, int pos, int torq)
-{
-	return -1;
-}
-
-tOBJ throw (int n)
-{
-	return makeint(n);
-}
-
-tOBJ getServo(tCELLp p)   // i.e. (getServo 15)
-{
-	tOBJ r; r.type=INTGR;
-	if (p->head.type==INTGR && p->head.number>=0 && p->head.number<=31)
+	if (id>=0 && id<=31)
 	{
-		wckSendOperCommand(0xa0|(p->head.number), NULL);
-		int b1 = getWck(TIME_OUT);
-		int b2 = getWck(TIME_OUT);
-		
-		if (b1<0 || b2<0)
-			r.type = EMPTY; //timeout
-		else
-			r.number = b2;
+		wckSendOperCommand(0xc0|(id), 0x10);
+		response[0] = getWck(TIME_OUT);
+		response[1] = getWck(TIME_OUT);
+		if (response[0]<0 || response[1]<0) return 0;
+		return 1;
 	}
-	else
-		r.type=EMPTY;
-	return r;
+	return 0;
 }
 
-tOBJ wckwriteIO(tCELLp p)   // i.e. (wckwriteIO 15 true true)
+int wckMovePos(int sid, int pos, int tor)
 {
-	tOBJ r; r.type=INTGR;
-	if (p->head.type==INTGR && p->head.number>=0 && p->head.number<=31)
-	{
-		int id = p->head.number;
-		p=p->tail;
-		if (p->head.type != INTGR) return throw(3);
-		int b1 = p->head.number;
-		p=p->tail;
-		if (p->head.type != INTGR) return throw(3);
-		int b2 = p->head.number;
-		
-        wckSendSetCommand((7 << 5) | (id % 31), 0x64, ((b1) ? 1 : 0) | ((b2) ? 2 : 0), 0);
-		
-		b1 = getWck(TIME_OUT);
-		b2 = getWck(TIME_OUT);
-		
-		if (b1<0 || b2<0)
-			r.type = EMPTY; //timeout
-		else
-			r.number = b2;		
-	}
-	else
-		r=throw(3);
-	return r;
-}
-
-tOBJ wckstandup(tCELLp p)   // i.e. (standup)
-{
-	tOBJ r; r.type=EMPTY;
-	standup(18);
-	return r;
-}
-
-tOBJ passiveServo(tCELLp p)   // i.e. (passiveServo 15)
-{
-	tOBJ r; r.type=INTGR;
-	if (p->head.type==INTGR && p->head.number>=0 && p->head.number<=31)
-	{
-		wckSendOperCommand(0xc0|(p->head.number), 0x10);
-		int b1 = getWck(TIME_OUT);
-		int b2 = getWck(TIME_OUT);
-		
-		if (b1<0 || b2<0)
-			r.type = EMPTY; //timeout
-		else
-			r.number = b2;
-	}
-	else
-		r.type=EMPTY;
-	return r;
-}
-tOBJ sendServo(tCELLp p)   // i.e. (sendServo 12 50 4)
-{
-	tOBJ r; r.type=INTGR;
-	int sid = p->head.number;
-	p=p->tail;
-	int pos = p->head.number;
-	p=p->tail;
-	int tor = p->head.number;
 	if (sid<0 || sid>30 || pos<0 || pos>254 ||tor<0 || tor>4) 	
 	{
-		r=throw(3); // incorrect aparams
+		return 0;
 	}
 	else	
 	{
 		wckSendOperCommand((tor<<5)|sid, pos);
-
-		int b1 = getWck(TIME_OUT);
-		int b2 = getWck(TIME_OUT);	
-
-		if (b1<0 || b2<0)
-			r.type = EMPTY; //timeout
-		else
-			r.number = (b1<<8|b2);
+		response[0] = getWck(TIME_OUT);
+		response[1] = getWck(TIME_OUT);	
+		if (response[0]<0 || response[1]<0) return 0;
+		return 1;
 	}
+}
+
+int wckwriteIO(int id, int b1, int b2)   // i.e. (wckwriteIO 15 true true)
+{
+	if (id>=0 && id<=31)
+	{	
+        	wckSendSetCommand((7 << 5) | (id % 31), 0x64, ((b1) ? 1 : 0) | ((b2) ? 2 : 0), 0);		
+		response[0] = getWck(TIME_OUT);
+		response[1] = getWck(TIME_OUT);
+		if (response[0]<0 || response[1]<0) return 0;
+		return 1;	
+	}
+	return 0;
+}
+
+tOBJ wckstandup(tOBJ r)   // i.e. (standup)
+{
+	standup(18);
 	return r;
 }
 
-tOBJ synchServo(tCELLp p)   // i.e. (sycnServo lastid torq '(positions))
+tOBJ synchServo(tOBJ a)   // i.e. (sycnServo lastid torq '(positions))
 {
-	tOBJ r;	r.type=EMPTY;
-	BYTE lastid = (p->head.number)&0x1F;
+	tOBJ r=emptyObj();
+/*	BYTE lastid = (p->head.number)&0x1F;
 	p=p->tail;
 	BYTE tor    = (p->head.number)&0x03;
 	p=p->tail;
@@ -324,20 +289,15 @@ tOBJ synchServo(tCELLp p)   // i.e. (sycnServo lastid torq '(positions))
 		}
 		wckSyncPosSend(lastid, tor, pos, 0); // uncomment if works!
 	}
-	else
-	{
-		return throw(2);
-	}
+*/
 	return r;
 }
 
-extern tOBJ olen(tOBJ a);
-
-tOBJ moveServo(tCELLp p)   // i.e. (moveServo time frames '(positions))
+tOBJ moveServo(tOBJ a)   // i.e. (moveServo time frames '(positions))
 {
-	tOBJ r;	r.type=EMPTY;
+	tOBJ r=emptyObj();
 	int n=0;
-	
+/*	
 	BYTE msec  = (p->head.number)&0x1F;
 	p=p->tail;
 	BYTE frame = (p->head.number)&0x03;
@@ -358,10 +318,10 @@ tOBJ moveServo(tCELLp p)   // i.e. (moveServo time frames '(positions))
 			}
 			// PlayPose(msec, frame, bytearray, n);   // uncomment when checked!!
 		}	
-	}
-	else
-		return throw(2);
-	
+	};
+*/	
 	return r;
 }
+
+
 

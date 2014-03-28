@@ -38,7 +38,6 @@ extern int dbg;
 Dict * newdict(int sz)
 {
 	Dict *n;
-	if (dbg>1) rprintf ("New dictionary (%d)\n",sz);
 	n = (Dict *)bas_malloc(sizeof(Dict));
 	if (sz==0) sz=100; //default
 	n->sz   = sz;
@@ -51,7 +50,6 @@ Dict * newdict(int sz)
 
 int deldict(Dict *x)
 {
-	if (dbg) rprintf ("Delete dictionary\n");
 	if (x != NULL)
 	{
 		for (int i=0; i<x->ip; i++)
@@ -157,8 +155,6 @@ int dict_find(Dict *d, char *key)
 	{
 		int i=low+(high-low)/2;
 		int c=strcmp(key, d->db[i].key);
-
-		if (dbg>2) rprintf ("%s [%d], [%d,%d,%d]\n", d->db[i].key, c, low, i,high);
 		if (c==0)
 		{
 		     return i;

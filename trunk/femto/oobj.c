@@ -267,56 +267,6 @@ tOBJ print(tOBJ r)
     return r;
 }
 
-int sprint(char *sp, tOBJ r)
-{
-    int n=0;
-
-    if (r.q==1) sp[n++]='\'';
-
-    if (r.type == CELL)
-    {
-        struct cell  *c = r.cell;
-        sp[n++]='(';
-   	sp[n]  ='\0';
-
-        n += sprint (sp+n, c->head);                
-        while (c->tail != (void *)0)
-        {
-                c=c->tail;
-        	sp[n++]=' ';
-                n += sprint(sp+n,c->head);
-        }
-        sp[n++]=')';
-   	sp[n]='\0';
-	return n;
-    }
-    else if (r.type == INTGR)
-    {
-            sprintf(sp, "%d", r.number);
-
-    }
-    else if (r.type == EMPTY)
-    {
-            sprintf(sp, "NULL");
-
-    }
-    else if (r.type == FLOAT)
-    {
-            sprintf(sp, "%f", r.floatpoint);
-    }
-    else if (r.type == SYM)
-    {
-            sprintf(sp, "%s", r.string);
-    }
-    else
-    {
-	sprintf(sp+n,"%s", "X");
-    }
-    n=strlen(sp);
-    return n;
-}
-
-
 tOBJ println(char *s, tOBJ r)
 {
 	rprintf ("%s", s); print(r); rprintf("\n");
@@ -330,7 +280,7 @@ void pp(tOBJ x, int n)
 	{
 		tOBJ e = ocar(x);
 		x=ocdr(x);
-		for (i=0;i<n; i++) rprintf (" "); print(e); rprintf("\n");
+		for (i=0;i<n; i++) rprintf (" "); print(e); rprintfCRLF();
 		if (e.type==CELL)
 			pp(e,n+2);
 	}
