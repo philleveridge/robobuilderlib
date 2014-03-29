@@ -447,7 +447,7 @@ void init_extend()
 	if (intf)
 	{
 		intf=0; 
-		env = makedict(getopsize() + 10, 1); //type eeprom
+		env = makedict(getopsize() + 10); 
 		loadop(env.dict);
 
 		set(env.dict, "PI",  makefloat (3.1415926));	
