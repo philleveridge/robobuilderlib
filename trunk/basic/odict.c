@@ -33,7 +33,6 @@ Dict * newdict(int sz)
 	if (sz==0) sz=100; //default
 	n->sz   = sz;
 	n->ip   = 0;
-	n->cf	= 0;
 	n->db   = (Kvp *)bas_malloc((n->sz) * sizeof(Kvp));
 	n->outer= NULL;
 	return n;
@@ -60,7 +59,6 @@ Dict *clonedict(Dict *x)
 {
 	Dict *r=newdict(x->sz);
 	r->ip   = x->ip;
-	r->cf	= x->cf;
 	r->outer= x->outer;
 
 	for (int i=0; i<r->ip; i++)

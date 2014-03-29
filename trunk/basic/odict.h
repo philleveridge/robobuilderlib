@@ -14,7 +14,6 @@ typedef struct kvp {
 
 typedef struct dict {
 	int sz;
-	int cf;
 	int ip;
 	Kvp *db;
 	struct dict *outer;

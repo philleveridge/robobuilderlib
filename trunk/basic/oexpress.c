@@ -17,18 +17,16 @@
 #include "linux.h"
 #endif
 
-
+#include "mem.h"
 #include "oobj.h"
 #include "ocells.h"
 #include "ostring.h"
 #include "odict.h"
 #include "ofunction.h"
-
 #include "oexpress.h"
 
 
-extern int dbg;
-extern int readLine(char *line);
+extern int readLine(char *line); //basic.c
 
 char *readword(char *s, char *w)
 {
@@ -404,8 +402,6 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 
 tOBJ eval2(tOBJ o, Dict *e)
 {
-	tOBJ h;
-
 	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA|| o.type==STACK)
 	{
 		o.q=0;
