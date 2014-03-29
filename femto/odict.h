@@ -13,17 +13,17 @@ typedef struct kvp {
 } Kvp;
 
 typedef struct dict {
+	unsigned char type;	
 	int sz;
-	int cf;
 	int ip;
 	Kvp *db;
 	struct dict *outer;
 } Dict;
 
-extern Dict *newdict		(int n);
+extern Dict *newdict		(int n, unsigned char t);
 extern Dict *clonedict          (Dict *x);
 extern int   deldict		(Dict *x);
-extern tOBJ  makedict		(int n);
+extern tOBJ  makedict		(int n, unsigned char t);
 extern tOBJ  makedict2		(Dict *e,int n);
 extern int   dict_add		(Dict *d, char *key, tOBJ value);
 extern int   dict_find		(Dict *d, char *key);

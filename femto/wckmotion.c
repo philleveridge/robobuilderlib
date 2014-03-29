@@ -5,12 +5,15 @@
 #include "femto.h"
 
 
-#define	RXC				7
+#define	RXC			7
 #define RX_COMPLETE		(1<<RXC)
-#define HEADER			0xFF 
-#define TIME_OUT		500
+#define HEADER			0xff
+#define TIME_OUT		250
 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
+
+#define	PWR_LED2_ON		CLR_BIT7(PORTC)   
+#define	PWR_LED2_OFF		SET_BIT7(PORTC)
 
 extern volatile WORD   g10Mtimer;
 extern void     delay_ms(int ms);
@@ -22,8 +25,11 @@ extern void     delay_ms(int ms);
 int getWck(WORD timeout)
 {
 	g10Mtimer = timeout;
+
+rprintf ("t=%d\n", g10Mtimer);
 	
-	while(!(UCSR0A&(1<<RXC)) ){ 	// test for received character
+	while(!(UCSR0A&(1<<RXC)) )
+	{ 	// test for received character
 		if (g10Mtimer==0) return -1;
 	}
 	return UDR0;
@@ -37,8 +43,8 @@ void putWck (BYTE b)
 {
 //	while ( (UCSR0A & DATA_REGISTER_EMPTY) == 0 );
 //	UDR0 = b;
-
-	while(!(UCSR0A&(1<<UDRE))); 	// wait until data register is empty
+rprintf ("ts=%x\n", b);	
+	while(!(UCSR0A&(1<<UDRE))) {}	// wait until data register is empty
 	UDR0=b;
 }
 
@@ -67,7 +73,7 @@ void wckInit(unsigned int ubrr)
 /* Input : Data1, Data2 */
 /* Output : None */
 /******************************************************************************/
-void wckSendOperCommand(char Data1, char Data2)
+void wckSendOperCommand(BYTE Data1, BYTE Data2)
 {
 	char CheckSum;
 	CheckSum = (Data1^Data2)&0x7f;
@@ -77,7 +83,7 @@ void wckSendOperCommand(char Data1, char Data2)
 	putWck(CheckSum);
 }
 
-void wckSendSetCommand(char Data1, char Data2, char Data3, char Data4)
+void wckSendSetCommand(BYTE Data1, BYTE Data2, BYTE Data3, BYTE Data4)
 {
 	char CheckSum;
 	CheckSum = (Data1^Data2^Data3^Data4)&0x7f;
@@ -194,8 +200,10 @@ void standup (int n)
 
 int response[32];
 
-int wckReadPos(int id, int d1)
+int wckReadPos(BYTE id, BYTE d1)
 {
+	UCSR0B = (1<<RXEN)|(1<<TXEN);
+
 	if (id>=0 && id<=31)
 	{
 		wckSendOperCommand(0xa0|id, NULL);

@@ -1796,12 +1796,7 @@ tOBJ ogetservo(tOBJ a, tOBJ b)
 	//> !GETSERVO 10
 	int id=toint(a);
 	int d1=toint(b);
-
-rprintf ("s=%d %d\n", id,d1);
-
-	wckReadPos(id, d1);
-
-rprintf ("r=%d %d\n", response[0], response[1]);
+	wckReadPos(id&0xFF, d1&0xFF);
 	return makeint(response[1]);
 }
 
@@ -1955,106 +1950,8 @@ tOBJ oacz(tOBJ a)
 
 tOBJ oexit(tOBJ a)
 {
-#ifdef LINUX
-	sigcatch();
-#endif
 	return emptyObj();
 }
-
-/*
-tOBJ oload(tOBJ  n)
-{
-	//!LOAD "fn"
-	// file start with [ is a matrix
-	// file start with { x } is a list
-	// else string
-	tOBJ r=emptyObj();
-
-       	FILE *fp;
-	char *s = n.string;
-	int cn=0,lc=0,cf;
-	//int sz=1024;
-	//char *m=malloc(sz);
-	char m[32000];
-	int ch;
-	if (n.type != SYM)
-	{
-		printf ("? requires filename\n");
-		return r;
-	}
-
-	if ((fp = fopen(s, "r")) == 0)
-	{
-		printf ("? can't find file - %s\n",s);
-		return r;
-	}
-	
-	while ( (ch=fgetc(fp))>=0)
-	{
-		if (ch==10 || ch==13) {cf=0; lc=0; continue;   }
-		if (lc==0 && ch==';') {cf=1; continue;}
-		if (cf==1) continue;
-		m[cn++]=ch;
-		lc++;
-	}
-	m[cn]=0;
-	if (dbg>2) printf ("Loaded [%s] %d\n", m,cn);	
-	fclose(fp);
-
-	switch (m[0])
-	{
-	case '[' : 
-		//m++;
-		r.type=FMAT2;
-		r.fmat2 = readmatrix(&m[1]);
-		break;
-	case '{' : 
-		r = parse(m); 
-		break;
-	case '!' : 
-		//m++;
-		r = eval_oxpr(&m[1]); 
-		break;
-	default:
-		r = makestring(m);
-		break;
-	}
-	return r;
-}
-
-
-tOBJ osave(tOBJ  f, tOBJ r)
-{
-	//!SAVE "fn" object
-       	FILE *fp;
-	char *s;
-
-	if (f.type==SYM) 
-		s = f.string;
-	else
-		return emptyObj();
-	
-
-	if ((fp = fopen(s, "w")) == 0)
-	{
-		printf ("? can't write to file - %s\n",s);
-		return r;
-	}
-
-	if (r.type==FMAT2)
-	{
-		fprintf(fp,"[");
-		fmatprint(fp, r.fmat2);
-		fprintf(fp,"]\n");
-	}
-	else
-	{
-		fprint(fp, r);
-	}
-	fclose(fp);
-	return r;
-}
-*/
 
 tOBJ odict(tOBJ  lst)
 {
@@ -2063,7 +1960,7 @@ tOBJ odict(tOBJ  lst)
 	if (lst.type==CELL)
 	{
 		int n=toint(olen(lst));
-		r = makedict(n);
+		r = makedict(n,0);
 		do {
 			tOBJ pair = ocar(lst);
 			tOBJ n = ocar(pair);
@@ -2581,7 +2478,7 @@ tOBJ oform(tOBJ o, Dict *e)
 
 tOBJ ofunc(tOBJ o, Dict *e) 
 {
-	//!FUNC ABC {X Y} {PLUS X Y}
+	//!DEF ABC (X Y) (+ X Y)
 	tOBJ fn = ocar(o); o=ocdr(o);
 	o.type  = LAMBDA;
 	set(e, fn.string, o);
@@ -2591,7 +2488,7 @@ tOBJ ofunc(tOBJ o, Dict *e)
 
 tOBJ olambda(tOBJ o, Dict *e) 
 {
-	//!LAMBA {X Y} {PLUS X Y}
+	//!LAMBA (X Y) (+ X Y)
 	o.type  = LAMBDA;
 	return o;
 }
@@ -2599,8 +2496,9 @@ tOBJ olambda(tOBJ o, Dict *e)
 tOBJ oclear(tOBJ o, Dict *e) 
 {
 	int n=e->sz;
+	unsigned char t=e->type;
 	deldict(e);
-	e = newdict(n);
+	e = newdict(n,t);
 	if (n> 200) loadop(e);
 	return emptyObj();
 }
