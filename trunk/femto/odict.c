@@ -35,14 +35,48 @@
 
 extern int dbg;
 
-Dict * newdict(int sz)
+BYTE EEMEM DICT_SPACE		[256];  // global env dictonary to be stored in EEPROM
+
+Dict *opendict(int sz, int f)
 {
 	Dict *n;
+	// test if dict exists in eprom 
+	// if not then create
+	// else load
+
+	n = (Dict *)bas_malloc(sizeof(Dict));
+
+	BYTE data = eeprom_read_byte((BYTE*)(DICT_SPACE));
+	if (data == 0x44 && f== 0)
+	{
+		//load dict
+		rprintf ("Dict found\n");
+	}
+	else
+	{
+		//create dict
+		eeprom_write_byte(DICT_SPACE, 0x44);
+		rprintf ("New Dict created\n");
+	}
+	n->sz   = sz;
+	n->ip   = 0;
+	n->type	= 1; 	/* 0=Mem, 1=EEPROM */
+	n->outer= NULL;
+	return n;
+}
+
+Dict * newdict(int sz, unsigned char t)
+{
+	Dict *n;
+	//if (t==1)
+	//	return 
+	opendict(sz, 1);
+
 	n = (Dict *)bas_malloc(sizeof(Dict));
 	if (sz==0) sz=100; //default
 	n->sz   = sz;
 	n->ip   = 0;
-	n->cf	= 0;
+	n->type	= t; /* 0=Mem, 1=EEPROM */
 	n->db   = (Kvp *)bas_malloc((n->sz) * sizeof(Kvp));
 	n->outer= NULL;
 	return n;
@@ -66,9 +100,9 @@ int deldict(Dict *x)
 
 Dict *clonedict(Dict *x)
 {
-	Dict *r=newdict(x->sz);
+	Dict *r=newdict(x->sz,0);
 	r->ip   = x->ip;
-	r->cf	= x->cf;
+	r->type	= x->type;
 	r->outer= x->outer;
 
 	for (int i=0; i<r->ip; i++)
@@ -83,10 +117,10 @@ Dict *clonedict(Dict *x)
 }
 
 
-tOBJ makedict(int n)
+tOBJ makedict(int n, unsigned char t)
 {
 	tOBJ r=emptyObj();
-	Dict *f=newdict(n);
+	Dict *f=newdict(n, t);
 	r.type=DICT;
 	r.dict=f;
 	return r;
@@ -94,7 +128,7 @@ tOBJ makedict(int n)
 
 tOBJ makedict2(Dict *e, int n)
 {
-	tOBJ r= makedict(n);
+	tOBJ r= makedict(n, 0);
 	((Dict *)(r.dict))->outer=e;
 	return r;
 }

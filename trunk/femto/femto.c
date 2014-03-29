@@ -88,12 +88,25 @@ void readLine(char *s, int n)
 	*s=0;
 }
 
+void testforreset()
+{
+	if((PINA&03) == 0)  // PF1 on, PF2 on 
+	{
+		delay_ms(10);
+		if((PINA&3) == 0) // after 1s still PF1 on, PF2 on 
+		{
+			rprintfProgStr(PSTR("reset\r\n"));
+		}
+	}
+}
+
+
 BYTE EEMEM FIRMWARE        	[64];  	// leave blank - used by Robobuilder OS
-BYTE EEMEM BASIC_PROG_SPACE	[256];  // global env dictonary to be stored in EEPROM
 
 void femto()
 {
 	rprintfProgStr(PSTR("Femto v0.1\n"));
+	testforreset();
 	repl();
 }
 
