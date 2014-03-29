@@ -74,8 +74,13 @@ tOBJ OpticFlow(tOBJ im1, tOBJ im2)
 	fMatrix *Dy_1 = fconvolve(img1, gaus_kernel_y);
 	fMatrix *Dx_2 = fconvolve(img2, gaus_kernel_x);
 	fMatrix *Dy_2 = fconvolve(img2, gaus_kernel_y);
-	fMatrix *Ix   = fmatscale(fadd2(Dx_1, Dx_2, '+' ), 0.5); 
-	fMatrix *Iy   = fmatscale(fadd2(Dy_1, Dy_2, '+' ), 0.5);
+	fMatrix *Ixa  = fadd2(Dx_1, Dx_2, '+' );  //leak?
+	fMatrix *Ix   = fmatscale(Ixa, 0.5);
+	delmatrix(Ixa);
+	fMatrix *Iya  = fadd2(Dy_1, Dy_2, '+' );//leak?
+	fMatrix *Iy   = fmatscale(Iya,0.5);
+	delmatrix(Iya);
+
 
 	//%%Build a gaussian kernel to smooth images for computing It
 	if (kernel==0) {
@@ -111,9 +116,15 @@ tOBJ OpticFlow(tOBJ im1, tOBJ im2)
 					fset2(B,0,1, fget2(B,0,1) + fget2(Iy,n,m)*fget2(It,n,m));
 				}
 			}
-			fMatrix *result = fmultiply2(inverse(A), fmatscale(B,-1));
+			//fMatrix *result = fmultiply2(inverse(A), fmatscale(B,-1)); //leak!
+			fMatrix *t1=inverse(A);
+			fMatrix *t2=fmatscale(B,-1);
+			fMatrix *result = fmultiply2(t1,t2);
 			fset2(output1,j,i,fget2(result,0,0));
 			fset2(output2,j,i,fget2(result,0,1));
+			delmatrix(t1);
+			delmatrix(t2);
+			delmatrix(result); 
 		}
 	}
 
@@ -124,8 +135,10 @@ tOBJ OpticFlow(tOBJ im1, tOBJ im2)
 	t1.fmat2 = output1;
 	t2.type  = FMAT2;
 	t2.fmat2 = output2;
-	r = append (r, t1);
-	r = append (r, t2);
+	tOBJ rn = append (r, t1); //leak
+	freeobj(&r);
+	r = append (rn, t2); //leak
+	freeobj(&rn);
 
 	//cleanup
 	delmatrix(Dx_1); 
@@ -139,6 +152,8 @@ tOBJ OpticFlow(tOBJ im1, tOBJ im2)
 	delmatrix(B); 
 	delmatrix(sim1); 
 	delmatrix(sim2); 
+	delmatrix(output1); 
+	delmatrix(output2); 
 
 	return r;
 }
