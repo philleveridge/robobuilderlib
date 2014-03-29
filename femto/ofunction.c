@@ -1960,7 +1960,7 @@ tOBJ odict(tOBJ  lst)
 	if (lst.type==CELL)
 	{
 		int n=toint(olen(lst));
-		r = makedict(n,0);
+		r = makedict(n);
 		do {
 			tOBJ pair = ocar(lst);
 			tOBJ n = ocar(pair);
@@ -2496,9 +2496,8 @@ tOBJ olambda(tOBJ o, Dict *e)
 tOBJ oclear(tOBJ o, Dict *e) 
 {
 	int n=e->sz;
-	unsigned char t=e->type;
 	deldict(e);
-	e = newdict(n,t);
+	e = newdict(n);
 	if (n> 200) loadop(e);
 	return emptyObj();
 }
