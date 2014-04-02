@@ -408,7 +408,13 @@ void main(int argc, char *argv[])
 #else
 	strcpy(device,"/dev/ttyUSB0");  //Linux Desktop default
 #endif
-        remote=1;   
+        remote=1; 
+
+	int cl=strlen(argv[0]);
+
+	if (cl>4 && (!strcmp(argv[0]+cl-4,"Lisp")))
+		lm=1;
+
 	for (int i=1; i<argc; i++)
 	{
 		if (!strcmp(argv[i],"DEBUG"))

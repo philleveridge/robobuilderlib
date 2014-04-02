@@ -798,6 +798,12 @@ tOBJ omat(tOBJ m, tOBJ a, tOBJ b)
 	{
 		r.floatpoint = fget2((m.fmat2),col,row);
 	}
+
+	if (m.type==IMAG)
+	{ 
+		r.type=INTGR;
+		r.number = a.imgptr->data[col+row*a.imgptr->w];
+	}
 	return r;
 }
 
@@ -819,7 +825,7 @@ tOBJ omats(tOBJ m, tOBJ a, tOBJ b, tOBJ v, tOBJ dummy)
 
 tOBJ oimp (tOBJ a, tOBJ b, tOBJ c)
 {
-	//IMP("A",2,2);
+	//IMP "A" 2 2
 
 	tOBJ r;
 	r.type=EMPTY;
@@ -904,6 +910,12 @@ tOBJ osum(tOBJ a)
 		r.type=FLOAT;
 		r.floatpoint = fsum(a.fmat2);
 	}
+	if (a.type==IMAG)
+	{ 
+		r.type=INTGR;
+		r.number = 0;
+		for (int i=0; i<a.imgptr->w*a.imgptr->h; i++) r.number+= a.imgptr->data[i];
+	}
 	return r;
 }
 
@@ -916,6 +928,11 @@ tOBJ orow(tOBJ a)
 		r.type=INTGR;
 		r.number = a.fmat2->h;
 	}
+	if (a.type==IMAG)
+	{ 
+		r.type=INTGR;
+		r.number = a.imgptr->h;
+	}
 	return r;
 }
 
@@ -927,6 +944,11 @@ tOBJ ocol(tOBJ a)
 	{ 
 		r.type=INTGR;
 		r.number = a.fmat2->w;
+	}
+	if (a.type==IMAG)
+	{ 
+		r.type=INTGR;
+		r.number = a.imgptr->w;
 	}
 	return r;
 }
@@ -2426,6 +2448,12 @@ tOBJ oimg(tOBJ v, Dict *e)
 			{
 				unsigned char *p = loadimage2(a.string);
 
+				if (p==0)
+				{
+					printf("Image load failed\n");
+					return emptyObj();
+				}
+
 				int s, m=0;
 				for (int i=0; i<Width*Height; i++) if (p[i]>m) m=p[i];
 
@@ -2441,7 +2469,8 @@ tOBJ oimg(tOBJ v, Dict *e)
 				{
 					r=vj_get(i);
 
-				if (dbg); printf ("%d, %d, %d, %d\n", r.x,r.y,r.width,r.height);			
+					if (dbg); printf ("%d, %d, %d, %d\n", r.x,r.y,r.width,r.height);	
+		
 					tOBJ t= append(ret, makeint(r.x));
 					freeobj(&ret); ret=t;
 					t = append(ret, makeint(r.y));
@@ -2453,14 +2482,20 @@ tOBJ oimg(tOBJ v, Dict *e)
 					ret=t;
 				}
 
-				if (toint(ocar(ocdr(v)))>0)
+				if (s>0 && toint(ocar(ocdr(v)))>0)
 				{
-					char *g1 =  " .:-=+*#%@";
-					for (int i=r.y; i<r.y+r.height; i++) 
+					//char *g1 =  " .:-=+*#%@";
+					tOBJ rv=emptyObj();
+					rv.type=IMAG;
+					rv.imgptr=makeimage(r.width, r.height);
+					for (int i=0; i<r.height; i++) 
 					{
-						for (int j=r.x; j<r.x+r.width; j++) {printf ("%c ", g1[(p[j+i*Width])/25]);}
-						printf ("\n");	
+						for (int j=0; j<r.width; j++) 
+						{
+							rv.imgptr->data[j+i*r.width]=p[(j+r.x)+ (i+r.y)*r.width];
+						}
 					}
+					return rv;
 				}
 
 				if (p != NULL) free(p);
@@ -2468,7 +2503,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 				return ret;
 			}
 			else
-				vj("Face.pgm"); //default test
+				return makeint(vj("Face.pgm")); //default test
 		}
 		else
 		if (!strcmp(cmd.string,"LOAD") || !strcmp(cmd.string,"NORM")) //  IMAG LOAD 8 "Text"
@@ -2577,7 +2612,17 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"RAW"))
 		{
 			tOBJ file= ocar(v);
-			if (file.type==SYM) loadJpg(file.string);
+			if (file.type==SYM) 
+			{
+				tOBJ r = emptyObj();
+				oImage *p = loadoImage(file.string);
+				if (p != NULL)
+				{
+					r.type=IMAG;
+					r.imgptr=p;
+				}
+				return r;
+			}
 		}
 		else
 		if (!strcmp(cmd.string,"PROC"))
@@ -2597,12 +2642,22 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"SHOW"))
 		{
 			int sz=sqrt(nis);
+			tOBJ p=eval(ocar(v),e);
+
+			if (p.type==IMAG)
+			{
+				printimage(p.imgptr);
+				imageogray(p.imgptr);
+				return emptyObj();
+			}
+
 			int n=toint(ocar(v));
 
 			frame=&scene[0];
 
 			switch (n) {
 			case 0: 
+				break;
 			case 1: 
 			case 2:
 			case 3:

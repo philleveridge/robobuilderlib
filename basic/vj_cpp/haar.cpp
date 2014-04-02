@@ -653,7 +653,7 @@ void nearestNeighbor (MyImage *src, MyImage *dst)
     }
 }
 
-void readTextClassifier()//(myCascade * cascade)
+int readTextClassifier()//(myCascade * cascade)
 {
   /*number of stages of the cascade classifier*/
   int stages;
@@ -666,7 +666,7 @@ void readTextClassifier()//(myCascade * cascade)
   int tree_index = 0;
   FILE *finfo = fopen("info.txt", "r");
 
-  if (finfo == NULL) {printf ("?cant find info.txt"); return;}
+  if (finfo == NULL) {printf ("?cant find info.txt"); return 0;}
 
 
   /**************************************************
@@ -712,7 +712,7 @@ void readTextClassifier()//(myCascade * cascade)
   stages_thresh_array = (int*)malloc(sizeof(int)*stages);
   FILE *fp = fopen("class.txt", "r");
 
-  if (fp == NULL) {printf ("?cant find class.txt"); return;}
+  if (fp == NULL) {printf ("?cant find class.txt"); return 0;}
 
   /******************************************
    * Read the filter parameters in class.txt
@@ -788,6 +788,7 @@ void readTextClassifier()//(myCascade * cascade)
 	} /* end of j loop */
     } /* end of i loop */
   fclose(fp);
+  return 1;
 }
 
 

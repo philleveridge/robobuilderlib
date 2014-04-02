@@ -124,6 +124,7 @@ int loadJpg(char* Name)
   return 0;
 }
 
+
 int simplefilter(int mode, int sf)
 {
      unsigned char *img = BMap;
@@ -285,7 +286,7 @@ unsigned char*loadimage2(char *ifile)
 	unsigned char *img = BMap;
 
 	if (loadJpg(ifile)!=0)
-		return -1;
+		return NULL;
 
 	printf ("Loaded %d,%d\n", Height, Width);
 

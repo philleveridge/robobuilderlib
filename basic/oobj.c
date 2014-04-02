@@ -29,7 +29,7 @@
 
 int freeobj(tOBJ *b)
 {
-	if (b==NULL) return;
+	if (b==NULL) return 0;
 	if (dbg) printf ("free obj - %d %s\n", b->cnt, objtype(*b));
 
 	if (b->cnt>0)
@@ -65,6 +65,11 @@ int freeobj(tOBJ *b)
 	else if (b->type==STACK)
 	{
 		if (b->cnt==0) delstack(b->stk);
+	}
+	else if (b->type==IMAG)
+	{
+		if (dbg) printf ("free Image\n");
+		if (b->cnt==0) delimage(b->imgptr);
 	}	
 	else 
 	{
@@ -144,6 +149,10 @@ tOBJ cloneObj(tOBJ z)
 	{
 		if (dbg) printf ("RBM clone TBD\n");
 	}
+	else if (r.type==IMAG)
+	{
+		r.imgptr =  cloneimage(z.imgptr);  	
+	}
 	else 
 	{
 		//if (dbg) printf ("nothing to clone\n");
@@ -217,6 +226,10 @@ void printtype(FILE *fp, tOBJ r)
     else  if (r.type == STACK)
     {
 	stackprint2(r.stk);
+    }
+    else  if (r.type == IMAG)
+    {
+	printimage(r.imgptr);
     }
     else  if (r.type == CELL)
     {
@@ -518,6 +531,7 @@ char *objtype(tOBJ t)
 	case RBM:   st="RBM   ";break;
 	case STACK: st="STACK ";break;
 	case FUNC:  st="Func  ";break;
+	case IMAG:  st="Image ";break;
 	}
 	return st;
 }

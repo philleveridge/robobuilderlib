@@ -402,13 +402,13 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 
 tOBJ eval2(tOBJ o, Dict *e)
 {
-	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA|| o.type==STACK)
+	if (o.q==1 || o.type==INTGR || o.type==FLOAT || o.type == FMAT2 || o.type == EMPTY ||o.type==FUNC || o.type==LAMBDA|| o.type==STACK || o.type == IMAG)
 	{
 		o.q=0;
 		if (o.type==SYM)
 			return cloneObj(o);
 
-		if (o.type==CELL || o.type==FMAT2 || o.type==STACK)
+		if (o.type==CELL || o.type==FMAT2 || o.type==STACK || o.type==IMAG)
 			o.cnt++;
 
 		return o;
