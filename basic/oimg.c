@@ -119,8 +119,38 @@ void imageogray(oImage *im)
 
 void printimage(oImage *ip)
 {
-	printf ("Image %d, %d\n", ip->w, ip->h);	
+
+	printf ("Image %d, %d", ip->w, ip->h);	
 }
+
+int image2Pgm(oImage *image, char *fileName)
+{
+	char parameters_str[5];
+	int i, mg=0;
+
+	if (image==NULL) return -1;
+
+	for (i=0; i<image->h*image->w; i++) if (image->data[i]>mg) mg=image->data[i];
+
+	FILE *fp = fopen(fileName, "w");
+	if (!fp)
+	{
+		printf("No such file %s\n", fileName);
+		return -1;
+	}
+
+	fprintf (fp,"P5\n%d %d\n%d\n", image->w, image->h, mg);
+
+	printf ("P5\n%d %d\n%d\n", image->w, image->h, mg);
+
+	for (i = 0; i < (image->w * image->h); i++)
+	{
+		fputc(image->data[i], fp);
+	}
+	fclose(fp);
+	return 0;
+}
+
 
 
 

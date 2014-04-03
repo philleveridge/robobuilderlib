@@ -802,7 +802,7 @@ tOBJ omat(tOBJ m, tOBJ a, tOBJ b)
 	if (m.type==IMAG)
 	{ 
 		r.type=INTGR;
-		r.number = a.imgptr->data[col+row*a.imgptr->w];
+		r.number = m.imgptr->data[col+row*m.imgptr->w];
 	}
 	return r;
 }
@@ -2457,13 +2457,13 @@ tOBJ oimg(tOBJ v, Dict *e)
 				int s, m=0;
 				for (int i=0; i<Width*Height; i++) if (p[i]>m) m=p[i];
 
-				if (dbg) printf("%d,%d [%d]\n", Width, Height, m);
+				if (dbg); printf("%d,%d [%d]\n", Width, Height, m);
 
 				s = vj_img (Width, Height, m, p);
 
 				tOBJ ret=emptyObj();
 
-				printf("Found [%d]\n", s);
+				if (dbg) printf("Found [%d]\n", s);
 				MyRect r;
 				for (int i=0; i<s; i++)
 				{
@@ -2485,25 +2485,21 @@ tOBJ oimg(tOBJ v, Dict *e)
 				if (s>0 && toint(ocar(ocdr(v)))>0)
 				{
 					//char *g1 =  " .:-=+*#%@";
-					tOBJ rv=emptyObj();
-					rv.type=IMAG;
-					rv.imgptr=makeimage(r.width, r.height);
+					freeobj(&ret); 
+					ret=emptyObj();
+					ret.type=IMAG;
+					ret.imgptr=makeimage(r.width, r.height);
 					for (int i=0; i<r.height; i++) 
 					{
 						for (int j=0; j<r.width; j++) 
 						{
-							rv.imgptr->data[j+i*r.width]=p[(j+r.x)+ (i+r.y)*r.width];
+							ret.imgptr->data[j+i*r.width]=p[(j+r.x) + (i+r.y)*Width];
 						}
 					}
-					return rv;
 				}
-
 				if (p != NULL) free(p);
-
 				return ret;
 			}
-			else
-				return makeint(vj("Face.pgm")); //default test
 		}
 		else
 		if (!strcmp(cmd.string,"LOAD") || !strcmp(cmd.string,"NORM")) //  IMAG LOAD 8 "Text"
@@ -2631,6 +2627,23 @@ tOBJ oimg(tOBJ v, Dict *e)
 			processFrame(n, &scene[0]);
 			nis=n*n;
 			return makeint(nis);
+		}
+		else
+		if (!strcmp(cmd.string,"PGM"))
+		{
+			tOBJ im = eval(ocar(v),e);
+			tOBJ fn = eval(ocar(ocdr(v)),e);
+			tOBJ r=emptyObj();
+
+			if (im.type==IMAG && fn.type==SYM)
+			{
+				int n = image2Pgm(im.imgptr, fn.string);
+				r=makeint(n);
+			}
+			
+			freeobj(&im);
+			freeobj(&fn);
+			return r;
 		}
 		else
 		if (!strcmp(cmd.string,"REG"))

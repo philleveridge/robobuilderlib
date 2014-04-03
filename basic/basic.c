@@ -396,6 +396,7 @@ int readLine(char *line)
 				rprintfChar(32);
 				rprintfChar(8);
 				if (*line=='"') qf=!qf;
+				*line='\0';
 			}
 		}
 		else

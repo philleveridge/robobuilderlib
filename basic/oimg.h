@@ -14,5 +14,5 @@ extern void 	printimage	(oImage *ip);
 
 extern oImage 	*loadoImage	(char *name);
 extern void 	imageogray	(oImage *im);
-
+extern int 	image2Pgm	(oImage *image, char *fileName);
 #endif
