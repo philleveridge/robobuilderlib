@@ -102,7 +102,7 @@ void setImageForCascadeClassifier( myCascade* cascade, MyIntImage* sum, MyIntIma
 /* runs the cascade on the specified window */
 int runCascadeClassifier( myCascade* cascade, MyPoint pt, int start_stage);
 
-void readTextClassifier();//(myCascade* cascade);
+int readTextClassifier();//(myCascade* cascade);
 void releaseTextClassifier();
 
 

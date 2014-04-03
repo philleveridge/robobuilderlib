@@ -115,7 +115,7 @@ int compareObj(tOBJ a, tOBJ b)
 tOBJ copyObj(tOBJ z)
 {
 	tOBJ r = z; 
-	if (r.type==CELL || r.type==FMAT2 || r.type==STACK || r.type==SYM  || r.type==RBM   || r.type==DICT)
+	if (r.type==CELL || r.type==FMAT2 || r.type==STACK || r.type==SYM  || r.type==RBM   || r.type==DICT  || r.type==IMAG)
 		r.cnt+=1;
 	return r;
 }
