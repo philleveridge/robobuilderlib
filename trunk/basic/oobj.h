@@ -19,7 +19,7 @@ typedef struct object {
                 void    *dict;
                 void    *stk;
 		void    *fptr;
-		oImage   *imgptr;
+		oImage  *imgptr;
 		fMatrix *fmat2;
                 Motion  *mot;
       	};

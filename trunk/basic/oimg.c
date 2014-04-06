@@ -60,6 +60,52 @@ oImage *cloneimage(oImage *ip)
 	return nip;	
 }
 
+void drawline(oImage *img, int fx, int fy, int tx, int ty, int c)
+{
+	if (fx<0) fx=0;
+	if (tx<0) tx=0;	
+	if (tx<fx) tx=fx;
+	if (tx>=img->w) tx=(img->w)-1;
+
+	if (fy<0) fy=0;
+	if (ty<0) ty=0;	
+	if (ty<fy) ty=fy;
+	if (ty>=img->h) ty=(img->h)-1;
+
+	for (int y=fy; y<=ty; y++)
+		for (int x=fx; x<=tx; x++)
+			img->data[x+y*img->w]=c;
+
+	return img;
+}
+
+void drawrect(oImage *img, int fx, int fy, int w, int h, int c)
+{
+	int tx=fx+w;
+	int ty=fy+h;
+	if (fx<0) fx=0;
+	if (tx<0) tx=0;	
+	if (tx<fx) tx=fx;
+	if (tx>=img->w) tx=(img->w)-1;
+
+	if (fy<0) fy=0;
+	if (ty<0) ty=0;	
+	if (ty<fy) ty=fy;
+	if (ty>=img->h) ty=(img->h)-1;
+
+	drawline(img, fx,  fy,  fx+w,  fy,   c);
+	drawline(img, fx,  fy,  fx,    fy+h, c);
+	drawline(img, fx,  fy+h,fx+w,  fy+h, c);
+	drawline(img, fx+w,fy,  fx+w,  fy+h, c);
+
+	return img;
+}
+
+void clearoImage(oImage *img, int c)
+{
+	for (int i=0; i<img->h*img->w; i++) img->data[i]=c;
+}
+
 
 oImage *loadoImage(char *name)
 {
@@ -125,7 +171,6 @@ void printimage(oImage *ip)
 
 int image2Pgm(oImage *image, char *fileName)
 {
-	char parameters_str[5];
 	int i, mg=0;
 
 	if (image==NULL) return -1;
@@ -140,8 +185,6 @@ int image2Pgm(oImage *image, char *fileName)
 	}
 
 	fprintf (fp,"P5\n%d %d\n%d\n", image->w, image->h, mg);
-
-	printf ("P5\n%d %d\n%d\n", image->w, image->h, mg);
 
 	for (i = 0; i < (image->w * image->h); i++)
 	{
