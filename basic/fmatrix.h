@@ -46,5 +46,6 @@ extern fMatrix *fmatflip(fMatrix *A);
 extern fMatrix *gausian(int Kernel_Size, int gaus_sigma);
 
 extern float   fsum(fMatrix *A);
+extern float   fmatmax(fMatrix *A);
 
 #endif
