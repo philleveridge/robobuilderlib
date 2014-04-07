@@ -34,6 +34,7 @@ oImage *makeimage(int h, int w)
 	p->h=h;
 	p->w=w;
 	p->data = (unsigned char *)bas_malloc(sizeof(unsigned char)*h*w);
+	memset(p->data, 0, sizeof(unsigned char)*h*w);
 	return p;	
 }
 
@@ -54,56 +55,56 @@ oImage *cloneimage(oImage *ip)
 	oImage *nip = (oImage *)bas_malloc(sizeof(oImage));
 	nip->h=ip->h;
 	nip->w=ip->w;
-	nip->data = (unsigned char *)bas_malloc(sizeof(unsigned char)*(ip->h)*(ip->w));
-	for (int i=0; i<ip->h*ip->w; i++)
-		nip->data[i] = ip->data[i];	
+	nip->data = (unsigned char *)bas_malloc(sizeof(unsigned char)*(ip->h)*(ip->w));	
+	memcpy(nip->data, ip->data, sizeof(unsigned char)*(ip->w*ip->h));
 	return nip;	
+}
+
+void setpoint(oImage *img, int x, int y, int c)
+{
+	if (img==NULL) return;
+	if (x<0) x=0;
+	if (y<0) y=0;
+	if (x>=img->w) x=img->w-1;
+	if (y>=img->h) y=img->h-1;
+	c=abs(c)%256;
+	img->data[x+y*img->w]=c;
+}
+
+int getpoint(oImage *img, int x, int y)
+{
+	if (img==NULL) return;
+	if (x<0) x=0;
+	if (y<0) y=0;
+	if (x>=img->w) x=img->w-1;
+	if (y>=img->h) y=img->h-1;
+	return img->data[x+y*img->w];
 }
 
 void drawline(oImage *img, int fx, int fy, int tx, int ty, int c)
 {
-	if (fx<0) fx=0;
-	if (tx<0) tx=0;	
 	if (tx<fx) tx=fx;
-	if (tx>=img->w) tx=(img->w)-1;
-
-	if (fy<0) fy=0;
-	if (ty<0) ty=0;	
 	if (ty<fy) ty=fy;
-	if (ty>=img->h) ty=(img->h)-1;
 
 	for (int y=fy; y<=ty; y++)
 		for (int x=fx; x<=tx; x++)
-			img->data[x+y*img->w]=c;
+			setpoint(img,x,y,c); 
 
 	return img;
 }
 
 void drawrect(oImage *img, int fx, int fy, int w, int h, int c)
 {
-	int tx=fx+w;
-	int ty=fy+h;
-	if (fx<0) fx=0;
-	if (tx<0) tx=0;	
-	if (tx<fx) tx=fx;
-	if (tx>=img->w) tx=(img->w)-1;
-
-	if (fy<0) fy=0;
-	if (ty<0) ty=0;	
-	if (ty<fy) ty=fy;
-	if (ty>=img->h) ty=(img->h)-1;
-
 	drawline(img, fx,  fy,  fx+w,  fy,   c);
 	drawline(img, fx,  fy,  fx,    fy+h, c);
 	drawline(img, fx,  fy+h,fx+w,  fy+h, c);
 	drawline(img, fx+w,fy,  fx+w,  fy+h, c);
-
-	return img;
+	return;
 }
 
 void clearoImage(oImage *img, int c)
 {
-	for (int i=0; i<img->h*img->w; i++) img->data[i]=c;
+	memset(img->data, c, sizeof(unsigned char)*img->h*img->w);
 }
 
 
@@ -157,7 +158,7 @@ void imageogray(oImage *im)
 			printf("- ");
 		     else
 		        //printf ("%c ", g2[(l*im->data[j+i*im->w])/mx]);
-			printf ("%c ", g1[l-1-(im->data[j+i*im->w])/mx]);
+			printf ("%c ", g1[l-1-l*(im->data[j+i*im->w])/mx]);
 		}
 		printf ("\n");
 	}
@@ -169,13 +170,21 @@ void printimage(oImage *ip)
 	printf ("Image %d, %d", ip->w, ip->h);	
 }
 
+int maxval(oImage *image)
+{
+	int mg;
+	if (image==NULL) return 0;
+
+	for (int i=0; i<image->h*image->w; i++) 
+		if (image->data[i]>mg) mg=image->data[i];
+	return mg;
+}
+
 int image2Pgm(oImage *image, char *fileName)
 {
-	int i, mg=0;
+	int i, mg=maxval(image);
 
 	if (image==NULL) return -1;
-
-	for (i=0; i<image->h*image->w; i++) if (image->data[i]>mg) mg=image->data[i];
 
 	FILE *fp = fopen(fileName, "w");
 	if (!fp)

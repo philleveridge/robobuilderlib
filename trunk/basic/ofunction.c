@@ -182,10 +182,10 @@ tOP oplist[] = {
 	{"ROW",   40, NA,   1, orow},   //function single arg    <fMatrix>
 	{"RSHP",  40, NA,   3, orshp},  //function three args  <fMatrix, int, int>
 	{"SAVE",  40, NA,   2, osave},//
-	{"SCELL", 40, NA,   5, omats},   //function three args   <fMatrix, int, int>
 	{"SERVO", 40, NA,   0, oserv}, //function single arg
 	{"SET"   ,40, NA,   9, oset}, 
 	{"SETB",  40, NA,   2, setb}, //function single arg
+	{"SETC",  40, NA,   9, osetc}, //function single arg
 	{"SETK",  40, NA,   9, osetk}, //function single arg
 	{"SETQ"  ,40, NA,   9, osetq}, 
 	{"SETSERVO", 40, NA,3, osetservo}, //function single arg
@@ -579,7 +579,16 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		r.imgptr = cloneimage(o1.imgptr);
 		for (int i=0; i<r.imgptr->h; i++)
 			for (int j=0; j<r.imgptr->w; j++)
-				r.imgptr->data[j+i*r.imgptr->w] = o1.imgptr->data[i + j*o1.imgptr->w];	
+				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] + o2.imgptr->data[i + j*o2.imgptr->w])%256;	
+	}
+
+	if (o1.type==IMAG && o2.type==IMAG && op==MULT)
+	{
+		r.type=IMAG;
+		r.imgptr = cloneimage(o1.imgptr);
+		for (int i=0; i<r.imgptr->h; i++)
+			for (int j=0; j<r.imgptr->w; j++)
+				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] * o2.imgptr->data[i + j*o2.imgptr->w])%256;	
 	}
 
 	if (o1.type==IMAG && (o2.type==INTGR || o2.type==FLOAT) && op==PLUS)
@@ -793,9 +802,7 @@ tOBJ omax(tOBJ a, tOBJ r)
 	if (a.type==IMAG)
 	{
 		r.type=INTGR;
-		r.number=a.imgptr->data[0];
-		for (i=1; i<a.imgptr->h*a.imgptr->w; i++)
-			if (a.imgptr->data[i]>r.number) r.number= a.imgptr->data[i];
+		r.number=maxval(a.imgptr);
 	}
 
 	return r;
@@ -814,55 +821,84 @@ tOBJ omat(tOBJ m, tOBJ a, tOBJ b)
 {
 	//read matrix cell
 	tOBJ r;
-	int row,col;
-	r=makefloat(0.0);
-	row=toint(a);
-	col=toint(b);
+
+	int row=toint(a);
+	int col=toint(b);
 
 	if (m.type==FMAT2) 
 	{
+		r=makefloat(0.0);
 		r.floatpoint = fget2((m.fmat2),col,row);
 	}
 
 	if (m.type==IMAG)
 	{ 
 		r.type=INTGR;
-		r.number = m.imgptr->data[col+row*m.imgptr->w];
+		r.number = getpoint(m.imgptr, col, row); 
 	}
 	return r;
+}
+
+tOBJ osetc(tOBJ o, Dict *e) 
+{
+	//SETC IM 1 1 255
+	//SETC MA 1 1 0.5
+
+	tOBJ exp = emptyObj();
+	tOBJ var = ocar(o); 	 	o=ocdr(o);
+	tOBJ a = eval(ocar(o),e); 	o=ocdr(o);
+	tOBJ b = eval(ocar(o),e); 	o=ocdr(o);
+	tOBJ c = eval(ocar(o),e); 
+
+	if (var.type==SYM)
+	{
+		tOBJ arr=dict_getc(e, var.string);
+		if (arr.type==IMAG)
+		{
+			int v = toint(c);
+			setpoint(arr.imgptr,toint(a),toint(b),v);
+			exp=makeint(v);
+		}
+
+		if (arr.type==FMAT2)
+		{
+			float v = tofloat(c);
+			fset2(arr.fmat2,toint(a),toint(b), v);
+			exp=makefloat(v);
+		}
+	}
+
+	freeobj(&c);
+	freeobj(&b);
+	freeobj(&a);
+
+	return exp;
 }
 
 tOBJ omats(tOBJ m, tOBJ a, tOBJ b, tOBJ v, tOBJ dummy) 
 {
 	//store in mat cell
-
+	tOBJ r  = emptyObj();
 	int row,col;
 	row=toint(a);
 	col=toint(b);
 
 	if (m.type==FMAT2) 
 	{
-		tOBJ r  = emptyObj();
 		r.type  = FMAT2;
 		r.fmat2 = fmatcp(m.fmat2);
 		float cv=tofloat(v);
 		fset2(r.fmat2,col,row, cv);
-		return r;
 	}
 
 	if (m.type==IMAG) 
 	{
-		int cv=toint(v);
-		if (cv<0) cv=0;
-		cv=cv%256;
-		if (row<0) row=0;
-		if (col<0) col=0;
-		if (col>=m.imgptr->w) col =  m.imgptr->w-1;
-		if (row>=m.imgptr->h) row =  m.imgptr->h-1;
-		m.imgptr->data[col+row*m.imgptr->w]=cv;
+		r.type  = FMAT2;
+		r.imgptr = cloneimage(m.imgptr);
+		setpoint(r.imgptr, col, row, toint(v));
 	}
 
-	return m;
+	return r;
 }
 
 
@@ -2739,6 +2775,26 @@ tOBJ oimg(tOBJ v, Dict *e)
 			return r;
 		}
 		else
+		if (!strcmp(cmd.string,"MAT"))
+		{
+			tOBJ m = eval(ocar(v),e);
+			tOBJ r = emptyObj();
+			if (m.type==FMAT2)
+			{
+				int h=m.fmat2->h;
+				int w=m.fmat2->w;
+				float mx = fmatmax(m.fmat2);
+				oImage *p = makeimage(h,w);
+				if (p != NULL)
+				{
+					r.type=IMAG;
+					r.imgptr=p;
+					for (int i=0; i<h*w; i++) r.imgptr->data[i] = (int)(255*m.fmat2->fstore[i]/mx);
+				}
+			}
+			return r;
+		}
+		else
 		if (!strcmp(cmd.string,"PROC"))
 		{
 			int n=toint(ocar(v));
@@ -3018,6 +3074,44 @@ tOBJ omatr(tOBJ n, tOBJ v, tOBJ f)
 					mat.fmat2->fstore[j+i*w] = img.imgptr->data[j+i*w];
 				}
 			}
+			return mat;
+
+		}
+	}
+
+	if (n.type==SYM && v.type==INTGR && f.type==INTGR)
+	{
+		// MAT 'I 5 5
+		tOBJ img=dict_getc(env.dict, n.string);
+		if (img.type==IMAG)
+		{
+			int h=img.imgptr->h;
+			int w=img.imgptr->w;
+			int nh=toint(f);
+			int nw=toint(v);
+
+			if (nh>h) nh=h;
+			if (nw>w) nw=w;
+
+			tOBJ mat = emptyObj();
+			mat.type=FMAT2;
+			mat.fmat2 = newmatrix(nw,nh);
+
+			//cpy into mat values from img.impgptr->data
+			int x,y;
+			for (int i=0;i<h; i++)
+			{
+				y=(i*nh)/h;
+				for (int j=0; j<w; j++)
+				{
+					x=(j*nw)/w;
+					mat.fmat2->fstore[x+y*nw] += img.imgptr->data[j+i*w];
+				}
+			}
+			float mx=fmatmax(mat.fmat2);
+			for (x=0; x<nh*nw;x++) mat.fmat2->fstore[x] /= mx;
+			
+			return mat;
 
 		}
 	}

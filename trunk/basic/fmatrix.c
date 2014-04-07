@@ -79,12 +79,8 @@ fMatrix *fmatcp(fMatrix *A) // clone
 	int h=A->h;
 
 	n = newmatrix(w, h);
-
 	if (dbg) printf ("sz=%d\n",h*w);
-
-  	for (i=0; i<h*w; i++)
-		n->fstore[i]=A->fstore[i];
-
+	memcpy(n->fstore, A->fstore, sizeof(float)*h*w);
 	return n;
 }
 
@@ -330,6 +326,14 @@ float fsum(fMatrix *A)
 	float x=0.0;
   	for (int i=0; i < (A->h)*(A->w); i++)
 		x += A->fstore[i];
+	return x;
+}
+
+float fmatmax(fMatrix *A)
+{
+	float x=0.0;
+  	for (int i=0; i < (A->h)*(A->w); i++)
+		if (x < A->fstore[i]) x=A->fstore[i];
 	return x;
 }
 

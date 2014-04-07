@@ -132,6 +132,7 @@ extern tOBJ orshp	(tOBJ  r, tOBJ, tOBJ);
 extern tOBJ osave	(tOBJ  r, tOBJ);
 extern tOBJ oserv	(tOBJ  r);
 extern tOBJ oset	(tOBJ  v, Dict *e);  
+extern tOBJ osetc	(tOBJ  o, Dict *e) ;
 extern tOBJ osetk	(tOBJ  r, Dict *e); 
 extern tOBJ osetq	(tOBJ  v, Dict *e); 
 extern tOBJ osetservo	(tOBJ  r, tOBJ, tOBJ);
