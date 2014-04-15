@@ -162,6 +162,7 @@ tOP oplist[] = {
 	{"OPFLOW",40, NA,   2, OpticFlow}, 
 	{"OR",    40, NA,   9, oor}, 
 	{"PEEK",  40, NA,   9, opeek}, 
+	{"PIPE",  40, NA,   1, opipe}, 
 	{"PLUS",  40, NA,   9, oplus}, 
 	{"POP",   40, NA,   9, opop}, //function single arg
 	{"POSE",  40, NA,   1, opose}, //function single arg
@@ -1250,6 +1251,13 @@ tOBJ orshp(tOBJ m, tOBJ a, tOBJ b)
 		r.type=FMAT2;
 		r.fmat2 = fmatrshp(m.fmat2, col,row);
 	}
+
+	if (m.type==IMAG)
+	{
+		r.type=IMAG;
+		r.imgptr = reshapeoImage(m.imgptr, col, row);
+	}
+
 	return r;
 }
 
@@ -2803,6 +2811,39 @@ tOBJ oimg(tOBJ v, Dict *e)
 			return makeint(nis);
 		}
 		else
+		if (!strcmp(cmd.string,"RECOG"))
+		{
+			tOBJ im = eval(ocar(v),e);
+			tOBJ ret=emptyObj();
+			int r=0;
+			if (im.type==IMAG)
+			{
+				r=recognition(im.imgptr);
+				if (dbg) recog_dump(2);
+
+					tOBJ t= append(ret, makeint(r));
+					ret   = append(t, makeint(recog_result(r)));
+					freeobj(&t);
+			}
+			freeobj(&im);
+			return ret;
+		}
+		else
+		if (!strcmp(cmd.string,"TRAIN"))
+		{
+			tOBJ im = eval(ocar(v),e);
+			tOBJ c = eval(ocar(ocdr(v)),e);
+			if (im.type==IMAG && c.type==INTGR)
+			{
+				training (im.imgptr, toint(c));
+				if (dbg) recog_dump(1);
+			}
+
+			freeobj(&im);
+			freeobj(&c);
+			return emptyObj();
+		}
+		else
 		if (!strcmp(cmd.string,"PGM"))
 		{
 			tOBJ im = eval(ocar(v),e);
@@ -2863,9 +2904,21 @@ tOBJ oimg(tOBJ v, Dict *e)
 
 			if (p.type==IMAG)
 			{
-				printimage(p.imgptr);
-				printf ("\n");
-				imageogray(p.imgptr);
+				tOBJ p2=eval(ocar(ocdr(v)),e);
+				if (toint(p2)==1)
+				{
+					printimage(p.imgptr);
+					printf ("\n");
+					imageshow(p.imgptr);
+				}
+				else
+				{
+					printimage(p.imgptr);
+					printf ("\n");
+					imageogray(p.imgptr);
+				}
+				freeobj(&p);
+				freeobj(&p2);
 				return emptyObj();
 			}
 
@@ -2914,7 +2967,13 @@ Stack
 tOBJ ostack(tOBJ a)
 {
 	if (a.type!=INTGR) return emptyObj();
-	return makestack(toint(a));
+	return makestack(toint(a),0);
+}
+
+tOBJ opipe(tOBJ a)
+{
+	if (a.type!=INTGR) return emptyObj();
+	return makestack(toint(a),1);
 }
 
 tOBJ opush(tOBJ o, Dict *e)
@@ -3137,8 +3196,8 @@ tOBJ formula(tOBJ ae, Dict *e)
 
 	if (oatom(ae).number==1) {return ae;}
 
-	tOBJ ops=makestack(10);
-	tOBJ opd=makestack(10);
+	tOBJ ops=makestack(10,0);
+	tOBJ opd=makestack(10,0);
 
 	while (1)
 	{

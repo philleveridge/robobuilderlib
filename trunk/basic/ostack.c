@@ -24,12 +24,13 @@ extern int dbg;
 /*  stack                                                 */
 /**********************************************************/
 
-tOBJ makestack(int n)
+tOBJ makestack(int n, unsigned char t)
 {
 	tOBJ r=emptyObj();
 	tStackp  p=(tStackp)bas_malloc(sizeof(tStack));
 	p->size=n;
 	p->noe=0;
+	p->type=t; 
 	p->objarray = bas_malloc(sizeof(tOBJ)*n);
 
 	if (dbg) printf ("Make stack %d\n", n);
@@ -55,6 +56,7 @@ tStackp clonestack(tStackp x)
 	tStackp  p=(tStackp)bas_malloc(sizeof(tStack));
 	p->size=x->size;
 	p->noe=x->noe;
+	p->type=x->type;
 	p->objarray = bas_malloc(sizeof(tOBJ)*p->size);
 
 	for(int i=0; i<p->noe; i++)
@@ -81,9 +83,17 @@ tOBJ pop(tStackp st)
 {
 	tOBJ e=emptyObj();
 
-	if (st->noe>0)
+	if (st->noe>0 && st->type==0)
 	{
 		e=st->objarray[st->noe-1];
+		st->noe--;
+	}
+
+	if (st->noe>0 && st->type==1)
+	{
+		e=st->objarray[0];
+		for (int i=1; i<st->noe; i++)
+			st->objarray[i-1]=st->objarray[i];
 		st->noe--;
 	}
 
@@ -97,9 +107,14 @@ tOBJ peek(tStackp st, int n)
 	tOBJ e;
 	e.type=EMPTY;
 
-	if (st->noe-1-n >= 0)
+	if (st->noe-1-n >= 0 && st->type==0)
 	{
 		return  cloneObj(st->objarray[st->noe-1-n]);
+	}
+
+	if (st->noe-1-n >= 0 && st->type==1)
+	{
+		return  cloneObj(st->objarray[n]);
 	}
 	return e;
 }

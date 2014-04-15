@@ -4,12 +4,13 @@
 #include "oobj.h"
 
 typedef struct Stack {
+	unsigned char type;
 	int  size;
 	int  noe;
 	tOBJ *objarray;
 } tStack, *tStackp;
 
-extern tOBJ makestack	(int n);
+extern tOBJ makestack	(int n, unsigned char t);
 extern void delstack	(tStackp p);
 
 extern int  push 	(tStackp p, tOBJ a);
