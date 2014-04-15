@@ -110,6 +110,7 @@ extern tOBJ onth	(tOBJ  r, tOBJ);
 extern tOBJ onull	(tOBJ  r);
 extern tOBJ oor     	(tOBJ  r, Dict *);
 extern tOBJ opeek   	(tOBJ  r, Dict *);
+extern tOBJ opipe	(tOBJ  r);
 extern tOBJ oplus   	(tOBJ  r, Dict *);
 extern tOBJ opose	(tOBJ  r);
 extern tOBJ opop	(tOBJ  r, Dict *);
