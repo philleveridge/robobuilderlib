@@ -203,18 +203,6 @@ void output_grey1(int sz)
 	}
 }
 
-void output_frame(int sz)
-{
-	for (int i=0; i<sz; i++)
-	{
-		for (int j=0; j<sz; j++)
-		{
-		     printf ("%3d ", frame[j+i*sz]);
-		}
-		printf ("\n");
-	}
-}
-
 void output_cells(char * fn, int sz, int k)
 {
 	FILE *fp = fopen(fn,"w");

@@ -3,14 +3,34 @@ Colour mapper
 
 */
 
-extern int dbg;
+#include <math.h>
+#include <string.h>
 
 #include "express.h"
 #include "functions.h"
 #include "lists.h"
 
-#include <math.h>
+#include "cmap.h"
 
+extern int dbg;
+
+Run    		rle[50];
+Region 		reg[10];
+ColourState 	color[10];
+int 		colourmap[3][256];
+
+int 		num_runs, 
+		num_regions, 
+		max_runs=50, 
+		max_regions=10, 
+		max_area, 
+		num_colors=0;
+
+/***************************************
+
+colourmap utils
+
+***************************************/
 
 int mapThresh (int *tmap, int a1, int a2, int cn)
 {
@@ -21,16 +41,6 @@ int mapThresh (int *tmap, int a1, int a2, int cn)
 		tmap[i] |= v;
 	}	
 	return 0;
-}
-
-int colourmap[3][256];
-
-
-void showmap()
-{
-	for (int i=0; i<256; i++) {
-		printf ("%d (%04x %04x %04x)\n", i, colourmap[0][i], colourmap[1][i], colourmap[2][i]);
-	}
 }
 
 void clrmap()
@@ -44,7 +54,7 @@ void clrmap()
 
 void add_thresh(int n, int minR, int maxR, int minG, int maxG, int minB, int maxB)
 {
-printf ("Add threshold [%d], (%d,%d) (%d,%d) (%d,%d)\n", n, minR,  maxR,  minG, maxG,  minB,  maxB);
+	printf ("Add threshold [%d], (%d,%d) (%d,%d) (%d,%d)\n", n, minR,  maxR,  minG, maxG,  minB,  maxB);
 
 	if (n>=0 && n<8 && minR<maxR && minG<maxG && minB <maxB)
 	{
@@ -59,56 +69,19 @@ int testmap(int r,int g, int b)
 	return (colourmap[0][r] &  colourmap[1][g] & colourmap[2][b] );
 }
 
-/*************
+/***************************************
 
-Find and map reqions
+Show / debug output utils
 
-based on CM v2.1
-
-**************/
-
-typedef struct rgb{
-  unsigned char red,green,blue;
-} RGB;
-
-typedef struct run{
-  short x,y,width;    // location and width of run
-  int color;          // which color(s) this run represents
-  int parent,next;    // parent run and next run in run list
-} Run;
-
-typedef struct image {
-  unsigned char *buf;
-  int width,height,pitch;
-  int field;
-} Image;
+***************************************/
 
 
-typedef struct region{
-  int color;         // id of the color
-  int x1,y1,x2,y2;   // bounding box (x1,y1) - (x2,y2)
-  float cen_x,cen_y; // centroid
-  int area;          // occupied area in pixels
-  int run_start;     // first run index for this region
-  int iterator_id;   // id to prevent duplicate hits by an iterator
-  struct region *next;      // next region in list
-} Region;
-
-typedef struct color_class_state {
-  Region *list;      // head of region list for this color
-  int num;           // number of regions of this color
-  int min_area;      // minimum area for a meaningful region
-  RGB color;         // example color (such as used in test output)
-  char name[10];        // color's meaningful name (e.g. orange ball, goal)
-} ColourState ;
-
-#define NULL (void*)0
-
-Run    		rle[50];
-Region 		reg[10];
-ColourState 	color[10];
-
-int num_runs, num_regions, max_runs=50, max_regions=10, max_area, num_colors=0;
+void showmap()
+{
+	for (int i=0; i<256; i++) {
+		printf ("%d (%04x %04x %04x)\n", i, colourmap[0][i], colourmap[1][i], colourmap[2][i]);
+	}
+}
 
 void show_run(int n)
 {
@@ -137,19 +110,42 @@ void show_reg(int n)
 
 void show_colors(int n)
 {
-  ColourState *c=&color[0];
+	ColourState *c=&color[0];
 
-  for(int i=0; i<num_colors; i++)
-  {
-	printf ("%s : n=%d [%d %d %d] Area>=%d\n", c->name, c->num, c->color.red, c->color.green, c->color.blue, c->min_area);
-	Region *p=c->list;
-	while (p != NULL) 
+	for(int i=0; i<num_colors; i++)
 	{
-		printf ("   x1=%d,y1=%d,x2=%d,y2=%d\n",p->x1,p->y1,p->x2,p->y2);
-		p=p->next;
-	}	
-  }		
+		printf ("%s : n=%d [%d %d %d] Area>=%d\n", c->name, c->num, c->color.red, c->color.green, c->color.blue, c->min_area);
+		Region *p=c->list;
+		while (p != NULL) 
+		{
+			printf ("   x1=%d,y1=%d,x2=%d,y2=%d\n",p->x1,p->y1,p->x2,p->y2);
+			p=p->next;
+		}	
+	}		
 }
+
+void showImage(int n)
+{
+	switch (n) {
+	case 0: printf ("[runs=%d, reg=%d, cols=%d]\n", num_runs, num_regions, num_colors);
+		break;
+	case 1: show_run(num_runs); 
+		break;
+	case 2: show_reg(num_regions); 
+		break;
+	case 3: show_colors(num_colors); 
+		break;
+	case 4: showmap();
+		break;
+	}
+}
+
+
+/***************************************
+
+colour state management
+
+***************************************/
 
 void get_color_region(int n)
 {	
@@ -180,7 +176,7 @@ void get_color_region(int n)
 
 void clear_colors()
 {
-printf ("Clr colors\n");
+	printf ("Clr colors\n");
 	num_colors=0;
 }
 
@@ -243,77 +239,147 @@ void ThresholdImage(int sz, int *frame)
      }
 }
 
+/***************************************
+
+Encode runs
+
+***************************************/
+
+int EncodeRuns2(unsigned char *img, int height, int width, int max_runs) 
+{
+//  tmap_t m,save;
+//  tmap_t *row;
+	int x,y,j,l;
+	unsigned char m, save, *row;
+	Run r;
+
+	if (dbg) printf("encode runs [%d,%d]\n",height,width);
+
+	m=img[0];
+	r.next = 0;
+	save=m;
+
+	j = 0;
+	for(y=0; y<height; y++)
+	{
+		row = &img[y * width];
+
+		// restore previous terminator and store next
+		// one in the first pixel on the next row
+		row[0] = save;
+		save = row[width];
+		row[width] = 255;
+
+		r.y = y;
+
+		x = 0;
+
+		while(x < width)
+		{
+			m = row[x];
+			r.x = x;
+
+			l = x;
+			while(row[x] == m) x++;
+
+			if(m!=0 || x>=width)
+			{
+				r.color = m; 
+				r.width = x - l;
+				r.parent = j;
+				rle[j++] = r;
+
+				if (dbg) printf("run (%d,%d):%d %d\n",r.x,r.y,r.width,r.color);
+
+				if(j >= max_runs)
+				{
+					row[width] = save;
+					return(j);
+				}
+			}
+		}
+	}
+	return j;
+}
+
+
 int EncodeRuns(int height, int width, int max_runs) //rmap,cmap,img.width,img.height,max_runs);
 {
 //  tmap_t m,save;
 //  tmap_t *row;
-  int x,y,j,l;
-  Run r;
+	int x,y,j,l;
+	int m, save, *row, *map;
+	Run r;
 
+	if (dbg) printf("encode runs [%d,%d]\n",height,width);
 
-  if (dbg) printf("encode runs [%d,%d]\n",height,width);
+	map=&scene[0];
+	m=scene[0];
+	r.next = 0;
 
-  int m, save, *row, *map;
+	// initialize terminator restore
+	save = map[0];
 
-  map=&scene[0];
-  m=scene[0];
-  r.next = 0;
+	j = 0;
+	for(y=0; y<height; y++)
+	{
+		row = &map[y * width];
 
-  // initialize terminator restore
-  save = map[0];
+		// restore previous terminator and store next
+		// one in the first pixel on the next row
+		row[0] = save;
+		save = row[width];
+		row[width] = 255;
 
-  j = 0;
-  for(y=0; y<height; y++){
-    row = &map[y * width];
+		r.y = y;
 
-    // restore previous terminator and store next
-    // one in the first pixel on the next row
-    row[0] = save;
-    save = row[width];
-    row[width] = 255;
+		x = 0;
 
-    r.y = y;
+		while(x < width)
+		{
+			m = row[x];
+			r.x = x;
 
-    x = 0;
+			l = x;
+			while(row[x] == m) x++;
 
-    while(x < width){
-      m = row[x];
-      r.x = x;
+			if(m!=0 || x>=width)
+			{
+				r.color = m; 
+				r.width = x - l;
+				r.parent = j;
+				rle[j++] = r;
 
-      l = x;
-      while(row[x] == m) x++;
+				if (dbg) printf("run (%d,%d):%d %d\n",r.x,r.y,r.width,r.color);
 
-      if(m!=0 || x>=width){
-	r.color = m; 
-	r.width = x - l;
-	r.parent = j;
-	rle[j++] = r;
-
-        if (dbg) printf("run (%d,%d):%d %d\n",r.x,r.y,r.width,r.color);
-
-	if(j >= max_runs){
-          row[width] = save;
-          return(j);
-        }
-      }
-    }
-  }
-
-  return(j);
+				if(j >= max_runs)
+				{
+					row[width] = save;
+					return(j);
+				}
+			}
+		}
+	}
+	return j;
 }
 
+/***************************************
+
+ Connect components using four-connecteness so that the runs each
+ identify the global parent of the connected region they are a part
+ of.  It does this by scanning adjacent rows and merging where
+ similar colors overlap.  Used to be union by rank w/ path
+ compression, but now is just uses path compression as the global
+ parent index is a simpler rank bound in practice.
+ WARNING: This code is complicated.  I'm pretty sure it's a correct
+   implementation, but minor changes can easily cause big problems.
+   Read the papers on this library and have a good understanding of
+   tree-based union find before you touch it
+
+***************************************/
 
 void ConnectComponents(int num) //rmap,num_runs)
-// Connect components using four-connecteness so that the runs each
-// identify the global parent of the connected region they are a part
-// of.  It does this by scanning adjacent rows and merging where
-// similar colors overlap.  Used to be union by rank w/ path
-// compression, but now is just uses path compression as the global
-// parent index is a simpler rank bound in practice.
-// WARNING: This code is complicated.  I'm pretty sure it's a correct
-//   implementation, but minor changes can easily cause big problems.
-//   Read the papers on this library and have a good understanding of
-//   tree-based union find before you touch it
+
 {
   int l1,l2;
   Run r1,r2;
@@ -394,12 +460,17 @@ int range_sum(int x,int w)
 #define min(a, b)  (a<b)?a:b
 #define max(a, b)  (a>b)?a:b
 
+/***************************************
+
+ Takes the list of runs and formats them into a region table,
+ gathering the various statistics along the way.  num is the number
+ of runs in the rmap array, and the number of unique regions in
+ reg[] (bounded by max_reg) is returned.  Implemented as a single
+ pass over the array of runs.
+
+***************************************/
+
 int ExtractRegions(int max_reg, int num) //reg,max_regions,rmap,num_runs);
-// Takes the list of runs and formats them into a region table,
-// gathering the various statistics along the way.  num is the number
-// of runs in the rmap array, and the number of unique regions in
-// reg[] (bounded by max_reg) is returned.  Implemented as a single
-// pass over the array of runs.
 {
   int b,i,n,a;
   Run r;
@@ -456,11 +527,15 @@ int ExtractRegions(int max_reg, int num) //reg,max_regions,rmap,num_runs);
   return(n);
 }
 
-int SeparateRegions(ColourState *color, int colors, int num) //color,num_colors,reg,num_regions);
-// Splits the various regions in the region table a separate list for
-// each color.  The lists are threaded through the table using the
-// region's 'next' field.  Returns the maximal area of the regions,
-// which can be used later to speed up sorting.
+/***************************************
+
+ Splits the various regions in the region table a separate list for
+ each color.  The lists are threaded through the table using the
+ region's 'next' field.  Returns the maximal area of the regions,
+ which can be used later to speed up sorting.
+
+***************************************/
+int SeparateRegions(ColourState *color, int colors, int num)
 {
   Region *p;
   int i; // ,l;
@@ -494,13 +569,19 @@ int SeparateRegions(ColourState *color, int colors, int num) //color,num_colors,
   return(max_area);
 }
 
+
+/***************************************
+
+// Sorts a list of regions by their area field.
+// Uses a linked list based radix sort to process the list.
+
+***************************************/
+
 #define CMV_RBITS 6
 #define CMV_RADIX (1 << CMV_RBITS)
 #define CMV_RMASK (CMV_RADIX-1)
 
 Region *SortRegionListByArea(Region *list,int passes)
-// Sorts a list of regions by their area field.
-// Uses a linked list based radix sort to process the list.
 {
   Region *tbl[CMV_RADIX],*p,*pn;
   int slot,shift;
@@ -541,9 +622,14 @@ Region *SortRegionListByArea(Region *list,int passes)
   return(list);
 }
 
-void SortRegions(ColourState *color,int colors,int max_area)
+/***************************************
+
 // Sorts entire region table by area, using the above
 // function to sort each threaded region list.
+
+***************************************/
+
+void SortRegions(ColourState *color,int colors,int max_area)
 {
   int i,p;
   if (dbg) printf("sort regions %d !\n",max_area);
@@ -561,19 +647,22 @@ void SortRegions(ColourState *color,int colors,int max_area)
   }
 }
 
-void showImage(int n)
+
+/***************************************
+
+Depreacted - new code moved to oImage library
+
+***************************************/
+
+void output_frame(int sz)
 {
-	switch (n) {
-	case 0: printf ("[runs=%d, reg=%d, cols=%d]\n", num_runs, num_regions, num_colors);
-		break;
-	case 1: show_run(num_runs); 
-		break;
-	case 2: show_reg(num_regions); 
-		break;
-	case 3: show_colors(num_colors); 
-		break;
-	case 4: showmap();
-		break;
+	for (int i=0; i<sz; i++)
+	{
+		for (int j=0; j<sz; j++)
+		{
+		     printf ("%3d ", frame[j+i*sz]);
+		}
+		printf ("\n");
 	}
 }
 

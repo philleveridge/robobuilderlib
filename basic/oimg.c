@@ -18,6 +18,8 @@
 #include "mem.h"
 #include "oimg.h"
 
+#include "cmap.h"
+
 extern int dbg;
 
 extern int Height;
@@ -162,7 +164,7 @@ oImage *loadoImage(char *name)
      	return n;
 }
 
-oImage *loadFilteroImage(char *name, oFilter n)
+oImage *FloadImage(char *name, oFilter n)
 {
 	unsigned char *img = BMap;
 
@@ -189,6 +191,74 @@ oImage *loadFilteroImage(char *name, oFilter n)
 	}
      	return im;
 }
+
+oImage *cmapoImage(char *name) 
+{
+	unsigned char *img = &BMap[0];
+
+	if (dbg) printf("threshold  [%d,%d,%d]\n" ,Height, Width,Depth);
+
+	if (loadJpg(name)>0)
+		return NULL;
+
+	oImage *im = makeimage(Height, Width);
+
+	char *p = im->data;
+
+	for (int i=0; i<Height; i++)
+	{
+		for (int j=0; j<Width; j++)
+		{
+			unsigned char b=*img++;
+			unsigned char g=*img++;
+			unsigned char r=*img++;
+
+	     		 *p++ =  testmap(r, g, b);
+		}
+	}
+	return im;
+}
+
+//tbd - processImage not complete
+oImage *processImage(char *fn)
+{
+	oImage *im = cmapoImage(fn); 
+
+	num_runs = EncodeRuns2(im, im->h, im->w, max_runs); 
+
+	if(num_runs == max_runs)
+	{
+		printf("WARNING! Exceeded maximum number of runs in EncodeRuns.\n");
+	}
+
+	if (dbg) show_run(num_runs);
+
+	ConnectComponents(num_runs); 
+
+	if (dbg) show_run(num_runs);
+
+	num_regions = ExtractRegions(max_regions, num_runs); 
+
+	if (dbg) show_reg(num_regions);
+
+	for(int i=0; i<num_colors; i++)
+	{
+		color[i].list = NULL;
+		color[i].num  = 0;
+	}
+
+	if(num_regions == max_regions)
+	{
+		printf("WARNING! Exceeded maximum number of regions in ExtractRegions.\n");
+		return NULL;
+	}
+
+	max_area = SeparateRegions(&color[0], num_colors,num_regions); 
+	SortRegions(&color[0], num_colors, max_area); 
+	return im;
+}
+
+
 
 void imageogray(oImage *im)
 {
@@ -344,12 +414,17 @@ int iflag		= 0;
 
 void recog_del()
 {
-	if (store  !=NULL) bas_free(store);
-	if (result !=NULL) bas_free(result);
-	if (connect!=NULL) bas_free(connect);
-	recog_h	= 0;
-	recog_w	= 0;
-	iflag	= 0;
+	if (iflag)
+	{
+		if (dbg); printf("Recogniser clear\n");
+
+		if (store  !=NULL) bas_free(store);
+		if (result !=NULL) bas_free(result);
+		if (connect!=NULL) bas_free(connect);
+		recog_h	= 0;
+		recog_w	= 0;
+		iflag	= 0;
+	}
 }
 
 void recog_init(int w, int h, int nc, int ts)
