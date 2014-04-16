@@ -2261,7 +2261,6 @@ tOBJ oload(tOBJ  n)
 	switch (m[0])
 	{
 	case '[' : 
-		//m++;
 		r.type=FMAT2;
 		r.fmat2 = readmatrix(&m[1]);
 		break;
@@ -2269,7 +2268,6 @@ tOBJ oload(tOBJ  n)
 		r = parse(m); 
 		break;
 	case '!' : 
-		//m++;
 		r = eval_oxpr(&m[1]); 
 		break;
 	default:
@@ -2694,45 +2692,70 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"FILTER"))
 		{
-			//!IMAGE FILTER 4 1 10 10 100 100 100
+
 			char *file = "test.jpg";
-
-			int sz= toint(ocar(v)); v=ocdr(v);
-			int a = toint(ocar(v)); v=ocdr(v);
-			int b = toint(ocar(v)); v=ocdr(v);
-			int c = toint(ocar(v)); v=ocdr(v);
-			int d = toint(ocar(v)); v=ocdr(v);
-			int e = toint(ocar(v)); v=ocdr(v);
-			int f = toint(ocar(v));
-
-			if (filterimage(file,&scene[0],sz,a,b,c,d,e,f)==0)
-				nis=sz*sz;
+			tOBJ fn = ocar(v);
+			if (fn.type==SYM)
+			{
+				//!IMAGE FILTER "test.jpg" 1 10 10 100 100 100 (new)
+				v=ocdr(v);
+				int a = toint(ocar(v)); v=ocdr(v);
+				int b = toint(ocar(v)); v=ocdr(v);
+				int c = toint(ocar(v)); v=ocdr(v);
+				int d = toint(ocar(v)); v=ocdr(v);
+				int e = toint(ocar(v)); v=ocdr(v);
+				int f = toint(ocar(v));
+				tOBJ r= emptyObj();
+				oImage *p = FloadImage(fn.string, setFilter(a,b,c,d,e,f));
+				if (p !=NULL)
+				{	
+					r.type=IMAG;
+					r.imgptr=p;
+				}
+				freeobj(&fn);
+				return r;
+			}
 			else
-				nis=0;
-			return makeint(nis);
+			{
+				//!IMAGE FILTER 4 1 10 10 100 100 100 (depracted)
+				int sz= toint(ocar(v)); v=ocdr(v);
+				int a = toint(ocar(v)); v=ocdr(v);
+				int b = toint(ocar(v)); v=ocdr(v);
+				int c = toint(ocar(v)); v=ocdr(v);
+				int d = toint(ocar(v)); v=ocdr(v);
+				int e = toint(ocar(v)); v=ocdr(v);
+				int f = toint(ocar(v));
+
+				if (filterimage(file,&scene[0],sz,a,b,c,d,e,f)==0)
+					nis=sz*sz;
+				else
+					nis=0;
+				return makeint(nis);
+			}
 		}
 		else
 		if (!strcmp(cmd.string,"THRESH"))
 		{
-			//!IMAGE THRE 0
-			//!IMAGE THRE CID 120 175 40 70 30 40
-
 			int cid = toint(ocar(v));  v=ocdr(v);
 
 			if (cid==0)
 			{
+				//!IMAGE THRESH 0
         			printf("clr thresholds\n"); 
 				clrmap();
 			}
-
-			int a = toint(ocar(v)); v=ocdr(v);
-			int b = toint(ocar(v)); v=ocdr(v);
-			int c = toint(ocar(v)); v=ocdr(v);
-			int d = toint(ocar(v)); v=ocdr(v);
-			int e = toint(ocar(v)); v=ocdr(v);
-			int f = toint(ocar(v));
-
-			add_thresh(cid, a,b,c,d,e,f);
+			else
+			{
+				//!IMAGE THRESH CID 120 175 40 70 30 40
+				int a = toint(ocar(v)); v=ocdr(v);
+				int b = toint(ocar(v)); v=ocdr(v);
+				int c = toint(ocar(v)); v=ocdr(v);
+				int d = toint(ocar(v)); v=ocdr(v);
+				int e = toint(ocar(v)); v=ocdr(v);
+				int f = toint(ocar(v));
+				add_thresh(cid, a,b,c,d,e,f);
+			}
+			return emptyObj();
 		}
 		else
 		if (!strcmp(cmd.string,"COLOR"))  
@@ -2750,22 +2773,6 @@ tOBJ oimg(tOBJ v, Dict *e)
 				r  = makeint(add_color(colour.string, a,b,c,d));
 			}
 			return r;
-		}
-		else
-		if (!strcmp(cmd.string,"RAW"))
-		{
-			tOBJ file= ocar(v);
-			if (file.type==SYM) 
-			{
-				tOBJ r = emptyObj();
-				oImage *p = loadoImage(file.string);
-				if (p != NULL)
-				{
-					r.type=IMAG;
-					r.imgptr=p;
-				}
-				return r;
-			}
 		}
 		else
 		if (!strcmp(cmd.string,"NEW"))
@@ -2803,12 +2810,47 @@ tOBJ oimg(tOBJ v, Dict *e)
 			return r;
 		}
 		else
+		if (!strcmp(cmd.string,"RAW"))
+		{
+			tOBJ file= ocar(v);
+			tOBJ r = emptyObj();
+			if (file.type==SYM) 
+			{
+				oImage *p = loadoImage(file.string);
+				if (p != NULL)
+				{
+					r.type=IMAG;
+					r.imgptr=p;
+				}
+			}
+			else
+			{
+				//backward compatibility
+				r = makeint(loadJpg("test.jpg"));		
+			}
+			return r;
+		}
+		else
 		if (!strcmp(cmd.string,"PROC"))
 		{
-			int n=toint(ocar(v));
-			processFrame(n, &scene[0]);
-			nis=n*n;
-			return makeint(nis);
+			tOBJ p=eval(ocar(v),e);
+			if (p.type==SYM)
+			{
+				//IMAGE PROC "test.jpg"
+				tOBJ r=emptyObj();
+				r = makeint(processImage(p.string)); //tbd
+				freeobj(&p);
+				return r;
+			}
+			else
+			{
+				//backeard compatibility
+				//IMAGE PROC 5
+				int n=toint(p);
+				processFrame(n, &scene[0]);
+				nis=n*n;
+				return makeint(nis);
+			}
 		}
 		else
 		if (!strcmp(cmd.string,"RECOG"))
@@ -2824,6 +2866,10 @@ tOBJ oimg(tOBJ v, Dict *e)
 					tOBJ t= append(ret, makeint(r));
 					ret   = append(t, makeint(recog_result(r)));
 					freeobj(&t);
+			}
+			if (im.type==SYM && !strcmp(im.string,"INIT"))
+			{
+				recog_del(); //clean up memory
 			}
 			freeobj(&im);
 			return ret;
@@ -2895,6 +2941,30 @@ tOBJ oimg(tOBJ v, Dict *e)
 		{
 			cmd=ocar(v);
 			get_color_region(toint(cmd)); 
+			int i=0;
+			tOBJ r=emptyObj();
+			while (i<nis)
+			{
+				tOBJ l=emptyObj();
+				tOBJ t;
+				t = append(l, makeint(scene[i++])); //area
+				freeobj(&l); l=t;
+				t = append(l, makeint(scene[i++])); //x1
+				freeobj(&l); l=t;
+				t = append(l, makeint(scene[i++])); //y1
+				freeobj(&l); l=t;
+				t = append(l, makeint(scene[i++])); //x2
+				freeobj(&l); l=t;
+				t = append(l, makeint(scene[i++])); //y2
+				freeobj(&l); l=t;
+				t = append(l, makeint(scene[i++])); //cenx
+				freeobj(&l); l=t;
+				t = append(l, makeint(scene[i++])); //ceny
+				freeobj(&l); l=t;
+				t= append(r, l);
+				freeobj(&r); r=t;
+			}
+			return r;
 		}
 		else
 		if (!strcmp(cmd.string,"SHOW"))

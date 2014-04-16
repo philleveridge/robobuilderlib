@@ -25,10 +25,14 @@ extern void 	printimage	(oImage *ip);
 extern oImage 	*reshapeoImage	(oImage *image, int nw, int nh);
 
 extern oImage 	*loadoImage	(char *name);
-extern oImage 	*loadFilteroImage(char *name, oFilter n);
+extern oImage 	*FloadImage	(char *name, oFilter n);
+extern oImage 	*cmapImage	(char *name) ;
+extern oImage 	*threshoImage	(oImage *image, int th);
+extern oImage 	*processImage	(char *fn);
+
 extern void 	imageogray	(oImage *im);
 extern int 	image2Pgm	(oImage *image, char *fileName);
-extern oImage 	*threshoImage	(oImage *image, int th);
+
 extern void 	clearoImage	(oImage *img, int c);
 extern int 	maxval		(oImage *img);
 extern void 	setpoint	(oImage *img, int x, int y, int c);
