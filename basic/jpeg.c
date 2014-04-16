@@ -61,8 +61,9 @@ int loadJpg(char* Name)
 
   if ((infile = fopen(Name, "rb")) == NULL) 
   {
-    fprintf(stderr, "can't open %s\n", Name);
-    return 1;
+	rellock();
+	fprintf(stderr, "can't open %s\n", Name);
+	return 1;
   }
 
   cinfo.err = jpeg_std_error(&jerr);

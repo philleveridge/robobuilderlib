@@ -434,6 +434,10 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.number = o1.number >= o2.number; break;
 		case LMOD:
 			r.number = o1.number % o2.number; break;
+		case POWR:
+			r.number = 1;
+			for (int x=1; x<= o2.number; x++) r.number *= o1.number; 
+			break;
 		default:
 			r.type=EMPTY; //error
 			break;
@@ -466,6 +470,8 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			else
 				r.floatpoint = a / b; 
 			break;
+		case POWR:
+			r.floatpoint = pow (a, b); break;
 		case LMOD:
 			r.floatpoint = fmod(a,b) ; break;
 		case LT:
@@ -484,6 +490,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.type=INTGR; r.number = a && b; break;
 		case LOR:
 			r.type=INTGR; r.number = a || b; break;
+
 		default:
 			r.type=EMPTY; //error
 			break;
