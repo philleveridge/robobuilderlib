@@ -5,17 +5,19 @@
 	'define some matrices
 	z=32
 
-	!MAT DEF B;z;z  'image being processed
-	!MAT DEF A;z;z   'temp image for load
-	!MAT DEF C;z;z   'background
-	!MAT DEF T;z;z  'temp image for masking
+	' B image being processed
+	' A temp image for load
+	' C background
+	' T temp image for masking
+
+	DIM B(32,32),A(32,32),C(32,32),T(32,32)
 
 
 ' 	test code
 if t=1 then
-	!IMAGE LOAD z;"back.jpg"
+	!IMAGE LOAD 32 "back.jpg"
 	LIST C=@!
-	!IMAGE LOAD z;"object.jpg"
+	!IMAGE LOAD 32 "object.jpg"
 	LIST B=@!
 
 	a=`p
@@ -181,7 +183,7 @@ processarm:
 		k=1
 	ELSE
 		'diagonal arms 
-		p=$IMAX(@!);l
+		p=$IMAX(@!)
 		PRINT p
 		IF P<10 THEN
 			k=2
@@ -200,12 +202,12 @@ processarm:
 '-----------------------------------------------------
 
 camgrab:
-	!wait image
-	!image load z
+	!image wait
+	!image load 32
 	LIST A=@!            'initialise prev image
 loop:
-	!wait image
-	!image load z      'load next image
+	!image wait
+	!image load 32      'load next image
 	LIST B=@! 
 	S=$abs($sum(@B-@A))  'compare with prev & next images
 	print S
