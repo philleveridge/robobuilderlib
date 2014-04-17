@@ -30,7 +30,7 @@ endif
 
 	list c=@b
 	'print "Background"
-	'!mat print c
+	'mat print c
 
 	'-----------------------------------------------------
 	' main loop
@@ -54,7 +54,7 @@ processimg:
             print @B:z
         endif
 
-	!MAT HIST 2;b  'Horizontal Intensity Histo
+	MAT z=sum(b,2)  'Horizontal Intensity Histo
 
 	'-----------------------------------------------------
 	' find torso
@@ -68,16 +68,16 @@ processimg:
 	Q=10 'threshol body
 
 	FOR I=0 TO 31
-		IF (@![i]>=P) and (L=0) THEN
+		IF (@z[i]>=P) and (L=0) THEN
 		    L=i
 		ENDIF
-		IF (@![i]>=Q) and (m=0) THEN
+		IF (@z[i]>=Q) and (m=0) THEN
 		    m=i
 		ENDIF
-		IF (@![i]<Q) and (M>0) and (s=0) THEN
+		IF (@z[i]<Q) and (M>0) and (s=0) THEN
 		    S=i
 		ENDIF
-		IF (@![i]<P) and (S>0) and (r=0) THEN
+		IF (@z[i]<P) and (S>0) and (r=0) THEN
 		    R=i
 		ENDIF
 	NEXT I
@@ -98,7 +98,7 @@ processimg:
 	'-----------------------------------------------------
 
 	LIST T=@b
-	!MAT ZERO T;M;0;31;31    'mask off right-hand side
+	LET T=ZER(M,0,31,31)   'mask off right-hand side
 
 	gosub processarm
 
@@ -122,7 +122,7 @@ processimg:
 	'-----------------------------------------------------
 rhs:
 	LIST T=@B
-	!MAT ZERO T;0;0;N;31   	' mask off left-hand side
+	LET T=ZER(0,0,N,31)  	' mask off left-hand side
 
 	gosub processarm
 
@@ -151,8 +151,8 @@ fin:
 
 processarm:
 	'PRINT @T:32
-	!MAT HIST 1;T  'Vertical Intensity Histo
-	'PRINT @!
+	MAT Z=SUM(T,1) ' 1;T  'Vertical Intensity Histo
+	'PRINT @z
 
 	k=0
 
@@ -161,10 +161,10 @@ processarm:
 	P=1 'threshold arm
 
 	FOR I=0 TO 31
-		IF (@![i]>=P) and (M=0) THEN
+		IF (@z[i]>=P) and (M=0) THEN
 		    M=i
 		ENDIF
-		IF (@![i]<P) and (s=0) and (m>0) THEN
+		IF (@z[i]<P) and (s=0) and (m>0) THEN
 		    S=i
 		ENDIF
 	NEXT I
@@ -230,32 +230,32 @@ movearm:
    return
 
 larmdown:
-   set @v,11,95   '-1
-   set @v,12,109  '+45
+   v[11]=95   '-1
+   v[12]=109  '+45
    return
 
 larmout:
-   set @v,11,142   '+47
-   set @v,12,109   '+45
+   v[11]=142   '+47
+   v[12]=109   '+45
    return
 
 larmup:
-   set @v,11,195   '+100
-   set @v,12,93    '+28
+   v[11]=195   '+100
+   v[12]=93    '+28
    return
 
 rarmdown:
-   set @v,14,157   '1
-   set @v,15,138   '-45
+   v[14]=157   '1
+   v[15]=138   '-45
    return
 
 rarmout:
-   set @v,14,110   '-47
-   set @v,15,138   '-45
+   v[14]=110   '-47
+   v[15]=138   '-45
    return
 
 rarmup:
-   set @v,14,56    '-100
-   set @v,15,155   '-28
+   v[14]=56    '-100
+   v[15]=155   '-28
    return
 

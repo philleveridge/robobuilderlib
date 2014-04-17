@@ -27,6 +27,8 @@ typedef struct object {
 
 extern int  freeobj	(tOBJ *b);
 extern tOBJ emptyObj	();
+extern tOBJ emptyTObj	(unsigned char t);
+extern tOBJ emptyTPObj	(unsigned char t, void *p);
 extern int  compareObj	(tOBJ a, tOBJ b);
 extern tOBJ cloneObj	(tOBJ z);
 extern tOBJ copyObj	(tOBJ z);
