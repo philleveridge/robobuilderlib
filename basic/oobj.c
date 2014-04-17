@@ -90,6 +90,35 @@ tOBJ emptyObj()
 	return r;
 }
 
+tOBJ emptyTObj(unsigned char t)
+{
+	tOBJ r = emptyObj();
+	r.type=t;
+        if (t==SYM)   r.string=NULL;
+        if (t==CELL)  r.cell  =NULL;
+        if (t==DICT)  r.dict  =NULL;
+        if (t==STACK) r.stk   =NULL;
+	if (t==FUNC)  r.fptr  =NULL;
+	if (t==IMAG)  r.imgptr=NULL;
+	if (t==FMAT2) r.fmat2 =NULL;
+	if (t==RBM)   r.mot   =NULL;
+	return r;
+}
+
+tOBJ emptyTPObj(unsigned char t, void *p)
+{
+	tOBJ r = emptyTObj(t);
+        if (t==SYM)   r.string=p;
+        if (t==CELL)  r.cell  =p;
+        if (t==DICT)  r.dict  =p;
+        if (t==STACK) r.stk   =p;
+	if (t==FUNC)  r.fptr  =p;
+	if (t==IMAG)  r.imgptr=(oImage *)p;
+	if (t==FMAT2) r.fmat2 =(fMatrix *)p;
+	if (t==RBM)   r.mot   =(Motion *)p;
+	return r;
+}
+
 int compareObj(tOBJ a, tOBJ b)
 {
 	if (a.type != b.type) return 0; //false;

@@ -97,7 +97,6 @@ extern tOBJ olog	(tOBJ  r);
 extern tOBJ omapcar	(tOBJ  r, tOBJ);
 extern tOBJ omath 	(tOBJ  o1,tOBJ o2, int op);
 extern tOBJ omatr	(tOBJ  r, tOBJ, tOBJ);
-extern tOBJ omats	(tOBJ  r, tOBJ, tOBJ, tOBJ, tOBJ);
 extern tOBJ omat	(tOBJ  r, tOBJ, tOBJ);
 extern tOBJ omax	(tOBJ  r, tOBJ s);
 extern tOBJ omcond	(tOBJ  r, tOBJ, tOBJ, tOBJ, tOBJ);

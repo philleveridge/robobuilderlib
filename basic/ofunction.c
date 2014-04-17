@@ -97,7 +97,7 @@ tOP oplist[] = {
 	{"APPEND",40, NA,   9, oappend}, 
 	{"APPLY", 40, NA,   2, oapply}, //function two args   <fMatrix>
 	{"ASSN",  40, NA,   1, oasso},  //function single arg
-	{"ATAN",  40, NA,   1, oatan}, //function single arg
+	{"ATAN",  40, NA,   1, oatan},  //function single arg
 	{"ATOM",  40, NA,   1, oatom},  //function single arg
 	{"BEGIN", 40, NA,   9, obegin},  
 	{"BF",    40, NA,   1, obf},
@@ -113,95 +113,95 @@ tOP oplist[] = {
 	{"COND",  40, NA,   9, ocond}, 
 	{"CONS",  40, NA,   2, ocons},  //function single arg
 	{"CONV",  40, NA,   2, oconv},  //function three args   <fMatrix>
-	{"COS",   40, NA,   1, ocos},  //function single arg
+	{"COS",   40, NA,   1, ocos},   //function single arg
 	{"DEC",   40, NA,   9, odec}, 
 	{"DEF"   ,40, NA,   9, ofunc}, 
 	{"DET",   40, NA,   1, omdet},  //function <fMatrix>
-	{"DICT",  40, NA,   1, odict},// 
+	{"DICT",  40, NA,   1, odict},  // 
 	{"DO",    40, NA,   9, obegin},  
-	{"DSIG",  40, NA,   1, odsig}, //sigmoid functon
+	{"DSIG",  40, NA,   1, odsig},  //sigmoid functon
 	{"EVAL",  40, NA,   9, oeval}, 
 	{"EXIT",  40, NA,   0, oexit},
-	{"EXP",   40, NA,   1, oexp},  //function single arg
-	{"EYE",   40, NA,   2, oeye},   //function two args  <fint, int>
+	{"EXP",   40, NA,   1, oexp},   //exponent
+	{"EYE",   40, NA,   2, oeye},   //create I matrix
 	{"FOR",   40, NA,   9, ofor}, 
 	{"FOREACH",40, NA,  9, ofore}, 
 	{"FORM"  ,40, NA,   9, oform}, 
-	{"FUNC"  ,40, NA,   9, ofunc}, 
-	{"GAUS",  40, NA,   3, ogaus}, //mean, variance, x value
-	{"GAUSK", 40, NA,   2, ogausk}, //mean, variance
-	{"GETB",  40, NA,   1, getb}, //function single arg
-	{"GETK",  40, NA,   9, ogetk}, //function single arg
+	{"FUNC"  ,40, NA,   9, ofunc},   //def function
+	{"GAUS",  40, NA,   3, ogaus},   //mean, variance, x value
+	{"GAUSK", 40, NA,   2, ogausk},  //mean, variance
+	{"GETB",  40, NA,   1, getb},    //get basic variable
+	{"GETK",  40, NA,   9, ogetk},   //get diktionary variable
 	{"GETSERVO",40, NA, 1, ogetservo}, //function single arg
-	{"H2SM",  40, NA,   1, ohsum2},  //function <fMatrix>
-	{"HSUM",  40, NA,   1, ohsum},  //function <fMatrix>
+	{"H2SM",  40, NA,   1, ohsum2},  //Horizontal squared matrix sum
+	{"HSUM",  40, NA,   1, ohsum},   //Horizontal matrix sum
 	{"IF"    ,40, NA,   9, oif}, 
-	{"IMAGE", 40, NA,   9, oimg},
-	{"INC",   40, NA,   9, oinc}, 
-	{"IMP",   40, NA,   3, oimp},   //function two args   <string>, <int>, <int>
-	{"INT",   40, NA,   1, oint},  //function <fMatrix>
-	{"INV",   40, NA,   1, ominv},  //function <fMatrix>
-	{"KEY",   40, NA,   1, okey}, 
+	{"IMAGE", 40, NA,   9, oimg},    //image functions
+	{"INC",   40, NA,   9, oinc},    //increment variable
+	{"IMP",   40, NA,   3, oimp},    //function two args   <string>, <int>, <int>
+	{"INT",   40, NA,   1, oint},    //convert to int
+	{"INV",   40, NA,   1, ominv},   //function <fMatrix>
+	{"KEY",   40, NA,   1, okey},  
 	{"LAMBDA",40, NA,   9, olambda}, 
 	{"LAST",  40, NA,   1, olast},  //function single arg
-	{"LEN",   40, NA,   1, olen},  //function single arg
-	{"LET"   ,40, NA,   9, olet}, 
-	{"LFT",   40, NA,   2, olft},//
+	{"LEN",   40, NA,   1, olen},   //function single arg
+	{"LET"   ,40, NA,   9, olet},   //set variable to formula
+	{"LFT",   40, NA,   2, olft},   //string left
 	{"LIST",  40, NA,   9, olist},   
-	{"LOAD",  40, NA,   1, oload},//
-	{"LOG",   40, NA,   1, olog},  //function single arg
-	{"MAPCAR",40,NA,    2, omapcar}, //function two args   <fMatrix>
-	{"MAT",   40, NA,   3, omatr},// 
+	{"LOAD",  40, NA,   1, oload},  //
+	{"LOG",   40, NA,   1, olog},   //function single arg
+	{"MAPCAR",40,NA,    2, omapcar},//function two args   <fMatrix>
+	{"MAT",   40, NA,   3, omatr},  // 
 	{"MAX",   40, NA,   2, omax},   //function two args
-	{"MCOND", 40, NA,   5, omcond},  //function three args   <fMatrix>
+	{"MCOND", 40, NA,   5, omcond}, //function three args   <fMatrix>
 	{"MEMBER",40, NA,   2, omemb},  //function single arg
-	{"MID",   40, NA,   3, omid},//
-	{"NOT",   40, NA,   1, onot},  //function single arg
-	{"NTH",   40, NA,   2, onth}, //function two arg
+	{"MID",   40, NA,   3, omid},   //
+	{"NOT",   40, NA,   1, onot},   //function single arg
+	{"NTH",   40, NA,   2, onth},   //function two arg
 	{"NULL",  40, NA,   1, onull},  //function single arg
 	{"OPFLOW",40, NA,   2, OpticFlow}, 
 	{"OR",    40, NA,   9, oor}, 
-	{"PEEK",  40, NA,   9, opeek}, 
-	{"PIPE",  40, NA,   1, opipe}, 
+	{"PEEK",  40, NA,   9, opeek}, //peek element on stack
+	{"PIPE",  40, NA,   1, opipe}, //create a pipe (fifo stack)
 	{"PLUS",  40, NA,   9, oplus}, 
-	{"POP",   40, NA,   9, opop}, //function single arg
+	{"POP",   40, NA,   9, opop},  //function single arg
 	{"POSE",  40, NA,   1, opose}, //function single arg
 	{"PR",    40, NA,   9, opr}, 
 	{"PRINT", 40, NA,   9, opr},  
-	{"PSD",   40, NA,   0, opsd},  //const
+	{"PSD",   40, NA,   0, opsd},   //const (distance sensor)
 	{"PUSH",  40, NA,   9, opush},  //function single arg
-	{"PUTC",  40, NA,   1, oputch},  //function single arg
-	{"QT",    40, NA,   9, oquote}, 
-	{"RBM",   40, NA,   1, orbmrf},
-	{"READ"  ,40, NA,   9, oread}, 
+	{"PUTC",  40, NA,   1, oputch}, //putchar
+	{"QT",    40, NA,   9, oquote}, //
+	{"RBM",   40, NA,   1, orbmrf}, //read motion file
+	{"READ"  ,40, NA,   9, oread},  //read terminal input
 	{"REP",   40, NA,   3, orep},   //function three args  <fMatrix, int, int>
-	{"RETURN",40, NA,   1, oreturn}, 
-	{"REV",   40, NA,   1, orev},  //function single arg
-	{"REX",   40, NA,   2, orex},//
-	{"RGT",   40, NA,   2, orgt},//
-	{"RND",   40, NA,   0, ornd},  //in-const
-	{"ROW",   40, NA,   1, orow},   //function single arg    <fMatrix>
-	{"RSHP",  40, NA,   3, orshp},  //function three args  <fMatrix, int, int>
-	{"SAVE",  40, NA,   2, osave},//
-	{"SERVO", 40, NA,   0, oserv}, //function single arg
+	{"RETURN",40, NA,   1, oreturn},//return from function
+	{"REV",   40, NA,   1, orev},   //reverse a list
+	{"REX",   40, NA,   2, orex},   //regular expression match
+	{"RGT",   40, NA,   2, orgt},   //right string
+	{"RND",   40, NA,   0, ornd},   //random number
+	{"ROW",   40, NA,   1, orow},   //number of rows
+	{"RSHP",  40, NA,   3, orshp},  //reshape matrix or image
+	{"SAVE",  40, NA,   2, osave},  //
+	{"SERVO", 40, NA,   0, oserv},  //function single arg
 	{"SET"   ,40, NA,   9, oset}, 
-	{"SETB",  40, NA,   2, setb}, //function single arg
-	{"SETC",  40, NA,   9, osetc}, //function single arg
-	{"SETK",  40, NA,   9, osetk}, //function single arg
-	{"SETQ"  ,40, NA,   9, osetq}, 
-	{"SETSERVO", 40, NA,3, osetservo}, //function single arg
+	{"SETB",  40, NA,   2, setb},  //set basic variable
+	{"SETC",  40, NA,   9, osetc}, //set cell elemnt in matrix, or list
+	{"SETK",  40, NA,   9, osetk}, //set dictionary element
+	{"SETQ"  ,40, NA,   9, osetq}, //set variable
+	{"SETSERVO",40,NA,  3, osetservo}, //set servo position
 	{"SIG",  40, NA,    1, osig},  //sigmoid functon
-	{"SIGN", 40, NA,    1, osign},  //sigmoid functon
+	{"SIGN", 40, NA,    1, osign}, //sigmoid functon
 	{"SIN",  40, NA,    1, osin},  //function single arg
 	{"SQRT", 40, NA,    1, osqrt}, //function single arg
 	{"STACK",40, NA,    1, ostack}, 
-	{"SUBS", 40, NA,    1, osubst},  //function single arg
+	{"SUBS", 40, NA,    1, osubst},//function single arg
 	{"SUM",  40, NA,    1, osum},  //function <fMatrix>
 	{"TAN",  40, NA,    1, otan},  //function single arg
-	{"TRN",  40, NA,    1, otrn},   ////MATRIX tRANSPOSE 
-	{"TYPE", 40, NA,    1, otype},  //function single arg
-	{"V2SM", 40, NA,    1, ovsum2},  //function <fMatrix>
-	{"VSUM", 40, NA,    1, ovsum},  //function <fMatrix>
+	{"TRN",  40, NA,    1, otrn},  //ATRIX tRANSPOSE 
+	{"TYPE", 40, NA,    1, otype}, //object type
+	{"V2SM", 40, NA,    1, ovsum2},//function <fMatrix>
+	{"VSUM", 40, NA,    1, ovsum}, //function <fMatrix>
 	{"WAIT", 40, NA,    1, owait},  
 	{"WHILE",40, NA,    9, owhile}, 
 	{"WITH" ,40, NA,    9, owith}, 
@@ -771,7 +771,7 @@ tOBJ ogaus(tOBJ m, tOBJ v, tOBJ x)
 
 tOBJ ogausk(tOBJ ks, tOBJ gs)
 {
-	tOBJ r;
+	tOBJ r=emptyObj();
 	r.type=FMAT2;
 	r.fmat2 = gausian(toint(ks),toint(gs)); 
 	return r;
@@ -779,7 +779,7 @@ tOBJ ogausk(tOBJ ks, tOBJ gs)
 
 tOBJ ornd(tOBJ a)
 {
-	tOBJ r;
+	tOBJ r=emptyObj();
 	r.type=FLOAT;
 	r.floatpoint=(float)rand()/RAND_MAX;
 	return r;
@@ -828,7 +828,7 @@ tOBJ omax(tOBJ a, tOBJ r)
 tOBJ omat(tOBJ m, tOBJ a, tOBJ b) 
 {
 	//read matrix cell
-	tOBJ r;
+	tOBJ r=emptyObj();
 
 	int row=toint(a);
 	int col=toint(b);
@@ -851,6 +851,7 @@ tOBJ osetc(tOBJ o, Dict *e)
 {
 	//SETC IM 1 1 255
 	//SETC MA 1 1 0.5
+	//SETC CE 1 V
 
 	tOBJ exp = emptyObj();
 	tOBJ var = ocar(o); 	 	o=ocdr(o);
@@ -874,6 +875,25 @@ tOBJ osetc(tOBJ o, Dict *e)
 			fset2(arr.fmat2,toint(a),toint(b), v);
 			exp=makefloat(v);
 		}
+
+		if (arr.type==CELL)
+		{
+			//find nth element and update
+			int cnt = toint(a);
+			if (cnt<0) cnt=0;
+			while (cnt>0 && arr.type == CELL)	
+			{
+				arr = ocdr(arr);
+				cnt--;
+			}
+			if (cnt==0)
+			{
+				tCELLp p= arr.cell;
+				freeobj(&(p->head));
+				p->head = cloneObj(b);
+				exp=b;
+			}
+		}
 	}
 
 	freeobj(&c);
@@ -883,39 +903,11 @@ tOBJ osetc(tOBJ o, Dict *e)
 	return exp;
 }
 
-tOBJ omats(tOBJ m, tOBJ a, tOBJ b, tOBJ v, tOBJ dummy) 
-{
-	//store in mat cell
-	tOBJ r  = emptyObj();
-	int row,col;
-	row=toint(a);
-	col=toint(b);
-
-	if (m.type==FMAT2) 
-	{
-		r.type  = FMAT2;
-		r.fmat2 = fmatcp(m.fmat2);
-		float cv=tofloat(v);
-		fset2(r.fmat2,col,row, cv);
-	}
-
-	if (m.type==IMAG) 
-	{
-		r.type  = FMAT2;
-		r.imgptr = cloneimage(m.imgptr);
-		setpoint(r.imgptr, col, row, toint(v));
-	}
-
-	return r;
-}
-
-
 tOBJ oimp (tOBJ a, tOBJ b, tOBJ c)
 {
 	//IMP "A" 2 2
 
-	tOBJ r;
-	r.type=EMPTY;
+	tOBJ r=emptyObj();
 
 	if (a.type != SYM)
 		return r;
@@ -930,7 +922,7 @@ tOBJ oimp (tOBJ a, tOBJ b, tOBJ c)
 tOBJ ominv(tOBJ a)
 {
 	//invert a matrix
-	tOBJ r;
+	tOBJ r=emptyObj();
 	if (a.type==FMAT2) 
 	{
 		r.type=FMAT2;
@@ -941,7 +933,7 @@ tOBJ ominv(tOBJ a)
 tOBJ omdet(tOBJ a)
 {
 	//det of a matrix
-	tOBJ r;
+	tOBJ r=emptyObj();
 	if (a.type==FMAT2) 
 	{
 		r.type=FLOAT;
@@ -953,7 +945,7 @@ tOBJ omdet(tOBJ a)
 tOBJ osig(tOBJ a)
 {
 	//binary signmoid function
-	tOBJ r;
+	tOBJ r=emptyObj();
 	int i;
 
 	if (a.type==FMAT2)
@@ -1079,7 +1071,7 @@ tOBJ ovsum2(tOBJ a)
 tOBJ odsig(tOBJ a)
 {
 	//derivative binary sigmoid
-	tOBJ r;
+	tOBJ r=emptyObj();
 
 	int i;
 	r=makefloat(0.0);
@@ -1235,7 +1227,7 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 
 tOBJ otrn(tOBJ a)
 {
-	tOBJ r;
+	tOBJ r=emptyObj();
 	r=makefloat(0.0);
 	if (a.type==FMAT2)
 	{
@@ -1245,6 +1237,13 @@ tOBJ otrn(tOBJ a)
 
 	return r;
 }
+/*
+!> RSHP [1 2 3] 3 3
+ = Matrix 3x3
+1.000000 2.000000 3.000000 
+0.000000 0.000000 0.000000 
+0.000000 0.000000 0.000000 
+*/
 
 tOBJ orshp(tOBJ m, tOBJ a, tOBJ b)
 {	// RSHP(M,x,y)
@@ -1268,6 +1267,13 @@ tOBJ orshp(tOBJ m, tOBJ a, tOBJ b)
 	return r;
 }
 
+/*
+!> REP [1 2 3] 3 1
+ = Matrix 3x3
+1.000000 2.000000 3.000000 
+1.000000 2.000000 3.000000 
+1.000000 2.000000 3.000000 
+*/
 
 tOBJ orep (tOBJ m, tOBJ a, tOBJ b)
 {	// REP(M,x,y)
@@ -1288,9 +1294,8 @@ tOBJ orep (tOBJ m, tOBJ a, tOBJ b)
 
 tOBJ ozero (tOBJ a, tOBJ b)
 {
-	tOBJ r;
 	int row,col;
-	r.type=EMPTY;
+	tOBJ r=emptyObj();
 
 	row=toint(a);
 	col=toint(b);
@@ -1302,10 +1307,9 @@ tOBJ ozero (tOBJ a, tOBJ b)
 
 tOBJ oeye (tOBJ a, tOBJ b)
 {
-	tOBJ r;
 	int i;
 	int row,col;
-	r.type=EMPTY;
+	tOBJ r=emptyObj();
 
 	row=toint(a);
 	col=toint(b);
@@ -1323,8 +1327,7 @@ tOBJ oeye (tOBJ a, tOBJ b)
 
 tOBJ oconv (tOBJ a, tOBJ b)
 {
-	tOBJ r;
-	r.type=EMPTY;
+	tOBJ r=emptyObj();
 
 	if (a.type == FMAT2 &&  b.type==FMAT2)
 	{
@@ -1337,7 +1340,7 @@ tOBJ oconv (tOBJ a, tOBJ b)
 tOBJ omcond(tOBJ a, tOBJ b, tOBJ c, tOBJ d, tOBJ e)
 {
 	// COND (Matrix,lv, uv, nv1, nv2)
-	tOBJ r;
+	tOBJ r=emptyObj();
 	int i;
 	float nv2 = tofloat(e);
 	float nv1 = tofloat(d);
@@ -1363,7 +1366,7 @@ tOBJ omcond(tOBJ a, tOBJ b, tOBJ c, tOBJ d, tOBJ e)
 tOBJ ozerob(tOBJ a, tOBJ b, tOBJ c, tOBJ d, tOBJ e)
 {
 	// ZER (Matrix,c1,r1,c2,r2)
-	tOBJ r;
+	tOBJ r=emptyObj();
 	int r2 = toint(e);
 	int c2 = toint(d);
 	int r1 = toint(c);
@@ -1381,8 +1384,7 @@ tOBJ ozerob(tOBJ a, tOBJ b, tOBJ c, tOBJ d, tOBJ e)
 tOBJ ozerod(tOBJ a)
 {	
 	// ZERD (Matrix)
-	tOBJ r;
-	r.type=EMPTY;
+	tOBJ r=emptyObj();
 	if (a.type==FMAT2)
 	{
 		r.type = FMAT2;
@@ -1960,22 +1962,24 @@ tOBJ orgt(tOBJ  r, tOBJ a)
 	return emptyObj();
 }
 
-tOBJ omid(tOBJ  r, tOBJ a, tOBJ  b)
+tOBJ omid(tOBJ  s, tOBJ a, tOBJ  b)
 {
 	//!MID "testing" 2 4  -> "est"
 	//!MID "tes" 2        -> "es"
+	tOBJ r=emptyObj();
 	int p1=toint(a);
 	int p2=toint(b);
 	char *cp;
-	if (r.type==SYM)
+	if (s.type==SYM)
 	{
-		int ln = strlen(r.string);
+		int ln = strlen(s.string);
 		if (p2==0) p2=ln;
 		if (ln>0 && p1>0 && p2>=p1 && p2<=ln)
 		{
 			cp=newstring1(p2-p1+1);
-			strncpy(cp, (r.string)+p1-1,p2-p1+1);
+			strncpy(cp, (s.string)+p1-1,p2-p1+1);
 			*(cp+p2-p1+1)='\0';
+			r.type=SYM;
 			r.string = cp;
 			return r;
 		}
@@ -2640,16 +2644,14 @@ tOBJ oimg(tOBJ v, Dict *e)
 			}
 		}
 		else
-		if (!strcmp(cmd.string,"LOAD") || !strcmp(cmd.string,"NORM")) //  IMAG LOAD 8 "Text"
+		if (!strcmp(cmd.string,"LOAD") || !strcmp(cmd.string,"NORM")  || !strcmp(cmd.string,"SERIAL")) //  IMAG LOAD 8 "Text"
 		{
 			int sz;
 			tOBJ a=ocar(v); v=ocdr(v);
 
 			if (a.type==FMAT2)
 			{
-				tOBJ r=emptyObj();
-				r.type=IMAG;
-				r.imgptr=makeimage(a.fmat2->h,a.fmat2->w);
+				tOBJ r=emptyTPObj(IMAG, makeimage(a.fmat2->h,a.fmat2->w));
 
 				for (int i=0; i<a.fmat2->h*a.fmat2->w; i++)
 				{
@@ -2667,25 +2669,38 @@ tOBJ oimg(tOBJ v, Dict *e)
 			}
 			if (file.type != SYM)
 			{
+				freeobj(&file);
 				file = makestring("test.jpg"); //should read from env
 			}
 
 			if (file.type==SYM && loadimage(file.string, sz, &scene[0])==0)
 			{
-				if (!strcmp(cmd.string,"NORM"))
+				if (!strcmp(cmd.string,"NORM") || !strcmp(cmd.string,"SERIAL"))
 				{
-					tOBJ r;
-					fMatrix *m = newmatrix(sz,sz);
-					r.type=FMAT2;
+					tOBJ r=emptyTObj(FMAT2);
+					fMatrix *m;
+					if (!strcmp(cmd.string,"SERIAL"))
+						m = newmatrix(1,sz*sz);
+					else				
+						m = newmatrix(sz,sz);
 					r.fmat2=m;
 					float s=0.0;
-					for (int i=0; i<sz*sz; i++) {m->fstore[i]=(float)scene[i]; if (s< m->fstore[i]) s=m->fstore[i] ;}
-					for (int i=0; i<sz*sz; i++) m->fstore[i]/=s;
+					for (int i=0; i<sz*sz; i++) 
+					{	
+						m->fstore[i]=(float)scene[i]; 
+						if (s< m->fstore[i]) 
+							s=m->fstore[i] ;
+					}
+					for (int i=0; i<sz*sz; i++) 
+						m->fstore[i]/=s;
+
+					freeobj(&file);
 					return r;	
 				}
 				else
 				{
 					nis=sz*sz;
+					freeobj(&file);
 					return makeint(nis);
 				}
 			}
@@ -2695,7 +2710,6 @@ tOBJ oimg(tOBJ v, Dict *e)
 				nis=0;
 			}
 		}
-
 		else
 		if (!strcmp(cmd.string,"FILTER"))
 		{
@@ -3199,8 +3213,7 @@ tOBJ omatr(tOBJ n, tOBJ v, tOBJ f)
 		{
 			int h=img.imgptr->h;
 			int w=img.imgptr->w;
-			tOBJ mat = emptyObj();
-			mat.type=FMAT2;
+			tOBJ mat  = emptyTObj(FMAT2);
 			mat.fmat2 = newmatrix(w,h);
 			//cpy into mat values from img.impgptr->data
 			for (int i=0;i<h; i++)
@@ -3229,8 +3242,7 @@ tOBJ omatr(tOBJ n, tOBJ v, tOBJ f)
 			if (nh>h) nh=h;
 			if (nw>w) nw=w;
 
-			tOBJ mat = emptyObj();
-			mat.type=FMAT2;
+			tOBJ mat  = emptyTObj(FMAT2);
 			mat.fmat2 = newmatrix(nw,nh);
 
 			//cpy into mat values from img.impgptr->data
