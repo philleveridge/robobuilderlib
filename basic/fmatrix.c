@@ -166,8 +166,7 @@ fMatrix *fadd2(fMatrix *A, fMatrix *B, char op)
 
 	if (wa!=wb || ha!=hb)
 	{
-		if (dbg) printf ("size does not match (%d,%d) - (%d,%d)\n", wa,ha,wb,hb);
-		//return R;
+		if (dbg) printf ("%warning size does not match (%d,%d) - (%d,%d)\n", wa,ha,wb,hb);
 	}
 
 	R = newmatrix(wa,ha);
@@ -198,11 +197,9 @@ fMatrix *ftranspose2(fMatrix *A)
 	int w=A->w;
 	int h=A->h;
 	int mx,my;
-	fMatrix *R;
+	fMatrix *R = newmatrix(h, w);;
 
 	if (dbg) printf ("transpose %d,%d\n",w,h);
-
-	R = newmatrix(h, w);
 
 	for (my=0; my<h; my++)
 	{

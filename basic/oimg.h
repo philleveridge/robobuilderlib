@@ -23,6 +23,7 @@ extern void 	delimage 	(oImage *ip);
 extern oImage 	*cloneimage	(oImage *ip);
 extern void 	printimage	(oImage *ip);
 extern oImage 	*reshapeoImage	(oImage *image, int nw, int nh);
+extern oImage 	*subimage	(oImage *ip, int x, int y, int c, int r);
 
 extern oImage 	*loadoImage	(char *name);
 extern oImage 	*FloadImage	(char *name, oFilter n);
@@ -40,6 +41,11 @@ extern int 	getpoint	(oImage *img, int x, int y);
 extern void 	drawrect	(oImage *img, int fx, int fy, int w,  int h,  int c);
 extern void 	drawline	(oImage *img, int fx, int fy, int tx, int ty, int c);
 extern void 	imageshow	(oImage *im);
+
+extern int 	sumoImage	(oImage *image);
+extern int 	moment		(oImage *image, int *rx,  int *ry);
+extern int 	meanshift	(oImage *image, int noit, int wx, int wy, int *rx, int *ry);
+extern int 	camshift	(oImage *image, int noit, int wx, int wy, int *rx, int *ry, int *rw, int *rh);
 
 extern void 	recog_init	(int w, int h, int nc, int ts);
 extern void 	recog_del	();

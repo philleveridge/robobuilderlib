@@ -74,6 +74,18 @@ oImage *cloneimage(oImage *ip)
 	return nip;	
 }
 
+oImage *subimage(oImage *ip, int x, int y, int c, int r)
+{
+printf ("subimage - %d,%d [%d,%d]\n", x,y, c,r);
+
+	oImage *nip = makeimage(r,c);
+
+	for (int i=0; i<r; i++)
+		for (int j=0; j<c; j++)
+			setpoint(nip, j, i,  getpoint(ip, x+j, y+i));
+	return nip;	
+}
+
 void setpoint(oImage *img, int x, int y, int c)
 {
 	if (img==NULL || (x<0) || (y<0) || (x>=img->w) || (y>=img->h)) return;
@@ -326,6 +338,16 @@ int minval(oImage *image)
 	return mg;
 }
 
+int sumoImage(oImage *image)
+{
+	int sm=0;
+	if (image==NULL) return 0;
+
+	for (int i=0; i<image->h*image->w; i++) 
+		sm+=image->data[i];
+	return sm;
+}
+
 oImage *threshoImage(oImage *image, int th)
 {
 	oImage *r = cloneimage(image);
@@ -365,12 +387,82 @@ int image2Pgm(oImage *image, char *fileName)
 
 oImage *reshapeoImage(oImage *image, int nw, int nh)
 {
-	oImage *nip = makeimage(nh, nw);
-	if (dbg) {printf ("reshape Image\n");}
-	for (int i=0; i<nh; i++)
-		for (int j=0; j<nw; j++)
-			setpoint(nip,j,i,getpoint(image,j,i));
-	return nip;
+	return subimage(image, 0, 0, nh, nw);
+}
+
+int moment(oImage *image, int *rx, int *ry)
+{
+	float n = (float)sumoImage(image);
+	int sx=0, sy=0;
+	for (int i=0; i<image->h; i++)
+	{
+		for (int j=0; j<image->w; j++)
+		{
+			sx += j*getpoint(image,j,i);	
+			sy += i*getpoint(image,j,i);	
+			//printf ("%d %d %d %d\n", j, i, sx, sy)	;	
+		}
+	}
+	float fx= (float)sx/n;
+	float fy= (float)sy/n;
+	if (dbg) printf ("center = %d, %d -> %f, %f\n", sx, sy, fx, fy);
+
+	if (rx != NULL)  *rx=(int)(fx+0.5);
+	if (ry != NULL)  *ry=(int)(fy+0.5);
+
+	return (int)(n+0.5);	
+}
+
+int meanshift(oImage *image, int noit, int wx, int wy, int *rx, int *ry)
+{
+	//assume center is center
+	int cx=(image->w)/2;
+	int cy=(image->h)/2;
+	int m=0;
+	for (int c=0; c<noit; c++)
+	{
+		int   ncx, ncy;
+		oImage *sw = subimage(image, cx-wx/2, cy-wy/2, wy, wx);	
+imageshow(sw);
+		m = moment(sw, &ncx, &ncy);
+		ncx += cx-wx/2; //(image->w)/2;
+		ncy += cy-wy/2; //(image->h)/2;
+		delimage(sw);
+		printf ("%d) %d %d\n",c, ncx,ncy);
+		if (cx==ncx && cy==ncy) break;
+		cx=ncx;
+		cy=ncy;
+	}
+	*rx=cx;
+	*ry=cy;
+	return m;
+}
+
+int camshift(oImage *image, int noit, int wx, int wy, int *rx, int *ry, int *rw, int *rh)
+{
+/*
+The Camshift algorithm, Continuously Adaptive Mean Shift , that encapsulates the Mean-Shift in a loop by varying the size of the window until convergence. At each iteration, the mean shift is applied with a window of a given size. After convergence of the mean shift, the procedure is re-iterated with a window centered on the position found by the mean shift, but depending on the size of the zero-order moment of the spatial distribution of the probability of skin color previously calculated by the mean shift.
+
+The Camshift applies to the segmentation of still images after convergence of the mean shift, the height of the selected window is 20% larger than its width, but this choice is arbitrary. It is suitable in cases of segmenting a face relatively frontal pose. In other words, the aspect ratio is given as an example, but it can be changed to a different orientation of the face or any other type of object. The various steps of Camshift are:
+
+Initialize W  : position and size.
+While W is moved more than a certain threshold and the maximum number of iterations has not been reached:
+apply the mean shift: remember the moment and zero-order
+center W on and assign the width and height
+*/
+	int cx, cy, nw, nh;
+	int converging = 0;
+	while (!converging)
+	{
+		int m = meanshift(image, noit, wx, wy, rx, ry);
+		converging=1;
+		//change wx and wy based on M0 
+		//wx=sqrt(Mo/256)
+		//wy=wx * 1.2
+		//if abs(wx-oldwx)<th converging=1;
+	}
+
+	return 0;
 }
 
 

@@ -575,7 +575,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	{
 		r.type=FMAT2;	
 		r.fmat2 = fmultiply2(o1.fmat2,o2.fmat2) ;	
-		if (r.fmat2->w*r.fmat2->h == 0)
+		if (r.fmat2==0 || r.fmat2->w*r.fmat2->h == 0)
 		{
 			r.type=EMPTY;
 		}
@@ -759,44 +759,40 @@ tOBJ osqrt(tOBJ a)
 
 tOBJ ogaus(tOBJ m, tOBJ v, tOBJ x)
 {
-	tOBJ r;
+
 	float mean =tofloat(m);  // mu
 	float var  =tofloat(v);  // sigma^2
 	float xv   =tofloat(x);
 	float Pi = 3.1414;
-	r.type=FLOAT;
-	r.floatpoint=(1/sqrt(2*Pi*var)) * exp( -0.5 * ((xv-mean)* (xv-mean))/var);
+	tOBJ r = makefloat((1/sqrt(2*Pi*var)) * exp( -0.5 * ((xv-mean)* (xv-mean))/var));
 	return r;
 }
 
 tOBJ ogausk(tOBJ ks, tOBJ gs)
 {
-	tOBJ r=emptyObj();
-	r.type=FMAT2;
-	r.fmat2 = gausian(toint(ks),toint(gs)); 
+	tOBJ r=emptyTPObj(FMAT2,gausian(toint(ks),toint(gs))); 
 	return r;
 }
 
 tOBJ ornd(tOBJ a)
 {
-	tOBJ r=emptyObj();
-	r.type=FLOAT;
-	r.floatpoint=(float)rand()/RAND_MAX;
+	tOBJ r=makefloat((float)rand()/RAND_MAX);
 	return r;
 }
 
-tOBJ omax(tOBJ a, tOBJ r)
+tOBJ omax(tOBJ a, tOBJ b)
 {
 	int i;
+	tOBJ r= emptyObj();
 
 	if (r.type==INTGR && a.type==INTGR)
 	{
-		if (a.number>r.number) r=a;
+		if (a.number>b.number) r=a; else r=b;
 	}
 		
 	if (r.type==FLOAT && a.type==FLOAT)
 	{
-		if (a.floatpoint>r.floatpoint) r=a;
+		if (a.floatpoint>b.floatpoint) r=a; else r=b;
 	}
 
 	if (a.type==FMAT2)
@@ -992,8 +988,7 @@ tOBJ osum(tOBJ a)
 	if (a.type==IMAG)
 	{ 
 		r.type=INTGR;
-		r.number = 0;
-		for (int i=0; i<a.imgptr->w*a.imgptr->h; i++) r.number+= a.imgptr->data[i];
+		r.number = sumoImage(a.imgptr);
 	}
 	return r;
 }
@@ -1227,8 +1222,7 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 
 tOBJ otrn(tOBJ a)
 {
-	tOBJ r=emptyObj();
-	r=makefloat(0.0);
+	tOBJ r=makefloat(0.0);
 	if (a.type==FMAT2)
 	{
 		r.type = FMAT2;
@@ -2628,9 +2622,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 				{
 					//char *g1 =  " .:-=+*#%@";
 					freeobj(&ret); 
-					ret=emptyObj();
-					ret.type=IMAG;
-					ret.imgptr=makeimage(r.width, r.height);
+					ret=emptyTPObj(IMAG, makeimage(r.width, r.height));
 					for (int i=0; i<r.height; i++) 
 					{
 						for (int j=0; j<r.width; j++) 
@@ -2726,13 +2718,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 				int d = toint(ocar(v)); v=ocdr(v);
 				int e = toint(ocar(v)); v=ocdr(v);
 				int f = toint(ocar(v));
-				tOBJ r= emptyObj();
-				oImage *p = FloadImage(fn.string, setFilter(a,b,c,d,e,f));
-				if (p !=NULL)
-				{	
-					r.type=IMAG;
-					r.imgptr=p;
-				}
+				tOBJ r= emptyTPObj(IMAG, FloadImage(fn.string, setFilter(a,b,c,d,e,f)));
 				freeobj(&fn);
 				return r;
 			}
@@ -2809,6 +2795,66 @@ tOBJ oimg(tOBJ v, Dict *e)
 				clearoImage(p, 0);
 			}
 			return r;
+		}
+		else
+		if (!strcmp(cmd.string,"MOMENT"))
+		{
+			tOBJ im = eval(ocar(v),e);
+			tOBJ ret=emptyObj();
+			if (im.type==IMAG)
+			{
+				int cx, cy;
+				moment(im.imgptr, &cx, &cy);
+
+				tOBJ t  = append(ret, makeint(cx));
+				freeobj(&ret); ret=t;
+				t = append(ret, makeint(cy));
+				freeobj(&ret); ret=t;
+			}
+			freeobj(&im);
+			return ret;
+		}
+		else
+		if (!strcmp(cmd.string,"MEANSHIFT"))
+		{
+			tOBJ im = eval(ocar(v),e); v=ocdr(v);
+			int  w  = toint(ocar(v));  v=ocdr(v);
+			int  h  = toint(ocar(v));
+			tOBJ ret=emptyObj();
+			if (im.type==IMAG)
+			{
+				int cx, cy;
+				meanshift(im.imgptr, 10, w, h, &cx, &cy); 
+				tOBJ t  = append(ret, makeint(cx));
+				freeobj(&ret); ret=t;
+				t = append(ret, makeint(cy));
+				freeobj(&ret); ret=t;
+			}
+			freeobj(&im);
+			return ret;
+		}
+		else
+		if (!strcmp(cmd.string,"CAMSHIFT"))
+		{
+			tOBJ im = eval(ocar(v),e); v=ocdr(v);
+			int  w  = toint(ocar(v));  v=ocdr(v);
+			int  h  = toint(ocar(v));
+			tOBJ ret=emptyObj();
+			if (im.type==IMAG)
+			{
+				int cx=0, cy=0, nw=0, nh=0;
+				camshift(im.imgptr, 10, w, h, &cx, &cy, &nw, &nh); 
+				tOBJ t  = append(ret, makeint(cx));
+				freeobj(&ret); ret=t;
+				t = append(ret, makeint(cy));
+				freeobj(&ret); ret=t;
+				t = append(ret, makeint(nw));
+				freeobj(&ret); ret=t;
+				t = append(ret, makeint(nh));
+				freeobj(&ret); ret=t;
+			}
+			freeobj(&im);
+			return ret;
 		}
 		else
 		if (!strcmp(cmd.string,"MAT"))
