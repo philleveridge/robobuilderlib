@@ -107,6 +107,7 @@ tOBJ emptyTObj(unsigned char t)
 
 tOBJ emptyTPObj(unsigned char t, void *p)
 {
+	if (p==NULL) return emptyObj();
 	tOBJ r = emptyTObj(t);
         if (t==SYM)   r.string=p;
         if (t==CELL)  r.cell  =p;
