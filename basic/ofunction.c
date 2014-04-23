@@ -57,6 +57,7 @@ extern long	getvar(char n);
 
 #include "ofunction.h"
 #include "opflow.h"
+#include "cmap.h"
 
 
 #include "trex.h"
@@ -587,7 +588,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		r.imgptr = cloneimage(o1.imgptr);
 		for (int i=0; i<r.imgptr->h; i++)
 			for (int j=0; j<r.imgptr->w; j++)
-				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] + o2.imgptr->data[i + j*o2.imgptr->w])%256;	
+				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] + o2.imgptr->data[j + i*o2.imgptr->w])%256;	
 	}
 
 	if (o1.type==IMAG && o2.type==IMAG && op==MULT)
@@ -596,7 +597,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		r.imgptr = cloneimage(o1.imgptr);
 		for (int i=0; i<r.imgptr->h; i++)
 			for (int j=0; j<r.imgptr->w; j++)
-				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] * o2.imgptr->data[i + j*o2.imgptr->w])%256;	
+				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] * o2.imgptr->data[j + i*o2.imgptr->w])%256;	
 	}
 
 	if (o1.type==IMAG && (o2.type==INTGR || o2.type==FLOAT) && op==PLUS)
@@ -2267,10 +2268,11 @@ tOBJ oload(tOBJ  n)
 	{
 	case '[' : 
 		r.type=FMAT2;
-		r.fmat2 = readmatrix(&m[1]);
+		r.fmat2 = readmatrix(&m[1], ']');
 		break;
 	case '{' : 
-		r = parse(m); 
+		r.type=IMAG;
+		r.imgptr = readmatrix(&m[1], '}');
 		break;
 	case '!' : 
 		r = eval_oxpr(&m[1]); 
@@ -2898,26 +2900,78 @@ tOBJ oimg(tOBJ v, Dict *e)
 			return r;
 		}
 		else
-		if (!strcmp(cmd.string,"PROC"))
+		if (!strcmp(cmd.string,"PROC") || !strcmp(cmd.string,"PROCESS"))
 		{
 			tOBJ p=eval(ocar(v),e);
 			if (p.type==SYM)
 			{
 				//IMAGE PROC "test.jpg"
-				tOBJ r=emptyObj();
-				r = makeint(processImage(p.string)); //tbd
+				v=ocdr(v);
+				int  w  = toint(ocar(v));  v=ocdr(v);
+				int  h  = toint(ocar(v));
+				tOBJ r  = emptyTPObj(IMAG, processImage(p.string, w, h)); 
 				freeobj(&p);
 				return r;
 			}
 			else
 			{
-				//backeard compatibility
+				//backward compatibility (assumes IMAGE RAW called)
 				//IMAGE PROC 5
 				int n=toint(p);
 				processFrame(n, &scene[0]);
 				nis=n*n;
 				return makeint(nis);
 			}
+		}
+		else
+		if (!strcmp(cmd.string,"REG") || !strcmp(cmd.string,"REGION"))
+		{
+			return color_regions(); 
+		}
+		else
+		if (!strcmp(cmd.string,"SHOW"))
+		{
+			int sz=sqrt(nis);
+			tOBJ p=eval(ocar(v),e);
+
+			if (p.type==IMAG)
+			{
+				tOBJ p2=eval(ocar(ocdr(v)),e);
+				if (toint(p2)==1)
+				{
+					printimage(p.imgptr);
+					printf ("\n");
+					imageshow(p.imgptr);
+				}
+				else
+				{
+					printimage(p.imgptr);
+					printf ("\n");
+					imageogray(p.imgptr);
+				}
+				freeobj(&p);
+				freeobj(&p2);
+				return emptyObj();
+			}
+
+			int n=toint(ocar(v));
+
+			frame=&scene[0];
+
+			switch (n) {
+			case 0: 
+				break;
+			case 1: 
+			case 2:
+			case 3:
+			case 4:
+				showImage(n); break;
+			case 5:
+				output_grey1(sz); break;
+			case 6:
+				output_frame(sz); break;
+			}
+			return makeint(nis);
 		}
 		else
 		if (!strcmp(cmd.string,"RECOG"))
@@ -3002,81 +3056,6 @@ tOBJ oimg(tOBJ v, Dict *e)
 			freeobj(&im);
 
 			return r;
-		}
-		else
-		if (!strcmp(cmd.string,"REG"))
-		{
-			cmd=ocar(v);
-			get_color_region(toint(cmd)); 
-			int i=0;
-			tOBJ r=emptyObj();
-			while (i<nis)
-			{
-				tOBJ l=emptyObj();
-				tOBJ t;
-				t = append(l, makeint(scene[i++])); //area
-				freeobj(&l); l=t;
-				t = append(l, makeint(scene[i++])); //x1
-				freeobj(&l); l=t;
-				t = append(l, makeint(scene[i++])); //y1
-				freeobj(&l); l=t;
-				t = append(l, makeint(scene[i++])); //x2
-				freeobj(&l); l=t;
-				t = append(l, makeint(scene[i++])); //y2
-				freeobj(&l); l=t;
-				t = append(l, makeint(scene[i++])); //cenx
-				freeobj(&l); l=t;
-				t = append(l, makeint(scene[i++])); //ceny
-				freeobj(&l); l=t;
-				t= append(r, l);
-				freeobj(&r); r=t;
-			}
-			return r;
-		}
-		else
-		if (!strcmp(cmd.string,"SHOW"))
-		{
-			int sz=sqrt(nis);
-			tOBJ p=eval(ocar(v),e);
-
-			if (p.type==IMAG)
-			{
-				tOBJ p2=eval(ocar(ocdr(v)),e);
-				if (toint(p2)==1)
-				{
-					printimage(p.imgptr);
-					printf ("\n");
-					imageshow(p.imgptr);
-				}
-				else
-				{
-					printimage(p.imgptr);
-					printf ("\n");
-					imageogray(p.imgptr);
-				}
-				freeobj(&p);
-				freeobj(&p2);
-				return emptyObj();
-			}
-
-			int n=toint(ocar(v));
-
-			frame=&scene[0];
-
-			switch (n) {
-			case 0: 
-				break;
-			case 1: 
-			case 2:
-			case 3:
-			case 4:
-				showImage(n); break;
-			case 5:
-				output_grey1(sz); break;
-			case 6:
-				output_frame(sz); break;
-			}
-			return makeint(nis);
 		}
 		else
 		if (!strcmp(cmd.string,"WAIT"))
@@ -3274,10 +3253,16 @@ tOBJ omatr(tOBJ n, tOBJ v, tOBJ f)
 		}
 	}
 
-	if (n.type==SYM && v.type==INTGR && f.type==INTGR)
+	if ((n.type==SYM || n.type==IMAG) && v.type==INTGR && f.type==INTGR)
 	{
 		// MAT 'I 5 5
-		tOBJ img=dict_getc(env.dict, n.string);
+		tOBJ img;
+
+		if (n.type==SYM)
+			img=dict_getc(env.dict, n.string);
+		else
+			img=n;
+
 		if (img.type==IMAG)
 		{
 			int h=img.imgptr->h;
