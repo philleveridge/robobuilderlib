@@ -147,6 +147,48 @@ colour state management
 
 ***************************************/
 
+int no_regions()
+{
+	return num_regions;
+}
+
+tOBJ  color_regions()
+{
+	tOBJ r=emptyObj();
+
+	// get centroids
+	for(int i=0; i<num_regions; i++)
+	{	
+		tOBJ l=emptyObj();
+		tOBJ t;
+		t = append(l, makeint(reg[i].area)); //area
+		freeobj(&l); l=t;
+		t = append(l, makeint(reg[i].x1)); //x1
+		freeobj(&l); l=t;
+		t = append(l, makeint(reg[i].y1)); //y1
+		freeobj(&l); l=t;
+		t = append(l, makeint(reg[i].x2)); //x2
+		freeobj(&l); l=t;
+		t = append(l, makeint(reg[i].y2)); //y2
+		freeobj(&l); l=t;
+		t = append(l, makefloat(reg[i].cen_x)); //cenx
+		freeobj(&l); l=t;
+		t = append(l, makefloat(reg[i].cen_y)); //ceny
+		freeobj(&l); l=t;
+		t= append(r, l);
+		freeobj(&r); freeobj(&l);
+		r=t;
+	}
+	return r;
+}
+
+
+int no_colours()
+{
+	return num_colors;
+}
+
+
 void get_color_region(int n)
 {	
 	if (n<=0 && n>num_colors)
@@ -524,6 +566,7 @@ int ExtractRegions(int max_reg, int num) //reg,max_regions,rmap,num_runs);
     reg[i].x2--; // change to inclusive range
   }
 
+  num_regions=n;
   return(n);
 }
 
@@ -671,6 +714,8 @@ int processFrame(int sz, int *data)
   int x=0;
 
   frame=data;
+  num_regions=0;
+  num_runs=0;
 
   if (sz==0)
   {

@@ -95,9 +95,8 @@ int isnum(char *s)
 !PRINT (* [1.0 2.0;3.0 4.0] 0.2)
 */
 
-fMatrix *readmatrix(char **str )
+void *readmatrix(char **str, char tc )
 {
-	fMatrix *m;
 	float ts[10000];
 	char *s = *str;
 	char buffer[MAXSTRING];
@@ -110,7 +109,7 @@ fMatrix *readmatrix(char **str )
 	{
 		s = readword(s, buffer);
 
-		if (!strcmp(buffer,"]")) 
+		if (buffer[0]==tc && buffer[1]==0) 
 			break;
 
 		if (!strcmp(buffer,";")) 
@@ -131,16 +130,29 @@ fMatrix *readmatrix(char **str )
 		return NULL;
 	}
 
-	//create matrix
+	if (tc ==']')
+	{
+		//create matrix
+		fMatrix *m = newmatrix(i, j+1);	
+		//copy in ts[0-c];
+		for (i=0; i<c; i++) m->fstore[i]=ts[i];
+		*str=s;
+		return m;
+	}
 
-	m = newmatrix(i, j+1);
+	if (tc =='}')
+	{
+		//create matrix
+
+		oImage *m = makeimage(j+1, i);
 	
-	//copy in ts[0-c];
+		//copy in ts[0-c];
 
-	for (i=0; i<c; i++) m->fstore[i]=ts[i];
-
-	*str=s;
-	return m;
+		for (i=0; i<c; i++) m->data[i]=(int)(ts[i]+0.5);
+		*str=s;
+		return m;
+	}
+	return NULL;
 }
 
 tOBJ tokenise(char *s)
@@ -176,7 +188,13 @@ tOBJ tokenise(char *s)
 			if (buffer[0]=='[')
 			{
 				top->head.type=FMAT2;	
-				top->head.fmat2=readmatrix(&s);			
+				top->head.fmat2=(fMatrix *)readmatrix(&s, ']');			
+			}
+			else
+			if (buffer[0]=='{')
+			{
+				top->head.type=IMAG;	
+				top->head.imgptr=(oImage *)readmatrix(&s, '}');			
 			}
 			else{
 				top->head = makestring(buffer);

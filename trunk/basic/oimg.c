@@ -170,7 +170,7 @@ oImage *loadoImage(char *name)
 			unsigned char g=*img++;
 			unsigned char r=*img++;
 
-			*p++ = RGBFN(r,b ,g);
+			*p++ = RGBFN(r, b, g);
 		}
 	}
      	return n;
@@ -198,45 +198,54 @@ oImage *FloadImage(char *name, oFilter n)
 			unsigned char r=*img++;
 
 			if ((r>=n.minR && r<=n.maxR) && (g>=n.minG && g<=n.maxG) && (b>=n.minB && b<=n.maxB))
-			   *p++ = RGBFN(r,b ,g);
+			   	*p = RGBFN(r, b, g);
+			else
+			 	*p = 0;
+			p++;
 		}
 	}
      	return im;
 }
 
-oImage *cmapoImage(char *name) 
+oImage *cmapoImage(char *name, int nw, int nh) 
 {
 	unsigned char *img = &BMap[0];
 
-	if (dbg) printf("threshold  [%d,%d,%d]\n" ,Height, Width,Depth);
+	if (dbg) printf("threshold  [%d,%d,%d]\n" ,Height, Width, Depth);
 
 	if (loadJpg(name)>0)
 		return NULL;
 
-	oImage *im = makeimage(Height, Width);
+	oImage *im = makeimage(nh, nw);
 
 	char *p = im->data;
 
 	for (int i=0; i<Height; i++)
 	{
+		int y=(i*nh)/Height;
+
 		for (int j=0; j<Width; j++)
 		{
+			int x = (j*nw)/Width;
+
 			unsigned char b=*img++;
 			unsigned char g=*img++;
 			unsigned char r=*img++;
 
-	     		 *p++ =  testmap(r, g, b);
+	     		 p[x+y*nw]  |=  testmap(r, g, b);
 		}
 	}
 	return im;
 }
 
 //tbd - processImage not complete
-oImage *processImage(char *fn)
+oImage *processImage(char *fn, int nw, int nh)
 {
-	oImage *im = cmapoImage(fn); 
+	oImage *im = cmapoImage(fn, nw, nh); 
 
-	num_runs = EncodeRuns2(im, im->h, im->w, max_runs); 
+	if (dbg) imageshow(im);
+
+	int num_runs = EncodeRuns2(im->data, im->h, im->w, max_runs); 
 
 	if(num_runs == max_runs)
 	{
@@ -249,28 +258,20 @@ oImage *processImage(char *fn)
 
 	if (dbg) show_run(num_runs);
 
-	num_regions = ExtractRegions(max_regions, num_runs); 
+	int num_regions = ExtractRegions(max_regions, num_runs); 
 
 	if (dbg) show_reg(num_regions);
-
-	for(int i=0; i<num_colors; i++)
-	{
-		color[i].list = NULL;
-		color[i].num  = 0;
-	}
 
 	if(num_regions == max_regions)
 	{
 		printf("WARNING! Exceeded maximum number of regions in ExtractRegions.\n");
-		return NULL;
 	}
 
-	max_area = SeparateRegions(&color[0], num_colors,num_regions); 
-	SortRegions(&color[0], num_colors, max_area); 
+	max_area = SeparateRegions(&color[0], no_colours(), num_regions); 
+	SortRegions(&color[0], no_colours(), max_area); 
+
 	return im;
 }
-
-
 
 void imageogray(oImage *im)
 {
@@ -423,7 +424,7 @@ int meanshift(oImage *image, int noit, int wx, int wy, int *rx, int *ry)
 	{
 		int   ncx, ncy;
 		oImage *sw = subimage(image, cx-wx/2, cy-wy/2, wy, wx);	
-imageshow(sw);
+if (dbg) imageshow(sw);
 		m = moment(sw, &ncx, &ncy);
 		ncx += cx-wx/2; //(image->w)/2;
 		ncy += cy-wy/2; //(image->h)/2;
