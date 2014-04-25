@@ -54,11 +54,6 @@ extern tOBJ  makefloati     (int i);
 extern float tofloat	    (tOBJ v);
 extern tOBJ  makeint	    (int i);
 extern int   toint	    (tOBJ v);
-extern tOBJ  cnvtInttoList  (int an, int *array);
-extern tOBJ  cnvtBytetoList (int an, BYTE *array);
-extern tOBJ  cnvtFloattoList(int an, float *array);
-extern int   cnvtListtoByte (tOBJ lst, int an, BYTE *array);
-extern tOBJ  makenumfstr    (char *s);
 
 extern char *objtype	    (tOBJ t);
 

@@ -360,10 +360,10 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 		switch(p->nop)
 		{
 		case 0:
-			return (*p->func)(emptyObj());
+			return (*p->foo.func)(emptyObj());
 		case 1:	{
 			tOBJ a=eval(ocar(o),e);
-			r=(*p->func)(a);
+			r=(*p->foo.func)(a);
 			freeobj(&a);
 			return r;
 			}
@@ -371,7 +371,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			{
 			tOBJ a = eval(ocar(o),e); o=ocdr(o);
 			tOBJ b = eval(ocar(o),e); 
-			r = (*p->func2)(a,b);
+			r = (*p->foo.func2)(a,b);
 			freeobj(&b);
 			freeobj(&a);
 			return r;
@@ -381,7 +381,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			tOBJ a = eval(ocar(o),e); o=ocdr(o);
 			tOBJ b = eval(ocar(o),e); o=ocdr(o);
 			tOBJ c = eval(ocar(o),e); 
-			r = (*p->func3)(a,b,c);
+			r = (*p->foo.func3)(a,b,c);
 			freeobj(&c);
 			freeobj(&b);
 			freeobj(&a);
@@ -394,7 +394,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			tOBJ c = eval(ocar(o),e); o=ocdr(o);
 			tOBJ d = eval(ocar(o),e); o=ocdr(o);
 			tOBJ g = eval(ocar(o),e); 
-			r= (*p->func5)(a,b,c,d,g);
+			r= (*p->foo.func5)(a,b,c,d,g);
 			freeobj(&g);
 			freeobj(&d);
 			freeobj(&c);
@@ -403,7 +403,7 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			return r;
 			}
 		default:
-			return (*p->funce)(o,e);
+			return (*p->foo.funce)(o,e);
 			break;
 		}		
 	}

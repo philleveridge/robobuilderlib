@@ -3,7 +3,7 @@
 
 extern void *bas_malloc (int);
 extern void *bas_realloc(int);
-extern void *bas_free   (int);
+extern void  bas_free   (void *ptr);
 extern void  bas_show();
 extern int   bas_mem();
 

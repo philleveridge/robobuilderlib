@@ -125,6 +125,14 @@ int loadJpg(char* Name)
   return 0;
 }
 
+int loadJpg2(char* Name, int *w, int *h)
+{
+	int r=loadJpg(Name);
+	*w=Width;
+	*h=Height;
+	return r;
+}
+
 
 int simplefilter(int mode, int sf)
 {

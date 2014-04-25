@@ -17,7 +17,7 @@
 
 #include "ocells.h"
 #include "mem.h"
-
+#include "ofunction.h"
 
 /**********************************************************/
 /*  CELLS                                                 */
@@ -42,42 +42,26 @@ void delCell(tCELLp p)
 
 tOBJ makeCell()
 {
-	tOBJ r; tCELLp p;
-	r.type=CELL;
-	p = newCell();
-	p->head=emptyObj();
-	p->tail=0;
-	r.cell=p;
-	r.cnt=0;
-	r.q=0;
+	tOBJ r = emptyTPObj(CELL, newCell());
+	tCELLp p = r.cell;
+	if (p !=NULL)
+	{
+		p->head=emptyObj();
+		p->tail=0;
+	}
 	return r;
 }
 
 tOBJ makeCell2(tOBJ a, tCELLp b)
 {
 	// a + {b} => {a b}
-	tOBJ r; tCELLp p;
-	r.type=CELL;
-	p = newCell();
-	p->head=cloneObj(a);  //clone ?
-	p->tail=b;
-	r.cell=p;
-	r.cnt=0;
-	r.q=0;
-	return r;
-}
-
-tOBJ makeCell3(tOBJ a, tCELLp b)
-{
-	// a + {b} => {b a}
-	tOBJ r; tCELLp p;
-	r.type=CELL;
-	p = newCell();
-	p->head=cloneObj(a);  //clone ?
-	p->tail=NULL;
-
-	while (b->tail != NULL) b=b->tail;
-	r.cell=b;
+	tOBJ r = emptyTPObj(CELL, newCell());
+	tCELLp p = r.cell;
+	if (p !=NULL)
+	{
+		p->head=cloneObj(a); 
+		p->tail=b;
+	}
 	return r;
 }
 
@@ -87,7 +71,7 @@ tCELLp cloneCell(tCELLp p)
 	top=r;
 	while (p!=NULL)
 	{
-		r->head =cloneObj(p->head);  //cloneObj??
+		r->head =cloneObj(p->head); 
 		p=p->tail;
 		t=r;
 		if (p!=NULL)
@@ -140,6 +124,67 @@ tOBJ append(tOBJ a, tOBJ b)
 	m->tail = NULL;
 
 	return r;
+}
+
+/**********************************************************/
+/*  conversions Arrays to List                            */
+/**********************************************************/
+
+tOBJ cnvtInttoList(int an, int *array)
+{
+	tOBJ r,n,top;
+	int i;
+
+	if (an<=0) return emptyObj();
+	top=makeCell2( makeint(array[0]), NULL);
+	r=top;
+
+	for (i=1; i<an; i++)
+	{
+		n=makeCell2(makeint(array[i]), NULL);
+		((tCELLp)(r.cell))->tail = n.cell;
+		r=n;
+	}
+	((tCELLp)(n.cell))->tail = 0;
+	return top;
+}
+
+tOBJ cnvtBytetoList(int an, BYTE *array)
+{
+	int i;
+	tOBJ r=emptyObj();
+	if (an<=0) return r;
+
+	for (i=an-1; i>=0; i--)
+	{
+		r=ocons(makeint((int)array[i]), r);
+	}
+	return r;
+}
+
+tOBJ cnvtFloattoList(int an, float *array)
+{
+	int i;
+	tOBJ r=emptyObj();
+	if (an<=0) return r;
+
+	for (i=an-1; i>=0; i--)
+	{
+		r=ocons(makefloat((int)array[i]), r);
+	}
+	return r;
+}
+
+int cnvtListtoByte(tOBJ lst, int an, BYTE *array)
+{
+	int cnt=0;
+	if (lst.type != CELL) return 0;
+	while (cnt<an && onull(lst).number==0)
+	{
+		array[cnt++] = toint(ocar(lst));
+		lst=ocdr(lst); 
+	}
+	return cnt;
 }
 
 

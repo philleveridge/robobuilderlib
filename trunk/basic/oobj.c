@@ -38,43 +38,19 @@ int freeobj(tOBJ *b)
 		return 1;
 	}
 
-	if (b->type==FMAT2)
+	switch (b->type)
 	{
-		if (dbg) printf ("free mat\n");
-		if (b->cnt==0) delmatrix(b->fmat2);
+		case FMAT2: 	delmatrix(b->fmat2);  			break;
+		case SYM: 	delstring(b->string); 			break;
+		case CELL:
+		case LAMBDA:	delCell(b->cell);     			break;
+		case DICT:	deldict(b->dict);   			break;
+		case RBM:	rbmdelete(b->mot); 			break;
+		case STACK:	delstack(b->stk);			break;
+		case IMAG:	delimage(b->imgptr);			break;	
+		default: 	if (dbg) printf ("nothing to free\n"); 	break;
 	}
-	else if (b->type==SYM)
-	{
-		if (dbg) printf ("free SYM %s\n",b->string);
-		if (b->cnt==0) delstring(b->string);
-	}
-	else if (b->type==CELL || b->type==LAMBDA  )
-	{
-		if (dbg) printf ("free cell\n");
-		if (b->cnt==0) delCell(b->cell);
-	}
-	else if (b->type==DICT)
-	{
-		if (dbg) printf ("free dict\n");
-		if (b->cnt==0) deldict(b->dict);
-	}
-	else if (b->type==RBM)
-	{
-		if (b->cnt==0) rbmdelete(b->mot);
-	}
-	else if (b->type==STACK)
-	{
-		if (b->cnt==0) delstack(b->stk);
-	}
-	else if (b->type==IMAG)
-	{
-		if (dbg) printf ("free Image\n");
-		if (b->cnt==0) delimage(b->imgptr);
-	}	
-	else 
-	{
-		if (dbg) printf ("nothing to free\n");
-	}
+
 	b->type=EMPTY;
 	b->q=0;
 	b->cnt=0;
@@ -385,21 +361,15 @@ void pp(tOBJ x, int n)
 
 tOBJ makefloat(float f)
 {	
-	tOBJ r;
-	r.type=FLOAT;
+	tOBJ r=emptyTObj(FLOAT);
 	r.floatpoint=f;
-	r.q=0;
-	r.cnt=0;
 	return r;
 }
 
 tOBJ makefloati(int i)
 {	
-	tOBJ r;
-	r.type=FLOAT;
+	tOBJ r=emptyTObj(FLOAT);
 	r.floatpoint=(float)i;
-	r.q=0;
-	r.cnt=0;
 	return r;
 }
 
@@ -417,11 +387,8 @@ float tofloat(tOBJ v)
 
 tOBJ makeint(int i)
 {	
-	tOBJ r;
-	r.type=INTGR;
+	tOBJ r=emptyTObj(INTGR);
 	r.number=i;
-	r.q=0;
-	r.cnt=0;
 	return r;
 }
 
@@ -436,114 +403,6 @@ int toint(tOBJ v)
 	return f;
 }
 
-tOBJ cnvtInttoList(int an, int *array)
-{
-	tOBJ r,n,top;
-	int i;
-
-	if (an<=0) return emptyObj();
-	top=makeCell2( makeint(array[0]), NULL);
-	r=top;
-
-	for (i=1; i<an; i++)
-	{
-		n=makeCell2(makeint(array[i]), NULL);
-		((tCELLp)(r.cell))->tail = n.cell;
-		r=n;
-	}
-	((tCELLp)(n.cell))->tail = 0;
-	return top;
-}
-
-tOBJ cnvtBytetoList(int an, BYTE *array)
-{
-	int i;
-	tOBJ r=emptyObj();
-	if (an<=0) return r;
-
-	for (i=an-1; i>=0; i--)
-	{
-		r=ocons(makeint((int)array[i]), r);
-	}
-
-	return r;
-}
-
-tOBJ cnvtFloattoList(int an, float *array)
-{
-	int i;
-	tOBJ r=emptyObj();
-	if (an<=0) return r;
-
-	for (i=an-1; i>=0; i--)
-	{
-		r=ocons(makefloat((int)array[i]), r);
-	}
-
-	return r;
-}
-
-
-int cnvtListtoByte(tOBJ lst, int an, BYTE *array)
-{
-	int cnt=0;
-	if (lst.type != CELL) return 0;
-	while (cnt<an && onull(lst).number==0)
-	{
-		array[cnt++] = toint(ocar(lst));
-		lst=ocdr(lst); 
-	}
-	return cnt;
-}
-
-tOBJ makenumfstr(char *s)
-{
-	tOBJ r = emptyObj();
-	int n=0;
-	float f=0.0, rm=1.0;
-	int sgn=1;
-	int flt=0;
-	if (*s == '-') 
-		{sgn=-1; s++;}
-	else if (*s == '+') 
-		{s++;}
-
-	while (*s != '\0')
-	{
-		if (*s=='.' && flt==0) 
-		{
-			s++;
-			flt=1;
-			f=n;
-		}
-		if (*s<'0' || *s>'9') 
-			break;
-
-		if (flt==0)
-		{
-			n=n*10+*s-'0';
-		}
-		else
-		{
-			rm=rm/10;
-			f=f+rm*(*s-'0');
-		}
-		s++;
-	}
-
-	if (flt==1)
-	{
-		r.floatpoint=f*sgn;
-		r.type=FLOAT;
-	}
-	else
-	{
-		r.number=n*sgn;
-		r.type=INTGR;
-	}
-	return r;
-}
-
 char *objtype(tOBJ t)
 {
 	char *st;
@@ -555,13 +414,13 @@ char *objtype(tOBJ t)
 	case CELL:  st="List  "; break;
 	case SYM:   st="Symbol"; break;
 	case LAMBDA:st="Lambda"; break;
-	case BOOLN: st="bool  ";break;
-	case EMPTY: st="Empty ";break;
-	case DICT:  st="Dict  ";break;
-	case RBM:   st="RBM   ";break;
-	case STACK: st="STACK ";break;
-	case FUNC:  st="Func  ";break;
-	case IMAG:  st="Image ";break;
+	case BOOLN: st="bool  "; break;
+	case EMPTY: st="Empty "; break;
+	case DICT:  st="Dict  "; break;
+	case RBM:   st="RBM   "; break;
+	case STACK: st="STACK "; break;
+	case FUNC:  st="Func  "; break;
+	case IMAG:  st="Image "; break;
 	}
 	return st;
 }
