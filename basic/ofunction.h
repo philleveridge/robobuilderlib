@@ -20,10 +20,10 @@ typedef struct ops {
 		tOBJ	(*func3)(tOBJ, tOBJ, tOBJ);
 		tOBJ	(*func5)(tOBJ, tOBJ, tOBJ, tOBJ, tOBJ);
 		tOBJ	(*funce)(tOBJ, Dict *);
-	};
+	} foo;
 } tOP, *tOPp;
 
-extern tOP  oplist[];
+//extern tOP  oplist[];
 extern void loadop 	(Dict *e);
 extern tOBJ getOP2	(Dict *e, char *str);
 extern int  getOPlevel	(Dict *e, char *str);

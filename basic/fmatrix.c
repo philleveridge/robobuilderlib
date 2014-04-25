@@ -12,6 +12,7 @@
 #include "linux.h"
 #endif
 
+#include "lists.h"
 #include "mem.h"
 #include "fmatrix.h"
 
@@ -74,7 +75,6 @@ int delmatrix(fMatrix *m)
 fMatrix *fmatcp(fMatrix *A) // clone
 {
 	fMatrix *n;
-	int i;
 	int w=A->w;
 	int h=A->h;
 
@@ -166,7 +166,7 @@ fMatrix *fadd2(fMatrix *A, fMatrix *B, char op)
 
 	if (wa!=wb || ha!=hb)
 	{
-		if (dbg) printf ("%warning size does not match (%d,%d) - (%d,%d)\n", wa,ha,wb,hb);
+		if (dbg) printf ("warning size does not match (%d,%d) - (%d,%d)\n", wa,ha,wb,hb);
 	}
 
 	R = newmatrix(wa,ha);
@@ -222,7 +222,7 @@ fMatrix *fmultiply2(fMatrix *A,fMatrix *B)
 	wb=B->w;
 	hb=B->h;
 
-	if (dbg) (" Matrix mullt (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
+	if (dbg) printf (" Matrix mullt (%d,%d) * (%d,%d) \n",wa,ha,wb,hb);
 
 	if (wa != hb) 
 	{

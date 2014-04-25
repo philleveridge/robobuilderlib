@@ -17,15 +17,12 @@
 
 #include "mem.h"
 #include "oimg.h"
-
 #include "cmap.h"
 
-extern int dbg;
-
+//jpeg.c
+extern int loadJpg     (char* Name);
 extern int Height;
 extern int Width;
-extern int Depth;
-extern int *frame;
 
 extern unsigned char BMap[]; // max size
 
@@ -39,6 +36,11 @@ oFilter setFilter(int minR, int maxR, int minG, int maxG, int minB, int maxB)
 	x.maxG=maxG;
 	x.maxB=maxB;
 	return x;
+}
+
+void printFilter(oFilter x)
+{
+	printf ("[%d-%d, %d-%d, %d-%d]\n", x.minR, x.maxR, x.minG, x.maxG, x.minB, x.maxB);
 }
 
 oImage *makeimage(int h, int w)
@@ -107,8 +109,7 @@ void drawline(oImage *img, int fx, int fy, int tx, int ty, int c)
 	for (int y=fy; y<=ty; y++)
 		for (int x=fx; x<=tx; x++)
 			setpoint(img,x,y,c); 
-
-	return img;
+	return;
 }
 
 void drawrect(oImage *img, int fx, int fy, int w, int h, int c)
@@ -158,7 +159,7 @@ oImage *loadoImage(char *name)
 
 	oImage *n = makeimage(Height, Width);
 
-	char *p = n->data;
+	unsigned char *p = n->data;
 	
 	if (dbg) printf ("raw : %s [%d,%d]\n", name, Height, Width);
 
@@ -185,9 +186,10 @@ oImage *FloadImage(char *name, oFilter n)
 
 	oImage *im = makeimage(Height, Width);
 
-	char *p = im->data;
+	unsigned char *p = im->data;
 	
-	if (dbg) printf ("filtered : %s [%d,%d]\n", name, Height, Width);
+	if (dbg); printf ("filtered : %s [%d,%d]\n", name, Height, Width);
+	if (dbg); printFilter(n);
 
 	for (int i=0; i<Height; i++)
 	{
@@ -209,16 +211,14 @@ oImage *FloadImage(char *name, oFilter n)
 
 oImage *cmapoImage(char *name, int nw, int nh) 
 {
+	oImage *im         = makeimage(nh, nw);
+	unsigned char *p   = im->data;
 	unsigned char *img = &BMap[0];
-
-	if (dbg) printf("threshold  [%d,%d,%d]\n" ,Height, Width, Depth);
 
 	if (loadJpg(name)>0)
 		return NULL;
 
-	oImage *im = makeimage(nh, nw);
-
-	char *p = im->data;
+	if (dbg) printf("threshold  [%d,%d]\n" ,Height, Width);
 
 	for (int i=0; i<Height; i++)
 	{
@@ -456,16 +456,23 @@ center W on and assign the width and height
 	while (!converging)
 	{
 		int m = meanshift(image, noit, wx, wy, rx, ry);
-		converging=1;
+		cx=*rx;
+		cy=*ry;
 		//change wx and wy based on M0 
 		//wx=sqrt(Mo/256)
+		m=sqrt(m/256);
+		nw=wx;
 		//wy=wx * 1.2
+		nh=(float)nw*1.2;
 		//if abs(wx-oldwx)<th converging=1;
+		converging=1;
 	}
-
+	*rx=cx;
+	*ry=cy;
+	*rw=nw;
+	*rh=nh;
 	return 0;
 }
-
 
 /*
 tuple_size  i.e. 8

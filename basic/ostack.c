@@ -26,18 +26,14 @@ extern int dbg;
 
 tOBJ makestack(int n, unsigned char t)
 {
-	tOBJ r=emptyObj();
+	if (dbg) printf ("Make stack %d\n", n);
+
 	tStackp  p=(tStackp)bas_malloc(sizeof(tStack));
 	p->size=n;
 	p->noe=0;
 	p->type=t; 
 	p->objarray = bas_malloc(sizeof(tOBJ)*n);
-
-	if (dbg) printf ("Make stack %d\n", n);
-
-	r.type=STACK;
-	r.stk=(void *)p;
-	return r;
+	return emptyTPObj(STACK, p);
 }
 
 void delstack(tStackp p)

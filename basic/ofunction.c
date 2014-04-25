@@ -15,9 +15,6 @@
 #include "linux.h"
 #endif
 
-//#include "express.h"
-
-
 //cmap.c functions
 extern void showImage	(int n);
 extern void clear_colors();
@@ -36,7 +33,6 @@ extern int  matrixstore(int n, char *s);
 extern int  loadimage(char *ifile, int x, int *f);
 extern int  filterimage(char *ifile, int *data, int x, int a, int b, int c, int d, int e, int f);
 extern void get_color_region(int);
-extern int  dbg;
 extern void output_grey1(int sz);
 extern int  *frame;
 
@@ -58,7 +54,7 @@ extern long	getvar(char n);
 #include "ofunction.h"
 #include "opflow.h"
 #include "cmap.h"
-
+#include "mem.h"
 
 #include "trex.h"
 
@@ -71,145 +67,145 @@ extern long	getvar(char n);
 #define isalpha(c)  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_')
 
 tOP oplist[] = { 
-/* 0 */	{"+",     10, PLUS, 2, NULL},
-	{"-",     10, MINUS,2, NULL},
-	{"/",     20, DIVD, 2, NULL},
-	{"*",     20, MULT, 2, NULL},
-/* 5 */	{".*",    20, PROD, 2, NULL},
-	{".^",    20, POWR, 2, NULL},
-	{"&",     8,  LAND, 2, NULL},
-	{"|",     8,  LOR,  2, NULL},
-	{"MOD",   8,  LMOD, 2, NULL},
-/*10 */	{"<",     5,  LT,   2, NULL},
-	{">",     5,  GT,   2, NULL},
-	{"=",     5,  EQL,  2, NULL},
-	{"<>",    5,  NEQ,  2, NULL},
-	{"<=",    5,  LTE,  2, NULL},
-	{">=",    5,  GTE,  2, NULL},
-	{"(",     50, OBR,  1, NULL},
-	{")",     50, CBR,  1, NULL},
-	{",",     50, COMMA,1, NULL},
-	{"ABS",   40, NA,   1, oabs},  //function single arg
-	{"ACCX",  40, NA,   0, oacx},  //const
-	{"ACCY",  40, NA,   0, oacy},  //const
-	{"ACCZ",  40, NA,   0, oacz},  //const
-	{"ACOS",  40, NA,   1, oacos}, //function single arg
-	{"AND",   40, NA,   9, oand}, 
-	{"APPEND",40, NA,   9, oappend}, 
-	{"APPLY", 40, NA,   2, oapply}, //function two args   <fMatrix>
-	{"ASSN",  40, NA,   1, oasso},  //function single arg
-	{"ATAN",  40, NA,   1, oatan},  //function single arg
-	{"ATOM",  40, NA,   1, oatom},  //function single arg
-	{"BEGIN", 40, NA,   9, obegin},  
-	{"BF",    40, NA,   1, obf},
-	{"BREAK", 40, NA,   1, obreak}, 
-	{"CAR",   40, NA,   1, ocar},  //LIST BASED
-	{"CAAR",  40, NA,   1, ocaar},  //LIST BASED
-	{"CADR",  40, NA,   1, ocadr},  //LIST BASED
-	{"CADAR", 40, NA,   1, ocadar},  //LIST BASED
-	{"CDR",   40, NA,   1, ocdr},  //function single arg
-	{"CELL",  40, NA,   3, omat},   //function three args   <fMatrix, int, int>
-	{"CLEAR", 40, NA,   9, oclear},   //function three args   <fMatrix, int, int>
-	{"COL",   40, NA,   1, ocol},   //function single arg    <fMatrix>
-	{"COND",  40, NA,   9, ocond}, 
-	{"CONS",  40, NA,   2, ocons},  //function single arg
-	{"CONV",  40, NA,   2, oconv},  //function three args   <fMatrix>
-	{"COS",   40, NA,   1, ocos},   //function single arg
-	{"DEC",   40, NA,   9, odec}, 
-	{"DEF"   ,40, NA,   9, ofunc}, 
-	{"DET",   40, NA,   1, omdet},  //function <fMatrix>
-	{"DICT",  40, NA,   1, odict},  // 
-	{"DO",    40, NA,   9, obegin},  
-	{"DSIG",  40, NA,   1, odsig},  //sigmoid functon
-	{"EVAL",  40, NA,   9, oeval}, 
-	{"EXIT",  40, NA,   0, oexit},
-	{"EXP",   40, NA,   1, oexp},   //exponent
-	{"EYE",   40, NA,   2, oeye},   //create I matrix
-	{"FOR",   40, NA,   9, ofor}, 
-	{"FOREACH",40, NA,  9, ofore}, 
-	{"FORM"  ,40, NA,   9, oform}, 
-	{"FUNC"  ,40, NA,   9, ofunc},   //def function
-	{"GAUS",  40, NA,   3, ogaus},   //mean, variance, x value
-	{"GAUSK", 40, NA,   2, ogausk},  //mean, variance
-	{"GETB",  40, NA,   1, getb},    //get basic variable
-	{"GETK",  40, NA,   9, ogetk},   //get diktionary variable
-	{"GETSERVO",40, NA, 1, ogetservo}, //function single arg
-	{"H2SM",  40, NA,   1, ohsum2},  //Horizontal squared matrix sum
-	{"HSUM",  40, NA,   1, ohsum},   //Horizontal matrix sum
-	{"IF"    ,40, NA,   9, oif}, 
-	{"IMAGE", 40, NA,   9, oimg},    //image functions
-	{"INC",   40, NA,   9, oinc},    //increment variable
-	{"IMP",   40, NA,   3, oimp},    //function two args   <string>, <int>, <int>
-	{"INT",   40, NA,   1, oint},    //convert to int
-	{"INV",   40, NA,   1, ominv},   //function <fMatrix>
-	{"KEY",   40, NA,   1, okey},  
-	{"LAMBDA",40, NA,   9, olambda}, 
-	{"LAST",  40, NA,   1, olast},  //function single arg
-	{"LEN",   40, NA,   1, olen},   //function single arg
-	{"LET"   ,40, NA,   9, olet},   //set variable to formula
-	{"LFT",   40, NA,   2, olft},   //string left
-	{"LIST",  40, NA,   9, olist},   
-	{"LOAD",  40, NA,   1, oload},  //
-	{"LOG",   40, NA,   1, olog},   //function single arg
-	{"MAPCAR",40,NA,    2, omapcar},//function two args   <fMatrix>
-	{"MAT",   40, NA,   3, omatr},  // 
-	{"MAX",   40, NA,   2, omax},   //function two args
-	{"MCOND", 40, NA,   5, omcond}, //function three args   <fMatrix>
-	{"MEMBER",40, NA,   2, omemb},  //function single arg
-	{"MID",   40, NA,   3, omid},   //
-	{"NOT",   40, NA,   1, onot},   //function single arg
-	{"NTH",   40, NA,   2, onth},   //function two arg
-	{"NULL",  40, NA,   1, onull},  //function single arg
-	{"OPFLOW",40, NA,   2, OpticFlow}, 
-	{"OR",    40, NA,   9, oor}, 
-	{"PEEK",  40, NA,   9, opeek}, //peek element on stack
-	{"PIPE",  40, NA,   1, opipe}, //create a pipe (fifo stack)
-	{"PLUS",  40, NA,   9, oplus}, 
-	{"POP",   40, NA,   9, opop},  //function single arg
-	{"POSE",  40, NA,   1, opose}, //function single arg
-	{"PR",    40, NA,   9, opr}, 
-	{"PRINT", 40, NA,   9, opr},  
-	{"PSD",   40, NA,   0, opsd},   //const (distance sensor)
-	{"PUSH",  40, NA,   9, opush},  //function single arg
-	{"PUTC",  40, NA,   1, oputch}, //putchar
-	{"QT",    40, NA,   9, oquote}, //
-	{"RBM",   40, NA,   1, orbmrf}, //read motion file
-	{"READ"  ,40, NA,   9, oread},  //read terminal input
-	{"REP",   40, NA,   3, orep},   //function three args  <fMatrix, int, int>
-	{"RETURN",40, NA,   1, oreturn},//return from function
-	{"REV",   40, NA,   1, orev},   //reverse a list
-	{"REX",   40, NA,   2, orex},   //regular expression match
-	{"RGT",   40, NA,   2, orgt},   //right string
-	{"RND",   40, NA,   0, ornd},   //random number
-	{"ROW",   40, NA,   1, orow},   //number of rows
-	{"RSHP",  40, NA,   3, orshp},  //reshape matrix or image
-	{"SAVE",  40, NA,   2, osave},  //
-	{"SERVO", 40, NA,   0, oserv},  //function single arg
-	{"SET"   ,40, NA,   9, oset}, 
-	{"SETB",  40, NA,   2, setb},  //set basic variable
-	{"SETC",  40, NA,   9, osetc}, //set cell elemnt in matrix, or list
-	{"SETK",  40, NA,   9, osetk}, //set dictionary element
-	{"SETQ"  ,40, NA,   9, osetq}, //set variable
-	{"SETSERVO",40,NA,  3, osetservo}, //set servo position
-	{"SIG",  40, NA,    1, osig},  //sigmoid functon
-	{"SIGN", 40, NA,    1, osign}, //sigmoid functon
-	{"SIN",  40, NA,    1, osin},  //function single arg
-	{"SQRT", 40, NA,    1, osqrt}, //function single arg
-	{"STACK",40, NA,    1, ostack}, 
-	{"SUBS", 40, NA,    1, osubst},//function single arg
-	{"SUM",  40, NA,    1, osum},  //function <fMatrix>
-	{"TAN",  40, NA,    1, otan},  //function single arg
-	{"TRN",  40, NA,    1, otrn},  //ATRIX tRANSPOSE 
-	{"TYPE", 40, NA,    1, otype}, //object type
-	{"V2SM", 40, NA,    1, ovsum2},//function <fMatrix>
-	{"VSUM", 40, NA,    1, ovsum}, //function <fMatrix>
-	{"WAIT", 40, NA,    1, owait},  
-	{"WHILE",40, NA,    9, owhile}, 
-	{"WITH" ,40, NA,    9, owith}, 
-	{"WHOS", 40, NA,    1, owhs},
-	{"ZERB", 40, NA,    5, ozerob},  //Zero Matrix bounded
-	{"ZERD", 40, NA,    1, ozerod},  //Zero matrix diaganol
-	{"ZERO", 40, NA,    2, ozero}    //Zero Matrx x,y
+/* 0 */	{"+",     10, PLUS, 2, {NULL}},
+	{"-",     10, MINUS,2, {NULL}},
+	{"/",     20, DIVD, 2, {NULL}},
+	{"*",     20, MULT, 2, {NULL}},
+/* 5 */	{".*",    20, PROD, 2, {NULL}},
+	{".^",    20, POWR, 2, {NULL}},
+	{"&",     8,  LAND, 2, {NULL}},
+	{"|",     8,  LOR,  2, {NULL}},
+	{"MOD",   8,  LMOD, 2, {NULL}},
+/*10 */	{"<",     5,  LT,   2, {NULL}},
+	{">",     5,  GT,   2, {NULL}},
+	{"=",     5,  EQL,  2, {NULL}},
+	{"<>",    5,  NEQ,  2, {NULL}},
+	{"<=",    5,  LTE,  2, {NULL}},
+	{">=",    5,  GTE,  2, {NULL}},
+	{"(",     50, OBR,  1, {NULL}},
+	{")",     50, CBR,  1, {NULL}},
+	{",",     50, COMMA,1, {NULL}},
+	{"ABS",   40, NA,   1, {oabs}},  		//function single arg
+	{"ACCX",  40, NA,   0, {oacx}},  		//const
+	{"ACCY",  40, NA,   0, {oacy}},  		//const
+	{"ACCZ",  40, NA,   0, {oacz}},  		//const
+	{"ACOS",  40, NA,   1, {oacos}}, 		//function single arg
+	{"AND",   40, NA,   9, {.funce=oand}}, 
+	{"APPEND",40, NA,   9, {.funce=oappend}}, 
+	{"APPLY", 40, NA,   2, {.func2=oapply}}, 	//function two args   <fMatrix>
+	{"ASSN",  40, NA,   1, {oasso}},  		//function single arg
+	{"ATAN",  40, NA,   1, {oatan}},  		//function single arg
+	{"ATOM",  40, NA,   1, {oatom}},  		//function single arg
+	{"BEGIN", 40, NA,   9, {.funce=obegin}},  
+	{"BF",    40, NA,   1, {obf}},
+	{"BREAK", 40, NA,   1, {obreak}}, 
+	{"CAR",   40, NA,   1, {ocar}},  		//LIST BASED
+	{"CAAR",  40, NA,   1, {ocaar}},  		//LIST BASED
+	{"CADR",  40, NA,   1, {ocadr}},  		//LIST BASED
+	{"CADAR", 40, NA,   1, {ocadar}},  		//LIST BASED
+	{"CDR",   40, NA,   1, {ocdr}},  		//function single arg
+	{"CELL",  40, NA,   3, {.func3=omat}},   	//function three args   <fMatrix, int, int>
+	{"CLEAR", 40, NA,   9, {.funce=oclear}},   	//function three args   <fMatrix, int, int>
+	{"COL",   40, NA,   1, {ocol}},   		//function single arg    <fMatrix>
+	{"COND",  40, NA,   9, {.funce=ocond}}, 
+	{"CONS",  40, NA,   2, {.func2=ocons}},  	//function single arg
+	{"CONV",  40, NA,   2, {.func2=oconv}},  	//function three args   <fMatrix>
+	{"COS",   40, NA,   1, {ocos}},   		//function single arg
+	{"DEC",   40, NA,   9, {.funce=odec}}, 
+	{"DEF"   ,40, NA,   9, {.funce=ofunc}}, 
+	{"DET",   40, NA,   1, {omdet}},  		//function <fMatrix>
+	{"DICT",  40, NA,   1, {odict}},  		// 
+	{"DO",    40, NA,   9, {.funce=obegin}},  
+	{"DSIG",  40, NA,   1, {odsig}},  		//sigmoid functon
+	{"EVAL",  40, NA,   9, {.funce=oeval}}, 
+	{"EXIT",  40, NA,   0, {oexit}},
+	{"EXP",   40, NA,   1, {oexp}},   		//exponent
+	{"EYE",   40, NA,   2, {.func2=oeye}},   	//create I matrix
+	{"FOR",   40, NA,   9, {.funce=ofor}}, 
+	{"FOREACH",40, NA,  9, {.funce=ofore}}, 
+	{"FORM"  ,40, NA,   9, {.funce=oform}}, 
+	{"FUNC"  ,40, NA,   9, {.funce=ofunc}},   	//def function
+	{"GAUS",  40, NA,   3, {.func3=ogaus}},   	//mean, variance, x value
+	{"GAUSK", 40, NA,   2, {.func2=ogausk}},  	//mean, variance
+	{"GETB",  40, NA,   1, {getb}},    		//get basic variable
+	{"GETK",  40, NA,   9, {.funce=ogetk}},   	//get diktionary variable
+	{"GETSERVO",40, NA, 2, {.func2=ogetservo}}, 	//function 
+	{"H2SM",  40, NA,   1, {ohsum2}},  		//Horizontal squared matrix sum
+	{"HSUM",  40, NA,   1, {ohsum}},   		//Horizontal matrix sum
+	{"IF"    ,40, NA,   9, {.funce=oif}}, 
+	{"IMAGE", 40, NA,   9, {.funce=oimg}},    	//image functions
+	{"INC",   40, NA,   9, {.funce=oinc}},    	//increment variable
+	{"IMP",   40, NA,   3, {.func3=oimp}},    	//function two args   <string>, <int>, <int>
+	{"INT",   40, NA,   1, {oint}},    		//convert to int
+	{"INV",   40, NA,   1, {ominv}},   		//function <fMatrix>
+	{"KEY",   40, NA,   1, {okey}},  
+	{"LAMBDA",40, NA,   9, {.funce=olambda}}, 
+	{"LAST",  40, NA,   1, {olast}},  		//function single arg
+	{"LEN",   40, NA,   1, {olen}},   		//function single arg
+	{"LET"   ,40, NA,   9, {.funce=olet}},   	//set variable to formula
+	{"LFT",   40, NA,   2, {.func2=olft}},   	//string left
+	{"LIST",  40, NA,   9, {.funce=olist}},   
+	{"LOAD",  40, NA,   1, {oload}},  		//
+	{"LOG",   40, NA,   1, {olog}},   		//function single arg
+	{"MAPCAR",40,NA,    2, {.func2=omapcar}},	//function two args   <fMatrix>
+	{"MAT",   40, NA,   3, {.func3=omatr}},  	// 
+	{"MAX",   40, NA,   2, {.func2=omax}},   	//function two args
+	{"MCOND", 40, NA,   5, {.func5=omcond}}, 		//function three args   <fMatrix>
+	{"MEMBER",40, NA,   2, {.func2=omemb}},  	//function single arg
+	{"MID",   40, NA,   3, {.func3=omid}},   		//
+	{"NOT",   40, NA,   1, {onot}},   		//function single arg
+	{"NTH",   40, NA,   2, {.func2=onth}},   	//function two arg
+	{"NULL",  40, NA,   1, {onull}},  		//function single arg
+	{"OPFLOW",40, NA,   2, {.func2=OpticFlow}}, 
+	{"OR",    40, NA,   9, {.funce=oor}}, 
+	{"PEEK",  40, NA,   9, {.funce=opeek}}, 	//peek element on stack
+	{"PIPE",  40, NA,   1, {opipe}}, 		//create a pipe (fifo stack)
+	{"PLUS",  40, NA,   9, {.funce=oplus}}, 
+	{"POP",   40, NA,   9, {.funce=opop}}, 	 		//function single arg
+	{"POSE",  40, NA,   1, {opose}}, 		//function single arg
+	{"PR",    40, NA,   9, {.funce=opr}}, 
+	{"PRINT", 40, NA,   9, {.funce=opr}},  
+	{"PSD",   40, NA,   0, {opsd}},   		//const (distance sensor)
+	{"PUSH",  40, NA,   9, {.funce=opush}},  	//function single arg
+	{"PUTC",  40, NA,   1, {oputch}}, 		//putchar
+	{"QT",    40, NA,   9, {.funce=oquote}}, 	//
+	{"RBM",   40, NA,   1, {orbmrf}}, 		//read motion file
+	{"READ"  ,40, NA,   9, {.funce=oread}},  	//read terminal input
+	{"REP",   40, NA,   3, {.func3=orep}},   	//function three args  <fMatrix, int, int>
+	{"RETURN",40, NA,   1, {oreturn}},		//return from function
+	{"REV",   40, NA,   1, {orev}},   		//reverse a list
+	{"REX",   40, NA,   2, {.func2=orex}},   	//regular expression match
+	{"RGT",   40, NA,   2, {.func2=orgt}},   	//right string
+	{"RND",   40, NA,   0, {ornd}},   		//random number
+	{"ROW",   40, NA,   1, {orow}},   		//number of rows
+	{"RSHP",  40, NA,   3, {.func3=orshp}},  	//reshape matrix or image
+	{"SAVE",  40, NA,   2, {.func2=osave}},  	//
+	{"SERVO", 40, NA,   0, {oserv}},  		//function single arg
+	{"SET"   ,40, NA,   9, {.funce=oset}}, 
+	{"SETB",  40, NA,   2, {.func2=setb}},  	//set basic variable
+	{"SETC",  40, NA,   9, {.funce=osetc}}, 	//set cell elemnt in matrix, or list
+	{"SETK",  40, NA,   9, {.funce=osetk}}, 	//set dictionary element
+	{"SETQ"  ,40, NA,   9, {.funce=osetq}}, 	//set variable
+	{"SETSERVO",40,NA,  3, {.func3=osetservo}}, 	//set servo position
+	{"SIG",  40, NA,    1, {osig}},  		//sigmoid functon
+	{"SIGN", 40, NA,    1, {osign}}, 		//sigmoid functon
+	{"SIN",  40, NA,    1, {osin}},  		//function single arg
+	{"SQRT", 40, NA,    1, {osqrt}}, 		//function single arg
+	{"STACK",40, NA,    1, {ostack}}, 
+	{"SUBS", 40, NA,    1, {osubst}},		//function single arg
+	{"SUM",  40, NA,    1, {osum}},  		//function <fMatrix>
+	{"TAN",  40, NA,    1, {otan}},  		//function single arg
+	{"TRN",  40, NA,    1, {otrn}},  		//ATRIX tRANSPOSE 
+	{"TYPE", 40, NA,    1, {otype}}, 		//object type
+	{"V2SM", 40, NA,    1, {ovsum2}},		//function <fMatrix>
+	{"VSUM", 40, NA,    1, {ovsum}}, 		//function <fMatrix>
+	{"WAIT", 40, NA,    1, {owait}},  
+	{"WHILE",40, NA,    9, {.funce=owhile}}, 
+	{"WITH" ,40, NA,    9, {.funce=owith}}, 
+	{"WHOS", 40, NA,    1, {owhs}},
+	{"ZERB", 40, NA,    5, {.func5=ozerob}},  	//Zero Matrix bounded
+	{"ZERD", 40, NA,    1, {ozerod}},  		//Zero matrix diaganol
+	{"ZERO", 40, NA,    2, {.func2=ozero}}    	//Zero Matrx x,y
 };
 
 /**********************************************************/
@@ -2239,6 +2235,7 @@ tOBJ oload(tOBJ  n)
 	//int sz=1024;
 	//char *m=malloc(sz);
 	char m[32000];
+	char *mp = &m[0];
 	int ch;
 	if (n.type != SYM)
 	{
@@ -2264,18 +2261,20 @@ tOBJ oload(tOBJ  n)
 	if (dbg>2) printf ("Loaded [%s] %d\n", m,cn);	
 	fclose(fp);
 
-	switch (m[0])
+	switch (*mp)
 	{
 	case '[' : 
+		mp++;
 		r.type=FMAT2;
-		r.fmat2 = readmatrix(&m[1], ']');
+		r.fmat2 = readmatrix(&mp, ']');
 		break;
 	case '{' : 
+		mp++;
 		r.type=IMAG;
-		r.imgptr = readmatrix(&m[1], '}');
+		r.imgptr = readmatrix(&mp, '}');
 		break;
 	case '!' : 
-		r = eval_oxpr(&m[1]); 
+		r = eval_oxpr(mp+1); 
 		break;
 	default:
 		r = makestring(m);
@@ -2555,18 +2554,59 @@ int vj     (char *f)                        {return 0;}
 int vj_img (int w, int h, int m, unsigned char *A) {return 0;}
 #endif
 
-extern int Height;
-extern int Width;
-extern int Depth;
-extern int *frame;
-extern int loadJpg(char* Name);
-extern unsigned char*loadimage2(char *ifile);
+
+/*
+RESULT	CMD		ARGS					EXAMPLE
+======	========	====================			====================
+NIL	UNLOCK
+<I> 	F-DETECT	<s>  [ <n> ] 				IMAGE F-DETECT "img.jpg" 1
+<I>	LOAD		<n>  <s>				IMAGE LOAD     "Text" 8
+<M>	NORM		<n>  <s>				IMAGE NORM     "Text" 8
+<M>	SERIAL  	<n>  <s>				IMAGE SERIAL   "Text" 8
+<I>	FILTER		<s>  <list>				IMAGE FILTER   "test.jpg" '(1 10 10 100 100 100)
+NIL	THRESH		0 |  <n> <list> 			IMAGE THRESH 1 '(120 175 40 70 30 40)
+<n>	COLOUR		<s>  <n> <n> <n> <n> 			IMAGE COLOUR "orange" 20 30 60 2
+<I>	NEW  		<n>  <n>
+(LIst)	MOMENT		<I>
+(LIst)	MEANSHIFT	<I>  <n> <n>
+(LIst)	CAMSHIFT	<I>  <n> <n>
+<I>	MAT		<M>  <n> <n>
+<I>	RAW		<s>
+<I>	PROCESS		<s>  <n> <n>				IMAGE PROC "test.jpg" 10 10
+(List)	REGION
+NIL	SHOW		<I> | <n>
+(list)	RECOG		<I> | INIT
+NIL	TRAIN		<I>
+NIL	PGM		<I>					IMAGE PGM {I} 					
+<I>	DRAWLINE	<I>  <n> <n> <n> <n>
+<I>	DRAWRECT	<I>  <n> <n> <n> <n>
+NIL	WAIT		<n>
+*/
+
+oFilter setFilterfromList(tOBJ v)
+{		
+	oFilter x;	
+	x.minR = toint(ocar(v)); v=ocdr(v);
+	x.maxR = toint(ocar(v)); v=ocdr(v);
+	x.minG = toint(ocar(v)); v=ocdr(v);
+	x.maxG = toint(ocar(v)); v=ocdr(v);
+	x.minB = toint(ocar(v)); v=ocdr(v);
+	x.maxB = toint(ocar(v));
+	return x;
+}
+
+MyRect setRectfromList(tOBJ v)
+{		
+	MyRect x;	
+	x.x      = toint(ocar(v)); v=ocdr(v);
+	x.y      = toint(ocar(v)); v=ocdr(v);
+	x.width  = toint(ocar(v)); v=ocdr(v);
+	x.height = toint(ocar(v)); v=ocdr(v);
+	return x;
+}
 
 tOBJ oimg(tOBJ v, Dict *e)
 {
-	//!IMAGE "command" {parameters}
-	//comand : "UNLOCK" "F-DETECT" "LOAD" "FILT" "RAW" "THRESH" "COLOR" "PROC" "REG" "SHOW" "WAIT"
-	
 	tOBJ cmd = ocar(v);
 	v=ocdr(v);
 
@@ -2579,83 +2619,59 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"F-DETECT"))
 		{
-			//F-DETECT "img.jpg"
-			//F-DETECT "img.jpg" 1
-			tOBJ a=ocar(v); 
+			//IMAGE F-DETECT "img2.jpg"
+			//IMAGE F-DETECT "img.jpg" 1
+			tOBJ a=eval(ocar(v), e); 
+			tOBJ ret = emptyObj();
 			if (a.type==SYM) 
 			{
-				unsigned char *p = loadimage2(a.string);
+				oImage *im = loadoImage(a.string);
 
-				if (p==0)
+				if (im==0)
 				{
 					printf("Image load failed\n");
-					return emptyObj();
 				}
-
-				int s, m=0;
-				for (int i=0; i<Width*Height; i++) if (p[i]>m) m=p[i];
-
-				if (dbg); printf("%d,%d [%d]\n", Width, Height, m);
-
-				s = vj_img (Width, Height, m, p);
-
-				tOBJ ret=emptyObj();
-
-				if (dbg) printf("Found [%d]\n", s);
-				MyRect r;
-				for (int i=0; i<s; i++)
+				else
 				{
-					r=vj_get(i);
+					int  m   = maxval(im);
+					int  s   = vj_img (im->w, im->h, m, im->data); 
 
-					if (dbg); printf ("%d, %d, %d, %d\n", r.x,r.y,r.width,r.height);	
-		
-					tOBJ t= append(ret, makeint(r.x));
-					freeobj(&ret); ret=t;
-					t = append(ret, makeint(r.y));
-					freeobj(&ret); ret=t;
-					t = append(ret, makeint(r.width));
-					freeobj(&ret); ret=t;
-					t = append(ret, makeint(r.height));
-					freeobj(&ret); 
-					ret=t;
-				}
-
-				if (s>0 && toint(ocar(ocdr(v)))>0)
-				{
-					//char *g1 =  " .:-=+*#%@";
-					freeobj(&ret); 
-					ret=emptyTPObj(IMAG, makeimage(r.width, r.height));
-					for (int i=0; i<r.height; i++) 
+					for (int i=0; i<s; i++)
 					{
-						for (int j=0; j<r.width; j++) 
-						{
-							ret.imgptr->data[j+i*r.width]=p[(j+r.x) + (i+r.y)*Width];
-						}
+						MyRect r = vj_get(i);
+
+						if (dbg); printf ("%d, %d, %d, %d\n", r.x,r.y,r.width,r.height);	
+		
+						tOBJ t= append(ret, makeint(r.x));
+						freeobj(&ret); ret=t;
+						t = append(ret, makeint(r.y));
+						freeobj(&ret); ret=t;
+						t = append(ret, makeint(r.width));
+						freeobj(&ret); ret=t;
+						t = append(ret, makeint(r.height));
+						freeobj(&ret); 
+						ret=t;
 					}
+
+					if (s>0 && toint(ocar(ocdr(v)))>0)
+					{
+						freeobj(&ret); 
+						ret=emptyTPObj(IMAG, im);
+					}
+					else
+						delimage(im); 
 				}
-				if (p != NULL) free(p);
-				return ret;
+
 			}
+			freeobj(&a);
+			return ret;
 		}
 		else
-		if (!strcmp(cmd.string,"LOAD") || !strcmp(cmd.string,"NORM")  || !strcmp(cmd.string,"SERIAL")) //  IMAG LOAD 8 "Text"
+		if (!strcmp(cmd.string,"LOAD") || !strcmp(cmd.string,"NORM")  || !strcmp(cmd.string,"SERIAL")) 
 		{
-			int sz;
-			tOBJ a=ocar(v); v=ocdr(v);
-
-			if (a.type==FMAT2)
-			{
-				tOBJ r=emptyTPObj(IMAG, makeimage(a.fmat2->h,a.fmat2->w));
-
-				for (int i=0; i<a.fmat2->h*a.fmat2->w; i++)
-				{
-					r.imgptr->data[i]=a.fmat2->fstore[i];
-				}
-
-				return r;
-			}
-			tOBJ file=ocar(v);
-			sz=toint(a);
+			tOBJ file= eval(ocar(v),e); v=ocdr(v);
+			tOBJ a   = eval(ocar(v),e);
+			int  sz  = toint(a);
 			if (sz<1 || sz>sqrt(SCENESZ))
 			{
         			printf("error = expect int size 1-%d\n", (int)sqrt(SCENESZ)); 
@@ -2707,21 +2723,20 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"FILTER"))
 		{
-
 			char *file = "test.jpg";
-			tOBJ fn = ocar(v);
+			tOBJ fn = eval(ocar(v),e);
 			if (fn.type==SYM)
 			{
-				//!IMAGE FILTER "test.jpg" 1 10 10 100 100 100 (new)
-				v=ocdr(v);
-				int a = toint(ocar(v)); v=ocdr(v);
-				int b = toint(ocar(v)); v=ocdr(v);
-				int c = toint(ocar(v)); v=ocdr(v);
-				int d = toint(ocar(v)); v=ocdr(v);
-				int e = toint(ocar(v)); v=ocdr(v);
-				int f = toint(ocar(v));
-				tOBJ r= emptyTPObj(IMAG, FloadImage(fn.string, setFilter(a,b,c,d,e,f)));
+				//SETQ F '(1 10 10 100 100 100)
+				//IMAGE FILTER "test.jpg" F
+				tOBJ f = eval(ocar(ocdr(v)),e);
+				tOBJ r = emptyObj();
+				if (f.type==CELL)
+				{
+					r= emptyTPObj(IMAG, FloadImage(fn.string, setFilterfromList(f)));
+				}
 				freeobj(&fn);
+				freeobj(&f);
 				return r;
 			}
 			else
@@ -2745,8 +2760,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"THRESH"))
 		{
-			int cid = toint(ocar(v));  v=ocdr(v);
-
+			int cid = toint(eval(ocar(v),e));  v=ocdr(v);
 			if (cid==0)
 			{
 				//!IMAGE THRESH 0
@@ -2754,20 +2768,32 @@ tOBJ oimg(tOBJ v, Dict *e)
 				clrmap();
 			}
 			else
-			{
-				//!IMAGE THRESH CID 120 175 40 70 30 40
-				int a = toint(ocar(v)); v=ocdr(v);
-				int b = toint(ocar(v)); v=ocdr(v);
-				int c = toint(ocar(v)); v=ocdr(v);
-				int d = toint(ocar(v)); v=ocdr(v);
-				int e = toint(ocar(v)); v=ocdr(v);
-				int f = toint(ocar(v));
-				add_thresh(cid, a,b,c,d,e,f);
+			{				
+				tOBJ ft = eval(ocar(v),e);
+				if (ft.type==CELL)
+				{					
+					//!IMAGE THRESH 1 '(120 175 40 70 30 40)
+					oFilter n =setFilterfromList(ft);
+					add_thresh(cid, n.minR, n.maxR, n.minG, n.maxG, n.minB, n.maxB);
+				}
+				else
+				{
+					//!IMAGE THRESH 1 120 175 40 70 30 40
+					int a,b,c,d,e,f;
+					a = toint(ocar(v)); v=ocdr(v);
+					b = toint(ocar(v)); v=ocdr(v);
+					c = toint(ocar(v)); v=ocdr(v);
+					d = toint(ocar(v)); v=ocdr(v);
+					e = toint(ocar(v)); v=ocdr(v);
+					f = toint(ocar(v));
+					add_thresh(cid, a,b,c,d,e,f);
+				}
+				freeobj(&ft);
 			}
 			return emptyObj();
 		}
 		else
-		if (!strcmp(cmd.string,"COLOR"))  
+		if (!strcmp(cmd.string,"COLOR") || !strcmp(cmd.string,"COLOUR"))  
 		{
 			//!IMAGE COLOR "orange" 20 30 60 2
 			tOBJ r=emptyObj();
@@ -2786,8 +2812,8 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"NEW"))
 		{
-			int w=toint(ocar(v));
-			int h=toint(ocar(ocdr(v)));
+			int w=toint(eval(ocar(v),e));
+			int h=toint(eval(ocar(ocdr(v)),e));
 			tOBJ r = emptyObj();
 			oImage *p = makeimage(h,w);
 			if (p != NULL)
@@ -2820,8 +2846,8 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"MEANSHIFT"))
 		{
 			tOBJ im = eval(ocar(v),e); v=ocdr(v);
-			int  w  = toint(ocar(v));  v=ocdr(v);
-			int  h  = toint(ocar(v));
+			int  w  = toint(eval(ocar(v),e));  v=ocdr(v);
+			int  h  = toint(eval(ocar(v),e));
 			tOBJ ret=emptyObj();
 			if (im.type==IMAG)
 			{
@@ -2839,8 +2865,8 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"CAMSHIFT"))
 		{
 			tOBJ im = eval(ocar(v),e); v=ocdr(v);
-			int  w  = toint(ocar(v));  v=ocdr(v);
-			int  h  = toint(ocar(v));
+			int  w  = toint(eval(ocar(v),e));  v=ocdr(v);
+			int  h  = toint(eval(ocar(v),e));
 			tOBJ ret=emptyObj();
 			if (im.type==IMAG)
 			{
@@ -2881,7 +2907,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"RAW"))
 		{
-			tOBJ file= ocar(v);
+			tOBJ file= eval(ocar(v),e);
 			tOBJ r = emptyObj();
 			if (file.type==SYM) 
 			{
@@ -2905,7 +2931,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 			tOBJ p=eval(ocar(v),e);
 			if (p.type==SYM)
 			{
-				//IMAGE PROC "test.jpg"
+				//IMAGE PROC "test.jpg" 10 10
 				v=ocdr(v);
 				int  w  = toint(ocar(v));  v=ocdr(v);
 				int  h  = toint(ocar(v));
@@ -2931,8 +2957,8 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"SHOW"))
 		{
-			int sz=sqrt(nis);
-			tOBJ p=eval(ocar(v),e);
+			int  sz=sqrt(nis);
+			tOBJ p =eval(ocar(v),e);
 
 			if (p.type==IMAG)
 			{
@@ -2999,7 +3025,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"TRAIN"))
 		{
 			tOBJ im = eval(ocar(v),e);
-			tOBJ c = eval(ocar(ocdr(v)),e);
+			tOBJ c  = eval(ocar(ocdr(v)),e);
 			if (im.type==IMAG && c.type==INTGR)
 			{
 				training (im.imgptr, toint(c));
@@ -3031,30 +3057,27 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"DRAWLINE") || !strcmp(cmd.string,"DRAWRECT"))
 		{
 
-			tOBJ r=emptyObj();
+			tOBJ r  = emptyObj();
 			tOBJ im = eval(ocar(v),e); v=ocdr(v);
-			int a = toint(ocar(v)); v=ocdr(v);
-			int b = toint(ocar(v)); v=ocdr(v);
-			int c = toint(ocar(v)); v=ocdr(v);
-			int d = toint(ocar(v)); v=ocdr(v);		
+			tOBJ rc = eval(ocar(v),e); v=ocdr(v);
 
-			if (im.type==IMAG)
+			if (im.type==IMAG && rc.type==CELL)
 			{
-				//DRAWLINE (IMAGE NEW 10 10)  1 2 3 4   ; (a,b) -> (c,d))
-				tOBJ x=cloneObj(im);
+				//IMAGE DRAWLINE (IMAGE NEW 10 10)  '(1 2 3 4)   ; (a,b) -> (c,d))
+				r = cloneObj(im);
+     				MyRect z = setRectfromList(rc);
+
 				if (!strcmp(cmd.string,"DRAWLINE"))
 				{
-					drawline(x.imgptr, a,b,c,d, 255);
+					drawline(r.imgptr, z.x, z.y, z.width, z.height, 255);
 				}
 				else
 				{
-					drawrect(x.imgptr, a,b,c,d, 255);
+					drawrect(r.imgptr, z.x, z.y, z.width, z.height, 255);
 				}
-				return x;
 			}
-
 			freeobj(&im);
-
+			freeobj(&rc);
 			return r;
 		}
 		else

@@ -1,6 +1,7 @@
 #ifndef OIMG_H
 #define OIMG_H
 
+
 typedef struct filter {
 	int minR; 
 	int minG;
@@ -17,6 +18,7 @@ typedef struct oimage {
 } oImage;
 
 extern oFilter 	setFilter	(int minR, int maxR, int minG, int maxG, int minB, int maxB);
+extern void 	printFilter	(oFilter x);
 
 extern oImage 	*makeimage	(int h, int w);
 extern void 	delimage 	(oImage *ip);

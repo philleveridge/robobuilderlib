@@ -52,12 +52,55 @@ void delstring(char *s)
 
 tOBJ makestring(char *s)
 {
-	tOBJ r;
-	r.type=SYM;
-	r.string = newstring(s);
-	r.cnt=0;
-	r.q=0;
+	tOBJ r = emptyTPObj(SYM, newstring(s));
 	return r;
 }
 
+tOBJ makenumfstr(char *s)
+{
+	tOBJ r = emptyObj();
+	int n=0;
+	float f=0.0, rm=1.0;
+	int sgn=1;
+	int flt=0;
+	if (*s == '-') 
+		{sgn=-1; s++;}
+	else if (*s == '+') 
+		{s++;}
+
+	while (*s != '\0')
+	{
+		if (*s=='.' && flt==0) 
+		{
+			s++;
+			flt=1;
+			f=n;
+		}
+		if (*s<'0' || *s>'9') 
+			break;
+
+		if (flt==0)
+		{
+			n=n*10+*s-'0';
+		}
+		else
+		{
+			rm=rm/10;
+			f=f+rm*(*s-'0');
+		}
+		s++;
+	}
+
+	if (flt==1)
+	{
+		r.floatpoint=f*sgn;
+		r.type=FLOAT;
+	}
+	else
+	{
+		r.number=n*sgn;
+		r.type=INTGR;
+	}
+	return r;
+}
 
