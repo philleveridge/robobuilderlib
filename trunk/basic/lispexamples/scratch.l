@@ -4,14 +4,23 @@ SETC I 1 1 1
 IMAGE SHOW I 1
 IMAGE MOMENT I
 
-MAT (IMAGE FILTER "temp.jpg" 120 175 40 70 30 40) 10 10
+IMAGE SHOW (IMAGE SCALE (IMAGE FILTER "test.jpg" '(120 175 40 70 30 40)) 10 10)
+
 MAT {1 2;3 4} 2 2
 
 
 IMAGE COLOR  "orange" 20 30 60 2
-IMAGE THRESH 1 120 175 40 70 30 40
-SETQ I (IMAGE PROCESS  "temp.jpg" 10 10)
+IMAGE THRESH 1 '(120 175 40 70 30 40)
+IMAGE SHOW (IMAGE PROCESS  "test.jpg" 10 10)
 IMAGE SHOW I 1
 IMAGE SHOW 4
 IMAGE REGION
 
+
+MAT (IMAGE FILTER "test.jpg" '(120 175 40 70 30 40)) 10 10
+
+
+setq s22 (getservo 22)
+setq s24 (getservo 24)
+
+while (< (key 0) 0) (do (pr 'loop) (wait 50))

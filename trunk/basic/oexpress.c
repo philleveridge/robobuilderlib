@@ -493,7 +493,6 @@ tOBJ eval_oxpr(char *s)
 	return f;
 }
 
-extern int memlc;
 void extend(char *s)
 {
 	init_extend();
@@ -504,7 +503,7 @@ void extend(char *s)
 	freeobj(&v);
 	freeobj(&e);
 #ifdef MEM_DEBUG
-printf("-- used %d\n", memlc-tc);
+printf("-- used %d (%d) \n", memlc-tc,mem_counter);
 #endif
 }
 

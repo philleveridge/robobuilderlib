@@ -20,11 +20,8 @@
 #include "cmap.h"
 
 //jpeg.c
-extern int loadJpg     (char* Name);
-extern int Height;
-extern int Width;
+unsigned char *loadJpg2 (char* Name, int *w, int *h);
 
-extern unsigned char BMap[]; // max size
 
 oFilter setFilter(int minR, int maxR, int minG, int maxG, int minB, int maxB)
 {
@@ -56,7 +53,6 @@ oImage *makeimage(int h, int w)
 
 void delimage (oImage *ip)
 {
-
 	if (ip != NULL)
 	{
 		if (dbg) {printf ("Delete Image %d,%d\n", ip->w, ip->h);}
@@ -78,7 +74,7 @@ oImage *cloneimage(oImage *ip)
 
 oImage *subimage(oImage *ip, int x, int y, int c, int r)
 {
-printf ("subimage - %d,%d [%d,%d]\n", x,y, c,r);
+	printf ("subimage - %d,%d [%d,%d]\n", x,y, c,r);
 
 	oImage *nip = makeimage(r,c);
 
@@ -151,21 +147,19 @@ int lghtfn(int r, int g, int b)
 
 oImage *loadoImage(char *name)
 {
-	unsigned char *img = BMap;
+	int h,w;
+	unsigned char *img = loadJpg2(name,&w,&h);
+	if (img==NULL) return NULL;
 
-
-	if (loadJpg(name)>0)
-		return NULL;
-
-	oImage *n = makeimage(Height, Width);
+	oImage *n = makeimage(h, w);
 
 	unsigned char *p = n->data;
 	
-	if (dbg) printf ("raw : %s [%d,%d]\n", name, Height, Width);
+	if (dbg) printf ("raw : %s [%d,%d]\n", name, w, h);
 
-	for (int i=0; i<Height; i++)
+	for (int i=0; i<h; i++)
 	{
-		for (int j=0; j<Width; j++)
+		for (int j=0; j<w; j++)
 		{
 			unsigned char b=*img++;
 			unsigned char g=*img++;
@@ -179,21 +173,20 @@ oImage *loadoImage(char *name)
 
 oImage *FloadImage(char *name, oFilter n)
 {
-	unsigned char *img = BMap;
+	int h,w;
+	unsigned char *img = loadJpg2(name,&w,&h);
+	if (img==NULL) return NULL;
 
-	if (loadJpg(name)>0)
-		return NULL;
-
-	oImage *im = makeimage(Height, Width);
+	oImage *im = makeimage(h, w);
 
 	unsigned char *p = im->data;
 	
-	if (dbg); printf ("filtered : %s [%d,%d]\n", name, Height, Width);
+	if (dbg); printf ("filtered : %s [%d,%d]\n", name, w, h);
 	if (dbg); printFilter(n);
 
-	for (int i=0; i<Height; i++)
+	for (int i=0; i<h; i++)
 	{
-		for (int j=0; j<Width; j++)
+		for (int j=0; j<w; j++)
 		{
 			unsigned char b=*img++;
 			unsigned char g=*img++;
@@ -213,20 +206,19 @@ oImage *cmapoImage(char *name, int nw, int nh)
 {
 	oImage *im         = makeimage(nh, nw);
 	unsigned char *p   = im->data;
-	unsigned char *img = &BMap[0];
+	int h,w;
+	unsigned char *img = loadJpg2(name,&w,&h);
+	if (img==NULL) return NULL;
 
-	if (loadJpg(name)>0)
-		return NULL;
+	if (dbg) printf("threshold  [%d,%d]\n" ,w, h);
 
-	if (dbg) printf("threshold  [%d,%d]\n" ,Height, Width);
-
-	for (int i=0; i<Height; i++)
+	for (int i=0; i<h; i++)
 	{
-		int y=(i*nh)/Height;
+		int y=(i*nh)/h;
 
-		for (int j=0; j<Width; j++)
+		for (int j=0; j<w; j++)
 		{
-			int x = (j*nw)/Width;
+			int x = (j*nw)/w;
 
 			unsigned char b=*img++;
 			unsigned char g=*img++;
