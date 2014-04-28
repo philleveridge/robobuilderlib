@@ -67,8 +67,8 @@ BYTE EEMEM BASIC_PROG_SPACE	[EEPROM_MEM_SZ];  // this is where the tokenised cod
 BYTE EEMEM PERSIST		[256];                     // persistent data store
 
 extern void Perform_Action	(BYTE action);
-extern int	getHex		(int d);
-extern int	delay_ms	(int d);
+extern int  getHex		(int d);
+
 extern void SampleMotion	(unsigned char); 
 extern void sound_init		();
 extern void SendToSoundIC	(BYTE cmd) ;

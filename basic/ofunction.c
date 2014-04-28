@@ -2062,12 +2062,29 @@ tOBJ ogetservo(tOBJ a, tOBJ b)
 
 tOBJ osetservo(tOBJ s, tOBJ p, tOBJ v)
 {
-	//> !SETSERVO 12 120 4
+	// SETSERVO 12 120 4
+	// SETSERVO 12 'P
+	// SETSERVO 12 'IO 4
 	int id =toint(s);
-	int pos=toint(p);
-	int tor=toint(v);
-	if (id<0 || id>31 || pos <0 || pos>254 || tor<0 || tor>4) return emptyObj();
-	wckMovePos(id,pos,tor);
+	if (id<0 || id>31) return emptyObj();
+
+
+	if (p.type==SYM && !strcmp(p.string,"P"))
+	{
+		wckPassive(id);
+	}
+	else if (p.type==SYM && !strcmp(p.string,"IO"))
+	{
+		unsigned char io=(toint(v))&0xFF;
+		wckWriteIO(id,io);
+	}
+	else
+	{
+		int pos=toint(p);
+		int tor=toint(v);
+		if (pos>254 || tor<0 || tor>4) return emptyObj();
+		wckMovePos(id,pos,tor);
+	}
 	return makeint(response[1]);
 }
 
@@ -2814,14 +2831,38 @@ tOBJ oimg(tOBJ v, Dict *e)
 		{
 			int w=toint(eval(ocar(v),e));
 			int h=toint(eval(ocar(ocdr(v)),e));
-			tOBJ r = emptyObj();
-			oImage *p = makeimage(h,w);
-			if (p != NULL)
+			tOBJ r = emptyTPObj(IMAG, makeimage(h,w));
+			return r;
+		}
+		else
+		if (!strcmp(cmd.string,"SCALE"))
+		{
+			tOBJ img=eval(ocar(v),e); v=ocdr(v);
+			int  nw =toint(eval(ocar(v),e));
+			int  nh =toint(eval(ocar(ocdr(v)),e));
+
+			tOBJ r = emptyTPObj(IMAG, makeimage(nh,nw));
+
+			int h=img.imgptr->h;
+			int w=img.imgptr->w;
+
+			if (nh>h) nh=h;
+			if (nw>w) nw=w;
+
+			//cpy into values from img.impgptr->data
+			int x,y;
+			for (int i=0;i<h; i++)
 			{
-				r.type=IMAG;
-				r.imgptr=p;
-				clearoImage(p, 0);
+				y=(i*nh)/h;
+				for (int j=0; j<w; j++)
+				{
+					x=(j*nw)/w;
+					r.imgptr->data[x+y*nw] += img.imgptr->data[j+i*w];
+				}
 			}
+			//float mx=fmatmax(mat.fmat2);
+			//if (mx != 0.0) for (x=0; x<nh*nw;x++) mat.fmat2->fstore[x] /= mx;
+			
 			return r;
 		}
 		else
@@ -3311,7 +3352,7 @@ tOBJ omatr(tOBJ n, tOBJ v, tOBJ f)
 				}
 			}
 			float mx=fmatmax(mat.fmat2);
-			for (x=0; x<nh*nw;x++) mat.fmat2->fstore[x] /= mx;
+			if (mx != 0.0) for (x=0; x<nh*nw;x++) mat.fmat2->fstore[x] /= mx;
 			
 			return mat;
 

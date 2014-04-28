@@ -415,6 +415,8 @@ void main(int argc, char *argv[])
 	if (cl>4 && (!strcmp(argv[0]+cl-4,"Lisp")))
 		lm=1;
 
+	printf("[%s]\n", argv[0]+cl-4);
+
 	for (int i=1; i<argc; i++)
 	{
 		if (!strcmp(argv[i],"DEBUG"))
@@ -484,6 +486,7 @@ void main(int argc, char *argv[])
 	FILE *pid=fopen("PID","w");
 	fprintf(pid,"%d",n);
 	fclose(pid);
+	rmdir("/tmp/x.lock"); //remove lock if exists
 #endif
 
 #ifndef ECLIPSE

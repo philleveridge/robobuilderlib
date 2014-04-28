@@ -74,14 +74,16 @@ extern volatile WORD    gMIN_DCOUNT;
 extern volatile BYTE	MIC_SAMPLING;
 
 
-void PlayPose(int d, int s, int f, unsigned char data[], int n);
+extern void 	delay_ms(int x) ;
 
-extern int matrixload(int n, char *s);
-extern int matrixstore(int n, char *s);
+extern int 	matrixload(int n, char *s);
+extern int 	matrixstore(int n, char *s);
 
-extern int Get_AD_PSD();
-extern void  Acc_GetData ();
-extern int readservos(int n);
+extern void 	PlayPose	(int d, int s, int f, unsigned char data[], int n);
+extern int 	Get_AD_PSD();
+extern void  	Acc_GetData 	();
+extern int 	readservos	(int n);
+extern void 	wckWriteIO	(unsigned char ServoID, unsigned char IO);
 
 extern int  dbg;
 

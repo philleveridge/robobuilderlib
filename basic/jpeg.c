@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <jpeglib.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "mem.h"
 
 int Height;
@@ -28,7 +30,7 @@ unsigned char * pTest;
 
 void takelock()
 {
-	while (mkdir("/tmp/x.lock")<0)
+	while (mkdir("/tmp/x.lock", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)<0)
 	{
 		if (dbg) printf ("wait for Lock \n");
 	}
@@ -125,12 +127,16 @@ int loadJpg(char* Name)
   return 0;
 }
 
-int loadJpg2(char* Name, int *w, int *h)
+unsigned char *loadJpg2(char* Name, int *w, int *h)
 {
 	int r=loadJpg(Name);
-	*w=Width;
-	*h=Height;
-	return r;
+	if (r==0)
+	{
+		*w=Width;
+		*h=Height;
+		return &BMap[0];
+	}
+	return NULL;
 }
 
 
