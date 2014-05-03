@@ -14,17 +14,14 @@ Colour mapper
 
 extern int dbg;
 
-Run    		rle[50];
-Region 		reg[10];
-ColourState 	color[10];
+Run    		rle  [MAX_RUNS];
+Region 		reg  [MAX_REGIONS];
+ColourState 	color[MAX_COLOURS];
 int 		colourmap[3][256];
 
-int 		num_runs, 
-		num_regions, 
-		max_runs=50, 
-		max_regions=10, 
-		max_area, 
-		num_colors=0;
+int 		num_runs   =0, 
+		num_regions=0,  
+		num_colors =0;
 
 /***************************************
 
@@ -224,8 +221,15 @@ void clear_colors()
 
 int add_color(char *s, int r, int g, int b, int min)
 {
-	printf ("Add color %s %d,%d,%d >%d\n",s,r,g,b,min);
 	int i;
+	printf ("Add color %s %d,%d,%d >%d\n",s,r,g,b,min);
+
+	if (num_colors >= MAX_COLOURS)
+	{
+		printf ("too many colors\n");
+		return -1;
+	}
+
 	for (i=0;i<num_colors;i++)
 	{
 		if (strcmp(s,color[i].name)==0)
@@ -243,42 +247,6 @@ int add_color(char *s, int r, int g, int b, int min)
 	c->num=0;
 	c->list=NULL;
 	return num_colors;
-}
-
-/**************
-
-
-***************/
-
-extern unsigned char BMap[];
-extern int Height;
-extern int Width;
-extern int Depth;
-extern int *frame;
-
-void ThresholdImage(int sz, int *frame) 
-{
-     unsigned char *img = &BMap[0];
-
-     if (dbg) printf("threshold img [%d,%d,%d]\n" ,Height, Width,Depth);
-
-     for (int c=0; c<sz*sz; c++) frame[c]=0;
-
-     for (int y=0; y<Height; y++)
-     {
-	 int j=(sz*y)/Height;
-	 for (int x=0; x<Width; x++)
-	 {
-	     int i=(sz*x)/Width;
-
-	     unsigned char b=*(img++);
-	     unsigned char g=*(img++);
-	     unsigned char r=*(img++);
-
-	     int v = testmap(r, g, b);
-	     frame[j*sz + i] |= v;
-	}
-     }
 }
 
 /***************************************
@@ -697,6 +665,38 @@ Depreacted - new code moved to oImage library
 
 ***************************************/
 
+extern unsigned char BMap[];
+extern int Height;
+extern int Width;
+extern int Depth;
+extern int *frame;
+
+void ThresholdImage(int sz, int *frame) 
+{
+     unsigned char *img = &BMap[0];
+
+     if (dbg) printf("threshold img [%d,%d,%d]\n" ,Height, Width,Depth);
+
+     for (int c=0; c<sz*sz; c++) frame[c]=0;
+
+     for (int y=0; y<Height; y++)
+     {
+	 int j=(sz*y)/Height;
+	 for (int x=0; x<Width; x++)
+	 {
+	     int i=(sz*x)/Width;
+
+	     unsigned char b=*(img++);
+	     unsigned char g=*(img++);
+	     unsigned char r=*(img++);
+
+	     int v = testmap(r, g, b);
+	     frame[j*sz + i] |= v;
+	}
+     }
+}
+
+
 void output_frame(int sz)
 {
 	for (int i=0; i<sz; i++)
@@ -732,9 +732,9 @@ int processFrame(int sz, int *data)
       if (dbg) output_frame(x);
   }
 
-  num_runs = EncodeRuns(x,x,max_runs); 
+  num_runs = EncodeRuns(x,x,MAX_RUNS); 
 
-  if(num_runs == max_runs){
+  if(num_runs == MAX_RUNS){
     printf("WARNING! Exceeded maximum number of runs in EncodeRuns.\n");
   }
 
@@ -744,7 +744,7 @@ int processFrame(int sz, int *data)
 
   if (dbg) show_run(num_runs);
 
-  num_regions = ExtractRegions(max_regions, num_runs); 
+  num_regions = ExtractRegions(MAX_REGIONS, num_runs); 
 
   if (dbg) show_reg(num_regions);
 
@@ -753,12 +753,13 @@ int processFrame(int sz, int *data)
     color[i].num  = 0;
   }
 
-  if(num_regions == max_regions){
+  if(num_regions == MAX_REGIONS)
+  {
     printf("WARNING! Exceeded maximum number of regions in ExtractRegions.\n");
     return(1);
   }
 
-  max_area = SeparateRegions(&color[0], num_colors,num_regions); 
+  int max_area = SeparateRegions(&color[0], num_colors,num_regions); 
   SortRegions(&color[0], num_colors, max_area); 
 
   return(0);

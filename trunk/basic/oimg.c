@@ -237,9 +237,9 @@ oImage *processImage(char *fn, int nw, int nh)
 
 	if (dbg) imageshow(im);
 
-	int num_runs = EncodeRuns2(im->data, im->h, im->w, max_runs); 
+	int num_runs = EncodeRuns2(im->data, im->h, im->w, MAX_RUNS); 
 
-	if(num_runs == max_runs)
+	if(num_runs >= MAX_RUNS)
 	{
 		printf("WARNING! Exceeded maximum number of runs in EncodeRuns.\n");
 	}
@@ -250,16 +250,16 @@ oImage *processImage(char *fn, int nw, int nh)
 
 	if (dbg) show_run(num_runs);
 
-	int num_regions = ExtractRegions(max_regions, num_runs); 
+	int num_regions = ExtractRegions(MAX_REGIONS, num_runs); 
 
 	if (dbg) show_reg(num_regions);
 
-	if(num_regions == max_regions)
+	if(num_regions >= MAX_REGIONS)
 	{
 		printf("WARNING! Exceeded maximum number of regions in ExtractRegions.\n");
 	}
 
-	max_area = SeparateRegions(&color[0], no_colours(), num_regions); 
+	int max_area = SeparateRegions(&color[0], no_colours(), num_regions); 
 	SortRegions(&color[0], no_colours(), max_area); 
 
 	return im;
@@ -386,22 +386,24 @@ oImage *reshapeoImage(oImage *image, int nw, int nh)
 int moment(oImage *image, int *rx, int *ry)
 {
 	float n = (float)sumoImage(image);
-	int sx=0, sy=0;
+	if (n==0.0) 
+	{
+		*rx=image->w/2;
+		*ry=image->h/2;	
+		return 0;	
+	}
+	float sx=0.0, sy=0.0;
 	for (int i=0; i<image->h; i++)
 	{
 		for (int j=0; j<image->w; j++)
 		{
-			sx += j*getpoint(image,j,i);	
-			sy += i*getpoint(image,j,i);	
-			//printf ("%d %d %d %d\n", j, i, sx, sy)	;	
+			sx += (float)(j*getpoint(image,j,i));	
+			sy += (float)(i*getpoint(image,j,i));	
 		}
 	}
-	float fx= (float)sx/n;
-	float fy= (float)sy/n;
-	if (dbg) printf ("center = %d, %d -> %f, %f\n", sx, sy, fx, fy);
 
-	if (rx != NULL)  *rx=(int)(fx+0.5);
-	if (ry != NULL)  *ry=(int)(fy+0.5);
+	if (rx != NULL)  *rx=(int)(sx/n+0.5);
+	if (ry != NULL)  *ry=(int)(sy/n+0.5);
 
 	return (int)(n+0.5);	
 }

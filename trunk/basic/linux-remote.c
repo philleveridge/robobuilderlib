@@ -664,9 +664,7 @@ if (dbg) {
 
 	void initbp(int n)
 	{
-
 if (dbg) rprintf("DH mode=%d\n",dm);	
-
 		int nw = n%32;
 		for (int j=0; j<nw; j++)
 		{
