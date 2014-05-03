@@ -1,7 +1,6 @@
 #ifndef OIMG_H
 #define OIMG_H
 
-
 typedef struct filter {
 	int minR; 
 	int minG;
@@ -10,6 +9,14 @@ typedef struct filter {
 	int maxG;
 	int maxB;
 } oFilter;
+
+typedef struct
+{
+    int x;
+    int y;
+    int width;
+    int height;
+} MyRect;
 
 typedef struct oimage {
 	int w;

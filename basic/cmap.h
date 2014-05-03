@@ -61,9 +61,10 @@ extern int  		no_regions		();
 extern int 		no_colours		();
 
 extern ColourState 	color[];
-extern int 		max_area, 
-			max_regions, 
-			max_runs;
+
+#define MAX_RUNS    50
+#define MAX_REGIONS 10
+#define MAX_COLOURS 10
 
 
 

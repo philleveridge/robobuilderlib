@@ -47,6 +47,7 @@ extern long	getvar(char n);
 #include "ostring.h"
 #include "odict.h"
 #include "ostack.h"
+#include "oimg.h"
 #include "fmatrix.h"
 #include "rbmread.h"
 #include "oexpress.h"
@@ -2414,8 +2415,8 @@ tOBJ oreturn  (tOBJ  o)
 
 tOBJ ofore   (tOBJ  o, Dict *e)
 {
-	//!FOREACH X '{1 2 3} {PR X}
-	//!FOREACH X [1 2 3]  {PR X}
+	//!FOREACH X '(1 2 3)  (PR X)
+	//!FOREACH X  [1 2 3]  (PR X)
 	tOBJ r=emptyObj();
 
 	tOBJ ind =ocar(o);
@@ -2458,7 +2459,6 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 	if (list.type == CELL)
 	{
 		//FOREACH X '( (A 1) (B 2) (C 3)) (PR (CAR X))
-
 		brkflg=0;			
 		do {
 			tOBJ value=ocar(list);
@@ -2555,14 +2555,6 @@ extern int imready;
 extern int pbrunning;
 
 #ifdef VJ
-typedef struct
-{
-    int x;
-    int y;
-    int width;
-    int height;
-}
-MyRect;
 extern int    vj     (char *f) ;
 extern int    vj_img (int w, int h, int m, unsigned char *A);
 extern MyRect vj_get (int i) ;
@@ -2575,28 +2567,30 @@ int vj_img (int w, int h, int m, unsigned char *A) {return 0;}
 /*
 RESULT	CMD		ARGS					EXAMPLE
 ======	========	====================			====================
-NIL	UNLOCK
-<I> 	F-DETECT	<s>  [ <n> ] 				IMAGE F-DETECT "img.jpg" 1
-<I>	LOAD		<n>  <s>				IMAGE LOAD     "Text" 8
-<M>	NORM		<n>  <s>				IMAGE NORM     "Text" 8
-<M>	SERIAL  	<n>  <s>				IMAGE SERIAL   "Text" 8
-<I>	FILTER		<s>  <list>				IMAGE FILTER   "test.jpg" '(1 10 10 100 100 100)
-NIL	THRESH		0 |  <n> <list> 			IMAGE THRESH 1 '(120 175 40 70 30 40)
-<n>	COLOUR		<s>  <n> <n> <n> <n> 			IMAGE COLOUR "orange" 20 30 60 2
-<I>	NEW  		<n>  <n>
-(LIst)	MOMENT		<I>
-(LIst)	MEANSHIFT	<I>  <n> <n>
 (LIst)	CAMSHIFT	<I>  <n> <n>
-<I>	MAT		<M>  <n> <n>
-<I>	RAW		<s>
-<I>	PROCESS		<s>  <n> <n>				IMAGE PROC "test.jpg" 10 10
-(List)	REGION
-NIL	SHOW		<I> | <n>
-(list)	RECOG		<I> | INIT
-NIL	TRAIN		<I>
-NIL	PGM		<I>					IMAGE PGM {I} 					
+<n>	COLOUR		<s>  <n> <n> <n> <n> 			IMAGE COLOUR "orange" 20 30 60 2
 <I>	DRAWLINE	<I>  <n> <n> <n> <n>
 <I>	DRAWRECT	<I>  <n> <n> <n> <n>
+<I>	FILTER		<s>  <list>				IMAGE FILTER   "test.jpg" '(1 10 10 100 100 100)
+<I> 	F-DETECT	<s>  [ <n> ] 				IMAGE F-DETECT "img.jpg" 1
+<I>	LOAD		<n>  <s>				IMAGE LOAD     "Text" 8
+<I>	NEW  		<n>  <n>
+<I>	MAT		<M>  					IMAGE MAT [1 2; 3 4]
+(LIst)	MEANSHIFT	<I>  <n> <n>
+(LIst)	MOMENT		<I>
+<M>	NORM		<n>  <s>				IMAGE NORM     "Text" 8
+NIL	PGM		<I> <s>					IMAGE PGM {I}  test.pgm"				
+<I>	PROCESS		<s>  <n> <n>				IMAGE PROC "test.jpg" 10 10
+<I>	RAW		<s>
+(list)	RECOG		<I> | INIT
+(List)	REGION
+<I>	SCALE		<I> <n> <n>		
+<I>	SUBSET		<I> <list>				IMAGE SUBSET IM '(X Y W H)
+<M>	SERIAL  	<n>  <s>				IMAGE SERIAL   "Text" 8
+NIL	SHOW		<I> | <n>
+NIL	THRESH		0 |  <n> <list> 			IMAGE THRESH 1 '(120 175 40 70 30 40)
+NIL	TRAIN		<I>
+NIL	UNLOCK
 NIL	WAIT		<n>
 */
 
@@ -2859,10 +2853,23 @@ tOBJ oimg(tOBJ v, Dict *e)
 					x=(j*nw)/w;
 					r.imgptr->data[x+y*nw] += img.imgptr->data[j+i*w];
 				}
+			}			
+			return r;
+		}
+		else
+		if (!strcmp(cmd.string,"SUBSET"))
+		{
+			//IMAGE SUBSET IM '(X Y H W)
+			tOBJ img=eval(ocar(v),e); v=ocdr(v);
+			tOBJ val=eval(ocar(v),e); 
+			tOBJ r=emptyObj();
+			if (img.type==IMAG && val.type==CELL)
+			{
+				MyRect t = setRectfromList(val);
+				r = emptyTPObj(IMAG, subimage(img.imgptr,t.x,t.y,t.width,t.height));
 			}
-			//float mx=fmatmax(mat.fmat2);
-			//if (mx != 0.0) for (x=0; x<nh*nw;x++) mat.fmat2->fstore[x] /= mx;
-			
+			freeobj(&img);
+			freeobj(&val);		
 			return r;
 		}
 		else
@@ -2964,6 +2971,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 				//backward compatibility
 				r = makeint(loadJpg("test.jpg"));		
 			}
+			freeobj(&file);
 			return r;
 		}
 		else
@@ -3026,8 +3034,6 @@ tOBJ oimg(tOBJ v, Dict *e)
 			frame=&scene[0];
 
 			switch (n) {
-			case 0: 
-				break;
 			case 1: 
 			case 2:
 			case 3:
@@ -3043,8 +3049,8 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"RECOG"))
 		{
-			tOBJ im = eval(ocar(v),e);
-			tOBJ ret=emptyObj();
+			tOBJ im  = eval(ocar(v),e);
+			tOBJ ret = emptyObj();
 			int r=0;
 			if (im.type==IMAG)
 			{
@@ -3625,7 +3631,7 @@ tOBJ oform(tOBJ o, Dict *e)
 
 tOBJ ofunc(tOBJ o, Dict *e) 
 {
-	//!FUNC ABC {X Y} {PLUS X Y}
+	//!FUNC ABC (X Y) (PLUS X Y)
 	tOBJ fn = ocar(o); o=ocdr(o);
 	o.type  = LAMBDA;
 	set(e, fn.string, o);
@@ -3635,7 +3641,7 @@ tOBJ ofunc(tOBJ o, Dict *e)
 
 tOBJ olambda(tOBJ o, Dict *e) 
 {
-	//!LAMBA {X Y} {PLUS X Y}
+	//!LAMBA (X Y) (PLUS X Y)
 	o.type  = LAMBDA;
 	return o;
 }
