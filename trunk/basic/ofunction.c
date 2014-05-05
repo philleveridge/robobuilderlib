@@ -2269,9 +2269,18 @@ tOBJ oload(tOBJ  n)
 	
 	while ( (ch=fgetc(fp))>=0)
 	{
-		if (ch==10 || ch==13) {cf=0; lc=0; continue;   }
-		if (lc==0 && ch==';') {cf=1; continue;}
-		if (cf==1) continue;
+
+		if (ch==10 || ch==13) 	{cf=0; lc=0; continue;   }
+		if (lc==0 && ch==';') 	{cf=1; continue;}
+		if (cf==1) 		continue;
+		if (ch=='`') {
+			ch=fgetc(fp);
+			if (ch>=100) 	{ m[cn++] = (ch/100) +'0'; }
+			ch=ch%100;
+			if (ch>=10) 	{ m[cn++] = (ch/10) +'0'; }
+			m[cn++] = (ch%10) +'0';
+			continue;
+		}
 		m[cn++]=ch;
 		lc++;
 	}
@@ -2615,14 +2624,22 @@ MyRect setRectfromList(tOBJ v)
 	x.height = toint(ocar(v)); v=ocdr(v);
 	return x;
 }
+			
+extern void rellock();
 
 tOBJ oimg(tOBJ v, Dict *e)
 {
 	tOBJ cmd = ocar(v);
 	v=ocdr(v);
 
+
+
 	if (cmd.type == SYM)
 	{
+		printf ("%s\n", cmd.string);
+		upperstring(cmd);
+		printf ("%s\n", cmd.string);
+
 		if (!strcmp(cmd.string,"UNLOCK"))
 		{
 			rellock();
@@ -2837,22 +2854,33 @@ tOBJ oimg(tOBJ v, Dict *e)
 
 			tOBJ r = emptyTPObj(IMAG, makeimage(nh,nw));
 
-			int h=img.imgptr->h;
-			int w=img.imgptr->w;
-
-			if (nh>h) nh=h;
-			if (nw>w) nw=w;
-
-			//cpy into values from img.impgptr->data
-			int x,y;
-			for (int i=0;i<h; i++)
+			if (r.type==IMAG)
 			{
-				y=(i*nh)/h;
-				for (int j=0; j<w; j++)
+				int h=img.imgptr->h;
+				int w=img.imgptr->w;
+
+				if (nh>h) nh=h;
+				if (nw>w) nw=w;
+
+				tOBJ mat  = emptyTPObj(FMAT2, newmatrix(nw,nh));
+
+				//cpy into mat values from img.impgptr->data
+				int x,y;
+				for (int i=0;i<h; i++)
 				{
-					x=(j*nw)/w;
-					r.imgptr->data[x+y*nw] += img.imgptr->data[j+i*w];
+					y=(i*nh)/h;
+					for (int j=0; j<w; j++)
+					{
+						x=(j*nw)/w;
+						mat.fmat2->fstore[x+y*nw] += img.imgptr->data[j+i*w];
+					}
 				}
+				float mx=fmatmax(mat.fmat2);
+
+				if (mx != 0.0) for (x=0; x<nh*nw;x++) r.imgptr->data[x] = abs(256*(mat.fmat2->fstore[x] / mx))%256;
+
+				freeobj(&mat);
+				freeobj(&img);
 			}			
 			return r;
 		}
@@ -3524,6 +3552,8 @@ tOBJ odec(tOBJ o, Dict *e)
 	dict_update(e, var.string, expr);
 	return expr;
 }
+
+extern int readLine(char *line);
 
 tOBJ oread(tOBJ o, Dict *e) 
 {

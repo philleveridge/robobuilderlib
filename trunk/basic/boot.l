@@ -9,6 +9,7 @@
 ;
 
 (FUNC T   () (LOAD "lispexamples/turtle.l"))
+(FUNC PT  () (LOAD "lispexamples/pt.l"))
 (FUNC BW  () (LOAD "lispexamples/bw.l"))
 (FUNC QN  () (LOAD "lispexamples/queens.l"))
 (FUNC DR  () (LOAD "lispexamples/doctor.l"))

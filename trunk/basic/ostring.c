@@ -56,6 +56,18 @@ tOBJ makestring(char *s)
 	return r;
 }
 
+void upperstring(tOBJ r)
+{
+	if (r.type==SYM)
+	{
+		char *p=r.string;
+		if (p != NULL)
+		{
+			while (*p !=0) {if (*p>='a' && *p<='z') *p=*p-'a'+'A'; p++;};
+		}
+	}	
+}
+
 tOBJ makenumfstr(char *s)
 {
 	tOBJ r = emptyObj();

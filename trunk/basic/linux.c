@@ -394,12 +394,13 @@ void imageready()
 
 extern char device[];
 extern int  readflg;
-extern void init_extend();
+extern void init_extend(char *);
 
 void main(int argc, char *argv[])
 {
 	int lf=0,rf=0,cf=0;
 	int sf=0,lm=0;
+	char *fn=NULL;
 
 	PORTA=3;
 
@@ -447,7 +448,11 @@ void main(int argc, char *argv[])
 			setdh(1);
 
 		if (!strcmp(argv[i],"LM"))
+		{
 			lm=1;
+			if (i+1<argc) { fn=argv[++i]; }
+			continue;
+		}
 
 		if (!strcmp(argv[i],"STAND"))
 		{
@@ -502,9 +507,8 @@ void main(int argc, char *argv[])
 	initfirmware();
 	basic_zero();
 
-	if (lm) {
-		
-		init_extend();
+	if (lm) {		
+		init_extend(fn);
 
 		readflg=0;
 		repl();
@@ -518,6 +522,7 @@ void main(int argc, char *argv[])
 		basic_run(0);
 	else
 		basic();
+
 
 
 #ifndef ECLIPSE
