@@ -1,11 +1,10 @@
 !do
-(DEF DX (X W S) (- (/ (* S X) W) (/ S 2)))
+(DEF DX (X W S) (- (/ (* S X) (- W 1)) (/ S 2)))
 
 (DEF PT ()
 (setq s22 (getservo 22))
 (setq s24 (getservo 24))
-(setq vm 1)
-(setq loop 1)
+(setq vm 1 loop 1)
 (while  loop
   (setq k (key))
   (if (= k `q) (setq loop 0))
