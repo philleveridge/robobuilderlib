@@ -2277,7 +2277,7 @@ tOBJ oload(tOBJ  n)
 			ch=fgetc(fp);
 			if (ch>=100) 	{ m[cn++] = (ch/100) +'0'; }
 			ch=ch%100;
-			if (ch>=10) 	{ m[cn++] = (ch/10) +'0'; }
+			m[cn++] = (ch/10) +'0';
 			m[cn++] = (ch%10) +'0';
 			continue;
 		}
@@ -2763,7 +2763,7 @@ tOBJ oimg(tOBJ v, Dict *e)
 				freeobj(&f);
 				return r;
 			}
-			else
+			else if (fn.type==INTGR)
 			{
 				//!IMAGE FILTER 4 1 10 10 100 100 100 (depracted)
 				int sz= toint(ocar(v)); v=ocdr(v);
@@ -2780,6 +2780,8 @@ tOBJ oimg(tOBJ v, Dict *e)
 					nis=0;
 				return makeint(nis);
 			}
+			else
+				return emptyObj();
 		}
 		else
 		if (!strcmp(cmd.string,"THRESH"))
