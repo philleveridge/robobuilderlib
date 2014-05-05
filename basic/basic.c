@@ -327,7 +327,7 @@ int readLine(char *line)
 			rprintfChar(ch);
 			if (ch>=100) { *line++ = (ch/100) +'0'; }
 			ch=ch%100;
-			if (ch>=10) {  *line++ = (ch/10) +'0'; }
+			*line++ = (ch/10) +'0'; 
 			*line++ = (ch%10) +'0';
 			lf=0;
 			continue;
