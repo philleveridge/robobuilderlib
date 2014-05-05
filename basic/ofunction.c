@@ -2632,13 +2632,9 @@ tOBJ oimg(tOBJ v, Dict *e)
 	tOBJ cmd = ocar(v);
 	v=ocdr(v);
 
-
-
 	if (cmd.type == SYM)
 	{
-		printf ("%s\n", cmd.string);
 		upperstring(cmd);
-		printf ("%s\n", cmd.string);
 
 		if (!strcmp(cmd.string,"UNLOCK"))
 		{
