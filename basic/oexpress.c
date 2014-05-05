@@ -460,10 +460,11 @@ static int  intf=1;
 tOBJ eval_oxpr(char *s);
 void extend(char *s);
 
-void init_extend()
+void init_extend(char *fn)
 {
 	if (intf)
 	{
+		if (fn==NULL) fn="boot.l";
 		intf=0; 
 		env = makedict(200);
 		loadop(env.dict);
@@ -476,9 +477,9 @@ void init_extend()
 
 			extend("FUNC FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
 
-			if (access("boot.l",F_OK) != -1)
+			if (access(fn,F_OK) != -1)
 			{
-				oload(makestring("boot.l"));
+				oload(makestring(fn));
 			}
 		}
 	}
@@ -486,7 +487,7 @@ void init_extend()
 
 tOBJ eval_oxpr(char *s)
 {
-	init_extend();
+	init_extend(NULL);
 	tOBJ e=parse(s);
 	tOBJ f = eval(e, env.dict);
 	freeobj(&e);
@@ -495,7 +496,7 @@ tOBJ eval_oxpr(char *s)
 
 void extend(char *s)
 {
-	init_extend();
+	init_extend(NULL);
 	int tc=memlc;
 	tOBJ e=parse(s);
 	tOBJ v = eval(e, env.dict);
@@ -531,7 +532,7 @@ void repl()
 	if (dbg) { testme(0); 	sigcatch();  }
 	//if (dbg) { testme(17); 	sigcatch();  }
 
-	init_extend();
+	init_extend(NULL);
 	while (1)
 	{
 		printf("!");
