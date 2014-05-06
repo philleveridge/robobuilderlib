@@ -3585,13 +3585,16 @@ tOBJ osetx(tOBJ o, Dict *e, int f)
 		else
 		if (var.type==CELL && exp.type==CELL)
 		{
+			tOBJ v1, v2, t=exp;
 			while (var.type != EMPTY)
 			{
-				tOBJ v1 = ocar(var); var=ocdr(var);
-				tOBJ v2 = ocar(exp); exp=ocdr(exp);
-	 			if (v1.type==SYM)
+				v1 = ocar(var); var=ocdr(var);
+				v2 = ocar(exp); exp=ocdr(exp); //leak
+				if (v1.type==SYM)
 					dict_update(e, v1.string, v2);
 			}
+			freeobj(&t);
+			return emptyObj();
 		}
 	}
 	return exp;
