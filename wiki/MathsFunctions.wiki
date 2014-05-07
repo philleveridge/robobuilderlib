@@ -9,8 +9,8 @@ Values will be +/- 32768
 = Details =
 
 {{{
-$SIN(X) - Sine of Angle X
-$COS(X) - Cosine of angle X
+SIN(X) - Sine of Angle X
+COS(X) - Cosine of angle X
 }}}
 
 For a example of use see -[Walking#Generating_a_walking_gait generating a walking gate] or [Kinematics] example
