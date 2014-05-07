@@ -97,36 +97,36 @@ Functions an variables can be used in an expression, for example LET A=$X would 
 
 ||Specials ($)||Description||
 ||$X, $Y, $Z   ||accelerometer values||
-||$IR          ||wait for IR remote and get button pressed LET A=$IR||
-||$KBD         ||wait for keyboard press||
-||$KIR         ||Scan keyboard and IR port return immediate -1 if nothing pressed||
-||$PSD         ||PSD sensor value||
-||$VOLT        ||Battery voltage||
-||$TICK        ||Number of tenths of a second||
+||IR          ||wait for IR remote and get button pressed LET A=$IR||
+||KBD         ||wait for keyboard press||
+||KIR         ||Scan keyboard and IR port return immediate -1 if nothing pressed||
+||PSD         ||PSD sensor value||
+||VOLT        ||Battery voltage||
+||TICK        ||Number of tenths of a second||
 ||$PORT        ||Read Bit 6 of Port A .. LET A=$PORT:A:6 ||
-||$RND         ||Random numbers - different number each time called ||
-||$RND(x,y,z)  ||List of x Random numbers - values between y and z ||
-||$MIC         ||Microphone level||
-||$SERVO(id)   ||position of servo id, i.e.  LET A=$SERVO(5) get Servo ID 5 position ||
-||$ABS(x)      ||Absolute value of x returned||
-||$ROM(x)      ||Contents of ROM location x, i.e. LET A=$ROM(10)||
-||$MAPIR(x)    ||Maps value from IR to built in action code||
-||$FIND(x, @A) ||Look for item less than or equal to X and return index||
-||$CVB2I(x)    ||Converts byte to int, i.e. 4 -> 4 and 254 -> -2||
-||$MAX(@n)||return maximum element value in array n ||
-||$MIN(@n)|| return minimum element value in array n    ||
-||$NORM||   ||
-||$HAM(@b,@b|| Hamming distance between too list (i.e. no. of exact matches)  ||
-||$SUM(@n)|| return sum of element values in array n    ||
-||$SIN(x)||Sine of X where X 0-255 and return is +/-32K||
-||$COS(x)||Cosine of X where X 0-255 and return is +/-32K||
-||$RANGE(a,b,c)||return b < a < c ||
-||$STAND(x)||return an array of positions related to stand  ||
-||$ZEROS(x)||return an array of zeros  ||
-||$SHUF(x)||create a list of shuffled numbers from 1-X ||
-||$MAP(@x,@y)||Map array X using array Y ||
-||$SCALE(@A,x[,y,z]||Scale array A by X or Threshold A where A(i)>=x y else z||
-||$REV(@x)||return a list of elements from @X in reverse ||
-||$SORT(@x)||return a list of sorted numbers from list lowest first ||
-||$INPUT||wait for input and return an integer number (keyboard or IR) ||
+||RND         ||Random numbers - different number each time called ||
+||RND(x,y,z)  ||List of x Random numbers - values between y and z ||
+||MIC         ||Microphone level||
+||SERVO(id)   ||position of servo id, i.e.  LET A=$SERVO(5) get Servo ID 5 position ||
+||ABS(x)      ||Absolute value of x returned||
+||ROM(x)      ||Contents of ROM location x, i.e. LET A=$ROM(10)||
+||MAPIR(x)    ||Maps value from IR to built in action code||
+||FIND(x, @A) ||Look for item less than or equal to X and return index||
+||CVB2I(x)    ||Converts byte to int, i.e. 4 -> 4 and 254 -> -2||
+||MAX(@n)||return maximum element value in array n ||
+||MIN(@n)|| return minimum element value in array n    ||
+||NORM||   ||
+||HAM(@b,@b|| Hamming distance between too list (i.e. no. of exact matches)  ||
+||SUM(@n)|| return sum of element values in array n    ||
+||SIN(x)||Sine of X where X 0-255 and return is +/-32K||
+||COS(x)||Cosine of X where X 0-255 and return is +/-32K||
+||RANGE(a,b,c)||return b < a < c ||
+||STAND(x)||return an array of positions related to stand  ||
+||ZEROS(x)||return an array of zeros  ||
+||SHUF(x)||create a list of shuffled numbers from 1-X ||
+||MAP(@x,@y)||Map array X using array Y ||
+||SCALE(@A,x[,y,z]||Scale array A by X or Threshold A where A(i)>=x y else z||
+||REV(@x)||return a list of elements from @X in reverse ||
+||SORT(@x)||return a list of sorted numbers from list lowest first ||
+||INPUT||wait for input and return an integer number (keyboard or IR) ||
 }}}
