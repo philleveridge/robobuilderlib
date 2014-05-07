@@ -1134,8 +1134,15 @@ void basic_list()
 		if (line.lineno==breakp) rprintfChar('*');
 	
 		rprintf ("%d ", line.lineno); 
-		rprintfProgStr (tokens[line.token]);
-		rprintf (" "); 
+		if (line.token==MATRIX && !strncmp(line.text,"DIM",3))
+		{
+			//rprintfStr (line.text);
+		}
+		else
+		{
+			rprintfProgStr (tokens[line.token]);
+			rprintf (" "); 
+		}
 		
 		if (line.token==LET || line.token==GET || line.token==FOR || line.token==LIST || line.token==DATA)
 		{
@@ -1212,10 +1219,6 @@ void basic_list()
 				rprintf (" ELSE ");
 				rprintfStr (p_else+1);
 			}
-		}
-		else if (line.token==MATRIX && !strncmp(line.text,"DIM",3))
-		{
-			rprintfStr (line.text);
 		}
 		else if (line.token==ON)
 		{

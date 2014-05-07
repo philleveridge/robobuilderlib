@@ -23,8 +23,8 @@
   (if vm (IMAGE SHOW IS))
 
   (setq t (IMAGE MOMENT IS))
-  (setq nx (dx (car t)  32 4))
-  (setq ny (dx (cadr t) 32 5))
+  (setq nx (dx (car t)  32 12))
+  (setq ny (dx (cadr t) 32 -12))
   (pr x "," y ": " nx "," ny) 
   
   (setq s22 (+ s22 nx))
@@ -32,7 +32,7 @@
   
   (setservo 22 s22)
   (setservo 24 s24)
-  (WAIT 500)
+  (WAIT 200)
 )
 (setservo 22 'P)
 (setservo 24 'P)
