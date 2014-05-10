@@ -154,6 +154,7 @@ tOP oplist[] = {
 	{"MCOND", 40, NA,   5, {.func5=omcond}}, 		//function three args   <fMatrix>
 	{"MEMBER",40, NA,   2, {.func2=omemb}},  	//function single arg
 	{"MID",   40, NA,   3, {.func3=omid}},   		//
+	{"MIN",   40, NA,   2, {.func2=omin}},   	//function two args
 	{"NOT",   40, NA,   1, {onot}},   		//function single arg
 	{"NTH",   40, NA,   2, {.func2=onth}},   	//function two arg
 	{"NULL",  40, NA,   1, {onull}},  		//function single arg
@@ -371,6 +372,19 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 	int i;
 
 	if (dbg>1) {printf("math op : %d %d %d\n", o1.type, op, o2.type); } //debug info
+
+	if (o1.type==EMPTY) return r;
+
+	if (o1.type==CELL && o2.type==CELL) 
+	{
+		// + '(1 2 3) '(3 4 5)
+		tOBJ a = omath(ocar(o1), ocar(o2), op);
+		tOBJ b = omath(ocdr(o1), ocdr(o2), op);
+		r = ocons(a, b);
+		freeobj(&a);
+		freeobj(&b);
+		return r;
+	}
 
 	if (op == PLUS && o1.type==CELL)
 	{
@@ -749,9 +763,12 @@ tOBJ oexp(tOBJ a)
 
 tOBJ osqrt(tOBJ a)
 {
-	tOBJ r;
-	r.type=FLOAT;
-	r.floatpoint=sqrt(tofloat(a));
+	tOBJ r=emptyObj();
+	if (a.type==FLOAT || a.type==INTGR)
+	{
+		r.type=FLOAT;
+		r.floatpoint=sqrt(tofloat(a));
+	}
 	return r;
 }
 
@@ -807,8 +824,105 @@ tOBJ omax(tOBJ a, tOBJ b)
 		r.number=maxval(a.imgptr);
 	}
 
+	if (a.type==CELL)
+	{ 
+		tOBJ v=ocar(a);	
+
+		if (v.type==INTGR)
+		{
+			int n=toint(v);
+
+			while (a.type != EMPTY)
+			{
+				if (toint(v) >n) n=toint(v);
+				a = ocdr(a);
+				v=ocar(a);
+			}
+			r.type=INTGR;
+			r.number =n ;
+		}
+		if (v.type==FLOAT)
+		{
+			float n=0;
+
+			while (a.type != EMPTY)
+			{
+				if (tofloat(v) >n) n=tofloat(v);
+				a = ocdr(a);
+				v=ocar(a);
+			}
+			r.type=FLOAT;
+			r.floatpoint =n ;
+		}
+	}
+
 	return r;
 }
+
+tOBJ omin(tOBJ a, tOBJ b)
+{
+	int i;
+	tOBJ r= emptyObj();
+
+	if (r.type==INTGR && a.type==INTGR)
+	{
+		if (a.number<b.number) r=a; else r=b;
+	}
+		
+	if (r.type==FLOAT && a.type==FLOAT)
+	{
+		if (a.floatpoint<b.floatpoint) r=a; else r=b;
+	}
+
+	if (a.type==FMAT2)
+	{
+		r.type=FLOAT;
+		r.floatpoint=a.fmat2->fstore[0];
+		for (i=1; i<a.fmat2->h*a.fmat2->w; i++)
+			if (a.fmat2->fstore[i]<r.floatpoint) r.floatpoint= a.fmat2->fstore[i];
+	}
+
+	if (a.type==IMAG)
+	{
+		r.type=INTGR;
+		r.number=minval(a.imgptr);
+	}
+
+	if (a.type==CELL)
+	{ 
+		tOBJ v=ocar(a);	
+
+		if (v.type==INTGR)
+		{
+			int n=toint(v);
+
+			while (a.type != EMPTY)
+			{
+				if (toint(v) <n) n=toint(v);
+				a = ocdr(a);
+				v=ocar(a);
+			}
+			r.type=INTGR;
+			r.number =n ;
+		}
+		if (v.type==FLOAT)
+		{
+			float n=0;
+
+			while (a.type != EMPTY)
+			{
+				if (tofloat(v) <n) n=tofloat(v);
+				a = ocdr(a);
+				v=ocar(a);
+			}
+			r.type=FLOAT;
+			r.floatpoint =n ;
+		}
+	}
+
+	return r;
+}
+
 
 /**********************************************************/
 /*  matrix function (loating point)                       */
@@ -987,6 +1101,37 @@ tOBJ osum(tOBJ a)
 	{ 
 		r.type=INTGR;
 		r.number = sumoImage(a.imgptr);
+	}
+	if (a.type==CELL)
+	{ 
+		tOBJ v=ocar(a);	
+
+		if (v.type==INTGR)
+		{
+			int n=0;
+
+			while (a.type != EMPTY)
+			{
+				n += toint(v);
+				a = ocdr(a);
+				v=ocar(a);
+			}
+			r.type=INTGR;
+			r.number =n ;
+		}
+		if (v.type==FLOAT)
+		{
+			float n=0;
+
+			while (a.type != EMPTY)
+			{
+				n += tofloat(v);
+				a = ocdr(a);
+				v=ocar(a);
+			}
+			r.type=FLOAT;
+			r.floatpoint =n ;
+		}
 	}
 	return r;
 }
