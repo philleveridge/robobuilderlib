@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <ctype.h>
 #include "win.h"
 #endif
 
@@ -12,6 +13,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 #include "linux.h"
 #endif
 
@@ -89,12 +91,12 @@ tOBJ makedict2(Dict *e, int n)
 	return r;
 }
 
-
-char *covertToUpper(char *str){
+ 
+char *covertToUpper(char *str)
+{
     char *newstr, *p;
     p = (newstr = strdup(str));
-    while(*p++=toupper(*p));
-
+    while(*p!=0) {*p=toupper(*p); p++;}
     return newstr;
 }
 

@@ -103,6 +103,7 @@ extern tOBJ omcond	(tOBJ  r, tOBJ, tOBJ, tOBJ, tOBJ);
 extern tOBJ omdet	(tOBJ  r); 
 extern tOBJ omemb	(tOBJ  r, tOBJ);
 extern tOBJ omid	(tOBJ  r, tOBJ, tOBJ); 
+extern tOBJ omin	(tOBJ  r, tOBJ); 
 extern tOBJ ominv	(tOBJ  r);
 extern tOBJ onot	(tOBJ  r);
 extern tOBJ onth	(tOBJ  r, tOBJ);
