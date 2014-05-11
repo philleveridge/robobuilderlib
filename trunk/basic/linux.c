@@ -413,7 +413,7 @@ void main(int argc, char *argv[])
 
 	int cl=strlen(argv[0]);
 
-	if (cl>4 && (!strcmp(argv[0]+cl-4,"Lisp")))
+	if (cl>=4 && (!strcasecmp(argv[0]+cl-4,"Lisp")))
 		lm=1;
 
 	printf("[%s]\n", argv[0]+cl-4);

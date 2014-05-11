@@ -602,6 +602,15 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] + o2.imgptr->data[j + i*o2.imgptr->w])%256;	
 	}
 
+	if (o1.type==IMAG && o2.type==IMAG && op==MINUS)
+	{
+		r.type=IMAG;
+		r.imgptr = cloneimage(o1.imgptr);
+		for (int i=0; i<r.imgptr->h; i++)
+			for (int j=0; j<r.imgptr->w; j++)
+				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] - o2.imgptr->data[j + i*o2.imgptr->w])%256;	
+	}
+
 	if (o1.type==IMAG && o2.type==IMAG && op==MULT)
 	{
 		r.type=IMAG;
@@ -721,7 +730,7 @@ tOBJ onot(tOBJ a)
 tOBJ oputch(tOBJ a)
 {
 	putchar(toint(a));
-	return emptyObj();
+	return a;
 }
 
 tOBJ oabs(tOBJ a)
@@ -2036,8 +2045,9 @@ tOBJ oget(tOBJ a)
 
 tOBJ onth(tOBJ a, tOBJ lst)
 {
-	//!nth 0 '{"one" "two" "three"}
-	//!nth 5 '{"one" "two" "three"}
+	//nth 0 '("one" "two" "three")
+	//nth 5 '("one" "two" "three")
+	//nth 1 "abcd"
 	int cnt = toint(a);
 
 	if (lst.type == CELL)
@@ -2048,6 +2058,12 @@ tOBJ onth(tOBJ a, tOBJ lst)
 			cnt--;
 		}
 		return cloneObj(ocar(lst));
+	}
+	if (lst.type == SYM)
+	{
+		int ln = strlen(lst.string);
+		if (cnt>=0 && cnt<ln)
+			return makeint(lst.string[cnt]);
 	}
 	return emptyObj();
 }
@@ -2613,7 +2629,8 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 	if (list.type == CELL)
 	{
 		//FOREACH X '( (A 1) (B 2) (C 3)) (PR (CAR X))
-		brkflg=0;			
+		brkflg=0;
+		tOBJ t= list;			
 		do {
 			tOBJ value=ocar(list);
 			list=ocdr(list);
@@ -2623,6 +2640,7 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 			r = obegin(o,e);
 
 		} while (!(retflg || brkflg) && list.type != EMPTY);
+		freeobj(&t);
 		brkflg=0;
 	}
 	else
@@ -2640,17 +2658,34 @@ tOBJ ofore   (tOBJ  o, Dict *e)
 	if (list.type == DICT)
 	{
 		//SETQ E (DICT '(("A" 1) ("B" 2)))
-		//FOREACH X E (PR X (GETK '(E X)))
+		//FOREACH X E (PR X (GETK 'E X))
 		Dict *p=list.dict;
 		brkflg=0;
 		for (int i=0; (!(retflg || brkflg) && (i<p->ip)); i++)
 		{
-			dict_update(e, ind.string, makestring(p->db[i].key));
+			tOBJ t = makestring(p->db[i].key);
+			dict_update(e, ind.string, t );
+			freeobj(&r);
+			freeobj(&t);
+			r = obegin(o,e);
+		}		
+		brkflg=0;
+	}
+	else
+	if (list.type == SYM)
+	{
+		//FOREACH X "string" (Putc X )
+		int ln=strlen(list.string);
+		brkflg=0;
+		for (int i=0; (!(retflg || brkflg) && (i<ln)); i++)
+		{
+			dict_update(e, ind.string, makeint(list.string[i]));
 			freeobj(&r);
 			r = obegin(o,e);
 		}		
 		brkflg=0;
 	}
+	freeobj(&list);	
 	return r;
 }
 
