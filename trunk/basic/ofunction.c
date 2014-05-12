@@ -940,7 +940,6 @@ tOBJ omin(tOBJ a, tOBJ b)
 !SET MA [1.0 2.0;3.0 4.0]
 !print cell ma 1 1
 !PRINT DSIG MA
-!MAPCAR 'expr ma
 */
 tOBJ omat(tOBJ m, tOBJ a, tOBJ b) 
 {
@@ -1307,7 +1306,6 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 				freeobj(&v);	
 			}
 		}
-
 	}
 	else 
 	if (b.type==IMAG)
@@ -1338,7 +1336,6 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 				freeobj(&v);	
 			}
 		}
-
 	}
 	else if (b.type==CELL)
 	{
@@ -1368,7 +1365,6 @@ tOBJ omapcar(tOBJ a, tOBJ b)
 			r=t;
 		}
 	}
-	freeobj(&a);
 	return r;
 }
 
@@ -1383,6 +1379,7 @@ tOBJ otrn(tOBJ a)
 
 	return r;
 }
+
 /*
 !> RSHP [1 2 3] 3 3
  = Matrix 3x3
@@ -1390,7 +1387,6 @@ tOBJ otrn(tOBJ a)
 0.000000 0.000000 0.000000 
 0.000000 0.000000 0.000000 
 */
-
 tOBJ orshp(tOBJ m, tOBJ a, tOBJ b)
 {	// RSHP(M,x,y)
 	tOBJ r=emptyObj();

@@ -44,6 +44,7 @@ extern void 	imageogray	(oImage *im);
 extern int 	image2Pgm	(oImage *image, char *fileName);
 
 extern void 	clearoImage	(oImage *img, int c);
+extern int 	minval		(oImage *img);
 extern int 	maxval		(oImage *img);
 extern void 	setpoint	(oImage *img, int x, int y, int c);
 extern int 	getpoint	(oImage *img, int x, int y);
