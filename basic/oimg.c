@@ -97,15 +97,39 @@ int getpoint(oImage *img, int x, int y)
 	return img->data[x+y*img->w];
 }
 
+
 void drawline(oImage *img, int fx, int fy, int tx, int ty, int c)
 {
-	if (tx<fx) tx=fx;
-	if (ty<fy) ty=fy;
+       int x, y, t;
+       if (tx<fx) { t=tx; tx=fx; fx=t;}
+       if (ty<fy) { t=ty; ty=fy; fy=t;}
 
-	for (int y=fy; y<=ty; y++)
-		for (int x=fx; x<=tx; x++)
-			setpoint(img,x,y,c); 
-	return;
+       if ( (tx-fx) == 0)
+       {
+              for (y=fy; y<=ty; y++)
+              {
+                             setpoint(img,tx,y,c);
+              }
+              return;
+       }
+
+       if ( (ty-fy) == 0)
+       {
+              for (x=fx; x<=tx; x++)
+              {
+                             setpoint(img,x,ty,c);
+              }
+              return;
+       }
+
+       float grad = (ty-fy) / (tx-fx) ;
+
+       for (x=fx; x<=tx; x++)
+       {
+              y = fy + (grad * (x-fx) + 0.5);
+              setpoint(img,x,y,c);
+       }
+       return;
 }
 
 void drawrect(oImage *img, int fx, int fy, int w, int h, int c)
