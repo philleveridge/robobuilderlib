@@ -97,27 +97,25 @@ int getpoint(oImage *img, int x, int y)
 	return img->data[x+y*img->w];
 }
 
-
 void drawline(oImage *img, int fx, int fy, int tx, int ty, int c)
 {
        int x, y, t;
        if (tx<fx) { t=tx; tx=fx; fx=t;}
        if (ty<fy) { t=ty; ty=fy; fy=t;}
 
-       if ( (tx-fx) == 0)
+       if (tx==fx)
        {
               for (y=fy; y<=ty; y++)
               {
-                             setpoint(img,tx,y,c);
+                     setpoint(img,tx,y,c);
               }
               return;
        }
-
-       if ( (ty-fy) == 0)
+       if (ty==fy)
        {
               for (x=fx; x<=tx; x++)
               {
-                             setpoint(img,x,ty,c);
+                     setpoint(img,x,ty,c);
               }
               return;
        }
@@ -365,15 +363,15 @@ int sumoImage(oImage *image)
 	return sm;
 }
 
-oImage *threshoImage(oImage *image, int th)
+oImage *threshoImage(oImage *image, int th1, int th2)
 {
 	oImage *r = cloneimage(image);
 
 	for (int i=0; i<image->h*image->w; i++) 
 	{
-		if (image->data[i]>th) 
-			r->data[i]=255;
-		else
+		if (image->data[i]>=th2) 
+			r->data[i]=1;
+		if (image->data[i]<th1) 
 			r->data[i]=0;
 	}
 	return r;
