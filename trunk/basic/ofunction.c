@@ -39,6 +39,8 @@ extern int  *frame;
 extern void	setvar(char n, long v);
 extern long	getvar(char n);
 
+extern volatile WORD	mstimer;
+
 #include "functions.h"
 #include "lists.h"
 
@@ -100,6 +102,7 @@ tOP oplist[] = {
 	{"BEGIN", 40, NA,   9, {.funce=obegin}},  
 	{"BF",    40, NA,   1, {obf}},
 	{"BREAK", 40, NA,   1, {obreak}}, 
+//	{"CANCEL",40, NA,   1, {ocancel}},  		//Cancel thread
 	{"CAR",   40, NA,   1, {ocar}},  		//LIST BASED
 	{"CAAR",  40, NA,   1, {ocaar}},  		//LIST BASED
 	{"CADR",  40, NA,   1, {ocadr}},  		//LIST BASED
@@ -140,6 +143,7 @@ tOP oplist[] = {
 	{"INT",   40, NA,   1, {oint}},    		//convert to int
 	{"INV",   40, NA,   1, {ominv}},   		//function <fMatrix>
 	{"KEY",   40, NA,   1, {okey}},  
+//	{"JOIN",  40, NA,   1, {ojoin}},  
 	{"LAMBDA",40, NA,   9, {.funce=olambda}}, 
 	{"LAST",  40, NA,   1, {olast}},  		//function single arg
 	{"LEN",   40, NA,   1, {olen}},   		//function single arg
@@ -197,6 +201,7 @@ tOP oplist[] = {
 	{"SUBS", 40, NA,    1, {osubst}},		//function single arg
 	{"SUM",  40, NA,    1, {osum}},  		//function <fMatrix>
 	{"TAN",  40, NA,    1, {otan}},  		//function single arg
+	{"THREAD",40, NA,   9, {.funce=othread}},  	
 	{"TRN",  40, NA,    1, {otrn}},  		//ATRIX tRANSPOSE 
 	{"TYPE", 40, NA,    1, {otype}}, 		//object type
 	{"V2SM", 40, NA,    1, {ovsum2}},		//function <fMatrix>
@@ -628,6 +633,13 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 			r.imgptr->data[i] = abs(r.imgptr->data[i] + toint(o2)) % 256;	
 	}
 
+	if (o1.type==IMAG && (o2.type==INTGR || o2.type==FLOAT) && op==GT)
+	{
+		int th = toint(o2);
+		r.type=IMAG;
+		r.imgptr = threshoImage(o1.imgptr,th,th);	
+	}
+
 	return r;
 }
 
@@ -648,7 +660,6 @@ tOBJ osign(tOBJ a)
 	else r.number=(i>0)?1:-1;
 	return r;
 }
-
 
 tOBJ osin(tOBJ a)
 {
@@ -2331,7 +2342,14 @@ extern long fn_input(long v);
 
 tOBJ owait(tOBJ a)
 {
-	delay_ms(toint(a));
+	if (a.type==SYM  && !strcasecmp("THREAD",a.string))
+	{
+		return ojoin(a);
+	}
+	else
+	{
+		delay_ms(toint(a));
+	}
 	return emptyObj();
 }
 
@@ -2526,9 +2544,83 @@ tOBJ odict(tOBJ  lst)
 
 /***********************************************************************
 
+THREAD functions
+
+************************************************************************/
+
+typedef struct ta {
+	int  n;
+	tOBJ o;
+	Dict *e;
+} TA;
+
+TA  t;
+int       tn =0;
+pthread_t pth=0;	// this is our thread identifier
+
+
+void *thread_proc(void *arg)
+{
+	TA *x=(TA *)(arg);
+	if (dbg) printf ("In thread %d\n", x->n);
+	obegin(x->o, x->e);
+	if (dbg) printf ("Done\n");
+	pthread_exit(NULL);
+}
+
+tOBJ othread(tOBJ o, Dict *e)
+{
+	if (ocar(o).type==SYM)
+	{
+		tOBJ c=ocar(o);
+		o=ocdr(o);
+		if (!strcasecmp(c.string,"RUN"))
+		{
+			t.n=tn++;
+			t.o=cloneObj(o);
+			t.e=e;
+			pthread_create(&pth, NULL, thread_proc, &t);
+			return makeint(tn);
+		}
+		else if (!strcasecmp(c.string,"WAIT"))
+		{
+			tOBJ a=eval(ocar(o),e);
+			tOBJ r=ojoin(a);
+			freeobj(&a);
+			return r;
+		}
+		else if (!strcasecmp(c.string,"STOP") || !strcasecmp(c.string,"CANCEL")  || !strcasecmp(c.string,"KILL"))
+		{
+			tOBJ a=eval(ocar(o),e);
+			tOBJ r=ocancel(a);
+			freeobj(&a);
+			return r;
+		}
+	}
+	return emptyObj();
+}
+
+tOBJ ojoin(tOBJ o)
+{
+	int tn=toint(o);
+	printf ("Wait for thread %d\n",tn);
+	pthread_join(pth, NULL);
+	return emptyObj();
+}
+
+tOBJ ocancel(tOBJ o)
+{
+	int tn=toint(o);
+	printf ("Cancel thread %d\n",tn);
+	return makeint(pthread_cancel(pth));
+}
+
+/***********************************************************************
+
 LOOP functions
 
 ************************************************************************/
+
 
 int retflg=0;
 int brkflg=0;
@@ -2773,7 +2865,7 @@ NIL	PGM		<I> <s>					IMAGE PGM {I}  test.pgm"
 <I>	SUBSET		<I> <list>				IMAGE SUBSET IM '(X Y W H)
 <M>	SERIAL  	<n>  <s>				IMAGE SERIAL   "Text" 8
 NIL	SHOW		<I> | <n>
-NIL	THRESH		0 |  <n> <list> 			IMAGE THRESH 1 '(120 175 40 70 30 40)
+NIL	THRESH		0 |  <n> <list> | <I> list		IMAGE THRESH 1 '(120 175 40 70 30 40)
 NIL	TRAIN		<I>
 NIL	UNLOCK
 NIL	WAIT		<n>
@@ -2962,37 +3054,55 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"THRESH"))
 		{
-			int cid = toint(eval(ocar(v),e));  v=ocdr(v);
-			if (cid==0)
+			tOBJ a = eval(ocar(v),e); v=ocdr(v);
+			tOBJ r=emptyObj();
+
+			if (a.type==INTGR)
 			{
-				//!IMAGE THRESH 0
-        			printf("clr thresholds\n"); 
-				clrmap();
-			}
-			else
-			{				
-				tOBJ ft = eval(ocar(v),e);
-				if (ft.type==CELL)
-				{					
-					//!IMAGE THRESH 1 '(120 175 40 70 30 40)
-					oFilter n =setFilterfromList(ft);
-					add_thresh(cid, n.minR, n.maxR, n.minG, n.maxG, n.minB, n.maxB);
+				int cid = toint(a);  
+				if (cid==0)
+				{
+					//!IMAGE THRESH 0
+					printf("clr thresholds\n"); 
+					clrmap();
 				}
 				else
-				{
-					//!IMAGE THRESH 1 120 175 40 70 30 40
-					int a,b,c,d,e,f;
-					a = toint(ocar(v)); v=ocdr(v);
-					b = toint(ocar(v)); v=ocdr(v);
-					c = toint(ocar(v)); v=ocdr(v);
-					d = toint(ocar(v)); v=ocdr(v);
-					e = toint(ocar(v)); v=ocdr(v);
-					f = toint(ocar(v));
-					add_thresh(cid, a,b,c,d,e,f);
+				{				
+					tOBJ ft = eval(ocar(v),e);
+					if (ft.type==CELL)
+					{					
+						//!IMAGE THRESH 1 '(120 175 40 70 30 40)
+						oFilter n =setFilterfromList(ft);
+						add_thresh(cid, n.minR, n.maxR, n.minG, n.maxG, n.minB, n.maxB);
+					}
+					else
+					{
+						//!IMAGE THRESH 1 120 175 40 70 30 40
+						int a,b,c,d,e,f;
+						a = toint(ocar(v)); v=ocdr(v);
+						b = toint(ocar(v)); v=ocdr(v);
+						c = toint(ocar(v)); v=ocdr(v);
+						d = toint(ocar(v)); v=ocdr(v);
+						e = toint(ocar(v)); v=ocdr(v);
+						f = toint(ocar(v));
+						add_thresh(cid, a,b,c,d,e,f);
+					}
+					freeobj(&ft);
 				}
-				freeobj(&ft);
 			}
-			return emptyObj();
+			if (a.type==IMAG)
+			{
+				//!IMAGE THRESH I '(L U)
+				tOBJ b = eval(ocar(v),e); 
+				int lw = toint(ocar(b));
+				int up = toint(ocadr(b));
+				if (up==0) up=lw;
+				r.type   = IMAG;
+				r.imgptr = threshoImage(a.imgptr, lw, up);
+				freeobj(&b);
+			}
+			freeobj(&a);
+			return r;
 		}
 		else
 		if (!strcmp(cmd.string,"COLOR") || !strcmp(cmd.string,"COLOUR"))  
@@ -3305,7 +3415,6 @@ tOBJ oimg(tOBJ v, Dict *e)
 		else
 		if (!strcmp(cmd.string,"DRAWLINE") || !strcmp(cmd.string,"DRAWRECT"))
 		{
-
 			tOBJ r  = emptyObj();
 			tOBJ im = eval(ocar(v),e); v=ocdr(v);
 			tOBJ rc = eval(ocar(v),e); v=ocdr(v);
@@ -3333,10 +3442,20 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"WAIT"))
 		{
 			int key;
-			while (imready==0 && (key=uartGetByte())<0 ) 
+			tOBJ im = eval(ocar(v),e);
+			int tm=toint(im);
+
+			if (tm<20) tm=20;
+			mstimer=tm;
+
+			while (imready==0 && (key=uartGetByte())<0 && mstimer>0 ) 
 				; // wait for signal
+
 			imready=0;
 			if (key>=0) gkp=key;
+
+			freeobj(&im);
+			return makeint(mstimer);
 		}
 		else
 		{

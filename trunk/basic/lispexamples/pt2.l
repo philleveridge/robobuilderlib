@@ -1,9 +1,12 @@
 !do
 (DEF DX (X W S) (- (/ (* S X) (- W 1)) (/ S 2)))
 
+(DEF TH (X) (> X 50))
+
 (DEF PT2 ()
 (setq fn "test.jpg")
-(setq s22 (getservo 22) s24 (getservo 24) vm 1 loop 1 filt 0 bk (image raw fn))
+(setq s22 (getservo 22) s24 (getservo 24) vm 1 loop 1 filt 0 )
+(setq bk (image scale (image raw fn) 16 10))
 (while  loop
   (setq k (key 0))
   (cond (= k `q) (setq loop 0)
@@ -16,10 +19,12 @@
 
   (pr  k "," s22 "," s24 "," filt "," vm)
 
-  (setq ni (image raw fn))
+  (image WAIT )
+  (setq ni (image scale (image raw fn) 16 10))
+ 
+  (setq di (- bk ni)) 
   
-  (setq di  (- ni bk) )
-  (image show (image scale di 16 10) 1)
+  (image show di 1)
   
   (pr "Diff= " (sum di))
   
@@ -27,9 +32,9 @@
 
   (setservo 22 s22)
   (setservo 24 s24)
-  (WAIT 200)
 )
 (setservo 22 'P)
 (setservo 24 'P)
 (pr "Done"))
+
 

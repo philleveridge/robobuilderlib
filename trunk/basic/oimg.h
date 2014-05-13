@@ -37,7 +37,7 @@ extern oImage 	*subimage	(oImage *ip, int x, int y, int c, int r);
 extern oImage 	*loadoImage	(char *name);
 extern oImage 	*FloadImage	(char *name, oFilter n);
 extern oImage 	*cmapImage	(char *name, int nw, int nh) ;
-extern oImage 	*threshoImage	(oImage *image, int th);
+extern oImage 	*threshoImage	(oImage *image, int lth, int uth);
 extern oImage 	*processImage	(char *fn, int nw, int nh);
 
 extern void 	imageogray	(oImage *im);
