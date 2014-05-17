@@ -1938,7 +1938,16 @@ tOBJ opr(tOBJ a, Dict *e)
  = 1
 !> COND  '() 1 2
  = 2
-!> COND  '(1) 1 2
+!> COND 1 2 3
+ = 2
+!> COND 0 2 3
+ = 3
+!> COND 0 2 3 1
+ = 1
+!> COND 1 '() 2
+ = NIL
+!> COND 0 '() 2
+ = 2
 */
 tOBJ ocond(tOBJ o, Dict *e)
 {
@@ -1955,7 +1964,7 @@ tOBJ ocond(tOBJ o, Dict *e)
 		|| (cond.type != INTGR && cond.type!=EMPTY && cond.type!=FLOAT)
 		|| (cond.type == FLOAT && cond.floatpoint != 0.0 ) ) 
 		{
-			if (onull(act).number==1)
+			if (onull(act).number==1 && o.type==EMPTY)
 			{
 				return cond;
 			}
@@ -2915,46 +2924,53 @@ tOBJ oimg(tOBJ v, Dict *e)
 			//IMAGE F-DETECT "img.jpg" 1
 			tOBJ a=eval(ocar(v), e); 
 			tOBJ ret = emptyObj();
+			oImage *im = NULL;
 			if (a.type==SYM) 
 			{
-				oImage *im = loadoImage(a.string);
+				im = loadoImage(a.string);
+			}
 
-				if (im==0)
+			if (a.type==IMAG) 
+			{
+				im = a.imgptr;
+			}
+
+
+			if (im==0)
+			{
+				printf("Image load failed\n");
+			}
+			else
+			{
+				int  m   = maxval(im);
+				int  s   = vj_img (im->w, im->h, m, im->data); 
+
+				for (int i=0; i<s; i++)
 				{
-					printf("Image load failed\n");
+					MyRect r = vj_get(i);
+
+					if (dbg); printf ("%d, %d, %d, %d\n", r.x,r.y,r.width,r.height);	
+	
+					tOBJ t= append(ret, makeint(r.x));
+					freeobj(&ret); ret=t;
+					t = append(ret, makeint(r.y));
+					freeobj(&ret); ret=t;
+					t = append(ret, makeint(r.width));
+					freeobj(&ret); ret=t;
+					t = append(ret, makeint(r.height));
+					freeobj(&ret); 
+					ret=t;
+				}
+
+				if (s>0 && toint(ocar(ocdr(v)))>0)
+				{
+					freeobj(&ret); 
+					ret=emptyTPObj(IMAG, im);
 				}
 				else
-				{
-					int  m   = maxval(im);
-					int  s   = vj_img (im->w, im->h, m, im->data); 
-
-					for (int i=0; i<s; i++)
-					{
-						MyRect r = vj_get(i);
-
-						if (dbg); printf ("%d, %d, %d, %d\n", r.x,r.y,r.width,r.height);	
-		
-						tOBJ t= append(ret, makeint(r.x));
-						freeobj(&ret); ret=t;
-						t = append(ret, makeint(r.y));
-						freeobj(&ret); ret=t;
-						t = append(ret, makeint(r.width));
-						freeobj(&ret); ret=t;
-						t = append(ret, makeint(r.height));
-						freeobj(&ret); 
-						ret=t;
-					}
-
-					if (s>0 && toint(ocar(ocdr(v)))>0)
-					{
-						freeobj(&ret); 
-						ret=emptyTPObj(IMAG, im);
-					}
-					else
-						delimage(im); 
-				}
-
+					if (a.type != IMAG) delimage(im); 
 			}
+
 			freeobj(&a);
 			return ret;
 		}
