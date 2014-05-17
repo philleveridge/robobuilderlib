@@ -82,6 +82,24 @@
   (PR S1)
 )
 
+(SETQ M  '((1 1 1) (2 2 2) (1 2 3) (4 4 4)))
+
+(FUNC BEST (T)
+  (SETQ R  (FIND T M))
+  (PR (NTH (- (LEN M) (LEN (MEMBER (MIN R) R))) M))
+)
+ 
+(FUNC FIND (X Y) (COND (NULL Y) '() 
+                       (CONS (CMP X (CAR Y)) (FIND X (CDR Y))) 
+                 ))
+  
+(FUNC CMP (x Y) 
+  (COND  (NULL X) 0
+         (ATOM X) (ABS (- X Y))
+         (+ (CMP (CAR X) (CAR Y)) (CMP (CDR X) (CDR Y)))
+))
+
+
 
 (SETQ IP (IMAGE MAT IM))
 (IMAGE SHOW IP)
