@@ -134,7 +134,6 @@ void stackprint(tStackp st)
 
 void stackprint2(tStackp st)
 {
-	int i;
 	printf ("Stack %d / %d\n", st->noe, st->size);
 }
 

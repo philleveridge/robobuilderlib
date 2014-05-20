@@ -391,27 +391,13 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		return r;
 	}
 
-	if (op == PLUS && o1.type==CELL)
+	if (o1.type==CELL && (o2.type==INTGR || o2.type==FLOAT))
 	{
-		// {1 2} + 3 -> {1 2 3}
-		// TBD
-		tOBJ z;
-		tCELLp n=NULL,p= o1.cell;
-		r= makeCell();
-		n=r.cell;
-
-		while (p!= NULL)
-		{
-			tCELLp l;
-			n->head = p->head;
-			z =makeCell();
-			l=n;
-			n=z.cell;
-			p=p->tail;	
-			l->tail=n;		
-		}
-		n->head = cloneObj(o2);
-		n->tail=NULL;	
+		tOBJ a = omath(ocar(o1), o2, op);
+		tOBJ b = omath(ocdr(o1), o2, op);
+		r = ocons(a, b);
+		freeobj(&a);
+		freeobj(&b);
 		return r;
 	}
 
@@ -820,13 +806,15 @@ tOBJ omax(tOBJ a, tOBJ b)
 	int i;
 	tOBJ r= emptyObj();
 
-	if (r.type==INTGR && a.type==INTGR)
+	if (a.type==INTGR && b.type==INTGR)
 	{
+		r.type=INTGR;
 		if (a.number>b.number) r=a; else r=b;
 	}
 		
-	if (r.type==FLOAT && a.type==FLOAT)
+	if (a.type==FLOAT && b.type==FLOAT)
 	{
+		r.type=FLOAT;
 		if (a.floatpoint>b.floatpoint) r=a; else r=b;
 	}
 
@@ -884,13 +872,15 @@ tOBJ omin(tOBJ a, tOBJ b)
 	int i;
 	tOBJ r= emptyObj();
 
-	if (r.type==INTGR && a.type==INTGR)
+	if (a.type==INTGR && b.type==INTGR)
 	{
+		r.type=INTGR;
 		if (a.number<b.number) r=a; else r=b;
 	}
 		
-	if (r.type==FLOAT && a.type==FLOAT)
+	if (a.type==FLOAT && b.type==FLOAT)
 	{
+		r.type=FLOAT;
 		if (a.floatpoint<b.floatpoint) r=a; else r=b;
 	}
 
@@ -957,8 +947,9 @@ tOBJ omat(tOBJ m, tOBJ a, tOBJ b)
 	//read matrix cell
 	tOBJ r=emptyObj();
 
-	int row=toint(a);
-	int col=toint(b);
+
+	int col=toint(a);
+	int row=toint(b);
 
 	if (m.type==FMAT2) 
 	{
@@ -1884,7 +1875,8 @@ tOBJ oappend(tOBJ o, Dict *e)
 	tOBJ r=emptyObj();
 	while (o.type != EMPTY)
 	{
-		tOBJ exp = eval(ocar(o),e); o=ocdr(o);	
+		tOBJ t1 = eval(ocar(o),e); o=ocdr(o);	
+		tOBJ exp=t1;
 		while (exp.type != EMPTY)
 		{
 			tOBJ t = append(r, ocar(exp));
@@ -1892,7 +1884,7 @@ tOBJ oappend(tOBJ o, Dict *e)
 			freeobj(&r);
 			r=t;
 		}
-		freeobj(&exp);
+		freeobj(&t1);
 	}
 	return r;
 }
