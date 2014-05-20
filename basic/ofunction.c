@@ -2795,6 +2795,8 @@ tOBJ ofor (tOBJ  o, Dict *e)
 	s=toint(eval(ocar(range),e));
 	f=toint(eval(ocar(ocdr(range)),e));
 
+	freeobj(&range);
+
 	o=ocdr(o);
 	brkflg=0;
 
