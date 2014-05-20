@@ -4,6 +4,8 @@
 #include <signal.h>
 #include <termio.h>
 #include <fcntl.h>
+#include <string.h>
+#include <ctype.h>
 #include <math.h>
 
 #include "main.h"
@@ -336,9 +338,9 @@ int irf=0;
 /* Emulates the timer interupt */
 void *monitor_proc(void *arg)
 {
-	char *str;
+	//char *str;
 
-	str=(char*)arg;
+	//str=(char*)arg;
 
 	while(1) // forever
 	{
@@ -396,7 +398,7 @@ extern char device[];
 extern int  readflg;
 extern void init_extend(char *);
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	int lf=0,rf=0,cf=0;
 	int sf=0,lm=0;
