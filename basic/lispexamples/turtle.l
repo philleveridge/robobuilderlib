@@ -35,8 +35,23 @@
 (PG)
 (PR TURTLE)
 
+(SETQ landmarks  '(( 20.0 20.0) (80.0 80.0) (20.0 80.0) (80.0 20.0)))
+(SETQ world_size 100.0)
 
+(def sense (t lm) 
+	(setq (tx ty th) t dl '())
+	(foreach lme lm 
+		(setq (lmx lmy) lme)
+	    	(setq dl (cons (sqrt (+  (* (- tx lmx) (- tx lmx))
+				         (* (- ty lmy) (- ty lmy)))) dl))
+	)
+	dl
+)
 
+(setq turtle '(50 50 0.2))
+(pr "sense = " (sense turtle landmarks))
+
+(exit)
 
 
 
