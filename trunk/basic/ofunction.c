@@ -448,7 +448,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		return r;
 	}
 
-	if (o1.type==FLOAT || o2.type==FLOAT)
+	if ((o1.type==FLOAT && o2.type==INTGR) || (o1.type==INTGR && o2.type==FLOAT) || (o1.type==FLOAT && o2.type==FLOAT))
 	{
 		double a=0.0,b=0.0;
 

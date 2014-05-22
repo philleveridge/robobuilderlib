@@ -720,6 +720,14 @@ fMatrix *inverse(fMatrix *s)
 	fMatrix *res=NULL;
 	//printf("\nMATRIX inverse (%d,%d)\n",s->w,s->h);
 
+	if (s->w==1 && s->h==1)
+	{
+		res = newmatrix(1,1);
+		if (s->fstore[0]!=0.0)
+			res->fstore[0] = 1/(s->fstore[0]);
+		return res;
+	}
+
 	if (s->w==2 && s->h==2)
 	{
 		res = newmatrix(2,2);
