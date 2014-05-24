@@ -116,3 +116,19 @@ tOBJ makenumfstr(char *s)
 	return r;
 }
 
+void printstring(FILE *fp, char *cp)
+{
+	char ch;
+	while ( (ch=*cp++) != '\0')
+	{
+		if ((ch=='\\') && ((*cp)=='n') )
+		{ 
+			fputc(13,fp); 
+			fputc(10,fp); 
+			cp++;
+			continue;
+		}
+		fputc(ch,fp);
+	}
+}
+

@@ -183,6 +183,7 @@ tOP oplist[] = {
 	{"REX",   40, NA,   2, {.func2=orex}},   	//regular expression match
 	{"RGT",   40, NA,   2, {.func2=orgt}},   	//right string
 	{"RND",   40, NA,   0, {ornd}},   		//random number
+	{"RND-G", 40, NA,   2, {orand_noise}},  	//variance
 	{"ROW",   40, NA,   1, {orow}},   		//number of rows
 	{"RSHP",  40, NA,   3, {.func3=orshp}},  	//reshape matrix or image
 	{"SAVE",  40, NA,   2, {.func2=osave}},  	//
@@ -197,6 +198,7 @@ tOP oplist[] = {
 	{"SIGN", 40, NA,    1, {osign}}, 		//sigmoid functon
 	{"SIN",  40, NA,    1, {osin}},  		//function single arg
 	{"SQRT", 40, NA,    1, {osqrt}}, 		//function single arg
+	{"SORT", 40, NA,    1, {osort}}, 
 	{"STACK",40, NA,    1, {ostack}}, 
 	{"SUBS", 40, NA,    1, {osubst}},		//function single arg
 	{"SUM",  40, NA,    1, {osum}},  		//function <fMatrix>
@@ -3992,6 +3994,97 @@ tOBJ oclear(tOBJ o, Dict *e)
 }
 
 
+#define TWO_PI 6.2831853071795864769252866
+ 
+tOBJ orand_noise(tOBJ m, tOBJ v)
+{
+	static int hasSpare = 0;
+	static double rand1, rand2;
+	double variance = tofloat(v);
+	double mean = tofloat(m);
+ 
+	if(hasSpare)
+	{
+		hasSpare = 0;
+		return makefloat(mean + sqrt(variance * rand1) * sin(rand2));
+	}
+ 
+	hasSpare = 1;
+ 
+	rand1 = rand() / ((double) RAND_MAX);
+	if(rand1 < 1e-100) rand1 = 1e-100;
+	rand1 = -2 * log(rand1);
+	rand2 = (rand() / ((double) RAND_MAX)) * TWO_PI;
+ 
+	return makefloat(mean + sqrt(variance * rand1) * cos(rand2));
+}
 
+extern void quicksort(int list[],int m,int n);
+
+void fswap(float *x,float *y)
+{
+   float temp = *x;
+   *x = *y;
+   *y = temp;
+}
+
+void fquicksort(float list[],int m,int n)
+{
+   int i,j,k;
+   float key;
+   if( m < n)
+   {
+      k = (m+n)/2;
+      fswap(&list[m],&list[k]);
+      key = list[m];
+      i = m+1;
+      j = n;
+      while(i <= j)
+      {
+         while((i <= n) && (list[i] <= key))
+                i++;
+         while((j >= m) && (list[j] > key))
+                j--;
+         if( i < j)
+                fswap(&list[i],&list[j]);
+      }
+      // swap two elements
+      fswap(&list[m],&list[j]);
+      // recursively sort the lesser list
+      fquicksort(list,m,j-1);
+      fquicksort(list,j+1,n);
+   }
+}
+
+// SORT '(1.1 2.4 2.3 2.2 0.0)
+// SORT '(1 2 3 1 0)
+
+tOBJ osort(tOBJ o)
+{
+	tOBJ r=emptyObj();
+	if (o.type==CELL)
+	{
+		int l = toint(olen(o));
+
+		if (ocar(o).type==INTGR)
+		{
+			int *array = (int *)bas_malloc (sizeof(int)*l);
+			cnvtListtoInt(o, l, array);	
+			quicksort (array, 0, l-1);
+			r = cnvtInttoList(l, array);
+			bas_free(array);
+		}
+		else if (ocar(o).type==FLOAT)
+		{
+			float *array = (float *)bas_malloc (sizeof(float)*l);	
+			cnvtListtoFloat(o, l, array);	
+			fquicksort (array, 0, l-1);
+			r = cnvtFloattoList(l, array);
+			bas_free(array);
+		}
+	}
+	return r;
+}
+	
 
 
