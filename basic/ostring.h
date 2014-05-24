@@ -13,5 +13,5 @@ extern void delstring	(char *s);
 extern tOBJ makestring	(char *s);
 extern tOBJ makenumfstr	(char *s);
 extern void upperstring	(tOBJ r);
-
+extern void printstring	(FILE *fp, char *cp);
 #endif

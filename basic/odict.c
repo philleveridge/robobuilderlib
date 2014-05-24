@@ -259,6 +259,11 @@ int dict_print(Dict *d, int f)
 		{
 			printf (" +++");
 		}
+		else 
+		if (t.type==SYM )
+		{
+			printf ("%s", t.string);
+		}
 		else
 		{
 			print (d->db[i].value);

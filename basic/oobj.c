@@ -27,36 +27,6 @@
 /* Objects                                                */
 /**********************************************************/
 
-int freeobj(tOBJ *b)
-{
-	if (b==NULL) return 0;
-	if (dbg) printf ("free obj - %d %s\n", b->cnt, objtype(*b));
-
-	if (b->cnt>0)
-	{
-		if (dbg) printf ("copy not a clone\n");
-		return 1;
-	}
-
-	switch (b->type)
-	{
-		case FMAT2: 	delmatrix(b->fmat2);  			break;
-		case SYM: 	delstring(b->string); 			break;
-		case CELL:
-		case LAMBDA:	delCell(b->cell);     			break;
-		case DICT:	deldict(b->dict);   			break;
-		case RBM:	rbmdelete(b->mot); 			break;
-		case STACK:	delstack(b->stk);			break;
-		case IMAG:	delimage(b->imgptr);			break;	
-		default: 	if (dbg) printf ("nothing to free\n"); 	break;
-	}
-
-	b->type=EMPTY;
-	b->q=0;
-	b->cnt=0;
-	return 0;
-}
-
 tOBJ emptyObj()
 {
 	tOBJ r;
@@ -96,6 +66,56 @@ tOBJ emptyTPObj(unsigned char t, void *p)
 	return r;
 }
 
+tOBJ cloneObj(tOBJ z)
+{
+	tOBJ r = z; 
+	switch (r.type)
+	{
+	case SYM: 	r.string = newstring(z.string);  	break;
+	case CELL:
+	case LAMBDA:	r.cell  = cloneCell((tCELLp)z.cell); 	break;
+	case FMAT2:	r.fmat2 = fmatcp(z.fmat2); 		break;
+	case STACK:	r.stk   =  clonestack(z.stk);  		break;		
+	case DICT:	r.dict  =  clonedict(z.dict);  		break;		
+	case RBM:	if (dbg) printf ("RBM clone TBD\n"); 	break;
+	case IMAG:	r.imgptr =  cloneimage(z.imgptr);   	break;	
+	default: 	/*if (dbg) printf ("nothing to clone\n");*/ break;
+	}
+	r.cnt=0;
+	return r;
+}
+
+int freeobj(tOBJ *b)
+{
+	if (b==NULL) return 0;
+	if (dbg) printf ("free obj - %d %s\n", b->cnt, objtype(*b));
+
+	if (b->cnt>0)
+	{
+		if (dbg) printf ("copy not a clone\n");
+		return 1;
+	}
+
+	switch (b->type)
+	{
+	case FMAT2: 	delmatrix(b->fmat2);  			break;
+	case SYM: 	delstring(b->string); 			break;
+	case CELL:
+	case LAMBDA:	delCell(b->cell);     			break;
+	case DICT:	deldict(b->dict);   			break;
+	case RBM:	rbmdelete(b->mot); 			break;
+	case STACK:	delstack(b->stk);			break;
+	case IMAG:	delimage(b->imgptr);			break;	
+	default: 	if (dbg) printf ("nothing to free\n"); 	break;
+	}
+
+	b->type=EMPTY;
+	b->q=0;
+	b->cnt=0;
+	return 0;
+}
+
+
 int compareObj(tOBJ a, tOBJ b)
 {
 	if (a.type != b.type) return 0; //false;
@@ -121,51 +141,37 @@ int compareObj(tOBJ a, tOBJ b)
 tOBJ copyObj(tOBJ z)
 {
 	tOBJ r = z; 
-	if (r.type==CELL || r.type==FMAT2 || r.type==STACK || r.type==SYM  || r.type==RBM   || r.type==DICT  || r.type==IMAG)
+	if (	r.type==CELL  || 
+		r.type==FMAT2 || 
+		r.type==STACK || 
+		r.type==SYM   || 
+		r.type==RBM   || 
+		r.type==DICT  || 
+		r.type==IMAG)
 		r.cnt+=1;
 	return r;
 }
 
-tOBJ cloneObj(tOBJ z)
+char *objtype(tOBJ t)
 {
-	tOBJ r = z; 
-
-	if (r.type==SYM)
-	{
-		r.string = newstring(z.string);
+	char *st="??";
+	switch (t.type)
+	{  
+	case INTGR: st="Int   "; break;
+	case FLOAT: st="Float "; break;
+	case FMAT2: st="Matrix"; break;
+	case CELL:  st="List  "; break;
+	case SYM:   st="Symbol"; break;
+	case LAMBDA:st="Lambda"; break;
+	case BOOLN: st="bool  "; break;
+	case EMPTY: st="Empty "; break;
+	case DICT:  st="Dict  "; break;
+	case RBM:   st="RBM   "; break;
+	case STACK: st="Stsck "; break;
+	case FUNC:  st="Func  "; break;
+	case IMAG:  st="Image "; break;
 	}
-	else if (r.type==CELL || r.type==LAMBDA)
-	{
-		r.cell = cloneCell((tCELLp)z.cell);
-	}
-	else if (r.type==FMAT2)
-	{
-		r.fmat2 = fmatcp(z.fmat2);
-	}
-	else if (r.type==STACK)
-	{
-		//if (dbg) printf ("clone STACK\n");
-		r.stk =  clonestack(z.stk); 		
-	}
-	else if (r.type==DICT)
-	{
-		r.dict =  clonedict(z.dict); 		
-	}
-	else if (r.type==RBM)
-	{
-		if (dbg) printf ("RBM clone TBD\n");
-	}
-	else if (r.type==IMAG)
-	{
-		r.imgptr =  cloneimage(z.imgptr);  	
-	}
-	else 
-	{
-		//if (dbg) printf ("nothing to clone\n");
-	}
-
-	r.cnt=0;
-	return r;
+	return st;
 }
 
 /**********************************************************/
@@ -174,85 +180,24 @@ tOBJ cloneObj(tOBJ z)
 
 void printtype(FILE *fp, tOBJ r)
 {
-    if (r.type == INTGR)
-    {
-            fprintf(fp, "%d", r.number);
-    }
-    else if (r.type == FLOAT)
-    {
-            fprintf(fp, "%f", r.floatpoint);
-    }
-    else if (r.type == SYM)
-    {
-		char ch, *cp=r.string;
-		while ( (ch=*cp++) != '\0')
-		{
-			if ((ch=='\\') && ((*cp)=='n') )
-			{ 
-				fputc(13,fp); 
-				fputc(10,fp); 
-				cp++;
-				continue;
-			}
-			fputc(ch,fp);
-		}
-    }
-    else if (r.type == BOOLN)
-    {
-        if ( r.number==0)
-                fprintf(fp, "False");
-        else
-                fprintf(fp, "True");
-    }
-    else if (r.type == EMPTY)
-    {
-         fprintf(fp, "NIL");
-    }
-    else if (r.type == LAMBDA)
-    {
-         fprintf(fp, "LAMBDA");   
-    }
-    else if (r.type == FUNC)
-    {
-         fprintf(fp, "FUNCTION");   
-    }
-    else if (r.type == RBM)
-    {
-         fprintf(fp, "RBM\n");  
-	 rbmprint (r.mot);
-    }
-    else if (r.type == FMAT2)
-    {
-	fmatprint2(r.fmat2);	 
-    }
-    else  if (r.type == DICT)
-    {
-	dict_print(r.dict,0);
-    }
-    else  if (r.type == STACK)
-    {
-	stackprint2(r.stk);
-    }
-    else  if (r.type == IMAG)
-    {
-	printimage(r.imgptr);
-    }
-    else  if (r.type == CELL)
-    {
-	if (r.cell != NULL)
+	switch (r.type)
 	{
-		 fprintf(fp, "CELL");	
+	case SYM: 	printstring (fp, r.string); 	break;
+	case FMAT2:	fmatprint2  (r.fmat2);		break;
+	case STACK:	stackprint2 (r.stk); 		break;		
+	case DICT:	dict_print  (r.dict,0); 	break;		
+	case IMAG:	printimage  (r.imgptr); 	break;	
+	case INTGR: 	fprintf(fp, "%d", r.number);	break;
+	case FLOAT: 	fprintf(fp, "%f", r.floatpoint);break;
+	case RBM:	fprintf(fp, "RBM"); 		break;
+	case LAMBDA:	fprintf(fp, "LAMBDA"); 		break;
+	case FUNC:	fprintf(fp, "FUNCTION"); 	break;
+	case EMPTY:     fprintf(fp, "NIL"); 		break;
+	case BOOLN:     fprintf(fp, (r.number==0)?    "False":"True");  break;
+	case CELL:	fprintf(fp, (r.cell != NULL)? "null" :"CELL");  break;
+	default:	fprintf(fp, "? error - type\n"); 
 	}
-	else
-	{
-		 fprintf(fp, "null");
-	}
-    }  
-    else
-    {               
-         fprintf(fp, "? error - type\n");   
-    }
-    return;
+    	return;
 }
 
 tOBJ fprint(FILE *fp, tOBJ r)
@@ -355,7 +300,7 @@ void pp(tOBJ x, int n)
 
 
 /**********************************************************/
-/*  conversuins float   and integers                      */
+/*  conversions float   and integers                      */
 /**********************************************************/
 
 
@@ -403,27 +348,6 @@ int toint(tOBJ v)
 	return f;
 }
 
-char *objtype(tOBJ t)
-{
-	char *st;
-	switch (t.type)
-	{  
-	case INTGR: st="Int   "; break;
-	case FLOAT: st="Float "; break;
-	case FMAT2: st="Matrix"; break;
-	case CELL:  st="List  "; break;
-	case SYM:   st="Symbol"; break;
-	case LAMBDA:st="Lambda"; break;
-	case BOOLN: st="bool  "; break;
-	case EMPTY: st="Empty "; break;
-	case DICT:  st="Dict  "; break;
-	case RBM:   st="RBM   "; break;
-	case STACK: st="STACK "; break;
-	case FUNC:  st="Func  "; break;
-	case IMAG:  st="Image "; break;
-	}
-	return st;
-}
 
 
 

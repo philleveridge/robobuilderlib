@@ -127,26 +127,22 @@ tOBJ append(tOBJ a, tOBJ b)
 }
 
 /**********************************************************/
-/*  conversions Arrays to List                            */
+/*  conversions Arrays to List  (and back)                */
 /**********************************************************/
 
 tOBJ cnvtInttoList(int an, int *array)
 {
-	tOBJ r,n,top;
 	int i;
+	tOBJ r=emptyObj();
+	if (an<=0) return r;
 
-	if (an<=0) return emptyObj();
-	top=makeCell2( makeint(array[0]), NULL);
-	r=top;
-
-	for (i=1; i<an; i++)
+	for (i=an-1; i>=0; i--)
 	{
-		n=makeCell2(makeint(array[i]), NULL);
-		((tCELLp)(r.cell))->tail = n.cell;
-		r=n;
+		tOBJ t=ocons(makeint((int)array[i]), r);
+		freeobj(&r);
+		r=t;
 	}
-	((tCELLp)(n.cell))->tail = 0;
-	return top;
+	return r;
 }
 
 tOBJ cnvtBytetoList(int an, BYTE *array)
@@ -157,7 +153,9 @@ tOBJ cnvtBytetoList(int an, BYTE *array)
 
 	for (i=an-1; i>=0; i--)
 	{
-		r=ocons(makeint((int)array[i]), r);
+		tOBJ t=ocons(makeint(abs((int)array[i])%256), r);
+		freeobj(&r);
+		r=t;
 	}
 	return r;
 }
@@ -170,7 +168,9 @@ tOBJ cnvtFloattoList(int an, float *array)
 
 	for (i=an-1; i>=0; i--)
 	{
-		r=ocons(makefloat((int)array[i]), r);
+		tOBJ t=ocons(makefloat((float)array[i]), r);
+		freeobj(&r);
+		r=t;
 	}
 	return r;
 }
@@ -181,7 +181,31 @@ int cnvtListtoByte(tOBJ lst, int an, BYTE *array)
 	if (lst.type != CELL) return 0;
 	while (cnt<an && onull(lst).number==0)
 	{
+		array[cnt++] = abs(toint(ocar(lst)))%256;
+		lst=ocdr(lst); 
+	}
+	return cnt;
+}
+
+int cnvtListtoInt(tOBJ lst, int an, int *array)
+{
+	int cnt=0;
+	if (lst.type != CELL) return 0;
+	while (cnt<an && onull(lst).number==0)
+	{
 		array[cnt++] = toint(ocar(lst));
+		lst=ocdr(lst); 
+	}
+	return cnt;
+}
+
+int cnvtListtoFloat(tOBJ lst, int an, float *array)
+{
+	int cnt=0;
+	if (lst.type != CELL) return 0;
+	while (cnt<an && onull(lst).number==0)
+	{
+		array[cnt++] = tofloat(ocar(lst));
 		lst=ocdr(lst); 
 	}
 	return cnt;
