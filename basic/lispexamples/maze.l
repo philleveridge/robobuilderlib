@@ -65,7 +65,7 @@
         (DO
 		(SETQ path (CONS ns path))
 		(IF (=  ns goal) (RETURN (REV path)) )
-		(inc pl)
+		(inc 'pl)
 	       	(FOREACH ns action 
 		    (iF (AND (NOT (CHECK ns EXPLORED)) (NULL (MEMBER ns (CADR WORLD))))
 		         (setq FRONTIER (CONS (LIST ns pl path) FRONTIER)))
