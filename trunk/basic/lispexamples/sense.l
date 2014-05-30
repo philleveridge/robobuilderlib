@@ -21,7 +21,7 @@
 		(if (= el z) 
 			(setc prb i 0 (* ph t )) 
 			(setc prb i 0 (* pm t )) )
-		(inc i)
+		(inc 'i)
 	)
 	prb
 )

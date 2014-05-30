@@ -87,7 +87,7 @@
         (DO     
 		(SETQ path (CONS ns path))
 		(IF (=  ns goal) (DO (PR "Cost=" cost) (RETURN (REV path)) ))
-		(inc pl)
+		(inc 'pl)
 	       	(FOREACH a action 
 		    (SETQ (ns cs) a)
 		    (iF (NOT (CHECK ns EXPLORED))

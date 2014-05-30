@@ -152,13 +152,16 @@ tOP oplist[] = {
 	{"LIST",  40, NA,   9, {.funce=olist}},   
 	{"LOAD",  40, NA,   1, {oload}},  		//
 	{"LOG",   40, NA,   1, {olog}},   		//function single arg
+	{"LOG2",  40, NA,   1, {olog2}},   		//function single arg
+	{"LOG10", 40, NA,   1, {olog10}},   		//function single arg
 	{"MAPCAR",40,NA,    2, {.func2=omapcar}},	//function two args   <fMatrix>
 	{"MAT",   40, NA,   3, {.func3=omatr}},  	// 
 	{"MAX",   40, NA,   2, {.func2=omax}},   	//function two args
-	{"MCOND", 40, NA,   5, {.func5=omcond}}, 		//function three args   <fMatrix>
+	{"MCOND", 40, NA,   5, {.func5=omcond}}, 	//function three args   <fMatrix>
 	{"MEMBER",40, NA,   2, {.func2=omemb}},  	//function single arg
 	{"MID",   40, NA,   3, {.func3=omid}},   		//
 	{"MIN",   40, NA,   2, {.func2=omin}},   	//function two args
+	{"NCONC", 40, NA,   9, {.funce=onconc}},   	//function single arg
 	{"NOT",   40, NA,   1, {onot}},   		//function single arg
 	{"NTH",   40, NA,   2, {.func2=onth}},   	//function two arg
 	{"NULL",  40, NA,   1, {onull}},  		//function single arg
@@ -198,7 +201,7 @@ tOP oplist[] = {
 	{"SIGN", 40, NA,    1, {osign}}, 		//sigmoid functon
 	{"SIN",  40, NA,    1, {osin}},  		//function single arg
 	{"SQRT", 40, NA,    1, {osqrt}}, 		//function single arg
-	{"SORT", 40, NA,    1, {osort}}, 
+	{"SORT", 40, NA,    2, {osort}}, 
 	{"STACK",40, NA,    1, {ostack}}, 
 	{"SUBS", 40, NA,    1, {osubst}},		//function single arg
 	{"SUM",  40, NA,    1, {osum}},  		//function <fMatrix>
@@ -701,6 +704,22 @@ tOBJ olog(tOBJ a)
 	return r;
 }
 
+tOBJ olog2(tOBJ a)
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=log2(tofloat(a));
+	return r;
+}
+
+tOBJ olog10(tOBJ a)
+{
+	tOBJ r;
+	r.type=FLOAT;
+	r.floatpoint=log10(tofloat(a));
+	return r;
+}
+
 tOBJ oacos(tOBJ a)
 {
 	tOBJ r;
@@ -721,6 +740,8 @@ tOBJ oatan(tOBJ a)
 tOBJ onot(tOBJ a)
 {
 	tOBJ r;
+	if (a.type==EMPTY) return makeint(1);
+	if (a.type!=INTGR && a.type !=FLOAT) return makeint(0);
 	r.type=INTGR;
 	r.number=(toint(a)!=0)?0:1;
 	return r;
@@ -984,16 +1005,54 @@ tOBJ osetc(tOBJ o, Dict *e)
 		tOBJ arr=dict_getc(e, var.string);
 		if (arr.type==IMAG)
 		{
-			int v = toint(c);
-			setpoint(arr.imgptr,toint(a),toint(b),v);
-			exp=makeint(v);
+			tOBJ r=emptyObj();
+			if (a.type==INTGR && b.type==INTGR)
+			{
+				setpoint(arr.imgptr,toint(a),toint(b),toint(c));
+			}
+			else if (a.type==CELL && b.type==INTGR)
+			{
+				for (int i=0; i<arr.imgptr->w; i++)
+				{
+					int v = toint(ocar(a)); a=ocdr(a);
+					setpoint(arr.imgptr,i,toint(b),v);
+				}
+			}
+			else if (b.type==CELL && a.type==INTGR)
+			{
+				for (int i=0; i<arr.imgptr->h; i++)
+				{
+					int v = toint(ocar(a)); a=ocdr(a);
+					setpoint(arr.imgptr,toint(a),i,v);
+				}
+			}
+			exp=arr;
 		}
 
 		if (arr.type==FMAT2)
 		{
-			float v = tofloat(c);
-			fset2(arr.fmat2,toint(a),toint(b), v);
-			exp=makefloat(v);
+			tOBJ r=emptyObj();
+			if (a.type==INTGR && b.type==INTGR)
+			{
+				fset2(arr.fmat2,toint(a),toint(b), tofloat(c));
+			}
+			else if (a.type==CELL && b.type==INTGR)
+			{
+				for (int i=0; i<arr.imgptr->w; i++)
+				{
+					float v = tofloat(ocar(a)); a=ocdr(a);
+					fset2(arr.fmat2,i,toint(b), v);
+				}
+			}
+			else if (b.type==CELL && a.type==INTGR)
+			{
+				for (int i=0; i<arr.imgptr->h; i++)
+				{
+					float v = tofloat(ocar(a)); a=ocdr(a);
+					fset2(arr.fmat2,toint(a), i, v);
+				}
+			}
+			exp=arr;
 		}
 
 		if (arr.type==CELL)
@@ -1630,6 +1689,7 @@ tOBJ ocons(tOBJ a, tOBJ b)
         if (b.type==CELL)
         {
 		b=cloneObj(b);
+		//b.cnt=1;
                 r=makeCell2(a, b.cell);
         }
 	if (b.type==EMPTY)
@@ -3652,7 +3712,6 @@ tOBJ omatr(tOBJ n, tOBJ v, tOBJ f)
 				}
 			}
 			return mat;
-
 		}
 	}
 
@@ -3844,18 +3903,30 @@ tOBJ oeval(tOBJ o, Dict *e)
 
 tOBJ oinc(tOBJ o, Dict *e) 
 {
-	tOBJ var = ocar(o); 
-	tOBJ expr =omath(dict_getk(e,var.string), makeint(1), PLUS);
-	dict_update(e, var.string, expr);
-	return expr;
+	tOBJ var=eval(ocar(o),e);
+	tOBJ r=emptyObj();
+	if (var.type==SYM)
+	{
+		tOBJ expr =omath(dict_getk(e,var.string), makeint(1), PLUS);
+		dict_update(e, var.string, expr);
+		r=expr;
+	}
+	freeobj(&var);
+	return r;
 }
 
 tOBJ odec(tOBJ o, Dict *e) 
 {
-	tOBJ var = ocar(o); 
-	tOBJ expr =omath(dict_getk(e,var.string), makeint(1), MINUS);
-	dict_update(e, var.string, expr);
-	return expr;
+	tOBJ var=eval(ocar(o),e);
+	tOBJ r=emptyObj();
+	if (var.type==SYM)
+	{
+		tOBJ expr =omath(dict_getk(e,var.string), makeint(1), MINUS);
+		dict_update(e, var.string, expr);
+		r=expr;
+	}
+	freeobj(&var);
+	return r;
 }
 
 extern int readLine(char *line);
@@ -4021,6 +4092,84 @@ tOBJ orand_noise(tOBJ m, tOBJ v)
 
 extern void quicksort(int list[],int m,int n);
 
+// ----------------------------------------------------------
+
+typedef struct sort_pair {
+	float	 f;
+	int	index;
+} SPair;
+
+void fPswap(SPair *x, SPair *y)
+{
+   SPair temp = *x;
+   *x = *y;
+   *y = temp;
+}
+
+void FPquicksort(SPair list[],int m,int n)
+{
+   int i,j,k;
+   float key;
+   if( m < n)
+   {
+      k = (m+n)/2;
+      fPswap(&list[m],&list[k]);
+      key = list[m].f;
+      i = m+1;
+      j = n;
+      while(i <= j)
+      {
+         while((i <= n) && (list[i].f <= key))
+                i++;
+         while((j >= m) && (list[j].f > key))
+                j--;
+         if( i < j)
+                fPswap(&list[i],&list[j]);
+      }
+      // swap two elements
+      fPswap(&list[m],&list[j]);
+      // recursively sort the lesser list
+      FPquicksort(list,m,j-1);
+      FPquicksort(list,j+1,n);
+   }
+}
+
+int cnvtListtoPair(tOBJ lst, int an, SPair *array)
+{
+	int cnt=0;
+	if (lst.type != CELL) return 0;
+	while (cnt<an && onull(lst).number==0)
+	{
+		array[cnt].f = tofloat(ocaar(lst));
+		array[cnt].index = cnt;
+		cnt++;
+		lst=ocdr(lst); 
+	}
+	return cnt;
+}
+
+tOBJ cnvtPairtoList(int an, SPair *array, tOBJ n)
+{
+	int i;
+	tOBJ t2, r=emptyObj();
+	if (an<=0) return r;
+
+	for (i=an-1; i>=0; i--)
+	{
+		tOBJ t1=makeint(array[i].index);
+		tOBJ t3=onth(t1,n);
+		t2=ocons(t3, r);
+		freeobj(&r);
+		freeobj(&t1);
+		freeobj(&t3);
+		r=t2;
+	}
+	return r;
+}
+
+
+// ----------------------------------------------------------
+
 void fswap(float *x,float *y)
 {
    float temp = *x;
@@ -4056,18 +4205,17 @@ void fquicksort(float list[],int m,int n)
    }
 }
 
-// SORT '(1.1 2.4 2.3 2.2 0.0)
-// SORT '(1 2 3 1 0)
 
-tOBJ osort(tOBJ o)
+tOBJ osort(tOBJ o, tOBJ p)
 {
 	tOBJ r=emptyObj();
 	if (o.type==CELL)
 	{
 		int l = toint(olen(o));
 
-		if (ocar(o).type==INTGR)
+		if (ocar(o).type==INTGR )
 		{
+			// SORT '(1 2 3 1 0)
 			int *array = (int *)bas_malloc (sizeof(int)*l);
 			cnvtListtoInt(o, l, array);	
 			quicksort (array, 0, l-1);
@@ -4076,15 +4224,71 @@ tOBJ osort(tOBJ o)
 		}
 		else if (ocar(o).type==FLOAT)
 		{
+			// SORT '(1.1 2.4 2.3 2.2 0.0)
 			float *array = (float *)bas_malloc (sizeof(float)*l);	
 			cnvtListtoFloat(o, l, array);	
 			fquicksort (array, 0, l-1);
 			r = cnvtFloattoList(l, array);
 			bas_free(array);
 		}
+		else if (ocar(o).type==CELL)
+		{
+			// SORT '( (2 A) (3 B) (1 4))
+			SPair *array = (SPair *)bas_malloc (sizeof(SPair)*l);	
+			cnvtListtoPair(o, l, array);	
+			FPquicksort (array, 0, l-1);
+			r = cnvtPairtoList(l, array, o);
+			bas_free(array);
+		}
 	}
 	return r;
 }
+
+tOBJ onconc(tOBJ o, Dict *e) 
+{
+	// DO (SETQ L '(B C)) (NCONC L 'A) (PR L)
+	tOBJ r    = emptyObj();
+	tOBJ var  = ocar(o); 
+	tOBJ list = eval(ocar(ocdr(o)),e);
+
+	if (var.type==SYM) // && list.type==CELL)
+	{
+		tOBJ t = dict_getc(e, var.string);
+
+		if (t.type==EMPTY)
+		{
+			tCELLp n = newCell();
+			n->head=cloneObj(list);
+			n->tail = NULL;
+			t.type=CELL;
+			t.cell = n;
+			dict_update(e, var.string, t);
+			r=t;
+		}
+		else
+		if (t.type==CELL)
+		{
+			//move to end
+			tCELLp p= t.cell;
+			while (p!=NULL && p->tail!=NULL)
+			{
+				p=p->tail;
+			}
+			if (p!=NULL)
+			{
+				tCELLp n = newCell();
+				n->head = cloneObj(list);
+				n->tail = NULL;
+				p->tail = n;
+			}
+			r=t;
+		}
+
+	}
+
+	return r;
+}
+
 	
 
 
