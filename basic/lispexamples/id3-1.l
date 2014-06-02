@@ -29,8 +29,6 @@
 (Yes Yes Yes Yes  Full  $      No    No     Burger   30–60  Yes)  
 ))
 
-(setq tsize (len tdata))
-
 ; AI - modern approachfrom figure 18.5 -
 ;function DECISION-TREE-LEARNING (examples, attributes, parent examples) returns a tree
 ;  if examples is empty then return PLURALITY-VALUE(parent examples)
