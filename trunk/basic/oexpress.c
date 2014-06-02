@@ -497,7 +497,9 @@ tOBJ eval_oxpr(char *s)
 void extend(char *s)
 {
 	init_extend(NULL);
+#ifdef MEM_DEBUG
 	int tc=memlc;
+#endif
 	tOBJ e=parse(s);
 	tOBJ v = eval(e, env.dict);
 	println (" = ", v);

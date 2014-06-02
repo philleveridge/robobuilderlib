@@ -1005,7 +1005,6 @@ tOBJ osetc(tOBJ o, Dict *e)
 		tOBJ arr=dict_getc(e, var.string);
 		if (arr.type==IMAG)
 		{
-			tOBJ r=emptyObj();
 			if (a.type==INTGR && b.type==INTGR)
 			{
 				setpoint(arr.imgptr,toint(a),toint(b),toint(c));
@@ -1031,7 +1030,6 @@ tOBJ osetc(tOBJ o, Dict *e)
 
 		if (arr.type==FMAT2)
 		{
-			tOBJ r=emptyObj();
 			if (a.type==INTGR && b.type==INTGR)
 			{
 				fset2(arr.fmat2,toint(a),toint(b), tofloat(c));
