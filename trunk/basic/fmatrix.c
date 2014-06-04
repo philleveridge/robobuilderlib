@@ -321,7 +321,8 @@ fMatrix *fmatsum2(fMatrix *A, int mode)
 float fsum(fMatrix *A)
 {
 	float x=0.0;
-  	for (int i=0; i < (A->h)*(A->w); i++)
+	int i;
+  	for (i=0; i < (A->h)*(A->w); i++)
 		x += A->fstore[i];
 	return x;
 }
@@ -329,7 +330,8 @@ float fsum(fMatrix *A)
 float fmatmax(fMatrix *A)
 {
 	float x=0.0;
-  	for (int i=0; i < (A->h)*(A->w); i++)
+	int i;
+  	for (i=0; i < (A->h)*(A->w); i++)
 		if (x < A->fstore[i]) x=A->fstore[i];
 	return x;
 }
@@ -682,18 +684,18 @@ fMatrix *trans(fMatrix *num, fMatrix *fac, int r)
 fMatrix *gausian(int Kernel_Size, int gaus_sigma)
 {
 	fMatrix *n = newmatrix(Kernel_Size, Kernel_Size);
-	int k = (Kernel_Size-1)/2; 
+	int i,j,k = (Kernel_Size-1)/2; 
 	double Pi=3.14159265359	;
 	double gs2=(double)(2*gaus_sigma*gaus_sigma);
 	double gs3=(double)(gaus_sigma*gaus_sigma*gaus_sigma);
 	double Tpigs3=2.0*Pi*gs3;
 
-	for (int i=1; i<=Kernel_Size; i++)
+	for (i=1; i<=Kernel_Size; i++)
 	{
-	    	for (int j=1; j<=Kernel_Size; j++) 
+		for (j=1; j<=Kernel_Size; j++) 
 		{
 			fset2(n, j-1, i-1, (float)( -( (j-k-1)/(Tpigs3) ) * exp ( - ( (i-k-1)*(i-k-1) + (j-k-1)*(j-k-1) )/ (gs2) )));
-	    	}
+	    }
 	}
 	return n;
 }
@@ -730,8 +732,9 @@ fMatrix *inverse(fMatrix *s)
 
 	if (s->w==2 && s->h==2)
 	{
+		float det;
 		res = newmatrix(2,2);
-		float det = s->fstore[0]* s->fstore[3] - s->fstore[1] * s->fstore[2];
+		det = s->fstore[0]* s->fstore[3] - s->fstore[1] * s->fstore[2];
 		res->fstore[0]=s->fstore[3]/det;
 		res->fstore[1]=-(s->fstore[1])/det;
 		res->fstore[2]=-(s->fstore[2])/det;

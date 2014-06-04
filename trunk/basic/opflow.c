@@ -38,12 +38,22 @@ const float Pi              = 3.1415;
 const int gaus_sigma        = 1; 
 const int neighborhood_size = 5; 
 
+
 fMatrix *gaus_kernel_x      = 0;
 fMatrix *gaus_kernel_y      = 0;
 fMatrix *kernel             = 0;
 
 tOBJ OpticFlow(tOBJ im1, tOBJ im2)
 {
+	int width , height;
+	int i,j,m,n,k ;
+	const int Kernel_Size  = 6*gaus_sigma+1; 
+	fMatrix *img1, *img2, *A, *B, *output1, *output2;
+	fMatrix *Dx_1, *Dy_1, *Dx_2, *Dy_2, *Ixa, *Ix, *Iya, *Iy;
+	fMatrix *sim1, *sim2, *It;
+	fMatrix *t1, *t2, *result;
+	tOBJ to1, to2,rn;
+
 	tOBJ r=emptyObj();
 	if (im1.type != FMAT2 || im1.type != FMAT2)
 	{
@@ -51,34 +61,34 @@ tOBJ OpticFlow(tOBJ im1, tOBJ im2)
 	}
 
 	//%%Derivate Variables:  
-	fMatrix *img1    = im1.fmat2; 
-	fMatrix *img2    = im2.fmat2;       
-	int width        = img1->w;
-	int height       = img2->h;
+	img1    = im1.fmat2; 
+	img2    = im2.fmat2;       
+	width        = img1->w;
+	height       = img2->h;
 
 	//%%Optical flow variables                   
-	fMatrix *A       = newmatrix(2, 2);            
-	fMatrix *B       = newmatrix(1, 2); 
-	fMatrix *output1 = newmatrix(width, height);        
-	fMatrix *output2 = newmatrix(width, height); 
+	A       = newmatrix(2, 2);            
+	B       = newmatrix(1, 2); 
+	output1 = newmatrix(width, height);        
+	output2 = newmatrix(width, height); 
 
 	//%%Kernel Variables:
-	const int Kernel_Size  = 6*gaus_sigma+1; 
-	int i,j,m,n,k          = (Kernel_Size-1)/2;  
+
+	k         = (Kernel_Size-1)/2;  
 
 	if (gaus_kernel_x==0) gaus_kernel_x = gausian(Kernel_Size, gaus_sigma);
 	if (gaus_kernel_y==0) gaus_kernel_y = ftranspose2(gaus_kernel_x); 
  
 	//%%Compute x and y derivates for both images:
-	fMatrix *Dx_1 = fconvolve(img1, gaus_kernel_x);
-	fMatrix *Dy_1 = fconvolve(img1, gaus_kernel_y);
-	fMatrix *Dx_2 = fconvolve(img2, gaus_kernel_x);
-	fMatrix *Dy_2 = fconvolve(img2, gaus_kernel_y);
-	fMatrix *Ixa  = fadd2(Dx_1, Dx_2, '+' );  //leak?
-	fMatrix *Ix   = fmatscale(Ixa, 0.5);
+	Dx_1 = fconvolve(img1, gaus_kernel_x);
+	Dy_1 = fconvolve(img1, gaus_kernel_y);
+	Dx_2 = fconvolve(img2, gaus_kernel_x);
+	Dy_2 = fconvolve(img2, gaus_kernel_y);
+	Ixa  = fadd2(Dx_1, Dx_2, '+' );  //leak?
+	Ix   = fmatscale(Ixa, 0.5);
 	delmatrix(Ixa);
-	fMatrix *Iya  = fadd2(Dy_1, Dy_2, '+' );//leak?
-	fMatrix *Iy   = fmatscale(Iya,0.5);
+	Iya  = fadd2(Dy_1, Dy_2, '+' );//leak?
+	Iy   = fmatscale(Iya,0.5);
 	delmatrix(Iya);
 
 
@@ -94,9 +104,9 @@ tOBJ OpticFlow(tOBJ im1, tOBJ im2)
 		}
 	}
 
-	fMatrix *sim1 = fconvolve (img1, kernel);
-	fMatrix *sim2 = fconvolve (img2, kernel);
-	fMatrix *It   = fadd2 (sim2, sim1, '-' );
+	sim1 = fconvolve (img1, kernel);
+	sim2 = fconvolve (img2, kernel);
+	It   = fadd2 (sim2, sim1, '-' );
 
 	for (i=(neighborhood_size/2); i<height-(neighborhood_size/2); i++)
 	{
@@ -117,9 +127,9 @@ tOBJ OpticFlow(tOBJ im1, tOBJ im2)
 				}
 			}
 			//fMatrix *result = fmultiply2(inverse(A), fmatscale(B,-1)); //leak!
-			fMatrix *t1=inverse(A);
-			fMatrix *t2=fmatscale(B,-1);
-			fMatrix *result = fmultiply2(t1,t2);
+			t1=inverse(A);
+			t2=fmatscale(B,-1);
+			result = fmultiply2(t1,t2);
 			fset2(output1,j,i,fget2(result,0,0));
 			fset2(output2,j,i,fget2(result,0,1));
 			delmatrix(t1);
@@ -130,14 +140,14 @@ tOBJ OpticFlow(tOBJ im1, tOBJ im2)
 
 	// construct r = (output1 output2)
 
-	tOBJ t1, t2;
-	t1.type  = FMAT2;
-	t1.fmat2 = output1;
-	t2.type  = FMAT2;
-	t2.fmat2 = output2;
-	tOBJ rn = append (r, t1); //leak
+
+	to1.type  = FMAT2;
+	to1.fmat2 = output1;
+	to2.type  = FMAT2;
+	to2.fmat2 = output2;
+	rn = append (r, to1); //leak
 	freeobj(&r);
-	r = append (rn, t2); //leak
+	r = append (rn, to2); //leak
 	freeobj(&rn);
 
 	//cleanup

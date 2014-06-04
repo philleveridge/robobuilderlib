@@ -26,9 +26,10 @@ extern int dbg;
 
 tOBJ makestack(int n, unsigned char t)
 {
+	tStackp  p;
 	if (dbg) printf ("Make stack %d\n", n);
 
-	tStackp  p=(tStackp)bas_malloc(sizeof(tStack));
+	p=(tStackp)bas_malloc(sizeof(tStack));
 	p->size=n;
 	p->noe=0;
 	p->type=t; 
@@ -49,13 +50,14 @@ void delstack(tStackp p)
 
 tStackp clonestack(tStackp x)
 {
+	int i;
 	tStackp  p=(tStackp)bas_malloc(sizeof(tStack));
 	p->size=x->size;
 	p->noe=x->noe;
 	p->type=x->type;
 	p->objarray = bas_malloc(sizeof(tOBJ)*p->size);
 
-	for(int i=0; i<p->noe; i++)
+	for(i=0; i<p->noe; i++)
 	{
 		p->objarray[i] =cloneObj(x->objarray[i]	);
 	}
@@ -87,8 +89,9 @@ tOBJ pop(tStackp st)
 
 	if (st->noe>0 && st->type==1)
 	{
+		int i;
 		e=st->objarray[0];
-		for (int i=1; i<st->noe; i++)
+		for (i=1; i<st->noe; i++)
 			st->objarray[i-1]=st->objarray[i];
 		st->noe--;
 	}

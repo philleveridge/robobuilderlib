@@ -60,6 +60,33 @@
     <ClCompile Include="trex.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ocells.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="odict.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ofunction.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oimg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oobj.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="opflow.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ostack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ostring.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="e-motion.h">
@@ -87,6 +114,39 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lists.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="odict.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ofunction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oexpress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ostring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ostack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="opflow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oobj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oimg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ocells.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cmap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

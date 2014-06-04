@@ -42,8 +42,9 @@ void printFilter(oFilter x)
 
 oImage *makeimage(int h, int w)
 {
+	oImage *p;
 	if (dbg) {printf ("New Image\n");}
-	oImage *p = (oImage *)bas_malloc(sizeof(oImage));
+	p = (oImage *)bas_malloc(sizeof(oImage));
 	p->h=h;
 	p->w=w;
 	p->data = (unsigned char *)bas_malloc(sizeof(unsigned char)*h*w);
@@ -63,8 +64,9 @@ void delimage (oImage *ip)
 
 oImage *cloneimage(oImage *ip)
 {
+	oImage *nip;
 	if (dbg) {printf ("Clone Image\n");}
-	oImage *nip = (oImage *)bas_malloc(sizeof(oImage));
+	nip = (oImage *)bas_malloc(sizeof(oImage));
 	nip->h=ip->h;
 	nip->w=ip->w;
 	nip->data = (unsigned char *)bas_malloc(sizeof(unsigned char)*(ip->h)*(ip->w));	
@@ -74,12 +76,14 @@ oImage *cloneimage(oImage *ip)
 
 oImage *subimage(oImage *ip, int x, int y, int c, int r)
 {
+	oImage *nip;
+	int i,j;
 	printf ("subimage - %d,%d [%d,%d]\n", x,y, c,r);
 
-	oImage *nip = makeimage(r,c);
+	nip = makeimage(r,c);
 
-	for (int i=0; i<r; i++)
-		for (int j=0; j<c; j++)
+	for (i=0; i<r; i++)
+		for (j=0; j<c; j++)
 			setpoint(nip, j, i,  getpoint(ip, x+j, y+i));
 	return nip;	
 }
@@ -100,6 +104,8 @@ int getpoint(oImage *img, int x, int y)
 void drawline(oImage *img, int fx, int fy, int tx, int ty, int c)
 {
        int x, y, t;
+	   float grad;
+
        if (tx<fx) { t=tx; tx=fx; fx=t;}
        if (ty<fy) { t=ty; ty=fy; fy=t;}
 
@@ -120,7 +126,7 @@ void drawline(oImage *img, int fx, int fy, int tx, int ty, int c)
               return;
        }
 
-       float grad = (ty-fy) / (tx-fx) ;
+       grad = (ty-fy) / (tx-fx) ;
 
        for (x=fx; x<=tx; x++)
        {
@@ -157,9 +163,9 @@ int lumfn(int r, int g, int b)
 int lghtfn(int r, int g, int b)
 {
 	int max=r;
+	int min=r;
 	if (g>max) max=g;
 	if (b>max) max=b;
-	int min=r;
 	if (g<min) min=g;
 	if (b<min) min=b;
 	return (max+min)/2;
@@ -169,19 +175,20 @@ int lghtfn(int r, int g, int b)
 
 oImage *loadoImage(char *name)
 {
-	int h,w;
+	int h,w,i,j;
+	oImage *n;
+	unsigned char *p;
 	unsigned char *img = loadJpg2(name,&w,&h);
 	if (img==NULL) return NULL;
 
-	oImage *n = makeimage(h, w);
-
-	unsigned char *p = n->data;
+	n = makeimage(h, w);
+	*p = n->data;
 	
 	if (dbg) printf ("raw : %s [%d,%d]\n", name, w, h);
 
-	for (int i=0; i<h; i++)
+	for (i=0; i<h; i++)
 	{
-		for (int j=0; j<w; j++)
+		for (j=0; j<w; j++)
 		{
 			unsigned char b=*img++;
 			unsigned char g=*img++;
@@ -195,20 +202,21 @@ oImage *loadoImage(char *name)
 
 oImage *FloadImage(char *name, oFilter n)
 {
-	int h,w;
+	int h,w,i,j;
+	oImage *im;
+	unsigned char *p;
 	unsigned char *img = loadJpg2(name,&w,&h);
 	if (img==NULL) return NULL;
 
-	oImage *im = makeimage(h, w);
-
-	unsigned char *p = im->data;
+	im = makeimage(h, w);
+	p = im->data;
 	
 	if (dbg); printf ("filtered : %s [%d,%d]\n", name, w, h);
 	if (dbg); printFilter(n);
 
-	for (int i=0; i<h; i++)
+	for (i=0; i<h; i++)
 	{
-		for (int j=0; j<w; j++)
+		for (j=0; j<w; j++)
 		{
 			unsigned char b=*img++;
 			unsigned char g=*img++;
@@ -228,17 +236,17 @@ oImage *cmapoImage(char *name, int nw, int nh)
 {
 	oImage *im         = makeimage(nh, nw);
 	unsigned char *p   = im->data;
-	int h,w;
+	int h,w,i,j;
 	unsigned char *img = loadJpg2(name,&w,&h);
 	if (img==NULL) return NULL;
 
 	if (dbg) printf("threshold  [%d,%d]\n" ,w, h);
 
-	for (int i=0; i<h; i++)
+	for (i=0; i<h; i++)
 	{
 		int y=(i*nh)/h;
 
-		for (int j=0; j<w; j++)
+		for (j=0; j<w; j++)
 		{
 			int x = (j*nw)/w;
 
@@ -256,10 +264,10 @@ oImage *cmapoImage(char *name, int nw, int nh)
 oImage *processImage(char *fn, int nw, int nh)
 {
 	oImage *im = cmapoImage(fn, nw, nh); 
-
+	int num_runs, num_regions, max_area;
 	if (dbg) imageshow(im);
 
-	int num_runs = EncodeRuns2(im->data, im->h, im->w, MAX_RUNS); 
+	num_runs = EncodeRuns2(im->data, im->h, im->w, MAX_RUNS); 
 
 	if(num_runs >= MAX_RUNS)
 	{
@@ -272,7 +280,7 @@ oImage *processImage(char *fn, int nw, int nh)
 
 	if (dbg) show_run(num_runs);
 
-	int num_regions = ExtractRegions(MAX_REGIONS, num_runs); 
+	num_regions = ExtractRegions(MAX_REGIONS, num_runs); 
 
 	if (dbg) show_reg(num_regions);
 
@@ -281,7 +289,7 @@ oImage *processImage(char *fn, int nw, int nh)
 		printf("WARNING! Exceeded maximum number of regions in ExtractRegions.\n");
 	}
 
-	int max_area = SeparateRegions(&color[0], no_colours(), num_regions); 
+	max_area = SeparateRegions(&color[0], no_colours(), num_regions); 
 	SortRegions(&color[0], no_colours(), max_area); 
 
 	return im;
@@ -293,17 +301,17 @@ void imageogray(oImage *im)
        // int l=strlen(g2);
 
 	char *g1 =  " .:-=+*#%@";
-        int l=strlen(g1);
+    int l=strlen(g1);
 
-        int mx=0;
-        for (int i=0;i<im->h*im->w; i++) 
+    int i, j, mx=0;
+    for (i=0;i<im->h*im->w; i++) 
 	{
 		if (im->data[i]>mx) mx=im->data[i];
 	}
 
-	for (int i=0; i<im->h; i++)
+	for (i=0; i<im->h; i++)
 	{
-		for (int j=0; j<im->w; j++)
+		for (j=0; j<im->w; j++)
 		{
 		     if (mx==0) 
 			printf("- ");
@@ -317,9 +325,10 @@ void imageogray(oImage *im)
 
 void imageshow(oImage *im)
 {
-	for (int i=0; i<im->h; i++)
+	int i,j;
+	for (i=0; i<im->h; i++)
 	{
-		for (int j=0; j<im->w; j++)
+		for (j=0; j<im->w; j++)
 		{
 			printf ("%3d ", im->data[j+i*im->w]);
 		}
@@ -329,36 +338,35 @@ void imageshow(oImage *im)
 
 void printimage(oImage *ip)
 {
-
 	printf ("Image %d, %d", ip->w, ip->h);	
 }
 
 int maxval(oImage *image)
 {
-	int mg=0;
+	int i, mg=0;
 	if (image==NULL) return 0;
 
-	for (int i=0; i<image->h*image->w; i++) 
+	for (i=0; i<image->h*image->w; i++) 
 		if (image->data[i]>mg) mg=image->data[i];
 	return mg;
 }
 
 int minval(oImage *image)
 {
-	int mg=255;
+	int i, mg=255;
 	if (image==NULL) return 0;
 
-	for (int i=0; i<image->h*image->w; i++) 
+	for (i=0; i<image->h*image->w; i++) 
 		if (image->data[i]<mg) mg=image->data[i];
 	return mg;
 }
 
 int sumoImage(oImage *image)
 {
-	int sm=0;
+	int i, sm=0;
 	if (image==NULL) return 0;
 
-	for (int i=0; i<image->h*image->w; i++) 
+	for (i=0; i<image->h*image->w; i++) 
 		sm+=image->data[i];
 	return sm;
 }
@@ -366,8 +374,8 @@ int sumoImage(oImage *image)
 oImage *threshoImage(oImage *image, int th1, int th2)
 {
 	oImage *r = cloneimage(image);
-
-	for (int i=0; i<image->h*image->w; i++) 
+	int i;
+	for (i=0; i<image->h*image->w; i++) 
 	{
 		if (image->data[i]>=th2) 
 			r->data[i]=1;
@@ -380,10 +388,10 @@ oImage *threshoImage(oImage *image, int th1, int th2)
 int image2Pgm(oImage *image, char *fileName)
 {
 	int i, mg=maxval(image);
-
+	FILE *fp;
 	if (image==NULL) return -1;
 
-	FILE *fp = fopen(fileName, "w");
+	fp = fopen(fileName, "w");
 	if (!fp)
 	{
 		printf("No such file %s\n", fileName);
@@ -407,17 +415,19 @@ oImage *reshapeoImage(oImage *image, int nw, int nh)
 
 int moment(oImage *image, int *rx, int *ry)
 {
+	int i,j;
 	float n = (float)sumoImage(image);
+	float sx=0.0, sy=0.0;
 	if (n==0.0) 
 	{
 		*rx=image->w/2;
 		*ry=image->h/2;	
 		return 0;	
 	}
-	float sx=0.0, sy=0.0;
-	for (int i=0; i<image->h; i++)
+
+	for (i=0; i<image->h; i++)
 	{
-		for (int j=0; j<image->w; j++)
+		for (j=0; j<image->w; j++)
 		{
 			sx += (float)(j*getpoint(image,j,i));	
 			sy += (float)(i*getpoint(image,j,i));	
@@ -435,8 +445,8 @@ int meanshift(oImage *image, int noit, int wx, int wy, int *rx, int *ry)
 	//assume center is center
 	int cx=(image->w)/2;
 	int cy=(image->h)/2;
-	int m=0;
-	for (int c=0; c<noit; c++)
+	int c, m=0;
+	for (c=0; c<noit; c++)
 	{
 		int   ncx, ncy;
 		oImage *sw = subimage(image, cx-wx/2, cy-wy/2, wy, wx);	
@@ -547,6 +557,9 @@ void recog_init(int w, int h, int nc, int ts)
 {
 	if (iflag==0)
 	{
+		int i,j,k,c=0;
+		int number_of_swaps;
+		double s;
 		if (dbg); printf("Recogniser init (%d,%d) %d %d\n",w,h,nc,ts);
 		iflag=1;
 
@@ -560,32 +573,32 @@ void recog_init(int w, int h, int nc, int ts)
 		if (result ==NULL) result =(int *)bas_malloc(sizeof(int)*number_of_classes);
 		if (connect==NULL) connect=(int *)bas_malloc(sizeof(int)*number_of_tuple*tuple_size);
 
-		int c=0;
-		for (int i=0; i<number_of_classes; i++)
+
+		for (i=0; i<number_of_classes; i++)
 		{
-			for (int j=0; j<number_of_tuple; j++)
+			for (j=0; j<number_of_tuple; j++)
 			{
-				for (int k=0; k<(1<<tuple_size); k++)
+				for (k=0; k<(1<<tuple_size); k++)
 				{
 					store[c++]=0;
 				}
 			}
 		}
 
-		for (int i=0; i<number_of_classes; i++)
+		for (i=0; i<number_of_classes; i++)
 		{
 			result[i]=0;
 		}
 
-		for (int i=0; i<tuple_size * number_of_tuple; i++)
+		for (i=0; i<tuple_size * number_of_tuple; i++)
 		{
 			connect[i]=i;
 		}
 
-		int number_of_swaps = (number_of_tuple*tuple_size)/2 ;
-		double s = tuple_size * number_of_tuple;
+		number_of_swaps = (number_of_tuple*tuple_size)/2 ;
+		s = tuple_size * number_of_tuple;
 
-		for (int i=0; i<number_of_swaps; i++)
+		for (i=0; i<number_of_swaps; i++)
 		{
 			double r1 = (double)rand()/(double)RAND_MAX;
 			double r2 = (double)rand()/(double)RAND_MAX;
@@ -605,16 +618,17 @@ void recog_init(int w, int h, int nc, int ts)
 
 void recog_dump(int n)
 {
+	int i,j,k,t=0;
 	if ((n | 1) == 1)
 	{
 		printf ("Training data store\n");
-		int t=0;
-		for (int i=0; i<number_of_classes; i++)
+
+		for (i=0; i<number_of_classes; i++)
 		{
-			for (int j=0; j<number_of_tuple; j++)
+			for (j=0; j<number_of_tuple; j++)
 			{
 				printf ("%d %d : ", i,j);
-				for (int k=0; k<(1<<tuple_size); k++)
+				for (k=0; k<(1<<tuple_size); k++)
 				{
 					if (store[t++]==1) printf ("%d,", k);
 				}
@@ -626,7 +640,7 @@ void recog_dump(int n)
 	if ((n | 2) == 2)
 	{
 		printf ("\nRecogniser result data\n");
-		for (int i=0; i<number_of_classes; i++)
+		for (i=0; i<number_of_classes; i++)
 		{
 			printf ("%d %d\n", i, result[i]);
 		}
@@ -645,7 +659,9 @@ int recog_result(int n)
 
 int  recognition (oImage *im)
 {
-	int r=0;
+	int clss, c=0, r=0;
+	int i, j, t, n;
+
 	if (im==NULL || iflag==0)
 		return r;
 
@@ -655,38 +671,39 @@ int  recognition (oImage *im)
 		return 0;
 	}
 
-	int t=1<<tuple_size;
-	int n=number_of_tuple*t;
+	t=1<<tuple_size;
+	n=number_of_tuple*t;
 
-	for (int class=0; class<number_of_classes; class++)
+	for (clss=0; clss<number_of_classes; clss++)
 	{
-		result[class]=0;
-		for (int i=0; i< number_of_tuple; i++)
+		result[clss]=0;
+		for (i=0; i< number_of_tuple; i++)
 		{
 			int v=0;
-			for (int j=0; j<tuple_size; j++)
+			for (j=0; j<tuple_size; j++)
 			{
                  		v = v << 1;
 				if (im->data[connection_array(i,j)] > th ) 
 					v = (v | 1);
 
 			}
-			if (store[class*n + i*t + v] ==1)
-				result[class]++  ;
+			if (store[clss*n + i*t + v] ==1)
+				result[clss]++  ;
 		}
 	}  
 
-	int c=0;
-	for (int class=0; class<number_of_classes; class++)
+	for (clss=0; clss<number_of_classes; clss++)
 	{ 
-		if (result[class]>c) {c=result[class]; r=class;}
+		if (result[clss]>c) {c=result[clss]; r=clss;}
 	}  
 	return r;
 }
 
-void training (oImage *im, int  class)
+void training (oImage *im, int clss)
 {
-	if (im==NULL || class<0 || class>=number_of_classes)
+		int t, n, i, j;
+
+	if (im==NULL || clss<0 || clss>=number_of_classes)
 		return;
 
 	if(iflag==0) recog_init(im->w, im->h, 2, 8);
@@ -697,21 +714,21 @@ void training (oImage *im, int  class)
 		return;
 	}
 
-	int t=1<<tuple_size;
-	int n=number_of_tuple*t;
+	t=1<<tuple_size;
+	n=number_of_tuple*t;
 
-	for (int i=0; i<number_of_tuple; i++)
+	for (i=0; i<number_of_tuple; i++)
 	{
-                int v=0;
-           	for (int j=0; j<tuple_size; j++)
+        int v=0;
+        for (j=0; j<tuple_size; j++)
 		{
-                 	v = v << 1;
-                 	if (im->data[connection_array(i,j)] > th ) 
+            v = v << 1;
+            if (im->data[connection_array(i,j)] > th ) 
 			{
 		  		v |= 1;
 			}
 		}		
-		if (v>0) store[class*n + i*t + v] =1;
+		if (v>0) store[clss*n + i*t + v] =1;
 	}
 }
 

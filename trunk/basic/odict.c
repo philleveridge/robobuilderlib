@@ -42,10 +42,11 @@ Dict * newdict(int sz)
 
 int deldict(Dict *x)
 {
+	int i;
 	if (dbg) printf ("Delete dictionary\n");
 	if (x != NULL)
 	{
-		for (int i=0; i<x->ip; i++)
+		for (i=0; i<x->ip; i++)
 		{
 			bas_free(x->db[i].key);
 			freeobj(&x->db[i].value);
@@ -59,11 +60,12 @@ int deldict(Dict *x)
 
 Dict *clonedict(Dict *x)
 {
+	int i;
 	Dict *r=newdict(x->sz);
 	r->ip   = x->ip;
 	r->outer= x->outer;
 
-	for (int i=0; i<r->ip; i++)
+	for (i=0; i<r->ip; i++)
 	{
 		int n = strlen (x->db[i].key) + 1;         
 		r->db[i].key = bas_malloc(n*sizeof(char)); 
@@ -102,29 +104,29 @@ char *covertToUpper(char *str)
 
 int dict_add(Dict *d, char *key, tOBJ value)
 {
+	int n, i=0;
 	if (d==NULL) return 0;
 
 	key = covertToUpper(key);
 
 	//if(dbg) printf ("Add %s %d %d\n", key, d->ip, d->sz);
-	int i=0;
 
 	if (d->ip==d->sz) {printf ("?error no space in dict [%s] %d/%d\n",key,d->ip,d->sz); return 0;}
 
 	while (i < d->ip)
 	{
-	      int c =strcmp(key, d->db[i].key);
+	      int j, c =strcmp(key, d->db[i].key);
 	      if (c==0) {printf ("Already exists (%s %d)\n",key,i); i=d->ip; break;}
 	      if (c>0) {i++; continue;}
 	      if (c<0)
 	      {      //insert gap here
-		     for (int j=d->ip; j>i ;j--)
+		     for (j=d->ip; j>i ;j--)
 		     	d->db[j]=d->db[j-1];
 		     break;
 	      }
 	}
 	//insert at i
-	int n = strlen(key) + 1 ;
+	n = strlen(key) + 1 ;
 	d->db[i].key = (char *)bas_malloc(sizeof(char)*n);
 	strncpy(d->db[i].key , key, n);
 	d->db[i].value = cloneObj(value);
@@ -287,7 +289,8 @@ int dict_size(Dict *d)
 
 char *dict_findval(Dict *d, tOBJ x, int n)
 {
-	for (int i=0; i<d->ip; i++)
+	int i;
+	for (i=0; i<d->ip; i++)
 	{
 		if (compareObj(x, d->db[i].value))
 		{

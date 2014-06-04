@@ -349,9 +349,10 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 		tOPp p = (tOPp)h.fptr;
 		if (p->type != NA && p->type != CBR && p->type != OBR)
 		{
-			tOBJ a = eval(ocar(o),e); o=ocdr(o);
-			tOBJ b = eval(ocar(o),e); 					
-			tOBJ r = omath(a,b,p->type);
+			tOBJ a,b,r;
+			a = eval(ocar(o),e); o=ocdr(o);
+			b = eval(ocar(o),e); 					
+			r = omath(a,b,p->type);
 			freeobj(&b);
 			freeobj(&a);
 			return r;
@@ -369,8 +370,9 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			}
 		case 2:	
 			{
-			tOBJ a = eval(ocar(o),e); o=ocdr(o);
-			tOBJ b = eval(ocar(o),e); 
+			tOBJ a,b;
+			a = eval(ocar(o),e); o=ocdr(o);
+			b = eval(ocar(o),e); 
 			r = (*p->foo.func2)(a,b);
 			freeobj(&b);
 			freeobj(&a);
@@ -378,9 +380,10 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			}
 		case 3:	
 			{
-			tOBJ a = eval(ocar(o),e); o=ocdr(o);
-			tOBJ b = eval(ocar(o),e); o=ocdr(o);
-			tOBJ c = eval(ocar(o),e); 
+			tOBJ a,b,c;
+			a = eval(ocar(o),e); o=ocdr(o);
+			b = eval(ocar(o),e); o=ocdr(o);
+			c = eval(ocar(o),e); 
 			r = (*p->foo.func3)(a,b,c);
 			freeobj(&c);
 			freeobj(&b);
@@ -389,11 +392,12 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 			}
 		case 5:	
 			{
-			tOBJ a = eval(ocar(o),e); o=ocdr(o);
-			tOBJ b = eval(ocar(o),e); o=ocdr(o);
-			tOBJ c = eval(ocar(o),e); o=ocdr(o);
-			tOBJ d = eval(ocar(o),e); o=ocdr(o);
-			tOBJ g = eval(ocar(o),e); 
+			tOBJ a,b,c,d,g;
+			a = eval(ocar(o),e); o=ocdr(o);
+			b = eval(ocar(o),e); o=ocdr(o);
+			c = eval(ocar(o),e); o=ocdr(o);
+			d = eval(ocar(o),e); o=ocdr(o);
+			g = eval(ocar(o),e); 
 			r= (*p->foo.func5)(a,b,c,d,g);
 			freeobj(&g);
 			freeobj(&d);
@@ -446,9 +450,10 @@ tOBJ eval2(tOBJ o, Dict *e)
 
 tOBJ eval(tOBJ o, Dict *e)
 {
+	tOBJ r;
 	if (dbg) {bas_mem(); println ("eval - ",o); }
 
-	tOBJ r=eval2(o,e);
+	r=eval2(o,e);
 
 	if (dbg) { bas_mem(); println ("ret  - ",r);}
 	return r;
@@ -476,32 +481,35 @@ void init_extend(char *fn)
 			srand ( (unsigned)time ( NULL ) );
 
 			extend("FUNC FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
-
+#ifdef LINUX
 			if (access(fn,F_OK) != -1)
 			{
 				oload(makestring(fn));
 			}
+#endif
 		}
 	}
 }
 
 tOBJ eval_oxpr(char *s)
 {
+	tOBJ e,f;
 	init_extend(NULL);
-	tOBJ e=parse(s);
-	tOBJ f = eval(e, env.dict);
+	e=parse(s);
+	f = eval(e, env.dict);
 	freeobj(&e);
 	return f;
 }
 
 void extend(char *s)
 {
+	tOBJ e,v;
 	init_extend(NULL);
 #ifdef MEM_DEBUG
 	int tc=memlc;
 #endif
-	tOBJ e=parse(s);
-	tOBJ v = eval(e, env.dict);
+	e=parse(s);
+	v = eval(e, env.dict);
 	println (" = ", v);
 	freeobj(&v);
 	freeobj(&e);
