@@ -89,13 +89,23 @@
     <ClCompile Include="functions.c" />
     <ClCompile Include="lists.c" />
     <ClCompile Include="matrix.c" />
+    <ClCompile Include="mem.c" />
     <ClCompile Include="network.c" />
+    <ClCompile Include="ocells.c" />
+    <ClCompile Include="odict.c" />
     <ClCompile Include="oexpress.c" />
+    <ClCompile Include="ofunction.c" />
+    <ClCompile Include="oimg.c" />
+    <ClCompile Include="oobj.c" />
+    <ClCompile Include="opflow.c" />
+    <ClCompile Include="ostack.c" />
+    <ClCompile Include="ostring.c" />
     <ClCompile Include="trex.c" />
     <ClCompile Include="win-remote.c" />
     <ClCompile Include="win.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cmap.h" />
     <ClInclude Include="e-motion.h" />
     <ClInclude Include="edit.h" />
     <ClInclude Include="express.h" />
@@ -104,6 +114,16 @@
     <ClInclude Include="lists.h" />
     <ClInclude Include="macro.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="mem.h" />
+    <ClInclude Include="ocells.h" />
+    <ClInclude Include="odict.h" />
+    <ClInclude Include="oexpress.h" />
+    <ClInclude Include="ofunction.h" />
+    <ClInclude Include="oimg.h" />
+    <ClInclude Include="oobj.h" />
+    <ClInclude Include="opflow.h" />
+    <ClInclude Include="ostack.h" />
+    <ClInclude Include="ostring.h" />
     <ClInclude Include="win.h" />
   </ItemGroup>
   <ItemGroup>

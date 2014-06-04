@@ -127,8 +127,9 @@ int memlc=0;
 
 void *bas_malloc (size_t Size) 
 {
+	void *p;
 	if (dbg) {printf ("malloc\n"); fflush(stdout);}
-	void *p = malloc(Size);
+	p = malloc(Size);
 	return p;
 }
 
@@ -155,15 +156,16 @@ void bas_show()
 
 void test_extend(char *s, char *expected, int nob)
 {
+	tOBJ e,v;
 	char buffer[100];
 	init_extend();
 	*buffer=0;
 
 	dbg=0;
-	tOBJ e=parse(s);
+	e=parse(s);
 	dbg=1;
 
-	tOBJ v = eval(e, env.dict);
+	v = eval(e, env.dict);
 	println (" = ", v);
 	
 	sprint(buffer, v);
