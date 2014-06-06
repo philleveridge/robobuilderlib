@@ -150,7 +150,7 @@ extern tOBJ osort	(tOBJ  r, tOBJ a);
 extern tOBJ osqrt	(tOBJ  r);
 extern tOBJ ostack	(tOBJ  r);
 extern tOBJ ostoa	(tOBJ  r);
-extern tOBJ osubst	(tOBJ  r);
+extern tOBJ osubst	(tOBJ  a, tOBJ b, tOBJ c);
 extern tOBJ osum	(tOBJ  r);
 extern tOBJ otan	(tOBJ  r);
 extern tOBJ othread  	(tOBJ  r, Dict *);

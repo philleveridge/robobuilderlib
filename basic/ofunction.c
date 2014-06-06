@@ -203,7 +203,7 @@ tOP oplist[] = {
 	{"SQRT", 40, NA,    1, {osqrt}}, 		//function single arg
 	{"SORT", 40, NA,    2, {osort}}, 
 	{"STACK",40, NA,    1, {ostack}}, 
-	{"SUBS", 40, NA,    1, {osubst}},		//function single arg
+	{"SUBS", 40, NA,    3, {osubst}},		//function single arg
 	{"SUM",  40, NA,    1, {osum}},  		//function <fMatrix>
 	{"TAN",  40, NA,    1, {otan}},  		//function single arg
 	{"THREAD",40, NA,   9, {.funce=othread}},  	
@@ -1716,14 +1716,42 @@ tOBJ olast(tOBJ a)
 	return r;
 }
 
-tOBJ osubst(tOBJ a)
+tOBJ osubst(tOBJ a, tOBJ b, tOBJ c)
 {
 	//SUBS '(2 1 (1 2 3))
 	//{2 2 3}
 
 	tOBJ r=emptyObj();
 
-	if (a.type==CELL)
+	if (b.type!=EMPTY && c.type!=EMPTY)
+	{
+	// SUBS 'A 'B '(A B C)
+	// '(B B C)
+		tOBJ t, h, r=emptyObj();
+		h=ocar(c);
+
+		while (h.type!=EMPTY)
+		{
+			if (compareObj(a, h))
+			{
+				t = ocons(b,r);
+			}
+			else
+			{
+				t = ocons(h,r);
+			}
+			freeobj(&r);
+			r = t;
+			c = ocdr(c);
+			h = ocar(c);
+		}
+		t = orev(r);
+		freeobj(&r);
+
+		return t;
+	}
+
+	if (a.type==CELL && b.type==EMPTY && c.type==EMPTY)
 	{
 		tOBJ p1, p2, z;
 		tCELLp prev=NULL;
@@ -2151,7 +2179,7 @@ tOBJ olft(tOBJ  r, tOBJ a)
 	if (r.type==SYM)
 	{
 		int ln = strlen(r.string);
-		if (ln>0 && p>0 && ln>p)
+		if (ln>0 && p>0 && ln>=p)
 		{
 			cp=newstring1(p+1);
 			strncpy(cp, r.string,p);
@@ -2171,7 +2199,7 @@ tOBJ orgt(tOBJ  r, tOBJ a)
 	if (r.type==SYM)
 	{
 		int ln = strlen(r.string);
-		if (ln>0 && p>0 && ln>p)
+		if (ln>0 && p>0 && ln>=p)
 		{
 			cp=newstring1(p+1);
 			strncpy(cp, (r.string)+ln-p,p);
