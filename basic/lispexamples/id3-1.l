@@ -2,17 +2,17 @@
 ;decision tree based learning
 ;to be completed
  
-(setq      Altern?                 0 ) 
-(setq      Bar?       1 )
-(setq      Fri?                        2 )
-(setq      Hungry?               3 )
-(setq      Patron?               4 )
-(setq      Price?                   5 )
-(setq      Rain?                    6 )
-(setq      Restr?    7 )
-(setq      Type?   8 )
-(setq      Est?        9 )
-(setq      Wait?                   10)
+(setq      Altern?      0 ) 
+(setq      Bar?       	1 )
+(setq      Fri?         2 )
+(setq      Hungry?      3 )
+(setq      Patron?      4 )
+(setq      Price?       5 )
+(setq      Rain?        6 )
+(setq      Restr?    	7 )
+(setq      Type?   	8 )
+(setq      Est?        	9 )
+(setq      Wait?        10)
  
 (setq tdata '(
 (Yes No  No  Yes  Some  $$$    No    Yes    French   0–10   Yes) 
