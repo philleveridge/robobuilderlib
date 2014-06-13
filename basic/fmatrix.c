@@ -749,4 +749,54 @@ fMatrix *inverse(fMatrix *s)
         return res;
 }
 
+void fmswap(fMatrix *list, int x, int y)
+{
+	int i;
+	for (i=0; i<list->w; i++)
+	{
+		float temp1=fget2(list,i,x);
+		float temp2=fget2(list,i,y);
+
+		fset2(list,i,y,temp1);
+		fset2(list,i,x,temp2);
+	}
+}
+
+void fMatrixSort(fMatrix *list, int m, int n, int indx)
+{
+   int i,j,k;
+   float key;
+
+   if( m < n)
+   {
+      k = (m+n)/2;
+      fmswap(list, m, k);
+      key = fget2(list,indx,m);
+      i = m+1;
+      j = n;
+      while(i <= j)
+      {
+         while((i <= n) && (fget2(list,indx,i) <= key))
+                i++;
+         while((j >= m) && (fget2(list,indx,j) > key))
+                j--;
+         if( i < j)
+                fmswap(list,i,j);
+      }
+      // swap two elements
+      fmswap(list,m,j);
+      // recursively sort the lesser list
+      fMatrixSort(list, m,   j-1, indx);
+      fMatrixSort(list, j+1, n,   indx);
+   }
+}
+
+fMatrix * fMatrixQSort(fMatrix *list, int indx)
+{
+	fMatrix *r=fmatcp(list);
+	fMatrixSort(r,0, r->h-1, indx);
+	return r;
+}
+
+
 

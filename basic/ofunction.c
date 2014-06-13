@@ -110,7 +110,7 @@ tOP oplist[] = {
 	{"CDR",   40, NA,   1, {ocdr}},  		//function single arg
 	{"CELL",  40, NA,   3, {.func3=omat}},   	//function three args   <fMatrix, int, int>
 	{"CLEAR", 40, NA,   9, {.funce=oclear}},   	//function three args   <fMatrix, int, int>
-	{"COL",   40, NA,   1, {ocol}},   		//function single arg    <fMatrix>
+	{"COL",   40, NA,   2, {ocol}},   		//function single arg    <fMatrix>
 	{"COND",  40, NA,   9, {.funce=ocond}}, 
 	{"CONS",  40, NA,   2, {.func2=ocons}},  	//function single arg
 	{"CONV",  40, NA,   2, {.func2=oconv}},  	//function three args   <fMatrix>
@@ -187,7 +187,7 @@ tOP oplist[] = {
 	{"RGT",   40, NA,   2, {.func2=orgt}},   	//right string
 	{"RND",   40, NA,   0, {ornd}},   		//random number
 	{"RND-G", 40, NA,   2, {orand_noise}},  	//variance
-	{"ROW",   40, NA,   1, {orow}},   		//number of rows
+	{"ROW",   40, NA,   2, {orow}},   		//number of rows
 	{"RSHP",  40, NA,   3, {.func3=orshp}},  	//reshape matrix or image
 	{"SAVE",  40, NA,   2, {.func2=osave}},  	//
 	{"SERVO", 40, NA,   0, {oserv}},  		//function single arg
@@ -1036,7 +1036,7 @@ tOBJ osetc(tOBJ o, Dict *e)
 			}
 			else if (a.type==CELL && b.type==INTGR)
 			{
-				for (int i=0; i<arr.imgptr->w; i++)
+				for (int i=0; i<arr.fmat2->w; i++)
 				{
 					float v = tofloat(ocar(a)); a=ocdr(a);
 					fset2(arr.fmat2,i,toint(b), v);
@@ -1044,9 +1044,25 @@ tOBJ osetc(tOBJ o, Dict *e)
 			}
 			else if (b.type==CELL && a.type==INTGR)
 			{
-				for (int i=0; i<arr.imgptr->h; i++)
+				for (int i=0; i<arr.fmat2->h; i++)
 				{
 					float v = tofloat(ocar(a)); a=ocdr(a);
+					fset2(arr.fmat2,toint(a), i, v);
+				}
+			}
+			else if (a.type==FMAT2 && b.type==INTGR)
+			{
+				for (int i=0; i<arr.fmat2->w; i++)
+				{
+					float v = fget2(a.fmat2, i, 0);
+					fset2(arr.fmat2,i,toint(b), v);
+				}
+			}
+			else if (b.type==FMAT2 && a.type==INTGR)
+			{
+				for (int i=0; i<arr.fmat2->h; i++)
+				{
+					float v = fget2(b.fmat2, 0, i);
 					fset2(arr.fmat2,toint(a), i, v);
 				}
 			}
@@ -1205,36 +1221,54 @@ tOBJ osum(tOBJ a)
 	return r;
 }
 
-tOBJ orow(tOBJ a)
+tOBJ orow(tOBJ a, tOBJ b)
 {
 	tOBJ r=emptyObj();
 
-	if (a.type==FMAT2)
+	if (a.type==FMAT2 && b.type==EMPTY)
 	{ 
 		r.type=INTGR;
 		r.number = a.fmat2->h;
 	}
-	if (a.type==IMAG)
+	else if (a.type==IMAG && b.type==EMPTY)
 	{ 
 		r.type=INTGR;
 		r.number = a.imgptr->h;
 	}
+	else if (a.type==FMAT2 && b.type==INTGR)
+	{ 
+		int i;
+		r.type=FMAT2;
+		r.fmat2=newmatrix(a.fmat2->w,1);
+		for (i=0; i<a.fmat2->w; i++)
+			fset2(r.fmat2,i, 0, fget2(a.fmat2, i, toint(b)));			
+
+	}
 	return r;
 }
 
-tOBJ ocol(tOBJ a)
+tOBJ ocol(tOBJ a, tOBJ b)
 {
 	tOBJ r=emptyObj();
 
-	if (a.type==FMAT2)
+	if (a.type==FMAT2 && b.type==EMPTY)
 	{ 
 		r.type=INTGR;
 		r.number = a.fmat2->w;
 	}
-	if (a.type==IMAG)
+	else if (a.type==IMAG && b.type==EMPTY)
 	{ 
 		r.type=INTGR;
 		r.number = a.imgptr->w;
+	}
+	else if (a.type==FMAT2 && b.type==INTGR)
+	{ 
+		int i;
+		r.type=FMAT2;
+		r.fmat2=newmatrix(1, a.fmat2->h);
+		for (i=0; i<a.fmat2->h; i++)
+			fset2(r.fmat2, 0, i, fget2(a.fmat2, toint(b), i));			
+
 	}
 	return r;
 }
@@ -4266,6 +4300,15 @@ tOBJ osort(tOBJ o, tOBJ p)
 			r = cnvtPairtoList(l, array, o);
 			bas_free(array);
 		}
+	} 
+	else if (o.type==FMAT2)
+	{
+		// SETQ M [2 4 3;1 4 7; 2 1 1; 0 4 6; 3 3 3]
+		// SORT M 0
+		// SORT m 2
+
+		r.type  = FMAT2;
+		r.fmat2 = fMatrixQSort(o.fmat2, toint(p));
 	}
 	return r;
 }
