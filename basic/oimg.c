@@ -182,7 +182,7 @@ oImage *loadoImage(char *name)
 	if (img==NULL) return NULL;
 
 	n = makeimage(h, w);
-	*p = n->data;
+	p = n->data;
 	
 	if (dbg) printf ("raw : %s [%d,%d]\n", name, w, h);
 

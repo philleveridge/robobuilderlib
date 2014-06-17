@@ -97,7 +97,7 @@ int isnum(char *s)
 
 void *readmatrix(char **str, char tc )
 {
-	float ts[10000];
+	double ts[10000];
 	char *s = *str;
 	char buffer[MAXSTRING];
 	tOBJ v;
@@ -463,7 +463,7 @@ tOBJ env;
 static int  intf=1;
 
 tOBJ eval_oxpr(char *s);
-void extend(char *s);
+void extend(char *s, int f);
 
 void init_extend(char *fn)
 {
@@ -476,11 +476,12 @@ void init_extend(char *fn)
 
 		if (dbg==0)
 		{
-			set(env.dict, "PI",  makefloat (3.1415926));	
-			//seed the RND Gen
-			srand ( (unsigned)time ( NULL ) );
+			srand ( (unsigned)time ( NULL ) ); //seed the RND Gen
 
-			extend("FUNC FACT (N) (IF (<= N 1) 1 (* N (FACT (- N 1))))");
+			extend("SETQ PI 3.1415926 TWOPI(* PI 2)", 0);	
+			extend("DEF FACT(N)(IF(<= N 1)1(* N(FACT(- N 1))))", 0);
+			extend("DEF HAM(A B)(COND(NULL A) '()(ATOM A)(= A B)(CONS(HAM(CAR A)(CAR B))(HAM(CDR A)(CDR B))))", 0);
+			extend("DEF SOLVE(X Y)(*(INV(*(TRN X)X))(*(TRN X)Y))", 0);
 #ifdef LINUX
 			if (access(fn,F_OK) != -1)
 			{
@@ -501,7 +502,7 @@ tOBJ eval_oxpr(char *s)
 	return f;
 }
 
-void extend(char *s)
+void extend(char *s, int f)
 {
 	tOBJ e,v;
 	init_extend(NULL);
@@ -510,7 +511,7 @@ void extend(char *s)
 #endif
 	e=parse(s);
 	v = eval(e, env.dict);
-	println (" = ", v);
+	if (f) println (" = ", v);
 	freeobj(&v);
 	freeobj(&e);
 #ifdef MEM_DEBUG
@@ -555,7 +556,7 @@ void repl()
 		}
 		if (inputbuffer[0]==';') continue;
 		if (!strcasecmp(inputbuffer,".")) return;
-		extend(inputbuffer);
+		extend(inputbuffer,1);
 	}
 }
 

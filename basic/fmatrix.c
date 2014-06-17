@@ -476,211 +476,6 @@ fMatrix *fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)
 	return R;
 }
 
-
-//Cholesky(self, ztol=1.0e-5)
-//Computes the upper triangular Cholesky factorization of
-//positive definite matrix.
-
-fMatrix *Cholesky(fMatrix *s, float ztol)
-{
-/*
-      	res = matrix([[]])
-        res.zero(self.dimx, self.dimx)
-*/
-	int i,j,k=0;
-	fMatrix *r= newmatrix(s->w, s->w);
-/*       
-        for i in range(self.dimx):
-            S = sum([(res.value[k][i])**2 for k in range(i)])
-            d = self.value[i][i] - S
-*/
-	for (i=0; i<s->w; i++)
-	{		
-		float d,S=0.0;
-		for (k=0; k<i; k++)
-		{
-			S += fget2(r,k,i) * fget2(r,k,i);
-		}
-		d=fget2(s,i,i)-S;
-
-/*
-            if abs(d) < ztol:
-                res.value[i][i] = 0.0
-            else:
-                if d < 0.0:
-                    raise ValueError, """
-                res.value[i][i] = sqrt(d)
-*/
-		if (fabs(d)<ztol)
-		{
-			fset2(r,i,i,0.0);
-		}
-		else
-		{
-			if (d<0.0)
-			{
-				printf("Matrix not positive-definite [%f]\n", d);
-				return NULL; //bad array size
-			}
-			fset2(r,i,i,(float)sqrt(d));					
-		}
-/*
-            for j in range(i+1, self.dimx):
-                S = sum([res.value[k][i] * res.value[k][j] for k in range(self.dimx)])
-                if abs(S) < ztol:
-                    S = 0.0
-                res.value[i][j] = (self.value[i][j] - S)/res.value[i][i]
-*/
-
-		for (j=i+1; j<s->w; j++)
-		{
-			S=0;
-			for (k=0; k<s->w; k++)
-			{
-				S += fget2(r,k,i) * fget2(r,k,j);
-			}
-			if (fabs(S)<ztol)
-				S=0.0;
-
-			fset2(r,i,j, (fget2(s,i,j) - S)/fget2(r,i,i));
-		}
-
-	} 
-	return r;
-}
-
-//CholeskyInverse(self)
-//Computes inverse of matrix given its Cholesky upper Triangular
-//decomposition of matrix.
-
-fMatrix *CholeskyInverse(fMatrix *s)
-{
-	int i,j,k;
-	fMatrix *r= newmatrix(s->w, s->w);
-
-        // Backward step for inverse.
-	
-/*        
-        for j in reversed(range(self.dimx)):
-            tjj = self.value[j][j]
-            S = sum([self.value[j][k]*res.value[j][k] for k in range(j+1, self.dimx)])
-            res.value[j][j] = 1.0/tjj**2 - S/tjj
-            for i in reversed(range(j)):
-                res.value[j][i] = res.value[i][j] = -sum([self.value[i][k]*res.value[k][j] for k in range(i+1, self.dimx)])/self.value[i][i]
-*/
-
-	for (j=s->w-1; j>=0; j--)
-	{
-		float tjj=fget2(s,j,j);
-		float S=0.0;
-		for (k=j+1; k<s->w; k++)
-		{
-			S += fget2(s,j,k)*fget2(r,j,k);
-		}
-		fset2(r,j,j,1.0/(tjj*tjj) -S/tjj);
-
-		for (i=j; i>=0; i--)
-		{
-			float r1 = 0.0;
-			for (k=i+1; k<s->w; k++)
-			{
-				r1 += fget2(s,i,k)*fget2(r,k,j);
-			}
-			r1 = -r1/fget2(s,i,i);
-			fset2(r,j,i, r1);
-			fset2(r,i,j, r1);
-		}
-	}
-	return r;
-}
-
-float detrminant(fMatrix *a, int k) 
-{
- float s = 1, det = 0;
- fMatrix *b = newmatrix(k,k);
- 
- int i, j, m, n, c;
- if (k == 1) {
-  return (fget2(a,0,0));
- } else {
-  det = 0;
-  for (c = 0; c < k; c++) {
-   m = 0;
-   n = 0;
-   for (i = 0; i < k; i++) {
-    for (j = 0; j < k; j++) {
-     fset2(b,i,j,0);
-     if (i != 0 && j != c) {
-      fset2(b,m,n,fget2(a,i,j));
-      if (n < (k - 2))
-       n++;
-      else {
-       n = 0;
-       m++;
-      }
-     }
-    }
-   }
-   det = det + s * (fget2(a,0,c) * detrminant(b, k - 1));
-   s = -1 * s;
-  }
- }
- return (det);
-}
- 
-fMatrix *cofactors(fMatrix *num, int f) 
-{
- fMatrix *b   = newmatrix(f,f);
- fMatrix *fac = newmatrix(f,f);
-
- int p, q, m, n, i, j;
- for (q = 0; q < f; q++) {
-  for (p = 0; p < f; p++) {
-   m = 0;
-   n = 0;
-   for (i = 0; i < f; i++) {
-    for (j = 0; j < f; j++) {
-     fset2(b,i,j, 0);
-     if (i != q && j != p) {
-      fset2(b,m,n,fget2(num,i,j));
-      if (n < (f - 2))
-       n++;
-      else {
-       n = 0;
-       m++;
-      }
-     }
-    }
-   }
-    fset2(fac,q,p,pow(-1, q + p) * detrminant(b, f - 1));
-  }
- }
- return trans(num, fac, f);
-}
- 
-fMatrix *trans(fMatrix *num, fMatrix *fac, int r)
-{
- int i, j;
- fMatrix *b   = newmatrix(r,r);
- fMatrix *inv = newmatrix(r,r);
- float d;
-
- for (i = 0; i < r; i++) {
-  for (j = 0; j < r; j++) {
-	fset2(b,i,j, fget2(fac,j,i));
-  }
- }
- 
- d = detrminant(num, r);
- fset2(inv,i,j,0.0);
- for (i = 0; i < r; i++) {
-  for (j = 0; j < r; j++) {
-   fset2(inv,i,j,fget2(b,i,j)/d);
-  }
- }
-  return inv;
-}
-
 fMatrix *gausian(int Kernel_Size, int gaus_sigma)
 {
 	fMatrix *n = newmatrix(Kernel_Size, Kernel_Size);
@@ -700,54 +495,6 @@ fMatrix *gausian(int Kernel_Size, int gaus_sigma)
 	return n;
 }
 
-
-/*
-octave:1> i=[1 2;3 4]
-
-   1   2
-   3   4
-
-octave:2> inverse(i)
-  -2.00000   1.00000
-   1.50000  -0.50000
-
-i
-!LET MT=[1.0 2.0;3.0 4.0]
-!PRINT MT
-!print INV(MT)
-*/
-
-fMatrix *inverse(fMatrix *s)
-{
-	fMatrix *res=NULL;
-	//printf("\nMATRIX inverse (%d,%d)\n",s->w,s->h);
-
-	if (s->w==1 && s->h==1)
-	{
-		res = newmatrix(1,1);
-		if (s->fstore[0]!=0.0)
-			res->fstore[0] = 1/(s->fstore[0]);
-		return res;
-	}
-
-	if (s->w==2 && s->h==2)
-	{
-		float det;
-		res = newmatrix(2,2);
-		det = s->fstore[0]* s->fstore[3] - s->fstore[1] * s->fstore[2];
-		res->fstore[0]=s->fstore[3]/det;
-		res->fstore[1]=-(s->fstore[1])/det;
-		res->fstore[2]=-(s->fstore[2])/det;
-		res->fstore[3]=s->fstore[0]/det;
-		return res;
-	}
-
-	if (detrminant(s, s->w) ==  0)
-		printf("\nMATRIX IS NOT INVERSIBLE\n");
-	else
-		return cofactors(s, s->w);
-        return res;
-}
 
 void fmswap(fMatrix *list, int x, int y)
 {
@@ -795,6 +542,164 @@ fMatrix * fMatrixQSort(fMatrix *list, int indx)
 {
 	fMatrix *r=fmatcp(list);
 	fMatrixSort(r,0, r->h-1, indx);
+	return r;
+}
+
+/*
+octave:1> i=[1 2;3 4]
+
+   1   2
+   3   4
+
+octave:2> inverse(i)
+  -2.00000   1.00000
+   1.50000  -0.50000
+
+i
+!LET MT=[1.0 2.0;3.0 4.0]
+!PRINT MT
+!print INV(MT)
+*/
+
+
+fMatrix * fmatinv(fMatrix *m);
+float determinant(fMatrix *m);
+
+fMatrix *inverse(fMatrix *s)
+{
+	fMatrix *res=NULL;
+	//printf("\nMATRIX inverse (%d,%d)\n",s->w,s->h);
+
+	if (s->w==1 && s->h==1)
+	{
+		res = newmatrix(1,1);
+		if (s->fstore[0]!=0.0)
+			res->fstore[0] = 1/(s->fstore[0]);
+		return res;
+	}
+
+	if (s->w==2 && s->h==2)
+	{
+		float det;
+		res = newmatrix(2,2);
+		det = s->fstore[0]* s->fstore[3] - s->fstore[1] * s->fstore[2];
+		res->fstore[0]=s->fstore[3]/det;
+		res->fstore[1]=-(s->fstore[1])/det;
+		res->fstore[2]=-(s->fstore[2])/det;
+		res->fstore[3]=s->fstore[0]/det;
+		return res;
+	}
+
+	if (determinant(s) ==  0.0)
+	{
+		printf("Error - Matrix not inversible\n");
+		return NULL;
+	}		
+	else
+	{
+		fMatrix *inv=fmatinv(s);
+		return inv; //cofactors(s, s->w);
+	}
+}
+
+float determinant(fMatrix *m)
+{
+	float  ratio, det=1.0;
+	int i, j, k, n=m->w;
+	fMatrix *mat=fmatcp(m); //working copy
+
+	for (i = 0; i < n; i++) 	/* Conversion to upper triangular */
+	{
+		for (j = 0; j < n; j++)
+		{
+		    	if (j>i)
+			{
+				if (fget2(mat,i,i) == 0.0) return 0.0;
+				ratio = fget2(mat,j,i)/fget2(mat,i,i);
+				for (k = 0; k < n; k++)
+				{
+					fset2(mat,j,k, fget2(mat,j,k)-ratio*fget2(mat,i,k)); 
+				}
+		    	}
+		}
+	}
+	for (i = 0; i < n; i++)
+	{
+		det *= fget2(mat,i,i);
+	}
+	delmatrix(mat);
+	return det;
+}
+
+// INV [3 0 2; 2 0 -2; 0 1 1]
+// DET [3 0 2; 2 0 -2; 0 1 1]
+// INV [1 2 3; 0 1 4; 5 6 0]
+//-24.000000  18.000000  5.000000 
+// 20.000000 -15.000000 -4.000000 
+// -5.000000   4.000000  1.000000 
+
+//INV [1 0 0 1;0 2 1 2; 2 1 0 1;2 0 1 4]
+// -2.000000 -0.500000  1.000000  0.500000 
+//  1.000000  0.500000 -0.000000 -0.500000 
+// -8.000000 -1.000000  2.000000  2.000000 
+//  3.000000  0.500000 -1.000000 -0.500000
+
+fMatrix * fmatinv(fMatrix *m)
+{
+	double ratio, a;
+	int i, j, k, n=m->w;
+	fMatrix *mat = fmatrshp(m, n, 2*n);
+
+	for (i = 0; i < n; i++)
+	{
+		for (j = n; j < 2*n; j++)
+		{
+		    if(i == (j-n))
+			fset2(mat, i,j, 1.0);
+		    else
+			fset2(mat, i,j, 0.0);
+		}
+	}
+
+	for (i = 0; i < n; i++)
+	{
+		for (j = 0; j < n; j++)
+		{
+		    	if (i != j)
+			{
+				if (fget2(mat,i,i) == 0.0) 
+{printf ("??er\n"); return NULL;}
+
+				ratio = (double)fget2(mat,j,i)/fget2(mat,i,i); 
+				for (k = 0; k < 2*n; k++)
+				{
+				    fset2(mat, j, k, (float)((double)fget2(mat,j,k)-ratio*(double)fget2(mat,i,k))); 
+				}
+		    	}
+		}
+	}
+
+	for (i = 0; i < n; i++)
+	{
+		a = (double)fget2(mat,i,i); 
+		for (j = 0; j < 2*n; j++)
+		{
+		    	fset2(mat,i,j, (float)((double)fget2(mat,i,j)/a));
+		}
+	}
+
+	fMatrix *r=newmatrix(n,n);
+
+	if (dbg) fmatprint2(mat);
+
+	for (i = 0; i < n; i++)
+	{
+		for (j = n; j < 2*n; j++)
+		{
+			fset2(r,i,j-n, fget2(mat,i,j));
+		}
+	}
+	delmatrix(mat);
 	return r;
 }
 
