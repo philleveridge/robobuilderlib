@@ -34,12 +34,9 @@ extern fMatrix *fconvolve	(fMatrix *A, fMatrix *B) ;
 extern fMatrix *fimport2	(char m2, int c, int r);
 extern fMatrix *fmatzerodiag2	(fMatrix *A) ;
 extern fMatrix *fmatzeroregion	(fMatrix *A, int c1, int r1, int c2, int r2);
-extern fMatrix *Cholesky	(fMatrix *s, float ztol);
-extern fMatrix *CholeskyInverse	(fMatrix *s);
-extern fMatrix *cofactors	(fMatrix *num, int f) ;
-extern fMatrix *trans		(fMatrix *num, fMatrix *fac, int r);
-extern float   detrminant	(fMatrix *a, int k) ;
-extern fMatrix *inverse(fMatrix *s);
+
+extern float   determinant	(fMatrix *a) ;
+extern fMatrix *inverse		(fMatrix *s);
 
 extern fMatrix *fmatscale	(fMatrix *A, float k) ;  
 extern fMatrix *fmatflip	(fMatrix *A); 

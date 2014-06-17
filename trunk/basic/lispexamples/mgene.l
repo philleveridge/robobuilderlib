@@ -9,7 +9,7 @@
 (Uranus  	19.1 		83.5	)))
 
 ;A set of fitness cases, with planetary data taken from Urey (1952). A is
-;Earth s semi-major axis of orbit and P is in units of earth-years.
+;Earths semi-major axis of orbit and P is in units of earth-years.
 
 
 (setq foo '( 
@@ -64,7 +64,7 @@
 ;	(pr "[" t "]")
 	(if (null t) (return ))
 	(foreach m foo 
-		(if (= (sum ( = (car m) t )) 3) 
+		(if (= (sum (ham (car m) t )) 3) 
 			(return (list (cadr m) (nth 2 m)))
 		)
 	)

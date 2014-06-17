@@ -2,17 +2,16 @@
 
 (DEF MATCH (P D)
 (COND (AND (NULL P) (NULL D))                                 1
-       (OR  (NULL P) (NULL D))                                 0
-       (OR  (= (CAR P) '>) (= (CAR P) (CAR D)))                (MATCH (CDR P) (CDR D))
-       (AND (= (LFT (CAR P) 1) '>) (MATCH (CDR P) (CDR D)))    (SET (MID (CAR P) 2) (CAR D))
-       (=   (CAR P) '+)                                        (COND (MATCH (CDR P) (CDR D)) 1 (MATCH P (CDR D)))
+       (OR  (NULL P) (NULL D))                                0
+       (OR  (= (CAR P) '>) (= (CAR P) (CAR D)))               (MATCH (CDR P) (CDR D))
+       (AND (= (LFT (CAR P) 1) '>) (MATCH (CDR P) (CDR D)))   (SET (MID (CAR P) 2) (CAR D))
+       (=   (CAR P) '+)                                       (COND (MATCH (CDR P) (CDR D)) 1 (MATCH P (CDR D)))
        (=   (LFT (CAR P) 1) '+) (COND (MATCH (CDR P) (CDR D)) (SET (MID (CAR P) 2) (CAR D))
-                                       (MATCH P (CDR P))       (SET (MID (CAR P) 2) (CONS (CAR D) (MID (CAR P) 2))))
+                                       (MATCH P (CDR P))      (SET (MID (CAR P) 2) (CONS (CAR D) (MID (CAR P) 2))))
       
 ))
 
-;tests
-'(
+(def testit ()
 (PR "T1  E=1 "  (MATCH '(A B C)  '(A B C)))
 (PR "T2  E=1 "  (MATCH '(A B +)  '(A B C)))
 (PR "T3  E=1 "  (MATCH '(A B +)  '(A B C D)))
@@ -32,7 +31,7 @@
 
    ((+ MOTHER +)              	(("Tell me more about your family")))
 
-   ((+ COMPUTER +)            	(("Are you afarid of computers?")
+   ((+ COMPUTER +)            	(("Are you afraid of computers?")
                               	("Do computers worry you ?")
 				("Why do you mention computers ?")
 				("What do you think machines have to do with your problem ?")))
@@ -83,7 +82,7 @@
 (WHILE LP
   (SETQ INP (READ) ANS "")
   (COND  (= (CAR INP) 'BYE)             (RETURN "See you")
-          (SETQ ANS (GETRES DATA INP))   (EVAL ANS)
+          (SETQ ANS (GETRES DATA INP))  (EVAL ANS)
           (PR "TELL ME MORE")
   )
 ))

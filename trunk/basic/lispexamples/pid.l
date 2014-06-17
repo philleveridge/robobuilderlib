@@ -2,7 +2,7 @@
 
 ;PID controller
 
-(setq twopi (* 2 pi))
+;(setq twopi (* 2 pi))
 
 (def dist (x1 y1 x2 y2) (sqrt (+ (.^ (- x1 x2) 2) (.^ (- y1 y2) 2) )))
 
@@ -82,6 +82,20 @@
 	prob
 )
 
+
+; resampler
+; [ turtle-x  turtle-y turtle-o probability ]
+(def resample (l) 
+      (SETQ R (RND)) 
+      (for i (list (row l) 0)  
+	    (if (< r (cell l 3 i))
+	    	(return (turtle-set (cell l 0 i) (cell l 1 i) (cell l 2 i)))
+		(setq r (- r (cell l 3 i))))
+      )
+      (setq i (- (row l) 1))
+      (turtle-set (cell l 0 i) (cell l 1 i) (cell l 2 i))
+)
+
 (setq lot ' lot2 '())
 
 (def particles (nsize step)
@@ -91,9 +105,10 @@
 	(pr "myrobot=";)
 	(turtle-print myrobot)
 	(pr "z= " z)
-	(pr lot)
 
 	(setq forward-noise 0.05 turn-noise 0.05  sense-noise 5.0 ws 0.0)
+
+	(for i (list 0 nsize)  (setc lot (turtle-make) i))
 
 	(for j (list 1 step) 
 		(setq 	myrobot (turtle-move  myrobot 0.1 5.0) 
@@ -102,21 +117,22 @@
 		(pr "step " j " z= " z)
 		(turtle-print myrobot)
 
-		(for i (list 0 nsize)  (setc lot (turtle-make) i))
-
 		(setq ml (zero nsize 4) lot2 (zero nsize 3))
 
 		(for i  (list 0 (row lot)) 
 			(setq  t    (turtle-move (row lot i) 5.0 0.1)
 			       mp   (turtle-meas-prob t z landmarks)
 			       ws   (+ ws mp))
-			(setc ml   3 i mp)
-			(setc lot2 t i )
+			(setc  ml   3 i mp)
+			(setc  lot2 t i )
 		)
-		(pr "sort=" (sort (+ (/ ml ws) lot2) 3))
 
 		; call resample
-		(setq lot '())
+		(setq sl (sort (+ (/ ml ws) lot2) 3))
+		(setq lot (zero nsize 3))
+		(for c (list 0 (row sl))
+			(setc lot (resample sl) c)
+		)
 	)
 )
 
@@ -141,7 +157,7 @@
 
 (main 0.2 3.0 0.004)
 
-;(particles 200 1)
+;(particles 300 10)
 
 
 

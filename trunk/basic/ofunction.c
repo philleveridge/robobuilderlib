@@ -385,7 +385,7 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 
 	if (o1.type==EMPTY) return r;
 
-	if (o1.type==CELL && o2.type==CELL) 
+	if (o1.type==CELL && o2.type==CELL && !(op == EQL || op== NEQ))
 	{
 		// + '(1 2 3) '(3 4 5)
 		tOBJ a = omath(ocar(o1), ocar(o2), op);
@@ -1120,6 +1120,7 @@ tOBJ ominv(tOBJ a)
 	{
 		r.type=FMAT2;
 		r.fmat2=inverse(a.fmat2);
+		if (r.fmat2==NULL) r=emptyObj();
 	}
 	return r;
 }
@@ -1130,7 +1131,7 @@ tOBJ omdet(tOBJ a)
 	if (a.type==FMAT2) 
 	{
 		r.type=FLOAT;
-		r.floatpoint=detrminant(a.fmat2, a.fmat2->w);
+		r.floatpoint=determinant(a.fmat2); //, a.fmat2->w);
 	}
 	return r;
 }
@@ -1486,8 +1487,8 @@ tOBJ orshp(tOBJ m, tOBJ a, tOBJ b)
 {	// RSHP(M,x,y)
 	tOBJ r=emptyObj();
 	int row,col;
-	row=toint(a);
-	col=toint(b);
+	col=toint(a);
+	row=toint(b);
 
 	if (m.type==FMAT2)
 	{

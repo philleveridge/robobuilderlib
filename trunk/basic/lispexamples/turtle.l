@@ -97,14 +97,14 @@
 
 	(setq forward-noise 0.05 turn-noise 0.05  sense-noise 5.0 ws 0.0 lot2 '())
 
+	(for i (list 1 nsize)  
+		(nconc lot (make-turtle)))
+
 	(for j (list 1 step) 
 		(setq 	myrobot (move-turtle myrobot 0.1 5.0) 
 			z 	(sense myrobot landmarks ))
 
 		(pr "step " j " myrobot=" myrobot ", z= " z)
-
-		(for i (list 1 nsize)  
-			(nconc lot (make-turtle)))
 
 		(foreach t lot 
 			(setq  t    (move-turtle t 0.1 5.0)
