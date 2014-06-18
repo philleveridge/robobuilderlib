@@ -476,6 +476,92 @@ fMatrix *fmatzeroregion(fMatrix *A, int c1, int r1, int c2, int r2)
 	return R;
 }
 
+fMatrix *insert_row(fMatrix *m, int n, float v)
+{
+	int i,j;
+	if (n<0 || n>m->h) return NULL;
+	fMatrix *r=newmatrix(m->w,m->h+1);
+	for (i=0; i<(r->h); i++)
+	{
+		for (j=0; j<r->w; j++)
+		{
+			if (i<n) {
+				r->fstore[j+i*r->w]=m->fstore[j+i*m->w];
+			} 
+			else if (i>n) {
+				r->fstore[j+i*r->w]=m->fstore[j+(i-1)*m->w];
+			}
+			else {
+				r->fstore[j+i*r->w]=v;
+			}
+		}
+	}
+	return r;
+}
+
+fMatrix *insert_col(fMatrix *m, int n, float v)
+{
+	int i,j;
+	if (n<0 || n>m->w) return NULL;
+	fMatrix *r=newmatrix(m->w+1,m->h);
+	for (i=0; i<(r->h); i++)
+	{
+		for (j=0; j<r->w; j++)
+		{
+			if (j<n) {
+				r->fstore[j+i*r->w]=m->fstore[j+i*m->w];
+			} 
+			else if (j>n) {
+				r->fstore[j+i*r->w]=m->fstore[j+(i*m->w)-1];
+			}
+			else {
+				r->fstore[j+i*r->w]=v;
+			}
+		}
+	}
+	return r;
+}
+
+fMatrix *del_row(fMatrix *m, int n)
+{
+	int i,j;
+	if (n<0 || n>=m->h) return NULL;
+	fMatrix *r=newmatrix(m->w,m->h-1);
+	for (i=0; i<r->h; i++)
+	{
+		for (j=0; j<r->w; j++)
+		{
+			if (i<n) {
+				r->fstore[j+i*r->w]=m->fstore[j+i*m->w];
+			} 
+			else {
+				r->fstore[j+i*r->w]=m->fstore[j+(i+1)*m->w];
+			}
+		}
+	}
+	return r;
+}
+
+fMatrix *del_col(fMatrix *m, int n)
+{
+	int i,j;
+	if (n<0 || n>=m->w) return NULL;
+	fMatrix *r=newmatrix(m->w-1,m->h);
+	for (i=0; i<r->h; i++)
+	{
+		for (j=0; j<r->w; j++)
+		{
+			if (j<n) {
+				r->fstore[j+i*r->w]=m->fstore[j+i*m->w];
+			} 
+			else {
+				r->fstore[j+i*r->w]=m->fstore[1+j+i*m->w];
+			}
+		}
+	}
+	return r;
+}
+
 fMatrix *gausian(int Kernel_Size, int gaus_sigma)
 {
 	fMatrix *n = newmatrix(Kernel_Size, Kernel_Size);

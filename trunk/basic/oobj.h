@@ -4,8 +4,9 @@
 #include "fmatrix.h"
 #include "rbmread.h"
 #include "oimg.h"
+#include "oparticles.h"
 
-enum  TYPE  {SYM, INTGR, BOOLN, FUNC, FLOAT, CELL, EMPTY, FMAT2, DICT, LAMBDA, RBM, STACK, IMAG };
+enum  TYPE  {SYM, INTGR, BOOLN, FUNC, FLOAT, CELL, EMPTY, FMAT2, DICT, LAMBDA, RBM, STACK, IMAG , TURTLE, PARTICLE};
 
 typedef struct object {
         int   		type;
@@ -19,6 +20,8 @@ typedef struct object {
                 void    *dict;
                 void    *stk;
 		void    *fptr;
+		void    *turtle;
+		void    *part;
 		oImage  *imgptr;
 		fMatrix *fmat2;
                 Motion  *mot;

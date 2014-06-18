@@ -18,7 +18,6 @@
 #include "ostack.h"
 #include "mem.h"
 
-extern int dbg;
 
 /**********************************************************/
 /*  stack                                                 */

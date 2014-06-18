@@ -46,4 +46,9 @@ extern fMatrix *fMatrixQSort	(fMatrix *list, int indx);
 extern float   fsum		(fMatrix *A);
 extern float   fmatmax		(fMatrix *A);
 
+extern fMatrix *insert_row	(fMatrix *m, int n, float v);
+extern fMatrix *insert_col	(fMatrix *m, int n, float v);
+extern fMatrix *del_row		(fMatrix *m, int n);
+extern fMatrix *del_col		(fMatrix *m, int n);
+
 #endif
