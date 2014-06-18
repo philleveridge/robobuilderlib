@@ -12,8 +12,9 @@ typedef struct Turtles   {
 	float steering_noise;
 	float distance_noise;
 	float measurement_noise;
-	float num_collisions;
-	float num_steps;
+
+	int   num_collisions;
+	int   num_steps;
 } tTurtle, *tTurtlep;
 
 
@@ -41,7 +42,7 @@ extern double 		turtle_sense_y		(tTurtlep o) ;
 extern double 		turtle_measure_prob	(tTurtlep p, double measurement_x, double measurement_y) ;
 
 extern int 		turtle_check_collision	(tTurtlep p, fMatrix *grid) ;
-extern int 		turtle_check_goal	(tTurtlep p, fMatrix *grid, double threshold) ;
+extern int 		turtle_check_goal	(tTurtlep p, double goal_x, double goal_y, double threshold) ;
 
 
 /**********************************************************/

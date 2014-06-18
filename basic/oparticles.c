@@ -171,15 +171,30 @@ double turtle_measure_prob(tTurtlep p, double measurement_x, double measurement_
 
 int turtle_check_collision(tTurtlep p, fMatrix *grid) 
 {
+	int i,j;
 	if (p==NULL || grid==NULL) return 0;
+	for (i=0; i<grid->h; i++)
+	{
+		for (j=0; j<grid->w; j++)
+		{
+			if (fget2(grid,j,i) == 1.0) 
+			{
+				if (sqrt((p->x-(float)j)*(p->x-(float)j) + (p->y-(float)i)*(p->y-(float)i))<0.5) 
+				{
+					p->num_collisions++;
+					return 1;
+				}
+			}
+		}
+	}
 	return 0;
 }
 
-int turtle_check_goal(tTurtlep p, fMatrix *grid, double threshold) 
+int turtle_check_goal(tTurtlep p, double goal_x, double goal_y, double threshold) 
 {
 	// default threshold=1.0
-	if (p==NULL || grid==NULL) return 0;
-	return 0;
+	if (p==NULL) return 0;
+	return (sqrt((goal_x-p->x)*(goal_x-p->x) + (goal_y-p->y)*(goal_y-p->y))<threshold);
 }
 
 
@@ -249,13 +264,31 @@ void particles_sense(tParticlep p, fMatrix *Z)
 {
 	int i;
 	if (p==NULL || Z==NULL) return;
-
+/*
+        w = []
+        for i in range(self.N):
+            w.append(self.data[i].measurement_prob(Z))
+*/
 	for (i=0; i<p->N; i++)
 	{
 		printf ("%d %f\n", i, turtle_measure_prob(p->turtle_data[i], Z->fstore[0], Z->fstore[1]));
 	}
 
-	//rsampling
+/*
+        // resampling (careful, this is using shallow copy)
+        p3 = []
+        index = int(random.random() * self.N)
+        beta = 0.0
+        mw = max(w)
+
+        for i in range(self.N):
+            beta += random.random() * 2.0 * mw
+            while beta > w[index]:
+                beta -= w[index]
+                index = (index + 1) % self.N
+            p3.append(self.data[index])
+        self.data = p3
+*/
 }
 
 /* -------
