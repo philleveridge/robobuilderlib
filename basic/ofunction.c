@@ -53,7 +53,7 @@ extern volatile WORD	mstimer;
 #include "fmatrix.h"
 #include "rbmread.h"
 #include "oexpress.h"
-
+#include "oparticles.h"
 #include "ofunction.h"
 #include "opflow.h"
 #include "cmap.h"
@@ -156,6 +156,8 @@ tOP oplist[] = {
 	{"LOG10", 40, NA,   1, {olog10}},   		//function single arg
 	{"MAPCAR",40,NA,    2, {.func2=omapcar}},	//function two args   <fMatrix>
 	{"MAT",   40, NA,   3, {.func3=omatr}},  	// 
+	{"MATDEL",40, NA,   3, {.func3=omatdelete}},  	// 
+	{"MATINS",40, NA,   5, {.func5=omatinsert}},  	// 
 	{"MAX",   40, NA,   2, {.func2=omax}},   	//function two args
 	{"MCOND", 40, NA,   5, {.func5=omcond}}, 	//function three args   <fMatrix>
 	{"MEMBER",40, NA,   2, {.func2=omemb}},  	//function single arg
@@ -167,6 +169,7 @@ tOP oplist[] = {
 	{"NULL",  40, NA,   1, {onull}},  		//function single arg
 	{"OPFLOW",40, NA,   2, {.func2=OpticFlow}}, 
 	{"OR",    40, NA,   9, {.funce=oor}}, 
+	{"PART",  40, NA,   1, {opart}}, 		//peek element on stack
 	{"PEEK",  40, NA,   9, {.funce=opeek}}, 	//peek element on stack
 	{"PIPE",  40, NA,   1, {opipe}}, 		//create a pipe (fifo stack)
 	{"PLUS",  40, NA,   9, {.funce=oplus}}, 
@@ -208,6 +211,7 @@ tOP oplist[] = {
 	{"TAN",  40, NA,    1, {otan}},  		//function single arg
 	{"THREAD",40, NA,   9, {.funce=othread}},  	
 	{"TRN",  40, NA,    1, {otrn}},  		//ATRIX tRANSPOSE 
+	{"TURTLE",40, NA,   3, {.func3=oturtle}},  	
 	{"TYPE", 40, NA,    1, {otype}}, 		//object type
 	{"V2SM", 40, NA,    1, {ovsum2}},		//function <fMatrix>
 	{"VSUM", 40, NA,    1, {ovsum}}, 		//function <fMatrix>
@@ -3738,6 +3742,44 @@ tOBJ orbmrf(tOBJ v)
 	return r;
 }
 
+/*
+SETQ M [1 2 3;4 5 6]
+MATINS M 'COL 1 9.0
+MATINS M 'ROW 0 6.0
+*/
+tOBJ omatinsert(tOBJ n, tOBJ a, tOBJ b, tOBJ c, tOBJ d)
+{
+	if (n.type==FMAT2 && a.type==SYM )
+	{
+		tOBJ  mat = emptyObj();
+		int   col = toint(b);
+		float v   = tofloat(c);
+		if (!strcmp(a.string, "ROW")) 	mat=emptyTPObj(FMAT2, insert_row(n.fmat2, col, v));
+		if (!strcmp(a.string, "COL")) 	mat=emptyTPObj(FMAT2, insert_col(n.fmat2, col, v));
+		return mat;
+	}
+	return emptyObj();
+}
+
+/*
+SETQ M [1 2 3;4 5 6;5 5 5]
+MATDEL M 'ROW 1
+MATDEL M 'COL 2
+MATDEL M 'COL 1
+*/
+tOBJ omatdelete(tOBJ n, tOBJ a, tOBJ b)
+{
+	if (n.type==FMAT2 && a.type==SYM)
+	{
+		tOBJ mat=emptyObj();
+		int c=toint(b);
+		if (!strcmp(a.string, "ROW")) mat=emptyTPObj(FMAT2, del_row(n.fmat2, c));
+		if (!strcmp(a.string, "COL")) mat=emptyTPObj(FMAT2, del_col(n.fmat2, c));
+		return mat;
+	}
+	return emptyObj();
+}
+
 tOBJ omatr(tOBJ n, tOBJ v, tOBJ f)
 {
 	if (n.type==SYM && v.type==INTGR && f.type==SYM)
@@ -4125,30 +4167,10 @@ tOBJ oclear(tOBJ o, Dict *e)
 	return emptyObj();
 }
 
-
-#define TWO_PI 6.2831853071795864769252866
  
 tOBJ orand_noise(tOBJ m, tOBJ v)
 {
-	static int hasSpare = 0;
-	static double rand1, rand2;
-	double variance = tofloat(v);
-	double mean = tofloat(m);
- 
-	if(hasSpare)
-	{
-		hasSpare = 0;
-		return makefloat(mean + sqrt(variance * rand1) * sin(rand2));
-	}
- 
-	hasSpare = 1;
- 
-	rand1 = rand() / ((double) RAND_MAX);
-	if(rand1 < 1e-100) rand1 = 1e-100;
-	rand1 = -2 * log(rand1);
-	rand2 = (rand() / ((double) RAND_MAX)) * TWO_PI;
- 
-	return makefloat(mean + sqrt(variance * rand1) * cos(rand2));
+ 	return makefloat(rgauss(tofloat(m), tofloat(v)));
 }
 
 extern void quicksort(int list[],int m,int n);
@@ -4359,6 +4381,31 @@ tOBJ onconc(tOBJ o, Dict *e)
 	return r;
 }
 
+/***********************************************************************
+
+turtles and particle functions
+
+************************************************************************/
+
+tOBJ oturtle(tOBJ o,tOBJ a,tOBJ b)
+{
+	if (o.type==TURTLE)
+	{
+		//a=steering, b=distance
+		return emptyTPObj(TURTLE, turtle_move((tTurtlep)o.turtle, tofloat(a), tofloat(b)));
+	}
+	return emptyTPObj(TURTLE, turtle_make(tofloat(o), tofloat(a), tofloat(b)));
+}
+
+tOBJ opart(tOBJ o)
+{
+	if (o.type==PARTICLE)
+	{
+		//a=steering, b=distance
+		return emptyTPObj(PARTICLE, particles_move((tParticlep)o.part, 1.0, 2.0, NULL));
+	}
+	return emptyTPObj(PARTICLE, particles_make(toint(o)));
+}
 	
 
 

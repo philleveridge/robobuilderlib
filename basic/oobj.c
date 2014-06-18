@@ -48,6 +48,8 @@ tOBJ emptyTObj(unsigned char t)
 	if (t==IMAG)  r.imgptr=NULL;
 	if (t==FMAT2) r.fmat2 =NULL;
 	if (t==RBM)   r.mot   =NULL;
+	if (t==PARTICLE) r.part   =NULL;
+	if (t==TURTLE)   r.turtle =NULL;
 	return r;
 }
 
@@ -64,6 +66,8 @@ tOBJ emptyTPObj(unsigned char t, void *p)
 	if (t==IMAG)  r.imgptr=(oImage *)p;
 	if (t==FMAT2) r.fmat2 =(fMatrix *)p;
 	if (t==RBM)   r.mot   =(Motion *)p;
+	if (t==PARTICLE) r.part   =p;
+	if (t==TURTLE)   r.turtle =p;
 	return r;
 }
 
@@ -74,12 +78,14 @@ tOBJ cloneObj(tOBJ z)
 	{
 	case SYM: 	r.string = newstring(z.string);  	break;
 	case CELL:
-	case LAMBDA:	r.cell  = cloneCell((tCELLp)z.cell); 	break;
-	case FMAT2:	r.fmat2 = fmatcp(z.fmat2); 		break;
+	case LAMBDA:	r.cell  =  cloneCell((tCELLp)z.cell); 	break;
+	case FMAT2:	r.fmat2 =  fmatcp(z.fmat2); 		break;
 	case STACK:	r.stk   =  clonestack(z.stk);  		break;		
 	case DICT:	r.dict  =  clonedict(z.dict);  		break;		
 	case RBM:	if (dbg) printf ("RBM clone TBD\n"); 	break;
 	case IMAG:	r.imgptr =  cloneimage(z.imgptr);   	break;	
+	case TURTLE:	r.turtle =  (void *)turtle_clone   ((tTurtlep)z.turtle); break;
+	case PARTICLE:	r.part   =  (void *)particles_clone((tParticlep)z.part); break;
 	default: 	/*if (dbg) printf ("nothing to clone\n");*/ break;
 	}
 	r.cnt=0;
@@ -107,6 +113,8 @@ int freeobj(tOBJ *b)
 	case RBM:	rbmdelete(b->mot); 			break;
 	case STACK:	delstack(b->stk);			break;
 	case IMAG:	delimage(b->imgptr);			break;	
+	case TURTLE:	turtle_del   ((tTurtlep)b->turtle); 	break;
+	case PARTICLE:	particles_del((tParticlep)b->part); 	break;
 	default: 	if (dbg) printf ("nothing to free\n"); 	break;
 	}
 
@@ -148,6 +156,8 @@ tOBJ copyObj(tOBJ z)
 		r.type==SYM   || 
 		r.type==RBM   || 
 		r.type==DICT  || 
+		r.type==TURTLE    || 
+		r.type==PARTICLE  || 
 		r.type==IMAG)
 		r.cnt+=1;
 	return r;
@@ -171,6 +181,8 @@ char *objtype(tOBJ t)
 	case STACK: st="Stsck "; break;
 	case FUNC:  st="Func  "; break;
 	case IMAG:  st="Image "; break;
+	case TURTLE:   st="Turtle ";    break;
+	case PARTICLE: st="Particle "; 	break;
 	}
 	return st;
 }
@@ -197,6 +209,8 @@ void printtype(FILE *fp, tOBJ r)
 	case BOOLN:     fprintf(fp, (r.number==0)?    "False":"True");  break;
 	case CELL:	fprintf(fp, (r.cell != NULL)? "null" :"CELL");  break;
 	default:	fprintf(fp, "? error - type\n"); 
+	case TURTLE:    turtle_print    (r.turtle); 	break;
+	case PARTICLE:  particles_print (r.part); 	break;
 	}
     	return;
 }
