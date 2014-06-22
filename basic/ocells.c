@@ -130,6 +130,69 @@ tOBJ append(tOBJ a, tOBJ b)
 /*  conversions Arrays to List  (and back)                */
 /**********************************************************/
 
+tOBJ cnvtOOtoList(tOBJ a, tOBJ b)
+{
+	tOBJ r=emptyObj();
+	tOBJ t=ocons(b, r);
+	freeobj(&r);
+	r=t;
+	t=ocons(a, r);
+	freeobj(&r);
+	return t;
+}
+
+tOBJ cnvtOOOtoList(tOBJ a, tOBJ b, tOBJ c)
+{
+	tOBJ r = emptyObj();
+	tOBJ t = ocons(c, r);
+	freeobj(&r);
+	r=t;
+	t=ocons(b, r);
+	freeobj(&r);
+	r=t;
+	t=ocons(a, r);
+	freeobj(&r);
+	return t;
+}
+
+tOBJ cnvtDDtoList(double a, double b)
+{
+	tOBJ r=emptyObj();
+	tOBJ t=ocons(makefloat(b), r);
+	freeobj(&r);
+	r=t;
+	t=ocons(makefloat(a), r);
+	freeobj(&r);
+	return t;
+}
+
+tOBJ cnvtIItoList(int a, int b)
+{
+	tOBJ r=emptyObj();
+	tOBJ t=ocons(makeint(b), r);
+	freeobj(&r);
+	r=t;
+	t=ocons(makeint(a), r);
+	freeobj(&r);
+	return t;
+}
+
+
+tOBJ cnvtDDDtoList(double a, double b, double c)
+{
+	tOBJ r = emptyObj();
+	tOBJ t = ocons(makefloat(c), r);
+	freeobj(&r);
+	r=t;
+	t=ocons(makefloat(b), r);
+	freeobj(&r);
+	r=t;
+	t=ocons(makefloat(a), r);
+	freeobj(&r);
+
+	return t;
+}
+
 tOBJ cnvtInttoList(int an, int *array)
 {
 	int i;

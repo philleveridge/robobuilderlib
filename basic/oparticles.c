@@ -16,11 +16,9 @@
 #endif
 
 #include "mem.h"
+#include "ocells.h"
 #include "oparticles.h"
 
-const double steering_noise    = 0.1;
-const double distance_noise    = 0.03;
-const double measurement_noise = 0.3;
 const double pi                = 3.1415926;
 const double twopi             = 6.28318530718;
  
@@ -28,6 +26,8 @@ double rgauss(double mean, double variance)
 {
 	static int hasSpare = 0;
 	static double rand1, rand2;
+
+	if (variance==0.0) return mean;
 
 	if(hasSpare)
 	{
@@ -45,14 +45,203 @@ double rgauss(double mean, double variance)
 	return mean + sqrt(variance * rand1) * cos(rand2);
 }
 
+double Gaussian(double mu, double sigma, double  x)
+{        
+        //calculates the probability of x for 1-dim Gaussian with mean mu and var. sigma
+        return exp(- pow((mu - x),2) / pow(sigma,2) / 2.0) / sqrt(twopi * pow(sigma,2));
+}
+
+/**********************************************************/
+/*  Plans                                                 */
+/**********************************************************/
+
+extern tOBJ ocar(tOBJ);
+extern tOBJ ocdr(tOBJ);
+extern tOBJ ocons(tOBJ  r, tOBJ a);
+extern tOBJ olen (tOBJ a);
+
+tOBJ gpath(int x, int y, int mx, int my)
+{
+	tOBJ r=emptyObj();
+	if (x>0	) r = ocons(cnvtIItoList(x-1,y), r);
+	if (y>0	) r = ocons(cnvtIItoList(x,y-1), r);
+	if (x<mx-1) r = ocons(cnvtIItoList(x+1,y), r);
+	if (y<my-1) r = ocons(cnvtIItoList(x,y+1), r);
+	return r;	
+}
+
+tOBJ  Choice(tOBJ f) 
+{
+        //(FOREACH x f  (IF (< (CADR x) MP) (SETQ MP (CADR x) BS x) ))   BS)
+	int mp=99;
+	tOBJ bs=emptyObj();
+	while (f.type==CELL)
+	{
+		tOBJ x=ocar(f);
+		f=ocdr(f);
+		if (toint(ocar(ocdr(x))) < mp)
+		{
+			mp=toint(ocar(ocdr(x)));
+			bs=x;
+		}
+	}
+	return bs;
+}
+
+tOBJ  Remove(tOBJ a, tOBJ b) 
+{
+	//(FOREACH z b (IF (NOT (= (CAR z) (CAR a))) (SETQ nn (CONS z nn))))nn)
+	tOBJ nn=emptyObj();
+	while (b.type==CELL)
+	{
+		tOBJ z=ocar(b);
+		b=ocdr(b);
+		if (!compareObj(ocar(z), ocar(a)))
+			nn = ocons(z, nn);
+	}
+	return nn;
+}
+
+int  Check(tOBJ x, tOBJ y) 
+{
+	//(FOREACH z y (IF (= (CAR z) x) (RETURN 1))))
+	while (y.type==CELL)
+	{
+		tOBJ z=ocar(y);
+		y=ocdr(y);
+		if (compareObj(ocar(z) ,x)) return 1;
+	}
+	return 0;
+}
+
+
+fMatrix *Astar(fMatrix *grid, int sx, int sy, int gx, int gy)
+{
+	// Input MxM matrix Output - 2 x N matrix
+	// 0 1 0
+	// 0 1 0
+	// 0 0 0
+	// PLAN [ 0 1 0 ; 0 1 0 ; 0 0 0] '(0 0) '(2 2)
+
+	fMatrix *explored = newmatrix(grid->w,grid->h);
+		
+	if (grid == NULL) return NULL;
+
+	tOBJ frontier = ocons(cnvtOOtoList(cnvtIItoList(sx, sy),makeint(0)),emptyObj()) ;
+	tOBJ path     = emptyObj();
+
+	while (frontier.type!=EMPTY)
+	{
+		tOBJ top = Choice(frontier);
+		frontier = Remove(top,frontier);
+
+		//println("frontier=",frontier);
+		//println("top=",top);	
+
+		int x  = toint(ocar(ocar(top)));
+		int y  = toint(ocar(ocdr(ocar(top))));
+		int pl = toint(ocar(ocdr(top)));
+
+		fset2(explored,x,y,1.0);
+
+		if (x==gx && y==gy) 
+		{
+			int i;
+			fMatrix *r=newmatrix(2,toint(olen(path))+1);
+			fset2(r,0,r->h-1, gx);
+			fset2(r,1,r->h-1, gy);
+			for (i=r->h-2; i>=0; i--)
+			{
+				fset2(r,0,i, tofloat(ocar(ocar(path))));
+				fset2(r,1,i, tofloat(ocar(ocdr(ocar(path)))));
+				path=ocdr(path);
+			}
+			delmatrix(explored);		
+			return r;
+		}
+
+		path = ocar(ocdr(ocdr(top)));
+		tOBJ action = gpath (x,y, grid->w, grid->h);
+
+		pl=pl+1;
+		path=ocons(ocar(top),path);
+
+		//printf ("path length=%d\n",pl);
+		//println("path=",path);
+
+		while (action.type==CELL)
+		{
+			tOBJ ns = ocar(action);
+			action  = ocdr(action);
+
+			int nx=toint(ocar(ns));
+			int ny=toint(ocar(ocdr(ns)));
+
+			if (fget2(explored,nx,ny)==0.0 && fget2(grid,nx,ny)==0.0) 
+			{
+				frontier = ocons(cnvtOOOtoList(cnvtIItoList(nx, ny),makeint(pl),path),frontier) ;
+			}
+		}
+	}
+	delmatrix(explored);
+	return NULL;
+}
+
+fMatrix *smooth(fMatrix *xi, float alpha, float beta, float tolerance)
+{
+	// 2 x N matrix	
+	// Yi (x,y) += alpha*(xi-yi) + beta*(y(i+1) +  y(i-1) - 2*yi)
+	int i,j;
+	float change=1.0;
+
+	if (xi==NULL) return NULL;
+
+	if (dbg) printf ("smooth %d,%d %f %f\n", xi->w, xi->h, alpha, beta);
+
+	fMatrix *yi=fmatcp(xi);
+
+	while (change>tolerance)
+	{
+		change=0.0;
+		for (j=1; j<(xi->h)-1; j++)
+		{
+			for (i=0; i<xi->w; i++)
+			{
+				float v  = fget2(yi,i,j);
+				float ax = alpha * (fget2(xi,i,j) - v );
+				float bx = beta  * (fget2(yi,i+1,j) + fget2(yi,i-1,j) - 2*v);
+				fset2(yi, i, j, (v + ax + bx));
+				change  += fabs(ax+bx);
+			}
+		}
+	
+	}
+	return yi;
+}
+
 /**********************************************************/
 /*  turtles                                               */
 /**********************************************************/
 
+double steering_noise    = 0.0;
+double distance_noise    = 0.0;
+double measurement_noise = 0.0;
+double length            = 0.5;
+double drift             = 0.0;
+
+void set_params(float new_s_noise, float new_d_noise, float new_m_noise, float new_length, float new_drift) 
+{
+	steering_noise   = new_s_noise;
+	distance_noise   = new_d_noise;
+	measurement_noise= new_m_noise;
+	length           = new_length;
+	drift            = new_drift;
+}
+
 tTurtlep turtle_make(float x, float y, float h)
 {
 	tTurtlep  p;
-	if (dbg); printf ("Make Turtle %f %f %f\n",x,y,h);
+	if (dbg) printf ("Make Turtle %f %f %f\n",x,y,h);
 
 	p=(tTurtlep)bas_malloc(sizeof(tTurtle));
 	p->x 		    = x;
@@ -61,13 +250,23 @@ tTurtlep turtle_make(float x, float y, float h)
 	p->steering_noise   = steering_noise;
 	p->distance_noise   = distance_noise;
 	p->measurement_noise= measurement_noise;
-	p->length           = 0.5;
+	p->length           = length;
+	p->drift            = drift;
 	return p;
+}
+
+tTurtlep turtle_make_random(double world_size)
+{
+	if (world_size<=0.0) world_size=1.0;
+	float x = world_size * (rand() / ((double) RAND_MAX));
+	float y = world_size * (rand() / ((double) RAND_MAX));
+	float h = twopi      * (rand() / ((double) RAND_MAX));
+	return turtle_make(x, y, h);
 }
 
 tTurtlep turtle_clone(tTurtlep p)
 {
-	if (dbg); printf ("Clone Turtle\n");
+	if (dbg) printf ("Clone Turtle\n");
 	tTurtlep  np=(tTurtlep)bas_malloc(sizeof(tTurtle));
 	np->x 			= p->x;
 	np->y 			= p->y;
@@ -76,6 +275,7 @@ tTurtlep turtle_clone(tTurtlep p)
 	np->distance_noise   	= p->distance_noise;
 	np->measurement_noise	= p->measurement_noise;
 	np->length          	= p->length ;
+	np->drift 		= p->drift ;
 	return np;
 }
 
@@ -90,24 +290,50 @@ void turtle_del(tTurtlep p)
 
 void turtle_print(tTurtlep p) 
 {
-	printf ("turtle %f %f %f", p->x, p->y, p->orientation);
+	printf ("turtle %f %f %f",    p->x, p->y, p->orientation);
+	printf (" : noise  %f %f %f", p->steering_noise, p->distance_noise, p->measurement_noise);
 }
 
-void turtle_set(tTurtlep p, double a, double b, double c) 
+void turtle_set(tTurtlep p, float a, float b, float c) 
 {
 	p->x 		= a;
 	p->y 		= b;
 	p->orientation 	= fmod(c, twopi);
 }
 
-void turtle_set_noise(tTurtlep p, double new_s_noise, double new_d_noise, double new_m_noise) 
+void turtle_set_drift(tTurtlep p, float a) 
+{
+	p->drift 	= a;
+}
+
+void turtle_set_noise(tTurtlep p, float new_s_noise, float new_d_noise, float new_m_noise) 
 {
 	p->steering_noise   = new_s_noise;
 	p->distance_noise   = new_d_noise;
 	p->measurement_noise= new_m_noise;
 }
 
-tTurtlep turtle_move(tTurtlep o, double steering, double distance) 
+tTurtlep turtle_simple_move(tTurtlep o, float steering, float distance) 
+{
+	tTurtlep p=turtle_clone(o);
+
+        if (distance < 0.0) distance = 0.0;
+	steering += o->drift;
+
+        // apply noise
+        double steering2 = rgauss(steering, p->steering_noise);
+        double distance2 = rgauss(distance, p->distance_noise);
+
+        //Execute motion
+
+	p->orientation = fmod(o->orientation + steering2, twopi);
+	p->x           = o->x + distance2 * cos(p->orientation);
+	p->y           = o->y + distance2 * sin(p->orientation);
+
+	return p;
+}
+
+tTurtlep turtle_move(tTurtlep o, float steering, float  distance) 
 {
 	double tolerance = 0.001, max_steering_angle = pi / 4.0;
 	tTurtlep p=turtle_clone(o);
@@ -133,7 +359,6 @@ tTurtlep turtle_move(tTurtlep o, double steering, double distance)
         else
 	{
             //approximate bicycle model for motion
-
             double radius  = distance2 / turn;
             double cx      = p->x - (sin(p->orientation) * radius);
             double cy      = p->y + (cos(p->orientation) * radius);
@@ -144,29 +369,55 @@ tTurtlep turtle_move(tTurtlep o, double steering, double distance)
 	}
         //check for collision
         //turtle_heck_collision(p, grid)
+
 	return p;
 }
 
-double turtle_sense_x(tTurtlep o) 
+void turtle_position(tTurtlep o, float *xp, float *yp, float *op) 
 {
-        return rgauss(o->x, o->measurement_noise);
+	float x = rgauss(o->x, o->measurement_noise);	
+	float y = rgauss(o->y, o->measurement_noise);	
+	float h = rgauss(o->y, o->measurement_noise);	
+	*xp=x;
+	*yp=y;
+	*op=h;
 }
 
-double turtle_sense_y(tTurtlep o) 
+fMatrix *turtle_sense(tTurtlep o, fMatrix *landmarks)
 {
-        return rgauss(o->y, o->measurement_noise);
+	int i;
+	fMatrix *sr = newmatrix(1, landmarks->h);
+	if (landmarks==NULL || landmarks->w != 2) return NULL;
+	for (i=0; i<landmarks->h; i++)
+	{
+		double lx   = fget2(landmarks,0,i);
+		double ly   = fget2(landmarks,1,i);
+		double dist = sqrt(pow((o->x)-lx,2)+pow((o->y)-ly,2));
+		dist        = dist + rgauss(0.0, o->measurement_noise);
+		fset2(sr,0,i,dist);
+	}	
+	return sr;
 }
 
-double turtle_measure_prob(tTurtlep p, double measurement_x, double measurement_y) 
+double turtle_measure_prob(tTurtlep p, float measurement_x, float measurement_y) 
 {
-        //compute errors
-        double error_x = measurement_x - p->x;
-        double error_y = measurement_y - p->y;
+	double r = Gaussian(measurement_x, p->measurement_noise, p->x) * Gaussian(measurement_y, p->measurement_noise, p->y);
+	return r;
+}
 
-        //calculate Gaussian
-        double error =  exp(- pow(error_x,2) / pow(p->measurement_noise, 2) / 2.0) / sqrt(twopi * pow(p->measurement_noise, 2));
-               error *= exp(- pow(error_y,2) / pow(p->measurement_noise, 2) / 2.0) / sqrt(twopi * pow(p->measurement_noise, 2));
-        return error;
+double turtle_measure_prob2(tTurtlep p, fMatrix *measurement, fMatrix *landmarks) 
+{
+	int i;
+	double prob=1.0;
+	if (landmarks==NULL || landmarks->w!=2 || measurement==NULL || measurement->h != landmarks->h ) return 0.0;
+	for (i=0; i<landmarks->h; i++)
+	{
+		double lx   = fget2(landmarks,0,i);
+		double ly   = fget2(landmarks,1,i);
+		double dist = sqrt(pow((p->x)-lx,2)+pow((p->y)-ly,2));
+		prob *= Gaussian(dist, p->measurement_noise, fget2(measurement,0,i)) ;
+	}	
+	return prob;
 }
 
 int turtle_check_collision(tTurtlep p, fMatrix *grid) 
@@ -190,7 +441,7 @@ int turtle_check_collision(tTurtlep p, fMatrix *grid)
 	return 0;
 }
 
-int turtle_check_goal(tTurtlep p, double goal_x, double goal_y, double threshold) 
+int turtle_check_goal(tTurtlep p, float goal_x, float goal_y, float threshold) 
 {
 	// default threshold=1.0
 	if (p==NULL) return 0;
@@ -203,7 +454,7 @@ int turtle_check_goal(tTurtlep p, double goal_x, double goal_y, double threshold
 /*  particles                                             */
 /**********************************************************/
 
-tParticlep particles_make(int N)
+tParticlep particles_make2(int N, float x, float y, float h)
 {
 	int i;
 	if (dbg); printf ("Make Particle\n");
@@ -212,9 +463,28 @@ tParticlep particles_make(int N)
 	p->turtle_data = (tTurtlep *)bas_malloc(sizeof(tTurtlep)*N);
 	for (i=0; i<N; i++)
 	{
-		p->turtle_data[i]=turtle_make(0.0,0.0,0.0);
+		p->turtle_data[i]=turtle_make(x,y,h);
 	}	
 	return p;
+}
+
+tParticlep particles_make_random(int N, float worldsize)
+{
+	int i;
+	if (dbg); printf ("Make random Particle\n");
+	tParticlep p=(tParticlep)bas_malloc(sizeof(tParticle));
+	p->N=N;
+	p->turtle_data = (tTurtlep *)bas_malloc(sizeof(tTurtlep)*N);
+	for (i=0; i<N; i++)
+	{
+		p->turtle_data[i]=turtle_make_random(worldsize);
+	}	
+	return p;
+}
+
+tParticlep particles_make(int N)
+{
+	return particles_make2(N, 0.0,0.0,0.0);
 }
 
 tParticlep particles_clone(tParticlep p)
@@ -228,7 +498,7 @@ tParticlep particles_clone(tParticlep p)
 
 	for (i=0; i<p->N; i++)
 	{
-		np->turtle_data[i]=turtle_make(p->turtle_data[i]->x, p->turtle_data[i]->y, p->turtle_data[i]->orientation);
+		np->turtle_data[i]=turtle_clone(p->turtle_data[i]);
 	}
 
 	return np;
@@ -239,6 +509,12 @@ void particles_del(tParticlep p)
 	if (dbg) printf ("Del Particles\n");
 	if (p != NULL)
 	{
+		int i;
+		for (i=0; i<p->N; i++)
+		{
+			turtle_del(p->turtle_data[i]);
+		}
+		bas_free(p->turtle_data);
 		bas_free(p);
 	}
 }
@@ -260,35 +536,46 @@ sensing and resampling
 
 ---------*/
 
-void particles_sense(tParticlep p, fMatrix *Z) 		
+tParticlep particles_sense(tParticlep o, fMatrix *Z) 		
 {
 	int i;
-	if (p==NULL || Z==NULL) return;
-/*
-        w = []
-        for i in range(self.N):
-            w.append(self.data[i].measurement_prob(Z))
-*/
-	for (i=0; i<p->N; i++)
+	if (o==NULL || Z==NULL) return NULL;
+
+	float mp[o->N];
+	float mw=0.0;
+
+	for (i=0; i<o->N; i++)
 	{
-		printf ("%d %f\n", i, turtle_measure_prob(p->turtle_data[i], Z->fstore[0], Z->fstore[1]));
+		if (Z->h==1)
+		{
+			mp[i] = turtle_measure_prob(o->turtle_data[i], Z->fstore[0], Z->fstore[1]);
+		}
+		else
+		{
+//			mp[i] = turtle_measure_prob2(o->turtle_data[i], m, Z);
+		}
+		if (mp[i]>mw) mw=mp[i];
+		printf ("%d %f\n", i, mp[i] );
+
 	}
+	printf ("Max %f\n", mw );
 
-/*
-        // resampling (careful, this is using shallow copy)
-        p3 = []
-        index = int(random.random() * self.N)
-        beta = 0.0
-        mw = max(w)
+        // resampling - 
 
-        for i in range(self.N):
-            beta += random.random() * 2.0 * mw
-            while beta > w[index]:
-                beta -= w[index]
-                index = (index + 1) % self.N
-            p3.append(self.data[index])
-        self.data = p3
-*/
+	tParticlep p = particles_make(o->N);
+	int index = (int)((rand() / ((double) RAND_MAX)) * o->N);
+	double beta=0.0;
+	for (i=0; i<o->N; i++)
+	{
+		beta += ((rand() / ((double) RAND_MAX)) * 2.0*mw);
+		while (beta> mp[index])
+		{
+			beta -= mp[index];
+			index = (index+1) % (p->N);
+		}
+		p->turtle_data[i] = turtle_clone(o->turtle_data[index]);
+	}
+	return p;	
 }
 
 /* -------
@@ -298,13 +585,17 @@ motion of the particles
 
 ---------*/
 
-tParticlep particles_move(tParticlep o, double steer, double speed, fMatrix *grid ) 		
+tParticlep particles_move(tParticlep o, double steer, double speed, fMatrix *grid, int t ) 		
 {
 	int i;
 	tParticlep p = particles_make(o->N);
 	for (i=0; i<p->N; i++)
 	{
-		p->turtle_data[i] = turtle_move(o, steer, speed);
+		if (t)
+			p->turtle_data[i] = turtle_move(o->turtle_data[i], steer, speed);
+		else
+			p->turtle_data[i] = turtle_simple_move(o->turtle_data[i], steer, speed);
+
 	}
 	return p;
 }
