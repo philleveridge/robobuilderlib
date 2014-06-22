@@ -150,14 +150,14 @@ int compareObj(tOBJ a, tOBJ b)
 tOBJ copyObj(tOBJ z)
 {
 	tOBJ r = z; 
-	if (	r.type==CELL  || 
-		r.type==FMAT2 || 
-		r.type==STACK || 
-		r.type==SYM   || 
-		r.type==RBM   || 
-		r.type==DICT  || 
-		r.type==TURTLE    || 
-		r.type==PARTICLE  || 
+	if (	r.type==CELL  	 || 
+		r.type==FMAT2 	 || 
+		r.type==STACK 	 || 
+		r.type==SYM   	 || 
+		r.type==RBM   	 || 
+		r.type==DICT  	 || 
+		r.type==TURTLE   || 
+		r.type==PARTICLE || 
 		r.type==IMAG)
 		r.cnt+=1;
 	return r;
@@ -168,19 +168,19 @@ char *objtype(tOBJ t)
 	char *st="??";
 	switch (t.type)
 	{  
-	case INTGR: st="Int   "; break;
-	case FLOAT: st="Float "; break;
-	case FMAT2: st="Matrix"; break;
-	case CELL:  st="List  "; break;
-	case SYM:   st="Symbol"; break;
-	case LAMBDA:st="Lambda"; break;
-	case BOOLN: st="bool  "; break;
-	case EMPTY: st="Empty "; break;
-	case DICT:  st="Dict  "; break;
-	case RBM:   st="RBM   "; break;
-	case STACK: st="Stsck "; break;
-	case FUNC:  st="Func  "; break;
-	case IMAG:  st="Image "; break;
+	case INTGR:    st="Int   "; 	break;
+	case FLOAT:    st="Float "; 	break;
+	case FMAT2:    st="Matrix"; 	break;
+	case CELL:     st="List  "; 	break;
+	case SYM:      st="Symbol"; 	break;
+	case LAMBDA:   st="Lambda"; 	break;
+	case BOOLN:    st="bool  "; 	break;
+	case EMPTY:    st="Empty "; 	break;
+	case DICT:     st="Dict  "; 	break;
+	case RBM:      st="RBM   "; 	break;
+	case STACK:    st="Stsck "; 	break;
+	case FUNC:     st="Func  "; 	break;
+	case IMAG:     st="Image "; 	break;
 	case TURTLE:   st="Turtle ";    break;
 	case PARTICLE: st="Particle "; 	break;
 	}

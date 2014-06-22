@@ -169,9 +169,10 @@ tOP oplist[] = {
 	{"NULL",  40, NA,   1, {onull}},  		//function single arg
 	{"OPFLOW",40, NA,   2, {.func2=OpticFlow}}, 
 	{"OR",    40, NA,   9, {.funce=oor}}, 
-	{"PART",  40, NA,   1, {opart}}, 		//peek element on stack
+	{"PART",  40, NA,   3, {.func3=opart}}, 		//peek element on stack
 	{"PEEK",  40, NA,   9, {.funce=opeek}}, 	//peek element on stack
 	{"PIPE",  40, NA,   1, {opipe}}, 		//create a pipe (fifo stack)
+	{"PLAN",  40, NA,   3, {.func3=oplan}}, 
 	{"PLUS",  40, NA,   9, {.funce=oplus}}, 
 	{"POP",   40, NA,   9, {.funce=opop}}, 	 		//function single arg
 	{"POSE",  40, NA,   1, {opose}}, 		//function single arg
@@ -209,9 +210,9 @@ tOP oplist[] = {
 	{"SUBS", 40, NA,    3, {osubst}},		//function single arg
 	{"SUM",  40, NA,    1, {osum}},  		//function <fMatrix>
 	{"TAN",  40, NA,    1, {otan}},  		//function single arg
-	{"THREAD",40, NA,   9, {.funce=othread}},  	
+	{"THREAD",40,NA,    9, {.funce=othread}},  	
 	{"TRN",  40, NA,    1, {otrn}},  		//ATRIX tRANSPOSE 
-	{"TURTLE",40, NA,   3, {.func3=oturtle}},  	
+	{"TURTLE",40,NA,    3, {.func3=oturtle}},  	
 	{"TYPE", 40, NA,    1, {otype}}, 		//object type
 	{"V2SM", 40, NA,    1, {ovsum2}},		//function <fMatrix>
 	{"VSUM", 40, NA,    1, {ovsum}}, 		//function <fMatrix>
@@ -4375,9 +4376,7 @@ tOBJ onconc(tOBJ o, Dict *e)
 			}
 			r=t;
 		}
-
 	}
-
 	return r;
 }
 
@@ -4387,25 +4386,149 @@ turtles and particle functions
 
 ************************************************************************/
 
-tOBJ oturtle(tOBJ o,tOBJ a,tOBJ b)
+tOBJ oturtle(tOBJ o, tOBJ a, tOBJ b)
 {
-	if (o.type==TURTLE)
+	if (o.type==SYM && !strcmp(o.string,"SETPARAM") && a.type==CELL)
 	{
-		//a=steering, b=distance
-		return emptyTPObj(TURTLE, turtle_move((tTurtlep)o.turtle, tofloat(a), tofloat(b)));
+		float a1=tofloat(ocar(a)); a=ocdr(a);  	//new_s_noise
+		float a2=tofloat(ocar(a)); a=ocdr(a); 	//new_d_noise
+		float a3=tofloat(ocar(a)); a=ocdr(a); 	//new_m_noise,
+		float a4=tofloat(ocar(a)); a=ocdr(a); 	//new_length
+		float a5=tofloat(ocar(a));		//new_drift)
+		set_params(a1,a2,a3,a4,a5);
+		return emptyObj();
 	}
-	return emptyTPObj(TURTLE, turtle_make(tofloat(o), tofloat(a), tofloat(b)));
+	else if (o.type==TURTLE)
+	{
+		if (a.type==SYM && !strcasecmp(a.string,"CC") && b.type==FMAT2)
+		{
+			return makeint(turtle_check_collision((tTurtlep)o.turtle, b.fmat2)) ;
+		}
+		if (a.type==SYM && !strcasecmp(a.string,"SETNOISE") && b.type==CELL)
+		{
+			turtle_set_noise((tTurtlep)o.turtle, tofloat(ocar(b)), tofloat(ocadr(b)), tofloat(ocadr(ocdr(b))));
+			return emptyTPObj(TURTLE, turtle_clone((tTurtlep)o.turtle));
+		}
+		if (a.type==SYM && !strcasecmp(a.string,"SENSE")  && b.type==EMPTY)
+		{
+			float x,y,h;
+			turtle_position((tTurtlep)o.turtle, &x, &y, &o);
+			return cnvtDDtoList((double)x,(double)y);
+		}
+		if (a.type==SYM && !strcasecmp(a.string,"SENSE")  && b.type==FMAT2)
+		{
+			return emptyTPObj(FMAT2, turtle_sense((tTurtlep)o.turtle, b.fmat2));
+		}
+		if (a.type==SYM && !strcmp(a.string,"BI-MOVE") && b.type==CELL)
+		{
+			float st = tofloat(ocar(b)); b=ocdr(b);
+			float di = tofloat(ocar(b));
+			return emptyTPObj(TURTLE, turtle_move((tTurtlep)o.turtle, st, di));
+		}
+		if (a.type==SYM && !strcasecmp(a.string,"MOVE") && b.type==CELL)
+		{
+			float st = tofloat(ocar(b)); b=ocdr(b);
+			float di = tofloat(ocar(b)); 
+			return emptyTPObj(TURTLE, turtle_simple_move((tTurtlep)o.turtle, st, di));
+		}
+		if (a.type==SYM && !strcasecmp(a.string,"MP") && b.type==CELL )
+		{
+			double r = 0.0;
+			tOBJ z   = ocar(b);
+			if (z.type==FLOAT)
+			{			
+				float mx = tofloat(z); b=ocdr(b);
+				r = turtle_measure_prob((tTurtlep)o.turtle, mx, tofloat(z)) ;
+			}
+			else if (z.type==FMAT2)
+			{
+				fMatrix *x = z.fmat2; b=ocdr(b);
+				tOBJ n = ocar(b);
+				if (n.type==FMAT2)
+					r = turtle_measure_prob2((tTurtlep)o.turtle, x, n.fmat2) ;
+			}
+			return makefloat(r);
+		}
+		return emptyObj();
+
+	}
+	else if ((o.type==FLOAT || o.type==INTGR) && a.type==EMPTY)
+	{
+		return emptyTPObj(TURTLE, turtle_make_random(tofloat(o)));
+	}
+	else
+		return emptyTPObj(TURTLE, turtle_make(tofloat(o), tofloat(a), tofloat(b)));
 }
 
-tOBJ opart(tOBJ o)
+tOBJ opart(tOBJ o, tOBJ a, tOBJ b)
 {
 	if (o.type==PARTICLE)
 	{
-		//a=steering, b=distance
-		return emptyTPObj(PARTICLE, particles_move((tParticlep)o.part, 1.0, 2.0, NULL));
+		if (a.type==SYM && !strcasecmp(a.string,"SENSE") && b.type==CELL)
+		{
+			tOBJ r;
+			fMatrix *Z=newmatrix(2,1);
+			float mx=tofloat(ocar(b));b=ocdr(b);
+			float my=tofloat(ocar(b));
+			fset2(Z,0,0,mx);
+			fset2(Z,1,0,my);		
+			r = emptyTPObj(PARTICLE, particles_sense((tParticlep)o.part, Z)) ;
+			delmatrix(Z);
+			return r;
+		}
+		if (a.type==SYM && !strcasecmp(a.string,"SENSE") && b.type==FMAT2)
+		{
+			tOBJ r;		
+			r = emptyTPObj(PARTICLE, particles_sense((tParticlep)o.part, b.fmat2)) ;
+			return r;
+		}
+		if (a.type==SYM && !strcasecmp(a.string,"POS"))
+		{
+			float xp, yp, op;
+			particles_get_position((tParticlep)o.part, &xp, &yp, &op) ;
+			return cnvtDDDtoList(xp,yp,op);
+		}
+		if (a.type==SYM && !strcasecmp(a.string,"MOVE") && b.type==CELL)
+		{
+			float st=tofloat(ocar(b));b=ocdr(b);
+			float sp=tofloat(ocar(b));b=ocdr(b);
+			int   ty=toint(ocar(b));b=ocdr(b);
+			fMatrix *grid=NULL;
+			return emptyTPObj(PARTICLE, particles_move((tParticlep)o.part, st, sp, grid, ty));
+		}
+	}
+	if (o.type==CELL)
+	{
+		int n=toint(ocar(o));    o=ocdr(o);
+		float x=tofloat(ocar(o));o=ocdr(o);
+		if (o.type==EMPTY)
+		{
+			return emptyTPObj(PARTICLE, particles_make_random(n,x));
+		}
+		else
+		{
+			float y=tofloat(ocar(o));o=ocdr(o);
+			float h=tofloat(ocar(o));
+			return emptyTPObj(PARTICLE, particles_make2(n,x,y,h));
+		}
 	}
 	return emptyTPObj(PARTICLE, particles_make(toint(o)));
 }
 	
+
+tOBJ oplan(tOBJ o, tOBJ a, tOBJ b)
+{
+	if (o.type==FMAT2 && a.type==CELL && b.type==CELL )
+	{
+		return emptyTPObj(FMAT2, Astar(o.fmat2, toint(ocar(a)), toint(ocadr(a)), toint(ocar(b)),toint(ocadr(b))));
+	}
+
+	if (o.type==SYM && !strcasecmp(o.string,"SMOOTH"))
+	{
+		if (a.type==FMAT2 && b.type==CELL)
+			return emptyTPObj(FMAT2, smooth(a.fmat2, tofloat(ocar(b)), tofloat(ocadr(b)), 0.000001));
+	}
+	return emptyObj();
+}
 
 

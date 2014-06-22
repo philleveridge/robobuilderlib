@@ -1,6 +1,7 @@
 #ifndef OOBJ_H
 #define OOBJ_H
 
+
 #include "fmatrix.h"
 #include "rbmread.h"
 #include "oimg.h"
