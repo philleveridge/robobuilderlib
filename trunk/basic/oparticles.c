@@ -63,10 +63,10 @@ extern tOBJ olen (tOBJ a);
 tOBJ gpath(int x, int y, int mx, int my)
 {
 	tOBJ r=emptyObj();
-	if (x>0	) r = ocons(cnvtIItoList(x-1,y), r);
-	if (y>0	) r = ocons(cnvtIItoList(x,y-1), r);
-	if (x<mx-1) r = ocons(cnvtIItoList(x+1,y), r);
-	if (y<my-1) r = ocons(cnvtIItoList(x,y+1), r);
+	if (x>0	)   { tOBJ c = cnvtIItoList(x-1,y); tOBJ t = ocons(c, r); freeobj(&r); freeobj(&c);r=t;}
+	if (y>0	)   { tOBJ c = cnvtIItoList(x,y-1); tOBJ t = ocons(c, r); freeobj(&r); freeobj(&c); r=t;}
+	if (x<mx-1) { tOBJ c = cnvtIItoList(x+1,y); tOBJ t = ocons(c, r); freeobj(&r); freeobj(&c); r=t;}
+	if (y<my-1) { tOBJ c = cnvtIItoList(x,y+1); tOBJ t = ocons(c, r); freeobj(&r); freeobj(&c); r=t;}
 	return r;	
 }
 
@@ -82,6 +82,7 @@ tOBJ  Choice(tOBJ f)
 		if (toint(ocar(ocdr(x))) < mp)
 		{
 			mp=toint(ocar(ocdr(x)));
+			freeobj(&bs);
 			bs=x;
 		}
 	}
@@ -92,12 +93,19 @@ tOBJ  Remove(tOBJ a, tOBJ b)
 {
 	//(FOREACH z b (IF (NOT (= (CAR z) (CAR a))) (SETQ nn (CONS z nn))))nn)
 	tOBJ nn=emptyObj();
+	tOBJ t1=emptyObj();
+	tOBJ z =emptyObj();
 	while (b.type==CELL)
 	{
-		tOBJ z=ocar(b);
+		z=ocar(b);
 		b=ocdr(b);
 		if (!compareObj(ocar(z), ocar(a)))
-			nn = ocons(z, nn);
+		{
+			t1 = ocons(z, nn);
+			freeobj(&nn);
+			nn=t1;
+		}
+		freeobj(&z);
 	}
 	return nn;
 }
@@ -114,6 +122,10 @@ int  Check(tOBJ x, tOBJ y)
 	return 0;
 }
 
+int heuristic(int x, int y, int gx, int gy)
+{
+	return abs(x-gx)+abs(y-gy);
+}
 
 fMatrix *Astar(fMatrix *grid, int sx, int sy, int gx, int gy)
 {
@@ -122,56 +134,85 @@ fMatrix *Astar(fMatrix *grid, int sx, int sy, int gx, int gy)
 	// 0 1 0
 	// 0 0 0
 	// PLAN [ 0 1 0 ; 0 1 0 ; 0 0 0] '(0 0) '(2 2)
-
+	// SETQ M [0 0 1 0 0 0 ; 0 0 1 0 0 0 ; 0 0 0 1 0 0  ; 0 0 0 0 0 1; 0 0 0 0 0 0]
+	tOBJ ns, top, action, t, t1,t2,t3;
 	fMatrix *explored = newmatrix(grid->w,grid->h);
 		
 	if (grid == NULL) return NULL;
-
-	tOBJ frontier = ocons(cnvtOOtoList(cnvtIItoList(sx, sy),makeint(0)),emptyObj()) ;
+	t1=cnvtIItoList(sx, sy);
+	t2=makeint(0);
+	t3=cnvtOOtoList(t1,t2);
+	tOBJ frontier = ocons(t3,emptyObj()) ;
 	tOBJ path     = emptyObj();
+	freeobj(&t1);
+	freeobj(&t2);
+	freeobj(&t3);
 
 	while (frontier.type!=EMPTY)
 	{
-		tOBJ top = Choice(frontier);
-		frontier = Remove(top,frontier);
+		top    = Choice(frontier);
+		action = emptyObj();
 
 		//println("frontier=",frontier);
+
+		frontier = Remove(top,frontier);
+		//freeobj(&frontier);
+		//frontier = t1;
+		//t1 = Remove(top,frontier);
+		println("frontier=",frontier);	
+		//frontier = t1;
+
 		//println("top=",top);	
 
-		int x  = toint(ocar(ocar(top)));
-		int y  = toint(ocar(ocdr(ocar(top))));
-		int pl = toint(ocar(ocdr(top)));
+		int x    = toint(ocar(ocar(top)));
+		int y    = toint(ocar(ocdr(ocar(top))));
+		int cost = toint(ocar(ocdr(top)));
 
 		fset2(explored,x,y,1.0);
 
 		if (x==gx && y==gy) 
 		{
 			int i;
-			fMatrix *r=newmatrix(2,toint(olen(path))+1);
+			t1=olen(path);
+			fMatrix *r=newmatrix(2,toint(t1)+1);
 			fset2(r,0,r->h-1, gx);
 			fset2(r,1,r->h-1, gy);
+			t2=path;
 			for (i=r->h-2; i>=0; i--)
 			{
 				fset2(r,0,i, tofloat(ocar(ocar(path))));
 				fset2(r,1,i, tofloat(ocar(ocdr(ocar(path)))));
 				path=ocdr(path);
 			}
-			delmatrix(explored);		
+
+			delmatrix(explored);
+			freeobj(&frontier);
+			freeobj(&top);	
+			//freeobj(&action);
+			freeobj(&t2);
+			freeobj(&t1);
 			return r;
 		}
 
+		freeobj(&path);
 		path = ocar(ocdr(ocdr(top)));
-		tOBJ action = gpath (x,y, grid->w, grid->h);
 
-		pl=pl+1;
-		path=ocons(ocar(top),path);
+		action = gpath (x,y, grid->w, grid->h);
 
-		//printf ("path length=%d\n",pl);
+		cost = cost + 1 + heuristic(x,y, gx, gy);
+
+		t1 = ocons(ocar(top),path);
+		freeobj(&path);
+		path=t1;
+
+		//printf ("Cost length=%d\n",cost);
 		//println("path=",path);
+
+		tOBJ a1=action;
 
 		while (action.type==CELL)
 		{
-			tOBJ ns = ocar(action);
+			ns      = ocar(action);
 			action  = ocdr(action);
 
 			int nx=toint(ocar(ns));
@@ -179,13 +220,43 @@ fMatrix *Astar(fMatrix *grid, int sx, int sy, int gx, int gy)
 
 			if (fget2(explored,nx,ny)==0.0 && fget2(grid,nx,ny)==0.0) 
 			{
-				frontier = ocons(cnvtOOOtoList(cnvtIItoList(nx, ny),makeint(pl),path),frontier) ;
+				t1=cnvtIItoList(nx, ny);
+				t2=makeint(cost);
+				t3=cnvtOOOtoList(t1, t2, path);
+				t = ocons(t3,frontier) ;
+				freeobj(&frontier);
+				freeobj(&t1);
+				freeobj(&t2);
+				freeobj(&t3);
+				frontier=t;
 			}
+			freeobj(&ns);
 		}
+		freeobj(&a1);
+		freeobj(&top);
 	}
+	printf ("No path to goal\n");
 	delmatrix(explored);
 	return NULL;
 }
+
+void plan_print(fMatrix *grid, fMatrix *plan)
+{
+	int i, j;
+	if (grid==NULL) return;
+	for (i=0; i<grid->h; i++)
+	{
+		for (j=0; j<grid->w; j++)
+		{
+			if      (plan!=NULL && fget2(plan,0,0)==j && fget2(plan,1,0)==i) 			printf("S ");
+			else if (plan!=NULL && fget2(plan,0,plan->h-1)==j && fget2(plan,1,plan->h-1)==i) 	printf("G ");
+			else if (fget2(grid,j,i)==1.0) 								printf("# ");
+			else 											printf("_ ");
+		}
+		printf ("\n");
+	}
+}
+
 
 fMatrix *smooth(fMatrix *xi, float alpha, float beta, float tolerance)
 {
@@ -291,7 +362,7 @@ void turtle_del(tTurtlep p)
 void turtle_print(tTurtlep p) 
 {
 	printf ("turtle %f %f %f",    p->x, p->y, p->orientation);
-	printf (" : noise  %f %f %f", p->steering_noise, p->distance_noise, p->measurement_noise);
+	if (dbg) printf (" : noise  %f %f %f", p->steering_noise, p->distance_noise, p->measurement_noise);
 }
 
 void turtle_set(tTurtlep p, float a, float b, float c) 

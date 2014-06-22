@@ -34,6 +34,7 @@ typedef struct Particles {
 
 extern fMatrix *	Astar			(fMatrix *grid, int sx, int sy, int gx, int gy);
 extern fMatrix *	smooth			(fMatrix *m, float weight_data, float weight_smooth, float tolerance);
+extern void 		plan_print		(fMatrix *grid, fMatrix *plan);
 
 /**********************************************************/
 /*  turtles                                               */

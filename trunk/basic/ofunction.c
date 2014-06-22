@@ -4528,6 +4528,13 @@ tOBJ oplan(tOBJ o, tOBJ a, tOBJ b)
 		if (a.type==FMAT2 && b.type==CELL)
 			return emptyTPObj(FMAT2, smooth(a.fmat2, tofloat(ocar(b)), tofloat(ocadr(b)), 0.000001));
 	}
+	if (o.type==SYM && !strcasecmp(o.string,"PRINT"))
+	{
+		if (a.type==FMAT2 && b.type==EMPTY)
+			plan_print(a.fmat2, NULL);
+		if (a.type==FMAT2 && b.type==FMAT2)
+			plan_print(a.fmat2, b.fmat2);
+	}
 	return emptyObj();
 }
 
