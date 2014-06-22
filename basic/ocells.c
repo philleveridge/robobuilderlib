@@ -158,22 +158,30 @@ tOBJ cnvtOOOtoList(tOBJ a, tOBJ b, tOBJ c)
 tOBJ cnvtDDtoList(double a, double b)
 {
 	tOBJ r=emptyObj();
-	tOBJ t=ocons(makefloat(b), r);
+	tOBJ t1=makefloat(a);
+	tOBJ t2=makefloat(b);
+	tOBJ t=ocons(t2, r);
 	freeobj(&r);
 	r=t;
-	t=ocons(makefloat(a), r);
+	t=ocons(t1, r);
 	freeobj(&r);
+	freeobj(&t1);
+	freeobj(&t2);
 	return t;
 }
 
 tOBJ cnvtIItoList(int a, int b)
 {
 	tOBJ r=emptyObj();
-	tOBJ t=ocons(makeint(b), r);
+	tOBJ t1=makeint(a);
+	tOBJ t2=makeint(b);
+	tOBJ t=ocons(t2, r);
 	freeobj(&r);
 	r=t;
-	t=ocons(makeint(a), r);
+	t=ocons(t1, r);
 	freeobj(&r);
+	freeobj(&t1);
+	freeobj(&t2);
 	return t;
 }
 
@@ -181,14 +189,22 @@ tOBJ cnvtIItoList(int a, int b)
 tOBJ cnvtDDDtoList(double a, double b, double c)
 {
 	tOBJ r = emptyObj();
-	tOBJ t = ocons(makefloat(c), r);
+
+	tOBJ t1=makefloat(a);
+	tOBJ t2=makefloat(b);
+	tOBJ t3=makefloat(c);
+
+	tOBJ t = ocons(t3, r);
 	freeobj(&r);
 	r=t;
-	t=ocons(makefloat(b), r);
+	t=ocons(t2, r);
 	freeobj(&r);
 	r=t;
-	t=ocons(makefloat(a), r);
+	t=ocons(t1, r);
 	freeobj(&r);
+	freeobj(&t1);
+	freeobj(&t2);
+	freeobj(&t3);
 
 	return t;
 }
