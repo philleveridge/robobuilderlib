@@ -14,6 +14,7 @@ typedef struct Turtles   {
 	float distance_noise;
 	float measurement_noise;
 	float drift;
+	float world_size;
 
 	int   num_collisions;
 	int   num_steps;
@@ -25,6 +26,7 @@ typedef struct Particles {
 	float steering_noise;
 	float distance_noise;
 	float measurement_noise;
+	float world_size;
 	tTurtlep *turtle_data;
 } tParticle, *tParticlep;
 
@@ -43,8 +45,8 @@ extern void 		plan_print		(fMatrix *grid, fMatrix *plan);
 extern double 		rgauss			(double mean, double variance);
 extern void 		set_params		(float new_s_noise, float new_d_noise, float new_m_noise, float new_length, float new_drift) ;
 
-extern tTurtlep 	turtle_make		(float x, float y, float h) ;
-extern tTurtlep 	turtle_make_random	(double world_size);
+extern tTurtlep 	turtle_make		(float world_size, float x, float y, float h) ;
+extern tTurtlep 	turtle_make_random	(float world_size);
 extern tTurtlep 	turtle_clone		(tTurtlep p) ;
 extern void 		turtle_del		(tTurtlep p) ;
 
@@ -68,8 +70,8 @@ extern int 		turtle_check_goal	(tTurtlep p, float goal_x, float goal_y, float th
 /*  particles                                             */
 /**********************************************************/
 
-extern tParticlep 	particles_make		(int N) ;
-extern tParticlep 	particles_make2		(int N, float x, float y, float h);
+extern tParticlep 	particles_make		(int N, float worldsize) ;
+extern tParticlep 	particles_make2		(int N, float x, float y, float h, float worldsize);
 extern tParticlep 	particles_make_random	(int N, float worldsize);
 extern tParticlep	particles_clone		(tParticlep p) ;
 extern void 		particles_del		(tParticlep p) ;

@@ -446,7 +446,14 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		case GTE:
 			r.number = o1.number >= o2.number; break;
 		case LMOD:
-			r.number = o1.number % o2.number; break;
+			if (o2.number ==0) 
+				r.type=EMPTY;
+			else
+			{
+				r.number = o1.number % o2.number; 
+				if (r.number<0) r.number+=o2.number;
+			}
+			break;
 		case POWR:
 			r.number = 1;
 			for (int x=1; x<= o2.number; x++) r.number *= o1.number; 
@@ -486,7 +493,13 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		case POWR:
 			r.floatpoint = pow (a, b); break;
 		case LMOD:
-			r.floatpoint = fmod(a,b) ; break;
+			if (b==0.0) 
+				r.type=EMPTY;
+			else {
+				r.floatpoint = fmod(a,b) ; 
+				if (r.floatpoint<0) r.floatpoint += b;
+			}
+			break;
 		case LT:
 			r.type=INTGR; r.number = a < b; break;
 		case EQL:
@@ -1537,15 +1550,9 @@ tOBJ orep (tOBJ m, tOBJ a, tOBJ b)
 
 tOBJ ozero (tOBJ a, tOBJ b)
 {
-	int row,col;
-	tOBJ r=emptyObj();
-
-	row=toint(a);
-	col=toint(b);
-
-	r.type=FMAT2;
-	r.fmat2 = newmatrix(col, row);
-	return r;
+	int row=toint(a);
+	int col=toint(b);
+	return emptyTPObj(FMAT2, newmatrix(col, row));
 }
 
 tOBJ oeye (tOBJ a, tOBJ b)
@@ -1574,9 +1581,16 @@ tOBJ oconv (tOBJ a, tOBJ b)
 
 	if (a.type == FMAT2 &&  b.type==FMAT2)
 	{
-		r.type=FMAT2;
-		r.fmat2=fconvolve(a.fmat2,b.fmat2) ;	
+		r=emptyTPObj(FMAT2, fconvolve(a.fmat2,b.fmat2)) ;	
 	}	
+	if (a.type == IMAG &&  b.type==IMAG)
+	{
+		r=emptyTPObj(IMAG, imgconvolve(a.imgptr,b.imgptr)); ;	
+	}
+	if (a.type == IMAG &&  b.type==FMAT2)
+	{
+		r=emptyTPObj(IMAG, imgconvmat(a.imgptr, b.fmat2));
+	}
 	return r;
 }
 
@@ -3819,6 +3833,16 @@ tOBJ omatr(tOBJ n, tOBJ v, tOBJ f)
 		}
 	}
 
+	if (n.type==TURTLE) 
+	{
+		tOBJ mat  = emptyTObj(FMAT2);
+		mat.fmat2 = newmatrix(3,1);
+		fset2(mat.fmat2,0, 0, ((tTurtlep)(n.turtle))->x);
+		fset2(mat.fmat2,1, 0, ((tTurtlep)(n.turtle))->y);
+		fset2(mat.fmat2,2, 0, ((tTurtlep)(n.turtle))->orientation);	
+		return mat;	
+	}
+
 	if ((n.type==SYM || n.type==IMAG) && v.type==INTGR && f.type==INTGR)
 	{
 		// MAT 'I 5 5
@@ -4412,7 +4436,7 @@ tOBJ oturtle(tOBJ o, tOBJ a, tOBJ b)
 		if (a.type==SYM && !strcasecmp(a.string,"SENSE")  && b.type==EMPTY)
 		{
 			float x,y,h;
-			turtle_position((tTurtlep)o.turtle, &x, &y, &o);
+			turtle_position((tTurtlep)o.turtle, &x, &y, &h);
 			return cnvtDDtoList((double)x,(double)y);
 		}
 		if (a.type==SYM && !strcasecmp(a.string,"SENSE")  && b.type==FMAT2)
@@ -4457,7 +4481,7 @@ tOBJ oturtle(tOBJ o, tOBJ a, tOBJ b)
 		return emptyTPObj(TURTLE, turtle_make_random(tofloat(o)));
 	}
 	else
-		return emptyTPObj(TURTLE, turtle_make(tofloat(o), tofloat(a), tofloat(b)));
+		return emptyTPObj(TURTLE, turtle_make(100.0, tofloat(o), tofloat(a), tofloat(b)));
 }
 
 tOBJ opart(tOBJ o, tOBJ a, tOBJ b)
@@ -4507,12 +4531,13 @@ tOBJ opart(tOBJ o, tOBJ a, tOBJ b)
 		}
 		else
 		{
-			float y=tofloat(ocar(o));o=ocdr(o);
-			float h=tofloat(ocar(o));
-			return emptyTPObj(PARTICLE, particles_make2(n,x,y,h));
+			float y=tofloat(ocar(o)); o=ocdr(o);
+			float h=tofloat(ocar(o)); o=ocdr(o);
+			float ws=tofloat(ocar(o));
+			return emptyTPObj(PARTICLE, particles_make2(n,x,y,h,ws));
 		}
 	}
-	return emptyTPObj(PARTICLE, particles_make(toint(o)));
+	return emptyTPObj(PARTICLE, particles_make(toint(o),100.0));
 }
 	
 
