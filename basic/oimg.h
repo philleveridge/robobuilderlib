@@ -1,6 +1,8 @@
 #ifndef OIMG_H
 #define OIMG_H
 
+#include "fmatrix.h"
+
 typedef struct filter {
 	int minR; 
 	int minG;
@@ -53,6 +55,9 @@ extern void 	drawline	(oImage *img, int fx, int fy, int tx, int ty, int c);
 extern void 	imageshow	(oImage *im);
 
 extern int 	sumoImage	(oImage *image);
+extern oImage *	imgconvolve	(oImage *A, oImage *B);
+extern oImage * imgconvmat	(oImage *A, fMatrix *B) ;
+
 extern int 	moment		(oImage *image, int *rx,  int *ry);
 extern int 	meanshift	(oImage *image, int noit, int wx, int wy, int *rx, int *ry);
 extern int 	camshift	(oImage *image, int noit, int wx, int wy, int *rx, int *ry, int *rw, int *rh);

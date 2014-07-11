@@ -15,6 +15,7 @@
 #include "linux.h"
 #endif
 
+#include "fmatrix.h"
 #include "mem.h"
 #include "oimg.h"
 #include "cmap.h"
@@ -408,10 +409,86 @@ int image2Pgm(oImage *image, char *fileName)
 	return 0;
 }
 
+
+
 oImage *reshapeoImage(oImage *image, int nw, int nh)
 {
 	return subimage(image, 0, 0, nh, nw);
 }
+
+oImage *imgconvolve(oImage *A, oImage *B)  
+{
+	// A convoled with B, B is kernel	
+	oImage *R, *t;
+	int w=A->w;
+	int h=A->h;
+	int i,j,k,l;
+
+	R = makeimage(h,w);
+
+	if (B->w > A->w ) { t=A; A=B; B=t; } //swap
+
+	for (i=0; i<A->h; i++)
+	{
+		for (j=0; j<A->w; j++)
+		{
+			int p=0;
+			int wk=(B->w)/2;
+			int hk=(B->h)/2;
+			
+			for (k=0; k<B->h; k++)
+			{
+				for (l=0; l<B->w; l++)
+				{
+					if (j+l-wk >=0 && j+l-wk < A->w && i+k-hk>=0 && i+k-hk < A->h)
+					{
+						p += A->data[(j+l-wk)+(i+k-hk)*A->w]*B->data[l+B->w*k];
+					}
+				}
+			}
+			R->data[j+i*R->w]=p;
+		}
+	}
+
+	return R;
+}
+
+oImage *imgconvmat(oImage *A, fMatrix *B)  
+{
+	// A convoled with B, B is kernel	
+	oImage *R, *t;
+	int w=A->w;
+	int h=A->h;
+	int i,j,k,l;
+
+	R = makeimage(h,w);
+
+	if (B->w > A->w ) { t=A; A=B; B=t; } //swap
+
+	for (i=0; i<A->h; i++)
+	{
+		for (j=0; j<A->w; j++)
+		{
+			float p=0.0;
+			int wk=(B->w)/2;
+			int hk=(B->h)/2;
+			
+			for (k=0; k<B->h; k++)
+			{
+				for (l=0; l<B->w; l++)
+				{
+					if (j+l-wk >=0 && j+l-wk < A->w && i+k-hk>=0 && i+k-hk < A->h)
+					{
+						p += B->fstore[l+B->w*k] * A->data[(j+l-wk)+(i+k-hk)*A->w];
+					}
+				}
+			}
+			R->data[j+i*R->w]=abs(p)%256;
+		}
+	}
+	return R;
+}
+
 
 int moment(oImage *image, int *rx, int *ry)
 {

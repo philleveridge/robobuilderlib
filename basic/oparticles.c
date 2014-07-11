@@ -314,12 +314,13 @@ void set_params(float new_s_noise, float new_d_noise, float new_m_noise, float n
 	drift            = new_drift;
 }
 
-tTurtlep turtle_make(float x, float y, float h)
+tTurtlep turtle_make(float world_size, float x, float y, float h)
 {
 	tTurtlep  p;
 	if (dbg) printf ("Make Turtle %f %f %f\n",x,y,h);
 
 	p=(tTurtlep)bas_malloc(sizeof(tTurtle));
+	p->world_size	    = world_size;
 	p->x 		    = x;
 	p->y 		    = y;
 	p->orientation 	    = h;
@@ -331,19 +332,20 @@ tTurtlep turtle_make(float x, float y, float h)
 	return p;
 }
 
-tTurtlep turtle_make_random(double world_size)
+tTurtlep turtle_make_random(float world_size)
 {
 	if (world_size<=0.0) world_size=1.0;
 	float x = world_size * (rand() / ((double) RAND_MAX));
 	float y = world_size * (rand() / ((double) RAND_MAX));
 	float h = twopi      * (rand() / ((double) RAND_MAX));
-	return turtle_make(x, y, h);
+	return turtle_make(world_size, x, y, h);
 }
 
 tTurtlep turtle_clone(tTurtlep p)
 {
 	if (dbg) printf ("Clone Turtle\n");
 	tTurtlep  np=(tTurtlep)bas_malloc(sizeof(tTurtle));
+	np->world_size	    	= p->world_size;
 	np->x 			= p->x;
 	np->y 			= p->y;
 	np->orientation 	= p->orientation;
@@ -367,13 +369,13 @@ void turtle_del(tTurtlep p)
 void turtle_print(tTurtlep p) 
 {
 	printf ("turtle %f %f %f",    p->x, p->y, p->orientation);
-	if (dbg) printf (" : noise  %f %f %f", p->steering_noise, p->distance_noise, p->measurement_noise);
+	if (dbg); printf (" : %f | noise  %f %f %f", p->world_size, p->steering_noise, p->distance_noise, p->measurement_noise);
 }
 
 void turtle_set(tTurtlep p, float a, float b, float c) 
 {
-	p->x 		= a;
-	p->y 		= b;
+	p->x 		= fmod(a, p->world_size);
+	p->y 		= fmod(b, p->world_size);
 	p->orientation 	= fmod(c, twopi);
 }
 
@@ -403,8 +405,8 @@ tTurtlep turtle_simple_move(tTurtlep o, float steering, float distance)
         //Execute motion
 
 	p->orientation = fmod(o->orientation + steering2, twopi);
-	p->x           = o->x + distance2 * cos(p->orientation);
-	p->y           = o->y + distance2 * sin(p->orientation);
+	p->x           = fmod(o->x + distance2 * cos(p->orientation),p->world_size);
+	p->y           = fmod(o->y + distance2 * sin(p->orientation),p->world_size);
 
 	return p;
 }
@@ -530,16 +532,17 @@ int turtle_check_goal(tTurtlep p, float goal_x, float goal_y, float threshold)
 /*  particles                                             */
 /**********************************************************/
 
-tParticlep particles_make2(int N, float x, float y, float h)
+tParticlep particles_make2(int N, float x, float y, float h, float worldsize)
 {
 	int i;
 	if (dbg); printf ("Make Particle\n");
 	tParticlep p=(tParticlep)bas_malloc(sizeof(tParticle));
 	p->N=N;
+	p->world_size=worldsize;
 	p->turtle_data = (tTurtlep *)bas_malloc(sizeof(tTurtlep)*N);
 	for (i=0; i<N; i++)
 	{
-		p->turtle_data[i]=turtle_make(x,y,h);
+		p->turtle_data[i]=turtle_make(worldsize,x,y,h);
 	}	
 	return p;
 }
@@ -558,9 +561,9 @@ tParticlep particles_make_random(int N, float worldsize)
 	return p;
 }
 
-tParticlep particles_make(int N)
+tParticlep particles_make(int N, float worldsize)
 {
-	return particles_make2(N, 0.0,0.0,0.0);
+	return particles_make2(N, 0.0,0.0,0.0, worldsize);
 }
 
 tParticlep particles_clone(tParticlep p)
@@ -570,6 +573,7 @@ tParticlep particles_clone(tParticlep p)
 
 	tParticlep np   = (tParticlep)bas_malloc(sizeof(tParticle));
 	np->N           = p->N;
+	np->world_size	= p->world_size;
 	np->turtle_data = (tTurtlep *)bas_malloc(sizeof(tTurtlep)*p->N);
 
 	for (i=0; i<p->N; i++)
@@ -638,7 +642,7 @@ tParticlep particles_sense(tParticlep o, fMatrix *Z)
 
         // resampling - 
 
-	tParticlep p = particles_make(o->N);
+	tParticlep p = particles_make(o->N,o->world_size);
 	int index = (int)((rand() / ((double) RAND_MAX)) * o->N);
 	double beta=0.0;
 	for (i=0; i<o->N; i++)
@@ -664,7 +668,7 @@ motion of the particles
 tParticlep particles_move(tParticlep o, double steer, double speed, fMatrix *grid, int t ) 		
 {
 	int i;
-	tParticlep p = particles_make(o->N);
+	tParticlep p = particles_make(o->N,o->world_size);
 	for (i=0; i<p->N; i++)
 	{
 		if (t)
