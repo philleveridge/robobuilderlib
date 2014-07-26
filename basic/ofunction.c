@@ -58,6 +58,8 @@ extern volatile WORD	mstimer;
 #include "opflow.h"
 #include "cmap.h"
 #include "mem.h"
+#include "harris.h"
+#include "kmeans.h"
 
 #include "trex.h"
 
@@ -3014,6 +3016,9 @@ NIL	THRESH		0 |  <n> <list> | <I> list		IMAGE THRESH 1 '(120 175 40 70 30 40)
 NIL	TRAIN		<I>
 NIL	UNLOCK
 NIL	WAIT		<n>
+
+<M>	KMEAN		<I> <n>
+<M>	HARRIS		<I>
 */
 
 oFilter setFilterfromList(tOBJ v)
@@ -3052,6 +3057,34 @@ tOBJ oimg(tOBJ v, Dict *e)
 		if (!strcmp(cmd.string,"UNLOCK"))
 		{
 			rellock();
+		}
+		else
+		if (!strcmp(cmd.string,"KMEANS"))
+		{
+			tOBJ a=eval(ocar(v), e); 
+			tOBJ b=eval(ocar(ocdr(v)), e); 
+			tOBJ ret = emptyObj();
+			if (a.type==IMAG && b.type==INTGR)
+			{
+				//fMatrix *kmeans_img(oImage *img, int k, int th)
+				ret = emptyTPObj(FMAT2, kmeans_img(a.imgptr, toint(b), 127));
+			}
+			freeobj(&a);
+			freeobj(&b);
+			return ret;
+		}
+		else
+		if (!strcmp(cmd.string,"HARRIS"))
+		{
+			tOBJ a=eval(ocar(v), e); 
+			tOBJ ret = emptyObj();
+			if (a.type==IMAG)
+			{
+				//fMatrix *harris_detect(oImage * im);
+				ret = emptyTPObj(FMAT2, harris_detect(a.imgptr));
+			}
+			freeobj(&a);
+			return ret;
 		}
 		else
 		if (!strcmp(cmd.string,"F-DETECT"))
