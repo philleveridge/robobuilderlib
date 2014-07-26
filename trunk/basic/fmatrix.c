@@ -34,9 +34,13 @@ Floating point Matrix library
 
 fMatrix *newmatrix(int c, int r)
 {
-	fMatrix *n = (fMatrix *)bas_malloc(sizeof(fMatrix));
+	fMatrix *n;
 	int i;
 	if (dbg) printf ("New Matrix %d,%d\n",c,r);
+
+	if (r<=0 || c<=0) return NULL;
+
+	n = (fMatrix *)bas_malloc(sizeof(fMatrix));
 	n->h=r;
 	n->w=c;
 	n->fstore = 0;
