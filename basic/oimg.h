@@ -48,16 +48,18 @@ extern int 	image2Pgm	(oImage *image, char *fileName);
 extern void 	clearoImage	(oImage *img, int c);
 extern int 	minval		(oImage *img);
 extern int 	maxval		(oImage *img);
+extern oImage *	opImage		(oImage *a, oImage *b,  char op);
 extern void 	setpoint	(oImage *img, int x, int y, int c);
 extern int 	getpoint	(oImage *img, int x, int y);
 extern void 	drawrect	(oImage *img, int fx, int fy, int w,  int h,  int c);
 extern void 	drawline	(oImage *img, int fx, int fy, int tx, int ty, int c);
+extern void 	drawcross	(oImage *img, int cx, int cy, int w, int h, int c);
 extern void 	imageshow	(oImage *im);
 
 extern int 	sumoImage	(oImage *image);
 extern oImage *	imgconvolve	(oImage *A, oImage *B);
 extern oImage * imgconvmat	(oImage *A, fMatrix *B) ;
-
+extern oImage * opImageMat	(oImage *a, fMatrix *b, char op);
 extern int 	moment		(oImage *image, int *rx,  int *ry);
 extern int 	meanshift	(oImage *image, int noit, int wx, int wy, int *rx, int *ry);
 extern int 	camshift	(oImage *image, int noit, int wx, int wy, int *rx, int *ry, int *rw, int *rh);

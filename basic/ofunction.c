@@ -609,31 +609,9 @@ tOBJ omath(tOBJ o1, tOBJ o2, int op)
 		}
 	}
 
-	if (o1.type==IMAG && o2.type==IMAG && op==PLUS)
+	if (o1.type==IMAG && o2.type==IMAG && (op==PLUS || op==MINUS || op==MULT || op==DIVD))
 	{
-		r.type=IMAG;
-		r.imgptr = cloneimage(o1.imgptr);
-		for (int i=0; i<r.imgptr->h; i++)
-			for (int j=0; j<r.imgptr->w; j++)
-				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] + o2.imgptr->data[j + i*o2.imgptr->w])%256;	
-	}
-
-	if (o1.type==IMAG && o2.type==IMAG && op==MINUS)
-	{
-		r.type=IMAG;
-		r.imgptr = cloneimage(o1.imgptr);
-		for (int i=0; i<r.imgptr->h; i++)
-			for (int j=0; j<r.imgptr->w; j++)
-				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] - o2.imgptr->data[j + i*o2.imgptr->w])%256;	
-	}
-
-	if (o1.type==IMAG && o2.type==IMAG && op==MULT)
-	{
-		r.type=IMAG;
-		r.imgptr = cloneimage(o1.imgptr);
-		for (int i=0; i<r.imgptr->h; i++)
-			for (int j=0; j<r.imgptr->w; j++)
-				r.imgptr->data[j+i*r.imgptr->w] = abs(r.imgptr->data[j+i*r.imgptr->w] * o2.imgptr->data[j + i*o2.imgptr->w])%256;	
+		r = emptyTPObj(IMAG,opImage(o1.imgptr,o2.imgptr,op));	
 	}
 
 	if (o1.type==IMAG && (o2.type==INTGR || o2.type==FLOAT) && op==PLUS)
