@@ -15,6 +15,7 @@
 #include "linux.h"
 #endif
 
+#include "ofunction.h"
 #include "fmatrix.h"
 #include "mem.h"
 #include "oimg.h"
@@ -143,6 +144,13 @@ void drawrect(oImage *img, int fx, int fy, int w, int h, int c)
 	drawline(img, fx,  fy,  fx,    fy+h, c);
 	drawline(img, fx,  fy+h,fx+w,  fy+h, c);
 	drawline(img, fx+w,fy,  fx+w,  fy+h, c);
+	return;
+}
+
+void drawcross(oImage *img, int cx, int cy, int w, int h, int c)
+{
+	drawline(img, cx,   cy-h, cx,    cy+h, c);
+	drawline(img, cx-w, cy,   cx+w,  cy,   c);
 	return;
 }
 
@@ -370,6 +378,48 @@ int sumoImage(oImage *image)
 	for (i=0; i<image->h*image->w; i++) 
 		sm+=image->data[i];
 	return sm;
+}
+
+oImage *opImage(oImage *a, oImage *b,  char op)
+{
+	int i;
+	oImage *r ;
+	if (a==NULL || b==NULL || a->h != b->h || a->w != b->w) return NULL;
+	r= cloneimage(a);
+
+	for (i=0; i<r->h*r->w; i++) 
+	{
+		if (op=='+' || op == PLUS)
+			r->data[i] += b->data[i];
+		else if (op=='-' || op==MINUS)
+			r->data[i] -= b->data[i];
+		else if (op=='*')
+			r->data[i] *= b->data[i];
+		else if (op=='/')
+			r->data[i] /= b->data[i];
+	}	
+	return r;
+}
+
+oImage *opImageMat(oImage *a, fMatrix *b,  char op)
+{
+	int i;
+	oImage *r ;
+	if (a==NULL || b==NULL || a->h != b->h || a->w != b->w) return NULL;
+	r= cloneimage(a);
+
+	for (i=0; i<r->h*r->w; i++) 
+	{
+		if (op=='+' || op == PLUS)
+			r->data[i] = (unsigned char)((float)(r->data[i]) + b->fstore[i] + 0.5) % 256;
+		else if (op=='-' || op==MINUS)
+			r->data[i] = (unsigned char)(((float)(r->data[i]) - b->fstore[i]) + 0.5) % 256;
+		else if (op=='*')
+			r->data[i] = (unsigned char)(((float)(r->data[i]) * b->fstore[i]) + 0.5) % 256;
+		else if (op=='/')
+			r->data[i] = (unsigned char)(((float)(r->data[i]) / b->fstore[i]) + 0.5) % 256;
+	}	
+	return r;
 }
 
 oImage *threshoImage(oImage *image, int th1, int th2)
