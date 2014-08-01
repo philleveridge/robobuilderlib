@@ -155,6 +155,18 @@ void fset2(fMatrix *M, int c, int r, float v)
 		M->fstore[c+r*M->w] =v;
 }
 
+void fmupdate(fMatrix *M, int c, int r, float v)
+{
+	if (c>=0 && r>=0 && c<M->w && r<M->h && M->fstore!=0)
+		M->fstore[c+r*M->w] += v;
+}
+
+void fmscale(fMatrix *M, int c, int r, float v)
+{
+	if (c>=0 && r>=0 && c<M->w && r<M->h && M->fstore!=0)
+		M->fstore[c+r*M->w] *= v;
+}
+
 fMatrix *fadd2(fMatrix *A, fMatrix *B, char op)  
 {
 	int rx,ry, ha,wa,wb,hb;

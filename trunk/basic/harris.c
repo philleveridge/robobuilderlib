@@ -53,6 +53,22 @@ fMatrix *harris_detect(oImage * im)
 	oImage *t4  = opImage(ix2, iy2, '+');	
 	oImage *cim = opImage(t3,  t4,  '/');	
 
+	int loop=0;
+	int count=0;
+	int min_n=1, max_n=5;
+
+	float threshold=20.0;
+
+	while (((count<min_n) || (count>max_n)) && loop < 30)
+	{
+		loop++;
+		if (count<min_n)
+			threshold *= 0.5;
+		if (count>max_n)
+			threshold *= 1.5;
+		
+	}
+
 	delimage (t1);
 	delimage (t2);
 	delimage (t3);

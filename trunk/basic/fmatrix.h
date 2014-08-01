@@ -24,6 +24,8 @@ extern int 	fmatprint2	(fMatrix *A);
 extern float 	fget2		(fMatrix *M, int c, int r);
 extern void 	fset2		(fMatrix *M, int c, int r, float v);
 extern void     fmatzero	(fMatrix *A) ;  
+extern void 	fmupdate	(fMatrix *M, int c, int r, float v);
+extern void 	fmscale		(fMatrix *M, int c, int r, float v);
 
 extern fMatrix *fadd2		(fMatrix *A, fMatrix *B, char op) ; 
 extern fMatrix *ftranspose2	(fMatrix *A) ; 
