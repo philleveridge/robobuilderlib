@@ -578,7 +578,55 @@ fMatrix *del_col(fMatrix *m, int n)
 	return r;
 }
 
-fMatrix *gausian(int Kernel_Size, int gaus_sigma)
+/*
+
+%Make a kernel for partial derivatve
+%Of of gaussian with respect to x (for computing Dx)
+for i=1:Kernel_Size
+    for j=1:Kernel_Size
+        gaus_kernel_x(i,j) = -( (j-k-1)/( 2* pi * gaus_sigma^3 ) ) * exp ( - ( (i-k-1)^2 + (j-k-1)^2 )/ (2*gaus_sigma^2) );
+    end
+end
+ 
+%Make a kernel for partial derivatve
+%Of of gaussian with respect to y (for computing Dy)
+ 
+for i=1:Kernel_Size
+    for j=1:Kernel_Size
+        gaus_kernel_y(i,j) = -( (i-k-1)/( 2* pi * gaus_sigma^3 ) ) *  exp ( - ( (i-k-1)^2 + (j-k-1)^2 )/ (2*gaus_sigma^2) );
+    end
+end
+
+*/
+
+
+float gfunc(double x, double mean, double sigma)
+{
+	return exp (-((x-mean) * (x-mean))/(sigma*sigma)/2.0);
+}
+
+float gfunc2D(double x, double y, double mean, double sigma)
+{
+	return exp (-((x-mean) * (x-mean)) + ((y-mean) * (y-mean)) /(sigma*sigma)/2.0);
+}
+
+
+fMatrix *gausian2(int Kernel_Size, float sigma)
+{
+	fMatrix *n = newmatrix(Kernel_Size, Kernel_Size);
+	int i,j,k = (Kernel_Size-1)/2; 
+
+	for (i=0; i<Kernel_Size; i++)
+	{
+		for (j=0; j<Kernel_Size; j++) 
+		{
+			fset2(n, j, i, (float)(gfunc2D(j-k, i-k,  Kernel_Size, sigma)));
+	    	}
+	}
+	return n;
+}
+
+fMatrix *gausian(int Kernel_Size, float gaus_sigma)
 {
 	fMatrix *n = newmatrix(Kernel_Size, Kernel_Size);
 	int i,j,k = (Kernel_Size-1)/2; 

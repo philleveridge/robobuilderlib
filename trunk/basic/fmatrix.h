@@ -42,7 +42,7 @@ extern fMatrix *inverse		(fMatrix *s);
 
 extern fMatrix *fmatscale	(fMatrix *A, float k) ;  
 extern fMatrix *fmatflip	(fMatrix *A); 
-extern fMatrix *gausian		(int Kernel_Size, int gaus_sigma);
+extern fMatrix *gausian		(int Kernel_Size, float gaus_sigma);
 
 extern fMatrix *fMatrixQSort	(fMatrix *list, int indx);
 extern float   fsum		(fMatrix *A);
