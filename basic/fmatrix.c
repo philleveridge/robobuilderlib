@@ -635,11 +635,11 @@ fMatrix *gausian(int Kernel_Size, float gaus_sigma)
 	double gs3=(double)(gaus_sigma*gaus_sigma*gaus_sigma);
 	double Tpigs3=2.0*Pi*gs3;
 
-	for (i=1; i<=Kernel_Size; i++)
+	for (i=0; i<Kernel_Size; i++)
 	{
-		for (j=1; j<=Kernel_Size; j++) 
+		for (j=0; j<Kernel_Size; j++) 
 		{
-			fset2(n, j-1, i-1, (float)( -( (j-k-1)/(Tpigs3) ) * exp ( - ( (i-k-1)*(i-k-1) + (j-k-1)*(j-k-1) )/ (gs2) )));
+			fset2(n, j, i, (float)( -( (j-k)/(Tpigs3) ) * exp ( - ( (i-k)*(i-k) + (j-k)*(j-k) )/ (gs2) )));
 	    }
 	}
 	return n;
