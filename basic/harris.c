@@ -44,7 +44,12 @@ fMatrix *harris_detect(oImage * im)
 	oImage *ixy = opImage(ix, iy, '*');
 /*
 	corner measure = (Ix2.*Iy2 - Ixy.^2)./(Ix2 + Iy2 + epsilon); 
+
+	    k = 0.04;
+	    R11 = (Ix2.*Iy2 - Ixy.^2) - k*(Ix2 + Iy2).^2;
+	    R11=(1000/max(max(R11)))*R11;
 */
+	fMatrix *gk = gausian(6, 1.0);
 
 	oImage *t1  = opImage(ix2, iy2, '*');
 	oImage *t2  = opImage(ixy, ixy, '*');
@@ -77,6 +82,7 @@ fMatrix *harris_detect(oImage * im)
 	
 	r=newmatrix(2,nop);
 
+	delmatrix(gk);
 	delmatrix(dx);
 	delmatrix(dy);
 	delimage (ix);

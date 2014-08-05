@@ -395,7 +395,7 @@ oImage *opImage(oImage *a, oImage *b,  char op)
 			r->data[i] -= b->data[i];
 		else if (op=='*')
 			r->data[i] *= b->data[i];
-		else if (op=='/')
+		else if (op=='/' && b->data[i]!=0)
 			r->data[i] /= b->data[i];
 	}	
 	return r;
