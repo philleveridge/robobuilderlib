@@ -812,7 +812,7 @@ tOBJ ogaus(tOBJ m, tOBJ v, tOBJ x)
 
 tOBJ ogausk(tOBJ ks, tOBJ gs)
 {
-	tOBJ r=emptyTPObj(FMAT2,gausian(toint(ks),toint(gs))); 
+	tOBJ r=emptyTPObj(FMAT2,gaussian2D(toint(ks),toint(gs))); 
 	return r;
 }
 
