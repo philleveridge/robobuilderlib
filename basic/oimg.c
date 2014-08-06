@@ -392,7 +392,11 @@ oImage *opImage(oImage *a, oImage *b,  char op)
 		if (op=='+' || op == PLUS)
 			r->data[i] += b->data[i];
 		else if (op=='-' || op==MINUS)
+		{
+
 			r->data[i] -= b->data[i];
+			//printf ("%d %d = %d\n", a->data[i],b->data[i],r->data[i]);
+		}
 		else if (op=='*')
 			r->data[i] *= b->data[i];
 		else if (op=='/' && b->data[i]!=0)

@@ -76,7 +76,7 @@ tOBJ OpticFlow(tOBJ im1, tOBJ im2)
 
 	k         = (Kernel_Size-1)/2;  
 
-	if (gaus_kernel_x==0) gaus_kernel_x = gausian(Kernel_Size, gaus_sigma);
+	if (gaus_kernel_x==0) gaus_kernel_x = gaussian_x(Kernel_Size, gaus_sigma);
 	if (gaus_kernel_y==0) gaus_kernel_y = ftranspose2(gaus_kernel_x); 
  
 	//%%Compute x and y derivates for both images:

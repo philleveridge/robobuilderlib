@@ -607,40 +607,55 @@ float gfunc(double x, double mean, double sigma)
 
 float gfunc2D(double x, double y, double mean, double sigma)
 {
-	return exp (-((x-mean) * (x-mean)) + ((y-mean) * (y-mean)) /(sigma*sigma)/2.0);
+	return exp (-(((x-mean) * (x-mean)) + ((y-mean) * (y-mean))) /(sigma*sigma*2.0));
 }
 
 
-fMatrix *gausian2(int Kernel_Size, float sigma)
+fMatrix *gaussian2D(int Kernel_Size, float sigma)
 {
 	fMatrix *n = newmatrix(Kernel_Size, Kernel_Size);
 	int i,j,k = (Kernel_Size-1)/2; 
+
+	double s = 0.0;
 
 	for (i=0; i<Kernel_Size; i++)
 	{
 		for (j=0; j<Kernel_Size; j++) 
 		{
-			fset2(n, j, i, (float)(gfunc2D(j-k, i-k,  Kernel_Size, sigma)));
+			double f=gfunc2D(j-k, i-k, 0, sigma);
+			s += f;
+			fset2(n, j, i, (float)f);
 	    	}
+	}
+	if (s!=0.0)
+	{
+		s=1/s;
+		for (i=0; i<Kernel_Size; i++)
+		{
+			for (j=0; j<Kernel_Size; j++) 
+			{
+				fmscale(n, j, i, (float)s);
+		    	}
+		}
 	}
 	return n;
 }
 
-fMatrix *gausian(int Kernel_Size, float gaus_sigma)
+fMatrix *gaussian_x(int Kernel_Size, float gaus_sigma)
 {
 	fMatrix *n = newmatrix(Kernel_Size, Kernel_Size);
 	int i,j,k = (Kernel_Size-1)/2; 
 	double Pi=3.14159265359	;
-	double gs2=(double)(2*gaus_sigma*gaus_sigma);
-	double gs3=(double)(gaus_sigma*gaus_sigma*gaus_sigma);
-	double Tpigs3=2.0*Pi*gs3;
+	double gs2=(double)(2.0*gaus_sigma*gaus_sigma);
+	//double gs3=(double)(gaus_sigma*gaus_sigma*gaus_sigma);
+	double Tpigs2=Pi*gs2;
 
 	for (i=0; i<Kernel_Size; i++)
 	{
 		for (j=0; j<Kernel_Size; j++) 
 		{
-			fset2(n, j, i, (float)( -( (j-k)/(Tpigs3) ) * exp ( - ( (i-k)*(i-k) + (j-k)*(j-k) )/ (gs2) )));
-	    }
+			fset2(n, j, i, (float)( -( (j-k)/(Tpigs2) ) * exp ( - ( (i-k)*(i-k) + (j-k)*(j-k) )/ (gs2) )));
+	    	}
 	}
 	return n;
 }

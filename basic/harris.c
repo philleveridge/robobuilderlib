@@ -23,7 +23,7 @@
 #endif
 
 #include "harris.h"
-
+//  IMAGE HARRIS (IMAGE RAW "test.jpg")
 extern void *readmatrix(char **str, char tc );
 
 char *k = "1 0 -1;1 0 -1;1 0 -1]";
@@ -34,11 +34,11 @@ fMatrix *harris_detect(oImage * im)
 	int nop=1;
 
 	fMatrix *dx = readmatrix(&k, ']');
+	//fMatrix *dx = gaussian_x(3,1); fmatprint2(dx);
+
 	fMatrix *dy = ftranspose2(dx);
-
-	oImage *ix = imgconvmat(im, dx) ;
-	oImage *iy = imgconvmat(im, dy) ;
-
+	oImage *ix  = imgconvmat(im, dx) ;
+	oImage *iy  = imgconvmat(im, dy) ;
 	oImage *ix2 = opImage(ix, ix, '*');
 	oImage *iy2 = opImage(iy, iy, '*');
 	oImage *ixy = opImage(ix, iy, '*');
@@ -49,14 +49,21 @@ fMatrix *harris_detect(oImage * im)
 	    R11 = (Ix2.*Iy2 - Ixy.^2) - k*(Ix2 + Iy2).^2;
 	    R11=(1000/max(max(R11)))*R11;
 */
-	fMatrix *gk = gausian(6, 1.0);
+	fMatrix *gk = gaussian2D(5, 1.0);
+	oImage *sx2 = imgconvmat(ix2, gk);
+	oImage *sy2 = imgconvmat(iy2, gk);
+	oImage *sxy = imgconvmat(ixy, gk);
 
-	oImage *t1  = opImage(ix2, iy2, '*');
-	oImage *t2  = opImage(ixy, ixy, '*');
+	if (dbg) ;  image2Pgm(sx2, "sx2.pgm");
+
+	oImage *t1  = opImage(sx2, sy2, '*');
+	oImage *t2  = opImage(sxy, sxy, '*');
 	oImage *t3  = opImage(t1,  t2,  '-');
 
-	oImage *t4  = opImage(ix2, iy2, '+');	
+	oImage *t4  = opImage(sx2, sy2, '+');	
 	oImage *cim = opImage(t3,  t4,  '/');	
+
+	if (dbg) ; image2Pgm(cim, "cim.pgm");
 
 	int loop=0;
 	int count=0;
@@ -90,6 +97,9 @@ fMatrix *harris_detect(oImage * im)
 	delimage (ix2);
 	delimage (iy2);
 	delimage (ixy);
+	delimage (sx2);
+	delimage (sy2);
+	delimage (sxy);
 
 	return r;
 }
