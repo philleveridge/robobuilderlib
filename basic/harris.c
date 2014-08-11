@@ -26,7 +26,8 @@
 //  IMAGE HARRIS (IMAGE RAW "test.jpg")
 extern void *readmatrix(char **str, char tc );
 
-char *k = "1 0 -1;1 0 -1;1 0 -1]";
+//char *k = "1 0 -1;1 0 -1;1 0 -1]";
+char *k = "-1 0 1;-2 0 2;-1 0 1]";
 
 fMatrix *harris_detect(oImage * im)
 {
@@ -34,14 +35,21 @@ fMatrix *harris_detect(oImage * im)
 	int nop=1;
 
 	fMatrix *dx = readmatrix(&k, ']');
-	//fMatrix *dx = gaussian_x(3,1); fmatprint2(dx);
-
 	fMatrix *dy = ftranspose2(dx);
+
 	oImage *ix  = imgconvmat(im, dx) ;
 	oImage *iy  = imgconvmat(im, dy) ;
 	oImage *ix2 = opImage(ix, ix, '*');
 	oImage *iy2 = opImage(iy, iy, '*');
 	oImage *ixy = opImage(ix, iy, '*');
+
+	fMatrix *gk = gaussian2D(5, 1.0);
+	oImage *sx2 = imgconvmat(ix2, gk);
+	oImage *sy2 = imgconvmat(iy2, gk);
+	oImage *sxy = imgconvmat(ixy, gk);
+
+	//if (dbg) ;  image2Pgm(sx2, "sx2.pgm");
+
 /*
 	corner measure = (Ix2.*Iy2 - Ixy.^2)./(Ix2 + Iy2 + epsilon); 
 
@@ -49,12 +57,6 @@ fMatrix *harris_detect(oImage * im)
 	    R11 = (Ix2.*Iy2 - Ixy.^2) - k*(Ix2 + Iy2).^2;
 	    R11=(1000/max(max(R11)))*R11;
 */
-	fMatrix *gk = gaussian2D(5, 1.0);
-	oImage *sx2 = imgconvmat(ix2, gk);
-	oImage *sy2 = imgconvmat(iy2, gk);
-	oImage *sxy = imgconvmat(ixy, gk);
-
-	if (dbg) ;  image2Pgm(sx2, "sx2.pgm");
 
 	oImage *t1  = opImage(sx2, sy2, '*');
 	oImage *t2  = opImage(sxy, sxy, '*');
