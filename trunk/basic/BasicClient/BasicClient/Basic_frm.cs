@@ -75,9 +75,16 @@ namespace RobobuilderLib
             }
 
             comselect.Items.Clear();
-            foreach (string s1 in System.IO.Ports.SerialPort.GetPortNames())
+            foreach (string s2 in System.IO.Ports.SerialPort.GetPortNames())
             {
-                comselect.Items.Add(s1);
+                    string s1 = s2;
+                    if (!Char.IsDigit(s1[s1.Length - 1]))
+                    {
+                        Debug.Print("? [" + s1[s1.Length - 1]+"]");
+                         s1 = s1.Substring(0, s1.Length-1);
+                    }
+                    Debug.Print("com port = [" + s1 + "]");
+                    comselect.Items.Add(s1);
             }
 
             if (comselect.Items.Count <= 0)
@@ -234,9 +241,9 @@ namespace RobobuilderLib
                     }
                 }
             }
-            catch
+            catch (Exception em)
             {
-                MessageBox.Show("Error - can't connect to serial port - " + comPort.Text, "Error", MessageBoxButtons.OK);
+                MessageBox.Show("Error - can't connect to serial port - " + comPort.Text + "\r\nExeception=" + em.Message, "Error", MessageBoxButtons.OK);
             }
         }
 
