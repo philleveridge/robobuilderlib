@@ -1,7 +1,7 @@
-
+#define _CRT_SECURE_NO_DEPRECATE 
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
+//#include <strings.h>
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>

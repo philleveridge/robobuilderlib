@@ -292,7 +292,7 @@ fMatrix *freplicate2(fMatrix *A, int m, int n)
 
 fMatrix *fmatsum2(fMatrix *A, int mode)   
 {	
-	fMatrix *R;
+	fMatrix *R = NULL;
 	int w=A->w;
 	int h=A->h;
 	int mx,my;

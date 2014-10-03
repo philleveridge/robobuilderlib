@@ -1,6 +1,9 @@
 #ifndef OOBJ_H
 #define OOBJ_H
 
+#ifdef WIN32
+#include "win.h"
+#endif
 
 #include "fmatrix.h"
 #include "rbmread.h"

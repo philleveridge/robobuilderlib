@@ -1,4 +1,8 @@
 #ifdef WIN32
+
+#define _CRT_SECURE_NO_DEPRECATE 
+//#define _CRT_NONSTDC_NO_DEPRECATE
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -26,6 +30,14 @@
 /**********************************************************/
 
 extern int dbg;
+
+char *mystrdup(const char *s)
+{
+	char *d = malloc(strlen(s) + 1);   // Space for length plus nul
+	if (d == NULL) return NULL;          // No memory
+	strcpy(d, s);                        // Copy the characters
+	return d;                            // Return the new string
+}
 
 Dict * newdict(int sz)
 {
@@ -97,7 +109,7 @@ tOBJ makedict2(Dict *e, int n)
 char *covertToUpper(char *str)
 {
     char *newstr, *p;
-    p = (newstr = strdup(str));
+    p = (newstr = mystrdup(str));
     while(*p!=0) {*p=toupper(*p); p++;}
     return newstr;
 }

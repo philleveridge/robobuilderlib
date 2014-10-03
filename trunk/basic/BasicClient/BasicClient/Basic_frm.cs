@@ -149,6 +149,8 @@ namespace RobobuilderLib
         {
             if (bm) return;
 
+            groupBox1.Visible = true;
+
             if (s != null && s.IsOpen)
             {
                 s.Write("r");
@@ -921,6 +923,41 @@ namespace RobobuilderLib
             output.Text = "Reloading .. " + fname.Text;
             syntaxcheck(); //!
             editfl = false;
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button23_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write("\001");
+            }
+        }
+
+        private void button24_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write("\002");
+            }
+        }
+
+        private void button15_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write("\007"); //stop
+            }
         }
 
 

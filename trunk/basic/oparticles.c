@@ -621,8 +621,14 @@ tParticlep particles_sense(tParticlep o, fMatrix *Z)
 	int i;
 	if (o==NULL || Z==NULL) return NULL;
 
+#ifndef WIN32
 	float mp[o->N];
+#else
+	float mp[10000];
+#endif
+
 	float mw=0.0;
+
 
 	for (i=0; i<o->N; i++)
 	{

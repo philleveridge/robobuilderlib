@@ -18,10 +18,11 @@
 #endif
 
 #include <stdio.h>
+#include "main.h"
 #include "edit.h"
 
 extern BYTE EEMEM BASIC_PROG_SPACE[];  // this is where the tokenised code will be stored
-extern int strlen(char *p);
+//extern int strlen(char *p);
 
 WORD psize   =0; // points to next elemt
 WORD lastline=0; //
@@ -34,7 +35,7 @@ void insertln(line_t newline)
 {
 	BYTE l=0;
 	WORD nxt=0;
-	int srt;
+	WORD srt;
 
 	if (psize==0)
 	{
@@ -140,15 +141,15 @@ void insertln(line_t newline)
 		pll = psize-l-3;
 }
 
-int getlineno(int p)
+WORD getlineno(int p)
 {
 	if (p<3) return 0;
-	return (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+p));
+	return eeprom_read_word((BYTE *)(BASIC_PROG_SPACE+p));
 }
 
 void deleteln(int lineno)
 {
-	int p = findln(lineno);
+	WORD p = findln(lineno);
 	if (p>0)
 	{
 		// unlink item
@@ -176,9 +177,9 @@ void clearln()
 // line new at end     :: return ptr to line before
 // line new not ar end :: return 0
 
-int findln(int lineno)
+WORD findln(int lineno)
 {
-	int nl  = firstline();
+	WORD nl  = firstline();
 	int prv = 1;
 	int lno = 1;
 
@@ -251,9 +252,9 @@ BYTE nextchar()
 	return eeprom_read_byte(BASIC_PROG_SPACE+nxtline);	// terminator character ?
 }
 
-int firstline()
+WORD firstline()
 {
-	nxtline = (int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+1));	 //top
+	nxtline = (WORD)eeprom_read_word((BYTE *)(BASIC_PROG_SPACE+1));	 //top
 	return nxtline;
 }
 
@@ -277,9 +278,8 @@ void readtext(int ln, unsigned char *b)
 int findend()
 {
 	int c=0;
-	int nl;
-	int ln;
-	int pl;
+	WORD nl=0;
+	BYTE ln=0, pl=0;
 	
 	nxtline = 0;	
 
@@ -297,7 +297,7 @@ int findend()
 		if (ln == 0xCC)
 			break;	
 		pl=nl;
-		nl=(int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nl+6));
+		nl=eeprom_read_word((BYTE *)(BASIC_PROG_SPACE+nl+6));
 		c++;
 	}
 	psize=nl;
@@ -306,7 +306,7 @@ int findend()
 	return c;
 }
 
-int findnext(int nl, int v)
+WORD findnext(WORD nl, int v)
 {
 	char ln=0;
 	while (nl<EEPROM_MEM_SZ)
@@ -316,7 +316,7 @@ int findnext(int nl, int v)
 		ln = eeprom_read_byte(BASIC_PROG_SPACE+nl);	
 		if (ln == 0xCC || (cmd == 13 && var==v) )
 			break;	
-		nl=(int)eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nl+6));
+		nl=eeprom_read_word((WORD *)(BASIC_PROG_SPACE+nl+6));
 	}
 	return (ln==0xCC)?0:nl;
 }

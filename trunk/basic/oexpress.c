@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include "win.h"
+
+#define strcasecmp _stricmp
 #endif
 
 #ifdef LINUX
@@ -540,7 +542,7 @@ void repl()
 {
 	char inputbuffer[MAX];
 
-	if (dbg) { testme(0); 	sigcatch();  }
+	//if (dbg) { testme(0); 	sigcatch();  }
 	//if (dbg) { testme(17); 	sigcatch();  }
 
 	init_extend(NULL);

@@ -13,7 +13,7 @@
 #endif
 
 typedef struct basic_line {
-    	int           lineno;
+    int           lineno;
 	unsigned int  next;
 	unsigned char token;
 	unsigned char var;
@@ -54,19 +54,20 @@ enum { 	sVOLT=0, sIR,
 
 
 /*    edit functions   */
-extern int     	findln(int lineno);
-extern void    	insertln(line_t newline);
-extern void    	deleteln(int lineno);
-extern void    	clearln();
-extern line_t 	readln(char *bp);
-extern unsigned char 	nextchar();
-extern unsigned int nxtline;
-extern void    	setline(unsigned int);
-extern int		firstline();
-extern int		getlineno(int p);
-extern unsigned int lastline;  // last line added
-extern void		readtext(int ln, unsigned char *b);
-extern int		findend();
+extern WORD		nxtline;
+extern WORD		lastline;  // last line added
+
+extern WORD     findln		(int lineno);
+extern void    	insertln	(line_t newline);
+extern void    	deleteln	(int lineno);
+extern void    	clearln		();
+extern line_t 	readln		(char *bp);
+extern BYTE 	nextchar	();
+extern void    	setline		(unsigned int);
+extern WORD		firstline	();
+extern WORD		getlineno(int p);
+extern void		readtext	(int ln, unsigned char *b);
+extern WORD		findend		();
 
 #endif
 

@@ -1,9 +1,12 @@
 #ifdef WIN32
+
+#define _CRT_SECURE_NO_DEPRECATE 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include "win.h"
+#define strcasecmp _stricmp
 #endif
 
 #ifdef LINUX
@@ -212,7 +215,9 @@ tOP oplist[] = {
 	{"SUBS", 40, NA,    3, {osubst}},		//function single arg
 	{"SUM",  40, NA,    1, {osum}},  		//function <fMatrix>
 	{"TAN",  40, NA,    1, {otan}},  		//function single arg
+#ifdef LINUX
 	{"THREAD",40,NA,    9, {.funce=othread}},  	
+#endif
 	{"TRN",  40, NA,    1, {otrn}},  		//ATRIX tRANSPOSE 
 	{"TURTLE",40,NA,    3, {.func3=oturtle}},  	
 	{"TYPE", 40, NA,    1, {otype}}, 		//object type
@@ -2467,7 +2472,9 @@ tOBJ owait(tOBJ a)
 {
 	if (a.type==SYM  && !strcasecmp("THREAD",a.string))
 	{
+#ifdef LINUX
 		return ojoin(a);
+#endif
 	}
 	else
 	{
@@ -2530,9 +2537,7 @@ tOBJ oacz(tOBJ a)
 
 tOBJ oexit(tOBJ a)
 {
-#ifdef LINUX
 	sigcatch();
-#endif
 	return emptyObj();
 }
 
@@ -2671,6 +2676,7 @@ THREAD functions
 
 ************************************************************************/
 
+#ifndef WIN32
 typedef struct ta {
 	int  n;
 	tOBJ o;
@@ -2737,6 +2743,8 @@ tOBJ ocancel(tOBJ o)
 	printf ("Cancel thread %d\n",tn);
 	return makeint(pthread_cancel(pth));
 }
+
+#endif
 
 /***********************************************************************
 
@@ -2963,40 +2971,40 @@ extern MyRect vj_get (int i) ;
 #else
 int vj     (char *f)                        {return 0;}
 int vj_img (int w, int h, int m, unsigned char *A) {return 0;}
+MyRect vj_get(int i) { MyRect a; a.height = 0; a.width = 0; a.x = 0; a.y = 0; return a; }
 #endif
 
 
 /*
-RESULT	CMD		ARGS					EXAMPLE
-======	========	====================			====================
+RESULT	CMD			ARGS						EXAMPLE
+======	========	====================		====================
 (LIst)	CAMSHIFT	<I>  <n> <n>
-<n>	COLOUR		<s>  <n> <n> <n> <n> 			IMAGE COLOUR "orange" 20 30 60 2
-<I>	DRAWLINE	<I>  <n> <n> <n> <n>
-<I>	DRAWRECT	<I>  <n> <n> <n> <n>
-<I>	FILTER		<s>  <list>				IMAGE FILTER   "test.jpg" '(1 10 10 100 100 100)
-<I> 	F-DETECT	<s>  [ <n> ] 				IMAGE F-DETECT "img.jpg" 1
-<I>	LOAD		<n>  <s>				IMAGE LOAD     "Text" 8
-<I>	NEW  		<n>  <n>
-<I>	MAT		<M>  					IMAGE MAT [1 2; 3 4]
+<n>		COLOUR		<s>  <n> <n> <n> <n> 		IMAGE COLOUR "orange" 20 30 60 2
+<I>		DRAWLINE	<I>  <n> <n> <n> <n>
+<I>		DRAWRECT	<I>  <n> <n> <n> <n>
+<I>		FILTER		<s>  <list>					IMAGE FILTER   "test.jpg" '(1 10 10 100 100 100)
+<I>		F-DETECT	<s>  [ <n> ] 				IMAGE F-DETECT "img.jpg" 1
+<M>		HARRIS		<I>
+<M>		KMEAN		<I> <n>
+<I>		LOAD		<n>  <s>					IMAGE LOAD     "Text" 8
+<I>		NEW  		<n>  <n>
+<I>		MAT			<M>  						IMAGE MAT [1 2; 3 4]
 (LIst)	MEANSHIFT	<I>  <n> <n>
 (LIst)	MOMENT		<I>
-<M>	NORM		<n>  <s>				IMAGE NORM     "Text" 8
-NIL	PGM		<I> <s>					IMAGE PGM {I}  test.pgm"				
-<I>	PROCESS		<s>  <n> <n>				IMAGE PROC "test.jpg" 10 10
-<I>	RAW		<s>
+<M>		NORM		<n>  <s>					IMAGE NORM     "Text" 8
+NIL		PGM			<I> <s>						IMAGE PGM {I}  test.pgm"				
+<I>		PROCESS		<s>  <n> <n>				IMAGE PROC "test.jpg" 10 10
+<I>		RAW			<s>
 (list)	RECOG		<I> | INIT
 (List)	REGION
-<I>	SCALE		<I> <n> <n>		
-<I>	SUBSET		<I> <list>				IMAGE SUBSET IM '(X Y W H)
-<M>	SERIAL  	<n>  <s>				IMAGE SERIAL   "Text" 8
-NIL	SHOW		<I> | <n>
-NIL	THRESH		0 |  <n> <list> | <I> list		IMAGE THRESH 1 '(120 175 40 70 30 40)
-NIL	TRAIN		<I>
-NIL	UNLOCK
-NIL	WAIT		<n>
-
-<M>	KMEAN		<I> <n>
-<M>	HARRIS		<I>
+<I>		SCALE		<I> <n> <n>		
+<I>		SUBSET		<I> <list>					IMAGE SUBSET IM '(X Y W H)
+<M>		SERIAL  	<n>  <s>					IMAGE SERIAL   "Text" 8
+NIL		SHOW		<I> | <n>
+NIL		THRESH		0 |  <n> <list> | <I> list	IMAGE THRESH 1 '(120 175 40 70 30 40)
+NIL		TRAIN		<I>
+NIL		UNLOCK
+NIL		WAIT		<n>
 */
 
 oFilter setFilterfromList(tOBJ v)
@@ -3044,7 +3052,6 @@ tOBJ oimg(tOBJ v, Dict *e)
 			tOBJ ret = emptyObj();
 			if (a.type==IMAG && b.type==INTGR)
 			{
-				//fMatrix *kmeans_img(oImage *img, int k, int th)
 				ret = emptyTPObj(FMAT2, kmeans_img(a.imgptr, toint(b), 127));
 			}
 			freeobj(&a);
@@ -3058,7 +3065,6 @@ tOBJ oimg(tOBJ v, Dict *e)
 			tOBJ ret = emptyObj();
 			if (a.type==IMAG)
 			{
-				//fMatrix *harris_detect(oImage * im);
 				ret = emptyTPObj(FMAT2, harris_detect(a.imgptr));
 			}
 			freeobj(&a);

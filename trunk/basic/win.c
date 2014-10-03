@@ -1,9 +1,13 @@
+#define _CRT_SECURE_NO_DEPRECATE 
+
 #include <stdio.h>
 #include <Windows.h>
 #include <direct.h>
 #include <conio.h>
 #include <math.h>
 #include <process.h>
+
+#include "win.h"
 
 #define GetCurrentDir _getcwd
 
@@ -23,18 +27,25 @@ int nos;
 
 void SendToSoundIC(int n)	{printf ("WIN: Play Sound %d\n", n);}
 
+/* interrupt handler on ctrl-C */
+void sigcatch()
+{
+	printf("Exit - you typed control - C\n");
+	exit(1);
+}
+
 
 /* eeprom */
-void			eeprom_read_block (BYTE *b, char *d, int l)		{int i=0; for(i=0; i<l;i++) *b++=*d++;}
+void	eeprom_read_block (BYTE *b, char *d, int l)		{int i=0; for(i=0; i<l;i++) *b++=*d++;}
 WORD 	eeprom_read_word  (BYTE *p)
 {
-	unsigned int r= (BYTE)(*p) ;
-	r += (((BYTE)*(p+1))<<8);
+	WORD r= (BYTE)(*p) ;
+	r = r + (WORD)(((BYTE)*(p+1))<<8);
 	return r;
 }
 BYTE	eeprom_read_byte  (BYTE *p) 					{return *p;}
 void	eeprom_write_block(char *d, BYTE *b, int l) 	{int i=0; for(i=0; i<l;i++) *b++=*d++;}
-void	eeprom_write_word (BYTE *b, WORD  w) 	{*b=w%256; *(b+1)=w/256;}
+void	eeprom_write_word (BYTE *b, WORD  w) 			{*b=w%256; *(b+1)=w/256;}
 void	eeprom_write_byte (BYTE *b, BYTE c) 			{*b=c;}
 
 /* sensors */
@@ -66,7 +77,7 @@ int adc_mic()			{return 0;}
 /* priotf  */
 int uartGetByte() 							
 {
-	return kbhit()?getch():-1; 
+	return _kbhit()?_getch():-1; 
 }
 
 
@@ -105,7 +116,7 @@ void binstore()
 {
     FILE *fp;
     char *dig="0123456789ABCDEF";
-    int i=0;
+    WORD i=0;
 
 	if ((fp = fopen("bindata.txt", "w")) == 0)
 			return;
@@ -150,7 +161,7 @@ int matrixload(int n, char *s)
 int matrixstore(int n, char *s)
 {
        FILE *fp;
-	   int i,t;
+	   int i;
 
 	   if ((fp = fopen(s, "w")) == 0)
 			return -1;
@@ -290,6 +301,8 @@ void monitor_proc(void *arg)
 
 	}
 }
+
+int imready=0;
 
 extern char device[];
 
