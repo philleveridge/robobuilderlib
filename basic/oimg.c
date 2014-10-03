@@ -1,9 +1,13 @@
 #ifdef WIN32
+
+#define _CRT_SECURE_NO_DEPRECATE 
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include "win.h"
+
 #endif
 
 #ifdef LINUX

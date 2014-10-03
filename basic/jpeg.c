@@ -1,9 +1,15 @@
+
+#define _CRT_SECURE_NO_DEPRECATE 
+
 #include <stdio.h>
 #include <string.h>
 #include <jpeglib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef WIN32
+
 #include <unistd.h>
+#endif
 #include "mem.h"
 
 int Height;
@@ -30,7 +36,7 @@ unsigned char * pTest;
 
 void takelock()
 {
-	while (mkdir("/tmp/x.lock", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)<0)
+//	while (mkdir("/tmp/x.lock", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)<0)
 	{
 		if (dbg) printf ("wait for Lock \n");
 	}
@@ -39,10 +45,10 @@ void takelock()
 
 void rellock()
 {
-	if (rmdir("/tmp/x.lock")<0)
-	{
-		printf ("Lock rm failed\n");
-	}
+//	if (rmdir("/tmp/x.lock")<0)
+//	{
+//		printf ("Lock rm failed\n");
+//	}
 }
 
 int loadJpg(char* Name)

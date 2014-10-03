@@ -1,6 +1,8 @@
 #ifndef F_MATRIX_H
 #define F_MATRIX_H
 
+#include <stdio.h>
+
 /**********************************************************
 
 Floating point Matrix library

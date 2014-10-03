@@ -4,9 +4,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "avrlibtypes.h"
+//#include "avrlibtypes.h"
 
-
+#include "macro.h"
 
 //#define			EXT_INT0_ENABLE		SET_BIT6(GICR)
 //#define			EXT_INT0_DISABLE	CLR_BIT6(GICR)

@@ -52,7 +52,11 @@ fMatrix *kmeans_mat(fMatrix *fm, int k)
 
 	while (no_iterations<10)
 	{
+#ifdef WIN32
+		float cx[1000], cy[1000];
+#else
 		float cx[k], cy[k];
+#endif
 		no_iterations++;
 		for (i=0; i<fm->h; i++)
 		{

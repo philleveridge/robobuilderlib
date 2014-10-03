@@ -1,12 +1,17 @@
 //windows mods
+#ifndef WIN_H
+#define WIN_H
+
+#include "macro.h"
+
 #define PARSE
 
 
 #define uint16_t unsigned int
 #define uint8_t  unsigned char
 
-#define WORD  unsigned int
-#define BYTE  unsigned char
+//#define WORD  unsigned int
+//#define BYTE  unsigned char
 
 #define EEMEM
 #define prog_char char
@@ -28,7 +33,7 @@ char _port[8];
 #define PORTF _port[5]
 #define PORTG _port[6]
 
-#define SDATASZ 128
+//#define SDATASZ 128
 #define RUN_LED1_ON
 #define RUN_LED1_OFF
 
@@ -37,12 +42,11 @@ char _port[8];
 //#define rprintfStr(z)	printf("%s", z) 
 
 //from win.c
-extern void			eeprom_read_block (unsigned char *b, char *d, int l);
-extern uint16_t 	eeprom_read_word  (unsigned char *p);
-extern uint8_t		eeprom_read_byte  (unsigned char *p);
-extern void			eeprom_write_block(char *d, unsigned char *b, int l);
-extern void			eeprom_write_word (unsigned char *b, unsigned int  w);
-extern void			eeprom_write_byte (unsigned char *b, unsigned char c);
+extern WORD			eeprom_read_word  (BYTE *p);
+extern BYTE			eeprom_read_byte  (BYTE *p);
+extern void			eeprom_write_block(char *d, BYTE *b, int l);
+extern void			eeprom_write_word (BYTE *b, WORD  w);
+extern void			eeprom_write_byte (BYTE *b, BYTE c);
 extern int			uartGetByte();
 extern void			rprintfStrLen(char *p, int s, int l);
 
@@ -89,3 +93,5 @@ extern void rprintfCRLF();
 extern void rprintfStr(char *z);
 extern void rprintfChar(char c);
 //extern int  uartGetByte() ;
+
+#endif

@@ -39,6 +39,8 @@ int remote=0;
 #endif
 
 #ifdef WIN32
+
+#define _CRT_SECURE_NO_DEPRECATE 
 #include <stdio.h>
 #include <string.h>
 #include "win.h"
@@ -439,7 +441,7 @@ void basic_load(int tf)
 	char line[MAX_LINE];
 	int n=0;
 	int lc=0;
-	char *cp;
+	char *cp=0;
 					
 	struct basic_line newline;	
 	
