@@ -275,7 +275,7 @@ void readtext(int ln, unsigned char *b)
 	}
 }
 
-int findend()
+WORD findend()
 {
 	int c=0;
 	WORD nl=0;

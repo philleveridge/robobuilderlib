@@ -28,6 +28,12 @@
 //jpeg.c
 unsigned char *loadJpg2 (char* Name, int *w, int *h);
 
+#ifdef WSIMPLE
+extern char outputbuffer[4096];
+#define printf(format, ...)			sprintf_s(outputbuffer+strlen(outputbuffer), 4096, format, ## __VA_ARGS__)
+#define fprintf(fp, format, ...)    sprintf_s(outputbuffer+strlen(outputbuffer), 4096, format, ## __VA_ARGS__)
+#endif
+
 
 oFilter setFilter(int minR, int maxR, int minG, int maxG, int minB, int maxB)
 {

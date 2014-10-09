@@ -66,10 +66,10 @@ extern int dbg;
 
 BYTE EEMEM FIRMWARE        	[64];  		// leave blank - used by Robobuilder OS
 BYTE EEMEM BASIC_PROG_SPACE	[EEPROM_MEM_SZ];  // this is where the tokenised code will be stored
-BYTE EEMEM PERSIST		[256];                     // persistent data store
+BYTE EEMEM PERSIST			[256];                     // persistent data store
 
 extern void Perform_Action	(BYTE action);
-extern int  getHex		(int d);
+extern int  getHex			(int d);
 
 extern void SampleMotion	(unsigned char); 
 extern void sound_init		();
@@ -273,7 +273,7 @@ int readLine(char *line)
 				while ((ch = uartGetByte())<0) ;
 				rprintfChar(ch);
 			}
-			rprintf("\r\n");	
+			rprintfCRLF();	
 			break;		
 		}
 
@@ -347,13 +347,15 @@ int readLine(char *line)
 			rprintfStr ("\n> ");
 			continue;
 		}
+
+		if ((start==line) && (ch == '\\')) return -1;
 				
 		if (ch==13 || (start==line && ch=='.') )
 		{
 			if (ch=='.') { *end++='.';*end='\0';}
 			if (pch==' ') line--; //get rid of trailling space
 			//*line='\0'; 
-			rprintf("\r\n");	
+			rprintfCRLF();	
 			break;
 		}
 #ifdef LINUX
@@ -469,6 +471,8 @@ void basic_load(int tf)
 
 		cp=&line[0];				
 		n=readLine(cp);
+
+		if (n < 0) return; //breakout
 		
 		if ( line[0] =='.' && n==1)
 		{
@@ -1599,8 +1603,10 @@ void basic()
 		case '!': // go lisp 
 			readflg=0;
 			repl();
-			readflg=1;
+			readflg = 1;
 			break;
+		case '\\':
+			return;
 #endif
 		default:
 			rprintfCRLF();

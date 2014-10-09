@@ -125,7 +125,7 @@ void clear(tStackp st)
 void stackprint(tStackp st)
 {
 	int i;
-	printf ("Stack\n");
+	rprintf ("Stack\n");
 	for (i=0;i<st->noe;i++)
 	{
 		rprintf ("%d ", i);
@@ -136,7 +136,7 @@ void stackprint(tStackp st)
 
 void stackprint2(tStackp st)
 {
-	printf ("Stack %d / %d\n", st->noe, st->size);
+	rprintf ("Stack %d / %d\n", st->noe, st->size);
 }
 
 int stacksize(tStackp st)

@@ -232,6 +232,14 @@ tOP oplist[] = {
 	{"ZERO", 40, NA,    2, {.func2=ozero}}    	//Zero Matrx x,y
 };
 
+
+#ifdef WSIMPLE
+extern char outputbuffer[4096];
+#define printf(format, ...)			sprintf_s(outputbuffer+strlen(outputbuffer), 4096, format, ## __VA_ARGS__)
+#define fprintf(fp, format, ...)    sprintf_s(outputbuffer+strlen(outputbuffer), 4096, format, ## __VA_ARGS__)
+#endif
+
+
 /**********************************************************/
 /*  AFunction PTRs                                        */
 /**********************************************************/

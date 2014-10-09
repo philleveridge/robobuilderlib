@@ -1826,9 +1826,10 @@ int cmd_poke(line_t ln)
 
 int cmd_extend(line_t ln)
 {
-#ifdef AVR
+#ifdef AVR 
 		rprintfProgStr(PSTR("? Cmd not available\r\n"));
-#else
+#endif
+#ifndef WSIMPLE
 		extend(ln.text);
 #endif
 	return 0;

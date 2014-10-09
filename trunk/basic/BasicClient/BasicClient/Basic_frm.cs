@@ -6,11 +6,45 @@ using System.IO.Ports;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Net;
+using System.Text;
+using System.Runtime.InteropServices;
+
+using System.Threading;
+
+// Reference path for the following assemblies --> C:\Program Files\Microsoft Expression\Encoder 4\SDK\
+using Microsoft.Expression.Encoder.Devices;
+using Microsoft.Expression.Encoder.Live;
+using Microsoft.Expression.Encoder;
 
 namespace RobobuilderLib
 {
     public partial class Basic_frm : Form
     {
+
+        [DllImport(@"basic_lib.dll", EntryPoint = "basic_api", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void basic_api();
+
+        [DllImport(@"basic_lib.dll", EntryPoint = "read_mem", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int read_mem(int a);
+
+        [DllImport(@"basic_lib.dll", EntryPoint = "read_servo", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int read_servo(int a);
+
+        [DllImport(@"basic_lib.dll", EntryPoint = "set_servo", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int set_servo(int a, int b);
+
+        [DllImport(@"basic_lib.dll", EntryPoint = "basic_setibuf", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void basic_setibuf(string s);
+
+        [DllImport(@"basic_lib.dll", EntryPoint = "basic_getobuf", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void basic_getobuf(StringBuilder s, int len);
+
+        [DllImport(@"basic_lib.dll", EntryPoint = "basic_stop", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void basic_stop();
+
+        bool rlbasic = false;
+
+
         Basic       compiler;
         SerialPort  s;
         binxfer btf;
@@ -40,32 +74,33 @@ namespace RobobuilderLib
             }
         }
 
-
         public Basic_frm()
         {
             string fn = "";
             InitializeComponent();
             readyDownload = false;
 
+            this.Width = (groupBox1.Visible) ? 1028 : 868;
+
             if (File.Exists("BC.ini"))
             {
                 string[] r = File.ReadAllLines("BC.ini");
                 foreach (string l in r)
                 {
-                    if (l.StartsWith("BASIC=") && l.Substring(6)!="" ) bfn = l.Substring(6);
-                    if (l.StartsWith("BIN=") && l.Substring(4)!="")    bdn = l.Substring(4);
-                    if (l.StartsWith("COM="))   cprt = l.Substring(4);
-                    if (l.StartsWith("FILE="))  fn = l.Substring(5);
-                    if (l.StartsWith("MONO=")) fmono = (l.Substring(5, 1).ToUpper() == "Y") ? true : false;
+                    if (l.StartsWith("BASIC=") && l.Substring(6)!="" )  bfn     = l.Substring(6);
+                    if (l.StartsWith("BIN=") && l.Substring(4)!="")     bdn     = l.Substring(4);
+                    if (l.StartsWith("COM="))                           cprt    = l.Substring(4);
+                    if (l.StartsWith("FILE="))                          fn      = l.Substring(5);
+                    if (l.StartsWith("MONO="))                          fmono   = (l.Substring(5, 1).ToUpper() == "Y") ? true : false;
                 }
             }
 
             if (IsLinux && fmono == false) fmono = true; //overide user setting only if actually on linux
 
-            if (!File.Exists(bfn))
-            {
-                simulatorToolStripMenuItem.Visible = false;
-            }
+            //if (!File.Exists(bfn))
+            //{
+            simulatorToolStripMenuItem.Visible = false;
+            //}
 
             if (File.Exists(fn))
             {
@@ -149,8 +184,6 @@ namespace RobobuilderLib
         {
             if (bm) return;
 
-            groupBox1.Visible = true;
-
             if (s != null && s.IsOpen)
             {
                 s.Write("r");
@@ -197,6 +230,7 @@ namespace RobobuilderLib
                     runBtn.Visible = false;
                     listBtn.Visible = false;
                     stopBtn.Visible = false;
+                    groupBox1.Visible = false;
                 }
                 else
                 {
@@ -225,7 +259,8 @@ namespace RobobuilderLib
 
                     runBtn.Visible = true;
                     listBtn.Visible = true;
-                    stopBtn.Visible = true;
+                    stopBtn.Visible = true; 
+                    groupBox1.Visible = true;
 
                     if (fmono)
                     {
@@ -524,15 +559,6 @@ namespace RobobuilderLib
 
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            if (btf != null && progressBar1.Visible)
-            {          
-                progressBar1.Increment((int)(100.0*btf.progress));
-            }
-            this.Update();
-        }
-
         private void simulatorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (sim == null)
@@ -707,6 +733,9 @@ namespace RobobuilderLib
         int minR, minG, minB;
         int maxR, maxG, maxB;
 
+        bool star_push = false;
+        bool hash_push = false;
+
         void clear()
         {
             maxR = 0; maxG = 0; maxB = 0;
@@ -724,13 +753,13 @@ namespace RobobuilderLib
             label8.Text = maxG.ToString();
             label9.Text = maxR.ToString();
 
-            textBox3.Text = String.Format("!IMAGE FILT {6};{0};{1};{2};{3};{4};{5}",
+            textBox3.Text = String.Format("!IMAGE FILT '({6} {0} {1} {2} {3} {4} {5})",
                 minR, maxR, minG, maxG, minB, maxB, textBox2.Text);
         }
 
         void loadimage()
         {
-            if (textBox1.Text.StartsWith("http://"))
+            if (textBox1.Text.StartsWith("https://"))
             {
                 Stream stream = File.OpenRead("temp.jpg");
                 n = new Bitmap(stream);
@@ -741,6 +770,7 @@ namespace RobobuilderLib
                 n = new Bitmap(textBox1.Text);
             }
             pictureBox1.Image = n;
+            pictureBox1.Update();
             //clear();
         }
 
@@ -900,8 +930,6 @@ namespace RobobuilderLib
                 pictureBox1.Update();
 
             }
-
-
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
@@ -925,18 +953,17 @@ namespace RobobuilderLib
             editfl = false;
         }
 
-        private void button7_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void button23_Click(object sender, EventArgs e)
         {
             if (bm) return;
-
+ 
             if (s != null && s.IsOpen)
             {
-                s.Write("\001");
+                s.Write(new byte[] { 1 }, 0, 1); //A
+            }
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)1).ToString());
             }
         }
 
@@ -946,7 +973,11 @@ namespace RobobuilderLib
 
             if (s != null && s.IsOpen)
             {
-                s.Write("\002");
+                s.Write(new byte[] { 2 }, 0, 1); //B
+            }
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)2).ToString());
             }
         }
 
@@ -956,12 +987,474 @@ namespace RobobuilderLib
 
             if (s != null && s.IsOpen)
             {
-                s.Write("\007"); //stop
+                s.Write(new byte[] { 7 }, 0, 1); //[] stop
+            }
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)7).ToString());
             }
         }
 
+        private void button17_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
 
+            if (s != null && s.IsOpen)
+            {
+                s.Write(new byte[] { 3 }, 0, 1); //TL
+            }
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)3).ToString());
+            }
+        }
 
+        private void button14_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
 
+            if (s != null && s.IsOpen)
+            {
+                s.Write(new byte[] { 4 }, 0, 1); //up
+            }
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)4).ToString());
+            }
+        }
+
+        private void button20_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write(new byte[] { 5 }, 0, 1); //up
+            }
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)5).ToString());
+            }
+        }
+
+        private void button18_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write(new byte[] { 6 }, 0, 1); //left
+            }
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)6).ToString());
+            }
+        }
+
+        private void button21_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+             if (s != null && s.IsOpen)
+            {
+                s.Write(new byte[] { 8 }, 0, 1); //right
+            }
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)8).ToString());
+            }
+        }
+
+        private void button19_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write(new byte[] { 9 }, 0, 1); //PL
+            }
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)9).ToString());
+            }
+        }
+
+        private void button16_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write(new byte[] { 10 }, 0, 1); //down
+            }
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)10).ToString());
+            }
+        }
+
+        private void button22_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write(new byte[] { 11 }, 0, 1); //Pr
+            }
+
+            if (rlbasic)
+            {
+                basic_setibuf(((Char)11).ToString());
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            //One - Zer0 on keypad
+            if (bm) return;
+            byte[] n = new byte[1];
+
+            int v = ((Button)sender).Text[0] - '0';
+            if (v == 0) v = 10;
+            n[0]=(byte)(11+v);
+            if (star_push) n[0] += 16;
+            if (hash_push) n[0] += 32;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write(n, 0, 1); //
+            }
+
+            if (rlbasic)
+            {
+                basic_setibuf(n[0].ToString());
+            }
+
+            hash_push = star_push = false;
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            // * pushed
+            star_push = true;
+
+        }
+
+        private void button13_Click(object sender, EventArgs e)
+        {
+            // # pushed
+            hash_push = true;
+        }
+
+        private Thread _myThread;
+ 
+        private void SomeThreadMethod()
+        {
+            // do whatever you want
+            basic_api();
+        }
+
+        //[SecurityPermissionAttribute(SecurityAction.Demand, ControlThread = true)]
+        private void KillThatThread()
+        {
+           // _myThread.Abort();
+            button26.Text = "START";
+            rlbasic = false;
+        }
+
+        private void button26_Click(object sender, EventArgs e)
+        {
+            //run local basic
+            if (button26.Text == "START")
+            {
+                basicio.Text = "";
+                button26.Text = "Stop";
+                rlbasic = true;
+                timer1.Enabled = true;
+
+               //_myThread = new Thread(SomeThreadMethod);
+               basic_api();
+
+               rlbasic = false;
+
+            }
+            else
+            {
+                basic_stop();
+                //basic_setibuf(new byte[] {255}.ToString());
+                //KillThatThread();
+            }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (btf != null && progressBar1.Visible)
+            {
+                progressBar1.Increment((int)(100.0 * btf.progress));
+            }
+            this.Update();
+
+            if (rlbasic)
+            {
+                StringBuilder str = new StringBuilder(255);
+
+                basic_getobuf(str, str.Capacity);
+                if (str.Length > 0)
+                {
+                    if (str.Length>3 && str[0]==27 && str[1]=='[' && str[2]=='2' && str[3]=='J')
+                    {
+                        basicio.Text = str.ToString().Substring(4);
+                    }
+                    if (str[0] == 8)
+                    {
+                        basicio.Text = basicio.Text.Substring(0, basicio.Text.Length - 1);
+                        basicio.SelectionStart = basicio.Text.Length;
+                    }
+                    else
+                    {
+                        for (int i = 0; i < str.Length; i++)
+                        {
+                            if (str[i] == 10)
+                            {
+                                str.Insert(i, (char)13);
+                                i = i + 1;
+                            }
+                        }
+                        basicio.AppendText(str.ToString());
+                    }
+                }
+
+                //servos
+                if (servoUC1.pm) 
+                    servoUC1.val = read_servo(0); 
+                else 
+                    set_servo(0, servoUC1.val);
+
+                if (servoUC2.pm) 
+                    servoUC2.val = read_servo(1); 
+                else
+                    set_servo(1, servoUC2.val);
+            }
+        }
+
+        private void basicio_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            basic_setibuf(e.KeyChar.ToString());
+        }
+
+        private LiveJob _job;
+
+        /// <summary>
+        /// Device for live source
+        /// </summary>
+        private LiveDeviceSource _deviceSource;
+
+        void StopJob()
+        {
+            // Has the Job already been created ?
+            if (_job != null)
+            {
+                _job.StopEncoding();
+
+                // Remove the Device Source and destroy the job
+                _job.RemoveDeviceSource(_deviceSource);
+
+                // Destroy the device source
+                _deviceSource.PreviewWindow = null;
+                _deviceSource = null;
+
+                _job = null;
+            }
+        }
+
+        private void GetSelectedVideoAndAudioDevices(out EncoderDevice video, out EncoderDevice audio)
+        {
+            video = null;
+            audio = null;
+
+            if (listBox2.SelectedIndex < 0)
+            {
+                MessageBox.Show("No Video and Audio capture devices have been selected.\nSelect an audio and video devices from the listboxes and try again.", "Warning");
+                return;
+            }
+
+            // Get the selected video device            
+            foreach (EncoderDevice edv in EncoderDevices.FindDevices(EncoderDeviceType.Video))
+            {
+                if (String.Compare(edv.Name, listBox2.SelectedItem.ToString()) == 0)
+                {
+                    video = edv;
+                    break;
+                }
+            }
+
+            // Get the selected audio device            
+            foreach (EncoderDevice eda in EncoderDevices.FindDevices(EncoderDeviceType.Audio))
+            {
+                //if (String.Compare(eda.Name, lstAudioDevices.SelectedItem.ToString()) == 0)
+                {
+                    audio = eda;
+                    break;
+                }
+            }
+        }
+
+        private void button29_Click(object sender, EventArgs e)
+        {
+            if (button29.Text!="Connect")
+            {
+                StopJob();
+                button29.Text = "Connect";
+
+                Stream stream = File.OpenRead("temp.jpg");
+                n = new Bitmap(stream);
+                stream.Close();
+                pictureBox1.Image = n;
+                return;
+            }
+
+            //Connect
+            button29.Text = "Stop";
+
+            EncoderDevice video = null;
+            EncoderDevice audio = null;
+
+            GetSelectedVideoAndAudioDevices(out video, out audio);
+            StopJob();
+
+            if (video == null)
+            {
+                return;
+            }
+
+            // Starts new job for preview window
+            _job = new LiveJob();
+
+            // Checks for a/v devices
+            if (video != null && audio != null)
+            {
+                // Create a new device source. We use the first audio and video devices on the system
+                _deviceSource = _job.AddDeviceSource(video, audio);
+                _deviceSource.PickBestVideoFormat(new Size(640, 480), 15);
+
+                // Get the properties of the device video
+                SourceProperties sp = _deviceSource.SourcePropertiesSnapshot();
+
+                // Resize the preview panel to match the video device resolution set
+               // pictureBox1.Size = new Size(sp.Size.Width, sp.Size.Height);
+
+                // Setup the output video resolution file as the preview
+                _job.OutputFormat.VideoProfile.Size = new Size(sp.Size.Width, sp.Size.Height);
+
+                // Display the video device properties set
+                textBox3.Text = sp.Size.Width.ToString() + "x" + sp.Size.Height.ToString() + "  " + sp.FrameRate.ToString() + " fps";
+
+                // Sets preview window to winform panel hosted by xaml window
+                _deviceSource.PreviewWindow = new PreviewWindow(new System.Runtime.InteropServices.HandleRef(pictureBox1, pictureBox1.Handle));
+
+                // Make this source the active one
+                _job.ActivateSource(_deviceSource);
+            }
+            else
+            {
+                // Gives error message as no audio and/or video devices found
+                MessageBox.Show("No Video/Audio capture devices have been found.", "Warning");
+            }
+        }
+
+        private void button30_Click(object sender, EventArgs e)
+        {
+            //Grab
+            // Create a Bitmap of the same dimension of panelVideoPreview (Width x Height)
+
+            using (Bitmap bitmap = new Bitmap(pictureBox1.Width, pictureBox1.Height))
+            {
+                using (Graphics g = Graphics.FromImage(bitmap))
+                {
+                    // Get the paramters to call g.CopyFromScreen and get the image
+                    Rectangle rectanglePanelVideoPreview = pictureBox1.Bounds;
+                    Point sourcePoints = pictureBox1.PointToScreen(new Point(pictureBox1.ClientRectangle.X, pictureBox1.ClientRectangle.Y));
+                    g.CopyFromScreen(sourcePoints, Point.Empty, rectanglePanelVideoPreview.Size);
+                }
+
+                string strGrabFileName = String.Format("Snapshot_{0:yyyyMMdd_hhmmss}.jpg", DateTime.Now);
+                textBox3.Text = strGrabFileName;
+                bitmap.Save(strGrabFileName, System.Drawing.Imaging.ImageFormat.Jpeg);
+                bitmap.Save("temp.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+            }
+        }
+
+        private void tabControl1_Enter(object sender, EventArgs e)
+        {
+            //enter tab
+            listBox2.ClearSelected();
+            foreach (EncoderDevice edv in EncoderDevices.FindDevices(EncoderDeviceType.Video))
+            {
+                listBox2.Items.Add(edv.Name);
+            }
+            servoUC1.id = 0;
+            servoUC1.val = 127;
+            servoUC2.id = 1;
+            servoUC2.val = 127;
+        }
+
+        private void remoteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //remoteToolStripMenuItem.Enabled = !remoteToolStripMenuItem.Enabled;
+            groupBox1.Visible = remoteToolStripMenuItem.Checked;
+            this.Width = (groupBox1.Visible) ? 1028 : 868;
+        }
+
+        void hScrollBar4_ValueChanged(object sender, System.EventArgs e)
+        {
+            set_servo(35, hScrollBar4.Value);
+        }
+
+        void hScrollBar1_ValueChanged(object sender, System.EventArgs e)
+        {
+            set_servo(32, hScrollBar1.Value);
+        }
+
+        void hScrollBar2_ValueChanged(object sender, System.EventArgs e)
+        {
+            set_servo(33, hScrollBar2.Value);
+        }
+
+        void hScrollBar3_ValueChanged(object sender, System.EventArgs e)
+        {
+            set_servo(34, hScrollBar3.Value);
+        }
+
+        private void button25_Click(object sender, EventArgs e)
+        {
+            // <<
+            int n = servoUC1.id;
+            if (n>0)
+            {
+                servoUC1.id = n - 1;
+                servoUC2.id = n;
+                servoUC1.val = read_servo(servoUC1.id); 
+                servoUC2.val = read_servo(servoUC2.id); 
+            }
+        }
+
+        private void button27_Click(object sender, EventArgs e)
+        {
+            // >>
+            int n = servoUC1.id;
+            if (n <30)
+            {
+                servoUC1.id = n +1;
+                servoUC2.id = n +2;
+                servoUC1.val = read_servo(servoUC1.id);
+                servoUC2.val = read_servo(servoUC2.id); 
+            }
+        }
+
+        private void Basic_frm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            basic_stop();
+            this.Dispose();
+        }
     }
 }

@@ -128,7 +128,7 @@ void *readmatrix(char **str, char tc )
 
 	if (c != i*(j+1))
 	{
-		printf ("Bad matrix defintion %d,%d,%d ?\n", c, i,j);
+		rprintf ("Bad matrix defintion %d,%d,%d ?\n", c, i,j);
 		return NULL;
 	}
 
@@ -415,9 +415,9 @@ tOBJ procall (tOBJ h, tOBJ o, Dict *e )
 	}
 
 	if (h.type==SYM)
-		printf ("? unknown symbol [%s]\n", h.string);
+		rprintf ("? unknown symbol [%s]\n", h.string);
 	else
-		printf ("? unknown (%s)\n",objtype(h));
+		rprintf ("? unknown (%s)\n",objtype(h));
 
 	if (f) freeobj(&h);
 
@@ -548,12 +548,12 @@ void repl()
 	init_extend(NULL);
 	while (1)
 	{
-		printf("!");
+		rprintf("!");
 		inputbuffer[0]=0;
 		readLine(&inputbuffer[0]);
 		if (countb(inputbuffer)!=0)
 		{
-			printf("Mis-matched brackets\n");
+			rprintf("Mis-matched brackets\n");
 			continue;
 		}
 		if (inputbuffer[0]==';') continue;

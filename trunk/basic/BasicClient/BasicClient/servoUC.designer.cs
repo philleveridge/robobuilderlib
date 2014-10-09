@@ -39,7 +39,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 172);
+            this.label2.Location = new System.Drawing.Point(1, 147);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(34, 13);
             this.label2.TabIndex = 5;
@@ -48,7 +48,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 3);
+            this.label1.Location = new System.Drawing.Point(1, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(36, 13);
             this.label1.TabIndex = 4;
@@ -58,10 +58,10 @@
             // 
             this.servo.Cursor = System.Windows.Forms.Cursors.WaitCursor;
             this.servo.LargeChange = 1;
-            this.servo.Location = new System.Drawing.Point(16, 30);
+            this.servo.Location = new System.Drawing.Point(6, 30);
             this.servo.Maximum = 254;
             this.servo.Name = "servo";
-            this.servo.Size = new System.Drawing.Size(23, 130);
+            this.servo.Size = new System.Drawing.Size(15, 108);
             this.servo.TabIndex = 3;
             this.servo.UseWaitCursor = true;
             this.servo.ValueChanged += new System.EventHandler(this.servo_ValueChanged);
@@ -72,7 +72,7 @@
             this.red.BackColor = System.Drawing.Color.Transparent;
             this.red.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.red.ForeColor = System.Drawing.Color.OrangeRed;
-            this.red.Location = new System.Drawing.Point(3, 188);
+            this.red.Location = new System.Drawing.Point(1, 163);
             this.red.Name = "red";
             this.red.Size = new System.Drawing.Size(12, 11);
             this.red.TabIndex = 6;
@@ -86,7 +86,7 @@
             this.blue.CheckState = System.Windows.Forms.CheckState.Checked;
             this.blue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.blue.ForeColor = System.Drawing.Color.RoyalBlue;
-            this.blue.Location = new System.Drawing.Point(39, 188);
+            this.blue.Location = new System.Drawing.Point(19, 163);
             this.blue.Name = "blue";
             this.blue.Size = new System.Drawing.Size(12, 11);
             this.blue.TabIndex = 7;
@@ -95,11 +95,12 @@
             // passive
             // 
             this.passive.AutoSize = true;
-            this.passive.Location = new System.Drawing.Point(43, 3);
+            this.passive.Location = new System.Drawing.Point(6, 16);
             this.passive.Name = "passive";
             this.passive.Size = new System.Drawing.Size(15, 14);
             this.passive.TabIndex = 8;
             this.passive.UseVisualStyleBackColor = true;
+            this.passive.CheckedChanged += new System.EventHandler(this.passive_CheckedChanged);
             // 
             // servoUC
             // 
@@ -113,7 +114,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.servo);
             this.Name = "servoUC";
-            this.Size = new System.Drawing.Size(57, 205);
+            this.Size = new System.Drawing.Size(35, 180);
             this.ResumeLayout(false);
             this.PerformLayout();
 

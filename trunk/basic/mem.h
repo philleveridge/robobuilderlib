@@ -1,6 +1,8 @@
 #ifndef MEM_H
 #define MEM_H
 
+#include <stdlib.h>
+
 extern unsigned int 	mem_counter;
 extern int 		memlc;
 
@@ -11,4 +13,5 @@ extern void  bas_show();
 extern int   bas_mem();
 
 extern void  testme();
+
 #endif

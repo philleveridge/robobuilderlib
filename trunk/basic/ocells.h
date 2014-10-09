@@ -2,6 +2,7 @@
 #define OCELL_H
 
 #include "oobj.h"
+#include "macro.h"
 
 /**********************************************************/
 /*  CELLS                                                 */

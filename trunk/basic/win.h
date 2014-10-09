@@ -2,9 +2,12 @@
 #ifndef WIN_H
 #define WIN_H
 
+#define _CRT_SECURE_NO_DEPRECATE 
+#define _CRT_SECURE_NO_WARNINGS 
+
 #include "macro.h"
 
-#define PARSE
+//#define PARSE
 
 
 #define uint16_t unsigned int
@@ -37,7 +40,12 @@ char _port[8];
 #define RUN_LED1_ON
 #define RUN_LED1_OFF
 
+#ifdef WSIMPLE
+//extern char*outputbuffer;
+//#define rprintf(A)			sprintf_s(outputbuffer, 4096, A)
+#else
 #define rprintf			printf 
+#endif
 //#define rprintfChar		putchar 
 //#define rprintfStr(z)	printf("%s", z) 
 
@@ -64,6 +72,8 @@ extern int z_value;
 extern int y_value;
 extern int x_value;
 extern int gVOLTAGE;
+
+extern int dbg;
 extern int gDistance;
 
 extern volatile WORD    gMSEC;
@@ -83,7 +93,14 @@ extern int	remote;
 extern volatile WORD	gtick;
 extern volatile WORD	mstimer;
 
+#ifndef WSIMPLE
 #define rprintfProgStr	printf
+#else
+extern char outputbuffer[4096];
+#define rprintf(format, ...)   sprintf_s(outputbuffer+strlen(outputbuffer), 4096, format, ## __VA_ARGS__)
+//#define printf(format, ...)    sprintf_s(outputbuffer+strlen(outputbuffer), 4096, format, ## __VA_ARGS__)
+#endif
+
 #define PSTR(a)			a
 #define strcmp_P		strcmp
 #define strncmp_P		strncmp
@@ -93,5 +110,7 @@ extern void rprintfCRLF();
 extern void rprintfStr(char *z);
 extern void rprintfChar(char c);
 //extern int  uartGetByte() ;
+
+#define SDATASZ 128
 
 #endif
