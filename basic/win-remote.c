@@ -7,6 +7,12 @@ int delay_ms(int);
 
 extern int dbg;
 
+#define BYTE unsigned char
+
+BYTE cpos[32];
+int offset[32];
+BYTE nos = 0;
+
 //#include <pthread.h>
 //static pthread_mutex_t cs_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -182,14 +188,17 @@ int testsocket(char *echoString)
 void wckPosSend(unsigned char ServoID, char Torque, unsigned char Position)
 {
 	DBO(printf ("WIN: Servo Send %d [%d] -> %d\n", ServoID, Torque, Position);)
-	if (!remote) return;
+		if (!remote) {
+		cpos[ServoID] = Position; return;
+		}
 
 	wckMovePos(ServoID, Position, Torque);
 }
 
 int  wckPosRead(char ServoID)
 {
-	if (!remote) return 0;
+	//printf_s("read %d %d %d\n", ServoID, remote, cpos[ServoID]);
+	if (!remote) return cpos[ServoID];
 
 	if (wckReadPos(ServoID, 0)<0)
 		return -1;
@@ -210,7 +219,10 @@ void wckSyncPosSend(char LastID, char SpeedLevel, char *TargetArray, char Index)
 	char CheckSum;
 	int i=0;
 	DBOR(printf ("WIN: Servo Synch Send  %d [%d]\n", LastID, SpeedLevel);)
-	if (!remote) return;
+	if (!remote) {
+		for (i = 0; i <= LastID; i++) cpos[i] = TargetArray[Index + i];
+		return;
+	}
 
     //pthread_mutex_lock( &cs_mutex );
 
@@ -361,9 +373,19 @@ extern int z_value,y_value,x_value,gDistance;
    int CB2I(int x) {if (x<128) return x; else return x-256;}
    int CI2B(int x) {if (x<0) return (256+x)%256; else return x%256;}
 
+   int sim_psd = 50;
+   int sim_x = 0;
+   int sim_y = 0;
+   int sim_z = 0;
+
    int readXYZ()
    {
-	   	if (!remote) return 0;
+	   if (!remote) {
+		   y_value = sim_y;
+		   z_value = sim_z;
+		   x_value = sim_x;
+		   return 0;
+	   }
 
 	   wckReadPos(30,1);
 		y_value = CB2I(response[0]);
@@ -375,7 +397,7 @@ extern int z_value,y_value,x_value,gDistance;
 
    int readPSD()
    {
-	   if (!remote) return 50;
+	   if (!remote) return sim_psd;
 
 	   wckReadPos(30,5);
 	   gDistance = CB2I(response[0]);
@@ -514,16 +536,11 @@ extern int z_value,y_value,x_value,gDistance;
 
 
 
-	#define BYTE unsigned char
-
-	BYTE cpos[32];
-	int offset[32];
-	BYTE nos=0;
-
 
 	int readservos(int n)
 	{
 		BYTE i;
+		printf_s("readservo %d\n", n);
 	    if (n==0) n=30;
 		for (i=0; i<n; i++)
 		{

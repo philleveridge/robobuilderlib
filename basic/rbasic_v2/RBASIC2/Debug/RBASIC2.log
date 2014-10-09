@@ -1,0 +1,52 @@
+﻿Build started 09/10/2014 17:12:31.
+     1>Project "C:\Users\phil\Documents\Visual Studio 2013\Projects\RBASIC2\RBASIC2\RBASIC2.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Users\phil\Desktop\basic2\jpeg-9a" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt "..\..\..\..\..\Desktop\basic2\win-remote.c"
+         win-remote.c
+     1>c:\users\phil\desktop\basic2\win-remote.c(126): warning C4013: 'CI2B' undefined; assuming extern returning int
+     1>c:\users\phil\desktop\basic2\win-remote.c(304): warning C4098: 'blights' : 'void' function returning a value
+     1>c:\users\phil\desktop\basic2\e-motion.h(213): warning C4114: same type qualifier used more than once
+       Link:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\phil\Documents\Visual Studio 2013\Projects\RBASIC2\Debug\RBASIC2.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\phil\Documents\Visual Studio 2013\Projects\RBASIC2\Debug\RBASIC2.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\phil\Documents\Visual Studio 2013\Projects\RBASIC2\Debug\RBASIC2.lib" /MACHINE:X86 Debug\basic.obj
+         Debug\cmap.obj
+         Debug\commands.obj
+         Debug\edit.obj
+         Debug\express.obj
+         Debug\fix_fft.obj
+         Debug\fmatrix.obj
+         Debug\fnetwork.obj
+         Debug\functions.obj
+         Debug\harris.obj
+         Debug\jpeg.obj
+         Debug\kmeans.obj
+         Debug\lists.obj
+         Debug\matrix.obj
+         Debug\mem.obj
+         Debug\network.obj
+         Debug\ocells.obj
+         Debug\odict.obj
+         Debug\oexpress.obj
+         Debug\ofunction.obj
+         Debug\oimg.obj
+         Debug\oobj.obj
+         Debug\oparticles.obj
+         Debug\opflow.obj
+         Debug\ostack.obj
+         Debug\ostring.obj
+         Debug\rbmread.obj
+         Debug\trex.obj
+         "Debug\win-remote.obj"
+         Debug\win.obj
+         "..\..\..\..\..\Desktop\basic2\jpeg-9a\Release\jpeg.lib"
+         jpeg.lib(jerror.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
+     1>LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/LTCG' specification
+     1>basic.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/OPT:LBR' specification
+     1>LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+         Generating code
+         Finished generating code
+         RBASIC2.vcxproj -> C:\Users\phil\Documents\Visual Studio 2013\Projects\RBASIC2\Debug\RBASIC2.exe
+     1>Done Building Project "C:\Users\phil\Documents\Visual Studio 2013\Projects\RBASIC2\RBASIC2\RBASIC2.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:04.53

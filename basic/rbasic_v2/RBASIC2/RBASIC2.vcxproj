@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8E940AB2-2624-47A0-8C08-C20F09831BE8}</ProjectGuid>
+    <RootNamespace>RBASIC2</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\phil\Desktop\basic2\jpeg-9a;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\cmap.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\edit.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\express.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\fmatrix.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\functions.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\harris.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\kmeans.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\lists.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\macro.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\main.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\mem.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ocells.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\odict.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oexpress.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ofunction.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oimg.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oobj.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oparticles.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\opflow.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ostack.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ostring.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\rbmread.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\basic2\win.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\basic.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\cmap.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\commands.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\edit.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\express.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\fix_fft.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\fmatrix.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\fnetwork.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\functions.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\harris.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\jpeg.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\kmeans.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\lists.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\matrix.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\mem.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\network.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ocells.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\odict.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oexpress.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ofunction.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oimg.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oobj.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oparticles.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\opflow.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ostack.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ostring.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\rbmread.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\trex.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\win-remote.c" />
+    <ClCompile Include="..\..\..\..\..\Desktop\basic2\win.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\..\..\..\Desktop\basic2\jpeg-9a\Release\jpeg.lib" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

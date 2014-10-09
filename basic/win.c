@@ -74,18 +74,28 @@ void sound_init()		{printf ("WIN: Sound init\n");}
 
 int adc_mic()			{return 0;}
 
-/* priotf  */
+/* printf  */
 int uartGetByte() 							
 {
+#ifdef WSIMPLE
+	return wsgetch();
+#endif
 	return _kbhit()?_getch():-1; 
 }
 
-
+#ifdef WSIMPLE
+void rprintfProgStr(char *z)				{ while (*z != 0) wsputch(*z++); }
+void rprintfStrLen(char *p, int s, int l)	{ int i; for (i = 0; i<l; i++) wsputch(*(p + i)); }
+void rprintfCRLF()							{ wsputch(13); wsputch(10); }
+void rprintfStr(char *z)					{ while (*z != 0) wsputch(*z++); }
+void rprintfChar(char c)					{ wsputch(c); }
+//void rprintf(char *s)   { rprintfStr(s); }
+#else
 void rprintfStrLen(char *p, int s, int l)	{int i; for (i=0; i<l; i++) putchar(*(p+i));}
 void rprintfCRLF()							{printf ("\n");}
 void rprintfStr(char *z)					{printf ("%s", z); fflush(stdout);}
 void rprintfChar(char c)					{putchar (c); fflush(stdout);}
-
+#endif
 
 /* misc */
 int delay_ms(int x)  					
@@ -306,6 +316,8 @@ int imready=0;
 
 extern char device[];
 
+#ifndef WSIMPLE
+
 int main(int argc, char *argv[])
 {
 	int i, lf=0, sf=0, rf=0;
@@ -365,4 +377,4 @@ int main(int argc, char *argv[])
 }
 
 
- 
+#endif
