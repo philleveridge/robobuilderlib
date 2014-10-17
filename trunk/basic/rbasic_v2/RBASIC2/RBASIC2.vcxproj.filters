@@ -15,171 +15,169 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\kmeans.h">
+    <ClInclude Include="..\..\cmap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\main.h">
+    <ClInclude Include="..\..\edit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\mem.h">
+    <ClInclude Include="..\..\express.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ocells.h">
+    <ClInclude Include="..\..\fmatrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\odict.h">
+    <ClInclude Include="..\..\functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oexpress.h">
+    <ClInclude Include="..\..\harris.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\opflow.h">
+    <ClInclude Include="..\..\kmeans.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oparticles.h">
+    <ClInclude Include="..\..\lists.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oimg.h">
+    <ClInclude Include="..\..\macro.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oobj.h">
+    <ClInclude Include="..\..\main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ofunction.h">
+    <ClInclude Include="..\..\mem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ostack.h">
+    <ClInclude Include="..\..\ocells.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ostring.h">
+    <ClInclude Include="..\..\odict.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\macro.h">
+    <ClInclude Include="..\..\oexpress.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\win.h">
+    <ClInclude Include="..\..\ofunction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\lists.h">
+    <ClInclude Include="..\..\oimg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\functions.h">
+    <ClInclude Include="..\..\oobj.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\express.h">
+    <ClInclude Include="..\..\oparticles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\cmap.h">
+    <ClInclude Include="..\..\opflow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\fmatrix.h">
+    <ClInclude Include="..\..\ostack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\harris.h">
+    <ClInclude Include="..\..\ostring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\rbmread.h">
+    <ClInclude Include="..\..\rbmread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\edit.h">
+    <ClInclude Include="..\..\win.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\matrix.c">
+    <ClCompile Include="..\..\basic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\mem.c">
+    <ClCompile Include="..\..\cmap.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\network.c">
+    <ClCompile Include="..\..\commands.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ocells.c">
+    <ClCompile Include="..\..\edit.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\odict.c">
+    <ClCompile Include="..\..\express.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oexpress.c">
+    <ClCompile Include="..\..\fix_fft.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ofunction.c">
+    <ClCompile Include="..\..\fmatrix.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oimg.c">
+    <ClCompile Include="..\..\fnetwork.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oobj.c">
+    <ClCompile Include="..\..\functions.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oparticles.c">
+    <ClCompile Include="..\..\harris.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\opflow.c">
+    <ClCompile Include="..\..\jpeg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ostack.c">
+    <ClCompile Include="..\..\kmeans.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ostring.c">
+    <ClCompile Include="..\..\lists.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\basic.c">
+    <ClCompile Include="..\..\matrix.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\cmap.c">
+    <ClCompile Include="..\..\mem.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\express.c">
+    <ClCompile Include="..\..\network.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\fmatrix.c">
+    <ClCompile Include="..\..\ocells.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\fnetwork.c">
+    <ClCompile Include="..\..\odict.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\functions.c">
+    <ClCompile Include="..\..\oexpress.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\harris.c">
+    <ClCompile Include="..\..\ofunction.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\jpeg.c">
+    <ClCompile Include="..\..\oimg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\win.c">
+    <ClCompile Include="..\..\oobj.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\win-remote.c">
+    <ClCompile Include="..\..\oparticles.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\rbmread.c">
+    <ClCompile Include="..\..\opflow.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\lists.c">
+    <ClCompile Include="..\..\ostack.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\edit.c">
+    <ClCompile Include="..\..\ostring.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\kmeans.c">
+    <ClCompile Include="..\..\rbmread.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\trex.c">
+    <ClCompile Include="..\..\trex.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\commands.c">
+    <ClCompile Include="..\..\win-remote.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\fix_fft.c">
+    <ClCompile Include="..\..\win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\..\..\Desktop\basic2\jpeg-9a\Release\jpeg.lib">
-      <Filter>Resource Files</Filter>
-    </Library>
+    <Library Include="..\..\jpeg-9a\Release\jpeg.lib" />
   </ItemGroup>
 </Project>

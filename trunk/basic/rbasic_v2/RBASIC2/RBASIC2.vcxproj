@@ -58,6 +58,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\phil\Desktop\basic2\jpeg-9a;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -66,64 +68,64 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\cmap.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\edit.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\express.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\fmatrix.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\functions.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\harris.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\kmeans.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\lists.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\macro.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\main.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\mem.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ocells.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\odict.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oexpress.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ofunction.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oimg.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oobj.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\oparticles.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\opflow.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ostack.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\ostring.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\rbmread.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\basic2\win.h" />
+    <ClInclude Include="..\..\cmap.h" />
+    <ClInclude Include="..\..\edit.h" />
+    <ClInclude Include="..\..\express.h" />
+    <ClInclude Include="..\..\fmatrix.h" />
+    <ClInclude Include="..\..\functions.h" />
+    <ClInclude Include="..\..\harris.h" />
+    <ClInclude Include="..\..\kmeans.h" />
+    <ClInclude Include="..\..\lists.h" />
+    <ClInclude Include="..\..\macro.h" />
+    <ClInclude Include="..\..\main.h" />
+    <ClInclude Include="..\..\mem.h" />
+    <ClInclude Include="..\..\ocells.h" />
+    <ClInclude Include="..\..\odict.h" />
+    <ClInclude Include="..\..\oexpress.h" />
+    <ClInclude Include="..\..\ofunction.h" />
+    <ClInclude Include="..\..\oimg.h" />
+    <ClInclude Include="..\..\oobj.h" />
+    <ClInclude Include="..\..\oparticles.h" />
+    <ClInclude Include="..\..\opflow.h" />
+    <ClInclude Include="..\..\ostack.h" />
+    <ClInclude Include="..\..\ostring.h" />
+    <ClInclude Include="..\..\rbmread.h" />
+    <ClInclude Include="..\..\win.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\basic.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\cmap.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\commands.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\edit.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\express.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\fix_fft.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\fmatrix.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\fnetwork.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\functions.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\harris.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\jpeg.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\kmeans.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\lists.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\matrix.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\mem.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\network.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ocells.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\odict.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oexpress.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ofunction.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oimg.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oobj.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\oparticles.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\opflow.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ostack.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\ostring.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\rbmread.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\trex.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\win-remote.c" />
-    <ClCompile Include="..\..\..\..\..\Desktop\basic2\win.c" />
+    <ClCompile Include="..\..\basic.c" />
+    <ClCompile Include="..\..\cmap.c" />
+    <ClCompile Include="..\..\commands.c" />
+    <ClCompile Include="..\..\edit.c" />
+    <ClCompile Include="..\..\express.c" />
+    <ClCompile Include="..\..\fix_fft.c" />
+    <ClCompile Include="..\..\fmatrix.c" />
+    <ClCompile Include="..\..\fnetwork.c" />
+    <ClCompile Include="..\..\functions.c" />
+    <ClCompile Include="..\..\harris.c" />
+    <ClCompile Include="..\..\jpeg.c" />
+    <ClCompile Include="..\..\kmeans.c" />
+    <ClCompile Include="..\..\lists.c" />
+    <ClCompile Include="..\..\matrix.c" />
+    <ClCompile Include="..\..\mem.c" />
+    <ClCompile Include="..\..\network.c" />
+    <ClCompile Include="..\..\ocells.c" />
+    <ClCompile Include="..\..\odict.c" />
+    <ClCompile Include="..\..\oexpress.c" />
+    <ClCompile Include="..\..\ofunction.c" />
+    <ClCompile Include="..\..\oimg.c" />
+    <ClCompile Include="..\..\oobj.c" />
+    <ClCompile Include="..\..\oparticles.c" />
+    <ClCompile Include="..\..\opflow.c" />
+    <ClCompile Include="..\..\ostack.c" />
+    <ClCompile Include="..\..\ostring.c" />
+    <ClCompile Include="..\..\rbmread.c" />
+    <ClCompile Include="..\..\trex.c" />
+    <ClCompile Include="..\..\win-remote.c" />
+    <ClCompile Include="..\..\win.c" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\..\..\Desktop\basic2\jpeg-9a\Release\jpeg.lib" />
+    <Library Include="..\..\jpeg-9a\Release\jpeg.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

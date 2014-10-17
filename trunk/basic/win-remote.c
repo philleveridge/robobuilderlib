@@ -534,13 +534,10 @@ extern int z_value,y_value,x_value,gDistance;
 		return;
 	}
 
-
-
-
 	int readservos(int n)
 	{
 		BYTE i;
-		printf_s("readservo %d\n", n);
+		//printf_s("readservo %d\n", n);
 	    if (n==0) n=30;
 		for (i=0; i<n; i++)
 		{

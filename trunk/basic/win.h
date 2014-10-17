@@ -96,8 +96,8 @@ extern volatile WORD	mstimer;
 #ifndef WSIMPLE
 #define rprintfProgStr	printf
 #else
-extern char outputbuffer[4096];
-#define rprintf(format, ...)   sprintf_s(outputbuffer+strlen(outputbuffer), 4096, format, ## __VA_ARGS__)
+extern char outputbuffer[8096];
+#define rprintf(format, ...)   sprintf_s(outputbuffer+strlen(outputbuffer), 8096, format, ## __VA_ARGS__)
 //#define printf(format, ...)    sprintf_s(outputbuffer+strlen(outputbuffer), 4096, format, ## __VA_ARGS__)
 #endif
 
