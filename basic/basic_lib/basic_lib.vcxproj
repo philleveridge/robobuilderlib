@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{25894966-B54E-46F3-BFE4-B30FFEEDAB36}</ProjectGuid>
-    <RootNamespace>Project1</RootNamespace>
+    <ProjectGuid>{E9E511FD-6B2D-4807-83BA-7A44F13657D3}</ProjectGuid>
+    <RootNamespace>rbasic</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -23,11 +23,13 @@
     <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -39,7 +41,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetExt>.dll</TargetExt>
+    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetExt>.dll</TargetExt>
+    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -54,15 +63,20 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions>/NODEFAULTLIB:MSVCRT %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\phil\Desktop\basic2\jpeg-9a;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;WSIMPLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -74,126 +88,310 @@
     <ClCompile Include="..\basic.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\cmap.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\commands.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\edit.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\express.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\fix_fft.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\fmatrix.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\fnetwork.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\functions.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\harris.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\jpeg.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\kmeans.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\lists.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\matrix.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\mem.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\network.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\ocells.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\odict.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\oexpress.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\ofunction.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\oimg.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\oobj.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\oparticles.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\opflow.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\ostack.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\ostring.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\rbmread.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\Source.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsManaged>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
     </ClCompile>
     <ClCompile Include="..\trex.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\win-remote.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
     <ClCompile Include="..\win.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">None</DebugInformationFormat>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <IntrinsicFunctions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IntrinsicFunctions>
+      <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExceptionHandling>
+      <FunctionLevelLinking Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FunctionLevelLinking>
+      <ForceConformanceInForLoopScope Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ForceConformanceInForLoopScope>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

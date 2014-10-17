@@ -682,7 +682,7 @@ long (*fnctab[])(long) = {
 	fn_zeros, //sZEROS
 	fn_mic,   //sMIC 
 	fn_gx,    //sGX 
-	fn_gz,    //sGY 
+	fn_gy,    //sGY 
 	fn_gz,    //sGZ 
 	fn_psd,   //sPSD
 	fn_grey,  //sGREY 

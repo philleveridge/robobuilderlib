@@ -40,12 +40,14 @@ extern "C"
 	int stop_flg = 0;
 
 	char inputbuffer[4096];
-	char outputbuffer[4096];
+	char outputbuffer[8096];
 
 	extern unsigned char cpos[32];
 	extern int sim_x, sim_y, sim_z, sim_psd, gDistance, x_value, y_value, z_value;
 	unsigned char BASIC_PROG_SPACE[];
 	unsigned short eeprom_read_byte(unsigned short *p);
+
+	extern WORD psize;
 
 	int wsibp = 0;
 
@@ -77,11 +79,12 @@ extern "C"
 		int obl = strlen(outputbuffer);
 		putchar(c);
 
-		if (obl >= 4095) return ;
+		if (obl >= 8095) return ;
 		outputbuffer[obl] = c;
 		outputbuffer[obl+1] = 0;
 
 		if (stop_flg) exit(1);
+		DoEvents();
 	}
 
 
@@ -95,10 +98,10 @@ extern "C"
 
 	__declspec(dllexport) void basic_getobuf(char* str, int n)
 	{
-		int obl = strlen(outputbuffer);
-		outputbuffer[obl] = 0;	
+		int obl = strnlen_s(outputbuffer,4096);
 		strcpy_s(str, n, &outputbuffer[0]);
 		outputbuffer[0] = 0;
+		DoEvents();
 	}
 
 	__declspec(dllexport)void  basic_api()
@@ -114,7 +117,14 @@ extern "C"
 
 	__declspec(dllexport)int read_mem(int n)
 	{
+		//special cases
+		if (n == -1) return psize;
 		return BASIC_PROG_SPACE[n];
+	}
+
+	__declspec(dllexport)int set_mem(int n, int v)
+	{
+		return BASIC_PROG_SPACE[n]=(unsigned char)(v&0xFF);
 	}
 
 	__declspec(dllexport)int read_servo(int n)
@@ -127,10 +137,17 @@ extern "C"
 		if (n>=0 && n<30)
 			return (int)(cpos[n]=(unsigned char)v);
 
-		if (n == 32)	x_value = sim_x = v;
-		if (n == 33)	y_value = sim_y = v;
-		if (n == 34)	z_value = sim_z   = v;
-		if (n == 35)	gDistance = sim_psd = v;
+		printf_s("set servo %d %d\n", n, v);
+
+		if (n == 32)	
+			x_value = (sim_x = v);
+		else if (n == 33)	
+			y_value = (sim_y = v);
+		else if (n == 34)	
+			z_value = (sim_z = v);
+		else if (n == 35)	
+			gDistance = (sim_psd = v);
+		return 0;
 	}
 
 	__declspec(dllexport)void basic_stop()

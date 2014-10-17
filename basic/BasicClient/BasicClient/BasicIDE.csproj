@@ -178,7 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\basic_lib\basic_lib.vcxproj">
-      <Project>{25894966-b54e-46f3-bfe4-b30ffeedab36}</Project>
+      <Project>{e9e511fd-6b2d-4807-83ba-7a44f13657d3}</Project>
       <Name>basic_lib</Name>
     </ProjectReference>
   </ItemGroup>

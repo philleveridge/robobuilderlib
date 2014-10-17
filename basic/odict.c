@@ -249,9 +249,9 @@ int dict_update(Dict *d, char *key, tOBJ value)
 }
 
 #ifdef WSIMPLE
-extern char outputbuffer[4096];
-#define printf(format, ...)			sprintf_s(outputbuffer+strlen(outputbuffer), 4096, format, ## __VA_ARGS__)
-#define fprintf(fp, format, ...)    sprintf_s(outputbuffer+strlen(outputbuffer), 4096, format, ## __VA_ARGS__)
+extern char outputbuffer[8096];
+#define printf(format, ...)			sprintf_s(outputbuffer+strlen(outputbuffer), 8096, format, ## __VA_ARGS__)
+#define fprintf(fp, format, ...)    sprintf_s(outputbuffer+strlen(outputbuffer), 8096, format, ## __VA_ARGS__)
 #endif
 
 int dict_print(Dict *d, int f)

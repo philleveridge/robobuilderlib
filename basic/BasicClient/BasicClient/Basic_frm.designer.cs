@@ -52,6 +52,7 @@
             this.compilerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.compileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.downloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.uploadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.simulatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -97,6 +98,10 @@
             this.ldFile = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.label19 = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
             this.button27 = new System.Windows.Forms.Button();
             this.button25 = new System.Windows.Forms.Button();
             this.label15 = new System.Windows.Forms.Label();
@@ -107,8 +112,6 @@
             this.hScrollBar3 = new System.Windows.Forms.HScrollBar();
             this.hScrollBar2 = new System.Windows.Forms.HScrollBar();
             this.hScrollBar1 = new System.Windows.Forms.HScrollBar();
-            this.servoUC2 = new RobobuilderLib.servoUC();
-            this.servoUC1 = new RobobuilderLib.servoUC();
             this.button26 = new System.Windows.Forms.Button();
             this.basicio = new System.Windows.Forms.TextBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
@@ -137,6 +140,9 @@
             this.label12 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.button7 = new System.Windows.Forms.Button();
+            this.servoUC3 = new RobobuilderLib.servoUC();
+            this.servoUC2 = new RobobuilderLib.servoUC();
+            this.servoUC1 = new RobobuilderLib.servoUC();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -260,6 +266,7 @@
             this.compilerToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.compileToolStripMenuItem,
             this.downloadToolStripMenuItem,
+            this.uploadToolStripMenuItem,
             this.extendToolStripMenuItem,
             this.simulatorToolStripMenuItem,
             this.imageToolStripMenuItem,
@@ -281,6 +288,13 @@
             this.downloadToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.downloadToolStripMenuItem.Text = "Download";
             this.downloadToolStripMenuItem.Click += new System.EventHandler(this.downloadToolStripMenuItem_Click);
+            // 
+            // uploadToolStripMenuItem
+            // 
+            this.uploadToolStripMenuItem.Name = "uploadToolStripMenuItem";
+            this.uploadToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.uploadToolStripMenuItem.Text = "Upload";
+            this.uploadToolStripMenuItem.Click += new System.EventHandler(this.uploadToolStripMenuItem_Click);
             // 
             // extendToolStripMenuItem
             // 
@@ -389,7 +403,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 27);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(788, 419);
+            this.tabControl1.Size = new System.Drawing.Size(803, 419);
             this.tabControl1.TabIndex = 16;
             this.tabControl1.Enter += new System.EventHandler(this.tabControl1_Enter);
             // 
@@ -400,7 +414,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(780, 393);
+            this.tabPage1.Size = new System.Drawing.Size(795, 393);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "editor";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -411,7 +425,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(780, 393);
+            this.tabPage2.Size = new System.Drawing.Size(795, 393);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Output";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -429,7 +443,7 @@
             this.tabPage3.Controls.Add(this.comPort);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(780, 393);
+            this.tabPage3.Size = new System.Drawing.Size(795, 393);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "VT100";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -530,7 +544,7 @@
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(780, 393);
+            this.tabPage4.Size = new System.Drawing.Size(795, 393);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Image";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -732,6 +746,10 @@
             // 
             // tabPage5
             // 
+            this.tabPage5.Controls.Add(this.label19);
+            this.tabPage5.Controls.Add(this.label18);
+            this.tabPage5.Controls.Add(this.label17);
+            this.tabPage5.Controls.Add(this.label16);
             this.tabPage5.Controls.Add(this.button27);
             this.tabPage5.Controls.Add(this.button25);
             this.tabPage5.Controls.Add(this.label15);
@@ -742,21 +760,58 @@
             this.tabPage5.Controls.Add(this.hScrollBar3);
             this.tabPage5.Controls.Add(this.hScrollBar2);
             this.tabPage5.Controls.Add(this.hScrollBar1);
-            this.tabPage5.Controls.Add(this.servoUC2);
-            this.tabPage5.Controls.Add(this.servoUC1);
             this.tabPage5.Controls.Add(this.button26);
             this.tabPage5.Controls.Add(this.basicio);
+            this.tabPage5.Controls.Add(this.servoUC3);
+            this.tabPage5.Controls.Add(this.servoUC2);
+            this.tabPage5.Controls.Add(this.servoUC1);
             this.tabPage5.Location = new System.Drawing.Point(4, 22);
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(780, 393);
+            this.tabPage5.Size = new System.Drawing.Size(795, 393);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "BASIC";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(763, 286);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(29, 13);
+            this.label19.TabIndex = 43;
+            this.label19.Text = "PSD";
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(764, 256);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(31, 13);
+            this.label18.TabIndex = 42;
+            this.label18.Text = "Z val";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(763, 243);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(31, 13);
+            this.label17.TabIndex = 16;
+            this.label17.Text = "Y val";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(763, 228);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(31, 13);
+            this.label16.TabIndex = 15;
+            this.label16.Text = "X val";
+            // 
             // button27
             // 
-            this.button27.Location = new System.Drawing.Point(711, 183);
+            this.button27.Location = new System.Drawing.Point(746, 183);
             this.button27.Name = "button27";
             this.button27.Size = new System.Drawing.Size(40, 19);
             this.button27.TabIndex = 13;
@@ -819,6 +874,7 @@
             this.hScrollBar4.Size = new System.Drawing.Size(103, 14);
             this.hScrollBar4.TabIndex = 7;
             this.hScrollBar4.Value = 50;
+            this.hScrollBar4.ValueChanged += new System.EventHandler(this.hScrollBar1_ValueChanged_1);
             // 
             // hScrollBar3
             // 
@@ -828,6 +884,7 @@
             this.hScrollBar3.Minimum = -5;
             this.hScrollBar3.Name = "hScrollBar3";
             this.hScrollBar3.Size = new System.Drawing.Size(103, 14);
+            this.hScrollBar3.ValueChanged += new System.EventHandler(this.hScrollBar1_ValueChanged_1);
             this.hScrollBar3.TabIndex = 6;
             // 
             // hScrollBar2
@@ -839,6 +896,7 @@
             this.hScrollBar2.Name = "hScrollBar2";
             this.hScrollBar2.Size = new System.Drawing.Size(103, 14);
             this.hScrollBar2.TabIndex = 5;
+            this.hScrollBar2.ValueChanged += new System.EventHandler(this.hScrollBar1_ValueChanged_1);
             // 
             // hScrollBar1
             // 
@@ -849,30 +907,7 @@
             this.hScrollBar1.Name = "hScrollBar1";
             this.hScrollBar1.Size = new System.Drawing.Size(103, 14);
             this.hScrollBar1.TabIndex = 4;
-            // 
-            // servoUC2
-            // 
-            this.servoUC2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.servoUC2.id = 0;
-            this.servoUC2.io = 0;
-            this.servoUC2.Location = new System.Drawing.Point(709, 6);
-            this.servoUC2.Name = "servoUC2";
-            this.servoUC2.pm = false;
-            this.servoUC2.Size = new System.Drawing.Size(42, 180);
-            this.servoUC2.TabIndex = 3;
-            this.servoUC2.val = 0;
-            // 
-            // servoUC1
-            // 
-            this.servoUC1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.servoUC1.id = 0;
-            this.servoUC1.io = 0;
-            this.servoUC1.Location = new System.Drawing.Point(657, 6);
-            this.servoUC1.Name = "servoUC1";
-            this.servoUC1.pm = false;
-            this.servoUC1.Size = new System.Drawing.Size(46, 180);
-            this.servoUC1.TabIndex = 2;
-            this.servoUC1.val = 127;
+            this.hScrollBar1.ValueChanged += new System.EventHandler(this.hScrollBar1_ValueChanged_1);
             // 
             // button26
             // 
@@ -888,6 +923,7 @@
             // basicio
             // 
             this.basicio.BackColor = System.Drawing.SystemColors.WindowFrame;
+            this.basicio.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.basicio.ForeColor = System.Drawing.Color.GreenYellow;
             this.basicio.Location = new System.Drawing.Point(8, 6);
             this.basicio.Multiline = true;
@@ -1200,6 +1236,42 @@
             this.button7.UseVisualStyleBackColor = false;
             this.button7.Click += new System.EventHandler(this.button2_Click);
             // 
+            // servoUC3
+            // 
+            this.servoUC3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.servoUC3.id = 0;
+            this.servoUC3.io = 0;
+            this.servoUC3.Location = new System.Drawing.Point(744, 3);
+            this.servoUC3.Name = "servoUC3";
+            this.servoUC3.pm = false;
+            this.servoUC3.Size = new System.Drawing.Size(42, 180);
+            this.servoUC3.TabIndex = 14;
+            this.servoUC3.val = 0;
+            // 
+            // servoUC2
+            // 
+            this.servoUC2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.servoUC2.id = 0;
+            this.servoUC2.io = 0;
+            this.servoUC2.Location = new System.Drawing.Point(703, 3);
+            this.servoUC2.Name = "servoUC2";
+            this.servoUC2.pm = false;
+            this.servoUC2.Size = new System.Drawing.Size(42, 180);
+            this.servoUC2.TabIndex = 3;
+            this.servoUC2.val = 0;
+            // 
+            // servoUC1
+            // 
+            this.servoUC1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.servoUC1.id = 0;
+            this.servoUC1.io = 0;
+            this.servoUC1.Location = new System.Drawing.Point(657, 3);
+            this.servoUC1.Name = "servoUC1";
+            this.servoUC1.pm = false;
+            this.servoUC1.Size = new System.Drawing.Size(46, 180);
+            this.servoUC1.TabIndex = 2;
+            this.servoUC1.val = 127;
+            // 
             // Basic_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1213,6 +1285,7 @@
             this.Name = "Basic_frm";
             this.Text = "Basic Compiler - ";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Basic_frm_FormClosed);
+            this.Load += new System.EventHandler(this.Basic_frm_Load);
             this.SizeChanged += new System.EventHandler(this.Basic_frm_SizeChanged);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -1344,5 +1417,11 @@
         private System.Windows.Forms.HScrollBar hScrollBar1;
         private System.Windows.Forms.Button button27;
         private System.Windows.Forms.Button button25;
+        private System.Windows.Forms.ToolStripMenuItem uploadToolStripMenuItem;
+        private servoUC servoUC3;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label label18;
     }
 }

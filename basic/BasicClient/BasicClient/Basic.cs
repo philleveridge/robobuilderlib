@@ -5,6 +5,8 @@ using System.Collections.Specialized;
 using System.IO.Ports;
 using System.Text.RegularExpressions;
 
+using System.Runtime.InteropServices;
+
 /*
 An elementry basic language for Robobuilder Humanoid Robot
 $Revision$
@@ -35,6 +37,12 @@ namespace RobobuilderLib
 
         byte[] code;
         int codeptr;
+
+        [DllImport(@"basic_lib.dll", EntryPoint = "set_mem", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int set_mem(int a, int b);
+
+        [DllImport(@"basic_lib.dll", EntryPoint = "read_mem", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int read_mem(int a); 
 
         /**********************************************************/
 
@@ -956,11 +964,25 @@ namespace RobobuilderLib
         public string LoadBin(string s)
         {
             codeptr = 0;
-            while (s.Length > 1)
+            if (s == "")
             {
-                string b = s.Substring(0, 2);
-                code[codeptr++] = Convert.ToByte(b, 16);
-                s = s.Substring(2);
+                int sz = read_mem(-1);
+                while (codeptr<sz)
+                {
+                    code[codeptr] = (byte) (0xFF & read_mem(codeptr));
+                    codeptr++;
+                }
+
+            }
+            else
+            {
+
+                while (s.Length > 1)
+                {
+                    string b = s.Substring(0, 2);
+                    code[codeptr++] = Convert.ToByte(b, 16);
+                    s = s.Substring(2);
+                }
             }
             return basic_list();
         }
@@ -976,6 +998,8 @@ namespace RobobuilderLib
             for (int i = 0; i < codeptr; i++)
             {
                 s += code[i].ToString("X2");
+                // also copy in Basic mem
+                set_mem(i, code[i]);
             }
 
             Console.WriteLine(s);

@@ -27,17 +27,23 @@ namespace RobobuilderLib
 
         private void servo_Scroll(object sender, ScrollEventArgs e)
         {
-            label2.Text = "Val: " + servo.Value;
+            label2.Text = "<" + servo.Value + ">";
         }
 
         void servo_ValueChanged(object sender, System.EventArgs e)
         {
-            label2.Text = "Val: " + servo.Value;
+            label2.Text = "<" + servo.Value + ">";
         }
 
         private void passive_CheckedChanged(object sender, EventArgs e)
         {
 
+        }
+
+        public void Update()
+        {
+            servo.Update();
+            label2.Update();
         }
     }
 }

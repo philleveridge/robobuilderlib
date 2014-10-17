@@ -22,10 +22,13 @@ namespace RobobuilderLib
     {
 
         [DllImport(@"basic_lib.dll", EntryPoint = "basic_api", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void basic_api();
+        public static extern void basic_api(); 
 
         [DllImport(@"basic_lib.dll", EntryPoint = "read_mem", CallingConvention = CallingConvention.Cdecl)]
         public static extern int read_mem(int a);
+
+        [DllImport(@"basic_lib.dll", EntryPoint = "set_mem", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int set_mem(int a, int b); 
 
         [DllImport(@"basic_lib.dll", EntryPoint = "read_servo", CallingConvention = CallingConvention.Cdecl)]
         public static extern int read_servo(int a);
@@ -44,6 +47,8 @@ namespace RobobuilderLib
 
         bool rlbasic = false;
 
+        servoUC[] sv;
+        int svp;
 
         Basic       compiler;
         SerialPort  s;
@@ -154,6 +159,17 @@ namespace RobobuilderLib
 
             syntaxcheck(); //!
             editfl = false;
+
+            sv = new servoUC[32];
+            for (int i = 0; i < 32; i++) 
+            {
+                sv[i] = new servoUC();
+                sv[i].id = i; 
+                sv[i].val = 127;
+                sv[i].pm = false;
+            }
+            svp = 0;
+            copyfn();
 
             clear();
         }
@@ -708,7 +724,7 @@ namespace RobobuilderLib
         {
             // tbd
             OpenFileDialog s = new OpenFileDialog();
-            s.Filter = "Bindata.txt|bindata.txt";
+            s.Filter = "Bindata.txt|bindata.txt|*.bin";
             if (s.ShowDialog() != DialogResult.OK)
                 return;
             try
@@ -860,8 +876,6 @@ namespace RobobuilderLib
         private void imageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             imageToolStripMenuItem.Checked = !imageToolStripMenuItem.Checked;
-            if (imageToolStripMenuItem.Checked)
-                ;
         }
 
         private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
@@ -1196,7 +1210,7 @@ namespace RobobuilderLib
 
             if (rlbasic)
             {
-                StringBuilder str = new StringBuilder(255);
+                StringBuilder str = new StringBuilder(8000);
 
                 basic_getobuf(str, str.Capacity);
                 if (str.Length > 0)
@@ -1225,15 +1239,28 @@ namespace RobobuilderLib
                 }
 
                 //servos
-                if (servoUC1.pm) 
-                    servoUC1.val = read_servo(0); 
-                else 
-                    set_servo(0, servoUC1.val);
+                if (servoUC1.pm)
+                {
+                    servoUC1.val = read_servo(svp);
+                }
+                else
+                    set_servo(svp, servoUC1.val);
 
                 if (servoUC2.pm) 
-                    servoUC2.val = read_servo(1); 
+                {
+                    servoUC2.val = read_servo(svp+1);
+                }
                 else
-                    set_servo(1, servoUC2.val);
+                    set_servo(svp+1, servoUC2.val);
+
+                if (servoUC3.pm)
+                {
+                    servoUC3.val = read_servo(svp + 2);;
+                }
+                else
+                    set_servo(svp+2, servoUC2.val);
+
+                tabPage5.Update();
             }
         }
 
@@ -1305,11 +1332,14 @@ namespace RobobuilderLib
             {
                 StopJob();
                 button29.Text = "Connect";
-
-                Stream stream = File.OpenRead("temp.jpg");
-                n = new Bitmap(stream);
-                stream.Close();
-                pictureBox1.Image = n;
+                try
+                {
+                    Stream stream = File.OpenRead("temp.jpg");
+                    n = new Bitmap(stream);
+                    stream.Close();
+                    pictureBox1.Image = n;
+                }
+                catch (Exception e1) { }
                 return;
             }
 
@@ -1392,10 +1422,6 @@ namespace RobobuilderLib
             {
                 listBox2.Items.Add(edv.Name);
             }
-            servoUC1.id = 0;
-            servoUC1.val = 127;
-            servoUC2.id = 1;
-            servoUC2.val = 127;
         }
 
         private void remoteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1405,56 +1431,101 @@ namespace RobobuilderLib
             this.Width = (groupBox1.Visible) ? 1028 : 868;
         }
 
-        void hScrollBar4_ValueChanged(object sender, System.EventArgs e)
+        private void storefn()
         {
-            set_servo(35, hScrollBar4.Value);
+            sv[svp].id  = servoUC1.id;
+            sv[svp].val = servoUC1.val;
+            sv[svp].pm  = servoUC1.pm;
+            sv[svp].io  = servoUC1.io;
+
+            sv[svp+1].id  = servoUC2.id;
+            sv[svp+1].val = servoUC2.val;
+            sv[svp+1].pm  = servoUC2.pm;
+            sv[svp+1].io  = servoUC2.io;
+
+            sv[svp+2].id  = servoUC3.id;
+            sv[svp+2].val = servoUC3.val;
+            sv[svp+2].pm  = servoUC3.pm;
+            sv[svp+2].io  = servoUC3.io;
+
+
         }
 
-        void hScrollBar1_ValueChanged(object sender, System.EventArgs e)
+        private void copyfn()
         {
-            set_servo(32, hScrollBar1.Value);
-        }
+            servoUC1.id = sv[svp].id;
+            servoUC1.val = sv[svp].val;
+            servoUC1.pm = sv[svp].pm;
+            servoUC1.io = sv[svp].io;
+            servoUC1.Update();
 
-        void hScrollBar2_ValueChanged(object sender, System.EventArgs e)
-        {
-            set_servo(33, hScrollBar2.Value);
-        }
+            servoUC2.id = sv[svp + 1].id;
+            servoUC2.val = sv[svp + 1].val;
+            servoUC2.pm = sv[svp + 1].pm;
+            servoUC2.io = sv[svp+1].io;
+            servoUC2.Update();
 
-        void hScrollBar3_ValueChanged(object sender, System.EventArgs e)
-        {
-            set_servo(34, hScrollBar3.Value);
+            servoUC3.id = sv[svp + 2].id;
+            servoUC3.val = sv[svp + 2].val;
+            servoUC3.pm = sv[svp + 2].pm;
+            servoUC3.io = sv[svp+2].io;
+            servoUC3.Update();
         }
 
         private void button25_Click(object sender, EventArgs e)
         {
             // <<
-            int n = servoUC1.id;
-            if (n>0)
-            {
-                servoUC1.id = n - 1;
-                servoUC2.id = n;
-                servoUC1.val = read_servo(servoUC1.id); 
-                servoUC2.val = read_servo(servoUC2.id); 
-            }
+           storefn() ;
+
+            if (svp>0) svp-=1;
+
+            copyfn();
         }
 
         private void button27_Click(object sender, EventArgs e)
         {
             // >>
-            int n = servoUC1.id;
-            if (n <30)
-            {
-                servoUC1.id = n +1;
-                servoUC2.id = n +2;
-                servoUC1.val = read_servo(servoUC1.id);
-                servoUC2.val = read_servo(servoUC2.id); 
-            }
+
+            storefn();
+
+            if (svp <sv.Length-3 ) svp += 1;
+
+            copyfn();
         }
 
         private void Basic_frm_FormClosed(object sender, FormClosedEventArgs e)
         {
             basic_stop();
             this.Dispose();
+        }
+
+        private void Basic_frm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void uploadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            input.Text = compiler.LoadBin("");
+            output.Text = "Binary upload";
+            fname.Text = "";
+            //download_btn.Enabled = true;
+            readyDownload = true;
+        }
+
+        private void hScrollBar1_ValueChanged_1(object sender, EventArgs e)
+        {
+            label16.Text = "<" + hScrollBar1.Value + ">";
+            set_servo(32, hScrollBar1.Value);
+
+            label17.Text = "<" + hScrollBar2.Value + ">";
+            set_servo(33, hScrollBar2.Value);
+
+            label18.Text = "<" + hScrollBar3.Value + ">";
+            set_servo(34, hScrollBar3.Value);
+
+            label19.Text = "<" + hScrollBar4.Value + ">";
+            set_servo(35, hScrollBar4.Value);
         }
     }
 }
