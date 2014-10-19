@@ -86,6 +86,7 @@
       <DependentUpon>Basic_frm.cs</DependentUpon>
     </Compile>
     <Compile Include="binxfer.cs" />
+    <Compile Include="RobotModel.cs" />
     <Compile Include="ServoSim.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -180,6 +181,10 @@
     <ProjectReference Include="..\..\basic_lib\basic_lib.vcxproj">
       <Project>{e9e511fd-6b2d-4807-83ba-7a44f13657d3}</Project>
       <Name>basic_lib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\CPI.Plot3D\CPI.Plot3D\CPI.Plot3D.csproj">
+      <Project>{f41e9717-e4ac-482b-b381-dead5a092fa8}</Project>
+      <Name>CPI.Plot3D</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
