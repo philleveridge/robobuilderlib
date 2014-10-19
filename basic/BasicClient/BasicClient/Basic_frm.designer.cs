@@ -114,6 +114,12 @@
             this.hScrollBar1 = new System.Windows.Forms.HScrollBar();
             this.button26 = new System.Windows.Forms.Button();
             this.basicio = new System.Windows.Forms.TextBox();
+            this.tabPage6 = new System.Windows.Forms.TabPage();
+            this.button28 = new System.Windows.Forms.Button();
+            this.checkBox5 = new System.Windows.Forms.CheckBox();
+            this.checkBox4 = new System.Windows.Forms.CheckBox();
+            this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
@@ -143,6 +149,9 @@
             this.servoUC3 = new RobobuilderLib.servoUC();
             this.servoUC2 = new RobobuilderLib.servoUC();
             this.servoUC1 = new RobobuilderLib.servoUC();
+            this.hScrollBar5 = new System.Windows.Forms.HScrollBar();
+            this.textBox4 = new System.Windows.Forms.TextBox();
+            this.label20 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -151,6 +160,8 @@
             this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tabPage5.SuspendLayout();
+            this.tabPage6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -372,7 +383,7 @@
             this.input.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.input.Location = new System.Drawing.Point(0, 0);
             this.input.Name = "input";
-            this.input.Size = new System.Drawing.Size(777, 367);
+            this.input.Size = new System.Drawing.Size(672, 367);
             this.input.TabIndex = 14;
             this.input.Text = "";
             this.input.SelectionChanged += new System.EventHandler(this.input_SelectionChanged);
@@ -400,10 +411,12 @@
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage5);
+            this.tabControl1.Controls.Add(this.tabPage6);
             this.tabControl1.Location = new System.Drawing.Point(0, 27);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(803, 419);
+            this.tabControl1.SizeMode = System.Windows.Forms.TabSizeMode.FillToRight;
             this.tabControl1.TabIndex = 16;
             this.tabControl1.Enter += new System.EventHandler(this.tabControl1_Enter);
             // 
@@ -880,19 +893,19 @@
             // 
             this.hScrollBar3.LargeChange = 1;
             this.hScrollBar3.Location = new System.Drawing.Point(663, 256);
-            this.hScrollBar3.Maximum = 5;
-            this.hScrollBar3.Minimum = -5;
+            this.hScrollBar3.Maximum = 60;
+            this.hScrollBar3.Minimum = -60;
             this.hScrollBar3.Name = "hScrollBar3";
             this.hScrollBar3.Size = new System.Drawing.Size(103, 14);
-            this.hScrollBar3.ValueChanged += new System.EventHandler(this.hScrollBar1_ValueChanged_1);
             this.hScrollBar3.TabIndex = 6;
+            this.hScrollBar3.ValueChanged += new System.EventHandler(this.hScrollBar1_ValueChanged_1);
             // 
             // hScrollBar2
             // 
             this.hScrollBar2.LargeChange = 1;
             this.hScrollBar2.Location = new System.Drawing.Point(663, 241);
-            this.hScrollBar2.Maximum = 5;
-            this.hScrollBar2.Minimum = -5;
+            this.hScrollBar2.Maximum = 60;
+            this.hScrollBar2.Minimum = -60;
             this.hScrollBar2.Name = "hScrollBar2";
             this.hScrollBar2.Size = new System.Drawing.Size(103, 14);
             this.hScrollBar2.TabIndex = 5;
@@ -902,8 +915,8 @@
             // 
             this.hScrollBar1.LargeChange = 1;
             this.hScrollBar1.Location = new System.Drawing.Point(663, 227);
-            this.hScrollBar1.Maximum = 5;
-            this.hScrollBar1.Minimum = -5;
+            this.hScrollBar1.Maximum = 60;
+            this.hScrollBar1.Minimum = -60;
             this.hScrollBar1.Name = "hScrollBar1";
             this.hScrollBar1.Size = new System.Drawing.Size(103, 14);
             this.hScrollBar1.TabIndex = 4;
@@ -934,6 +947,81 @@
             this.basicio.TabIndex = 0;
             this.basicio.Text = "LocalBasic";
             this.basicio.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.basicio_KeyPress);
+            // 
+            // tabPage6
+            // 
+            this.tabPage6.Controls.Add(this.label20);
+            this.tabPage6.Controls.Add(this.textBox4);
+            this.tabPage6.Controls.Add(this.hScrollBar5);
+            this.tabPage6.Controls.Add(this.button28);
+            this.tabPage6.Controls.Add(this.checkBox5);
+            this.tabPage6.Controls.Add(this.checkBox4);
+            this.tabPage6.Controls.Add(this.checkBox3);
+            this.tabPage6.Controls.Add(this.pictureBox2);
+            this.tabPage6.Location = new System.Drawing.Point(4, 22);
+            this.tabPage6.Name = "tabPage6";
+            this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage6.Size = new System.Drawing.Size(795, 393);
+            this.tabPage6.TabIndex = 5;
+            this.tabPage6.Text = "Model";
+            this.tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // button28
+            // 
+            this.button28.Location = new System.Drawing.Point(660, 82);
+            this.button28.Name = "button28";
+            this.button28.Size = new System.Drawing.Size(50, 21);
+            this.button28.TabIndex = 21;
+            this.button28.Text = "button28";
+            this.button28.UseVisualStyleBackColor = true;
+            this.button28.Click += new System.EventHandler(this.button28_Click);
+            // 
+            // checkBox5
+            // 
+            this.checkBox5.AutoSize = true;
+            this.checkBox5.Checked = true;
+            this.checkBox5.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox5.Location = new System.Drawing.Point(660, 54);
+            this.checkBox5.Name = "checkBox5";
+            this.checkBox5.Size = new System.Drawing.Size(89, 17);
+            this.checkBox5.TabIndex = 20;
+            this.checkBox5.Text = "Left Arm & Leg";
+            this.checkBox5.UseVisualStyleBackColor = true;
+            this.checkBox5.CheckedChanged += new System.EventHandler(this.checkBox5_CheckedChanged);
+            // 
+            // checkBox4
+            // 
+            this.checkBox4.AutoSize = true;
+            this.checkBox4.Checked = true;
+            this.checkBox4.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox4.Location = new System.Drawing.Point(660, 31);
+            this.checkBox4.Name = "checkBox4";
+            this.checkBox4.Size = new System.Drawing.Size(72, 17);
+            this.checkBox4.TabIndex = 19;
+            this.checkBox4.Text = "Right Leg";
+            this.checkBox4.UseVisualStyleBackColor = true;
+            this.checkBox4.CheckedChanged += new System.EventHandler(this.checkBox4_CheckedChanged);
+            // 
+            // checkBox3
+            // 
+            this.checkBox3.AutoSize = true;
+            this.checkBox3.Checked = true;
+            this.checkBox3.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox3.Location = new System.Drawing.Point(660, 8);
+            this.checkBox3.Name = "checkBox3";
+            this.checkBox3.Size = new System.Drawing.Size(97, 17);
+            this.checkBox3.TabIndex = 18;
+            this.checkBox3.Text = "RightAem & Axiz";
+            this.checkBox3.UseVisualStyleBackColor = true;
+            this.checkBox3.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Location = new System.Drawing.Point(10, 3);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(630, 377);
+            this.pictureBox2.TabIndex = 0;
+            this.pictureBox2.TabStop = false;
             // 
             // openFileDialog1
             // 
@@ -1272,6 +1360,32 @@
             this.servoUC1.TabIndex = 2;
             this.servoUC1.val = 127;
             // 
+            // hScrollBar5
+            // 
+            this.hScrollBar5.Location = new System.Drawing.Point(655, 139);
+            this.hScrollBar5.Maximum = 254;
+            this.hScrollBar5.Name = "hScrollBar5";
+            this.hScrollBar5.Size = new System.Drawing.Size(77, 19);
+            this.hScrollBar5.TabIndex = 22;
+            this.hScrollBar5.ValueChanged += new System.EventHandler(this.hScrollBar5_ValueChanged);
+            // 
+            // textBox4
+            // 
+            this.textBox4.Location = new System.Drawing.Point(747, 139);
+            this.textBox4.Name = "textBox4";
+            this.textBox4.Size = new System.Drawing.Size(36, 20);
+            this.textBox4.TabIndex = 23;
+            this.textBox4.Text = "0";
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(669, 160);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(41, 13);
+            this.label20.TabIndex = 24;
+            this.label20.Text = "label20";
+            // 
             // Basic_frm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1301,6 +1415,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tabPage5.ResumeLayout(false);
             this.tabPage5.PerformLayout();
+            this.tabPage6.ResumeLayout(false);
+            this.tabPage6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
@@ -1423,5 +1540,14 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.TabPage tabPage6;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.Button button28;
+        private System.Windows.Forms.CheckBox checkBox5;
+        private System.Windows.Forms.CheckBox checkBox4;
+        private System.Windows.Forms.CheckBox checkBox3;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.HScrollBar hScrollBar5;
     }
 }

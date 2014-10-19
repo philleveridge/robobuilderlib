@@ -1,0 +1,5 @@
+C:\Users\phil\Desktop\CPI.Plot3D\CPI.Plot3D\bin\Debug\CPI.Plot3D.XML
+C:\Users\phil\Desktop\CPI.Plot3D\CPI.Plot3D\bin\Debug\CPI.Plot3D.dll
+C:\Users\phil\Desktop\CPI.Plot3D\CPI.Plot3D\bin\Debug\CPI.Plot3D.pdb
+C:\Users\phil\Desktop\CPI.Plot3D\CPI.Plot3D\obj\Debug\CPI.Plot3D.dll
+C:\Users\phil\Desktop\CPI.Plot3D\CPI.Plot3D\obj\Debug\CPI.Plot3D.pdb

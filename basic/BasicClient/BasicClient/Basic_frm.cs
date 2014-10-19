@@ -11,6 +11,8 @@ using System.Runtime.InteropServices;
 
 using System.Threading;
 
+using CPI.Plot3D;
+
 // Reference path for the following assemblies --> C:\Program Files\Microsoft Expression\Encoder 4\SDK\
 using Microsoft.Expression.Encoder.Devices;
 using Microsoft.Expression.Encoder.Live;
@@ -55,6 +57,8 @@ namespace RobobuilderLib
         binxfer btf;
         ServoSim sim = null;
 
+        RobotModel rm;
+
         bool readyDownload = false;
         string bfn = "basic.exe";
         string bdn = "bindata.txt";
@@ -69,6 +73,8 @@ namespace RobobuilderLib
         bool fmono = false;
 
         bool editfl = false;
+
+        Graphics gr;
 
         public static bool IsLinux
         {
@@ -172,6 +178,9 @@ namespace RobobuilderLib
             copyfn();
 
             clear();
+
+            rm = new RobotModel(pictureBox2.CreateGraphics());
+            rm.UpdateDisplay();
         }
 
         void writeini()
@@ -1213,29 +1222,32 @@ namespace RobobuilderLib
                 StringBuilder str = new StringBuilder(8000);
 
                 basic_getobuf(str, str.Capacity);
-                if (str.Length > 0)
+                string rx=str.ToString();
+                if (rx.Length > 0)
                 {
-                    if (str.Length>3 && str[0]==27 && str[1]=='[' && str[2]=='2' && str[3]=='J')
+                    int p = rx.IndexOf("[2J");
+                    Debug.WriteLine("p=" + p);
+                    if ( p >= 0)
                     {
-                        basicio.Text = str.ToString().Substring(4);
+                        rx= rx.Substring(rx.LastIndexOf("[2J") + 3);
+                        basicio.Text = "";
                     }
-                    if (str[0] == 8)
+                    if (rx[0] == 8)
                     {
                         basicio.Text = basicio.Text.Substring(0, basicio.Text.Length - 1);
                         basicio.SelectionStart = basicio.Text.Length;
                     }
-                    else
+
+                    for (int i = 0; i < rx.Length; i++)
                     {
-                        for (int i = 0; i < str.Length; i++)
+                        if (rx[i] == 10)
                         {
-                            if (str[i] == 10)
-                            {
-                                str.Insert(i, (char)13);
-                                i = i + 1;
-                            }
+                            rx.Insert(i, "\r");
+                            i = i + 1;
                         }
-                        basicio.AppendText(str.ToString());
                     }
+                    basicio.AppendText(rx);
+
                 }
 
                 //servos
@@ -1527,5 +1539,49 @@ namespace RobobuilderLib
             label19.Text = "<" + hScrollBar4.Value + ">";
             set_servo(35, hScrollBar4.Value);
         }
+
+        private void button28_Click(object sender, EventArgs e)
+        {
+            rm.UpdateDisplay();
+        }
+
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            rm.showrightarm = checkBox3.Checked;
+            rm.UpdateDisplay();
+        }
+
+        private void checkBox4_CheckedChanged(object sender, EventArgs e)
+        {
+            rm.showrightleg = checkBox4.Checked;
+            rm.UpdateDisplay();
+        }
+
+        private void checkBox5_CheckedChanged(object sender, EventArgs e)
+        {
+            rm.showleftleg = rm.showleftarm = checkBox5.Checked;
+            rm.UpdateDisplay();
+        }
+
+        private void tabPage6_Paint(object sender, PaintEventArgs e)
+        {
+            //rm.UpdateDisplay();
+        }
+
+        private void hScrollBar5_ValueChanged(object sender, EventArgs e)
+        {
+            int v = hScrollBar5.Value;
+            label20.Text = "" + v;
+            int n = Convert.ToInt32(textBox4.Text);
+            if (n<0 || n>31)
+            {
+                n = 0;
+                textBox4.Text = "0";
+            }
+
+            rm.servos[n] = v;
+            rm.UpdateDisplay();
+        }
+
     }
 }
