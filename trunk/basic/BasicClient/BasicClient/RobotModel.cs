@@ -16,7 +16,7 @@ namespace RobobuilderLib
 
         float cx = 300.0f, cy = 50.0f, cz = 200.0f;
 
-        int sh = 40, sw = 40;
+        int sh = 30, sw = 30;
 
         public bool showrightarm = true;
         public bool showleftarm = true;
@@ -61,7 +61,6 @@ namespace RobobuilderLib
             }
         }
 
-
         public void DrawCube(Plotter3D p, float sideLength)
         {
             p.PenUp();
@@ -86,12 +85,15 @@ namespace RobobuilderLib
             p.Forward(sideLength / 2);
             p.TurnRight(90);
             p.Forward(sideLength / 2);
-
         }
 
         public void DrawServo(Plotter3D p)
         {
             DrawCube(p, sw);
+            //DrawCube(p, sw/2);
+            //p.Forward(sw / 4);
+            //DrawCube(p, sw/1.3f);
+            //p.Forward(-sw / 4);
         }
 
         public void DrawHandL(Plotter3D p)
@@ -242,8 +244,8 @@ namespace RobobuilderLib
 
         public void DrawBody(Plotter3D p)
         {
-            p.Orientation = new Orientation3D();
-            p.Location = new CPI.Plot3D.Point3D(cx, cy, cz);
+            //p.Orientation = new Orientation3D();
+            //p.Location = new CPI.Plot3D.Point3D(cx, cy, cz);
             //DrawCube(p, 50);
         }
 
@@ -309,12 +311,28 @@ namespace RobobuilderLib
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
             using (CPI.Plot3D.Plotter3D p = new CPI.Plot3D.Plotter3D(g, new Point3D(x, y, z)))
             {
-                System.Threading.Thread.Sleep(50);
                 g.Clear(Color.Beige);
 
                 if (showaxis) axis(p);
 
                 DrawRobot(p);
+            }
+        }
+
+        public void SpinDisplay()
+        {
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            using (CPI.Plot3D.Plotter3D p = new CPI.Plot3D.Plotter3D(g, new Point3D(x, y, z)))
+            {
+                for (int angle = 0; angle <= 360; angle += 10)
+                {
+                    System.Threading.Thread.Sleep(50);
+                    g.Clear(Color.Beige);
+
+                    if (showaxis) axis(p); 
+                    p.TurnUp(angle);
+                    DrawRobot(p);
+                }
             }
         }
     }
