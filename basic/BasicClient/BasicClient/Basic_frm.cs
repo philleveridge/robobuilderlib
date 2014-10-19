@@ -57,6 +57,8 @@ namespace RobobuilderLib
         binxfer btf;
         ServoSim sim = null;
 
+        bool dcmp = false;
+
         RobotModel rm;
 
         bool readyDownload = false;
@@ -84,6 +86,13 @@ namespace RobobuilderLib
                 return (p == 4) || (p == 6) || (p == 128);
             }
         }
+
+        /********************************************************************************************
+         * 
+         *  FORM initial 
+         * 
+         * 
+         * ******************************************************************************************/
 
         public Basic_frm()
         {
@@ -195,52 +204,14 @@ namespace RobobuilderLib
             File.WriteAllText("BC.ini", s);
         }
 
-        void output_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (bm) return;
-
-            if (s != null && s.IsOpen)
-            {
-                s.Write(e.KeyChar.ToString());
-            }
-        }
-
-        private void runBtn_Click(object sender, EventArgs e)
-        {
-            if (bm) return;
-
-            if (s != null && s.IsOpen)
-            {
-                s.Write("r");
-            }
-        }
-
-        private void listBtn_Click(object sender, EventArgs e)
-        {
-            if (bm) return;
-
-            if (s != null && s.IsOpen)
-            {
-                s.Write("l");
-            }
-
-        }
-
-        private void stopBtn_Click(object sender, EventArgs e)
-        {
-            if (bm) return;
-
-            if (s != null && s.IsOpen)
-            {
-                s.Write(Char.ToString((char)27));
-            }
-        }
+        /********************************************************************************************
+         * 
+         *   VT100 emualtor TAB with short cuts
+         * 
+         * 
+         * ******************************************************************************************/
 
 
-        private void processCompletedOrCanceled(object sender, EventArgs e)
-        {
-            button1.BackColor = System.Drawing.Color.Red;
-        }
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -260,7 +231,7 @@ namespace RobobuilderLib
                 else
                 {
                     s.PortName = comPort.Text;
-                    s.ReadTimeout = 250;
+                    s.ReadTimeout = 500;
                     s.Open();
                     s.Write("V");
                     s.ReadTo("v=");
@@ -271,6 +242,7 @@ namespace RobobuilderLib
 
                     label1.Text = "FIRMWARE " + v;
                     label1.Visible = true;
+                    dcmp = false;
 
                     if (Convert.ToInt32(v.Substring(11, 3)) < Basic.REQ_FIRMWARE) 
                         throw new Exception("BASIC firmware v" + Basic.REQ_FIRMWARE + " or better needed?");
@@ -341,8 +313,6 @@ namespace RobobuilderLib
                 }
                 Application.DoEvents();
             }
-
-
         }
 
         void p_OutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -391,6 +361,59 @@ namespace RobobuilderLib
             }
         }
 
+        void output_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write(e.KeyChar.ToString());
+            }
+        }
+
+        private void runBtn_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write("r");
+            }
+        }
+
+        private void listBtn_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write("l");
+            }
+
+        }
+
+        private void stopBtn_Click(object sender, EventArgs e)
+        {
+            if (bm) return;
+
+            if (s != null && s.IsOpen)
+            {
+                s.Write(Char.ToString((char)27));
+            }
+        }
+
+        private void processCompletedOrCanceled(object sender, EventArgs e)
+        {
+            button1.BackColor = System.Drawing.Color.Red;
+        }
+
+        /********************************************************************************************
+         * 
+         *   MENUS
+         * 
+         * 
+         * ******************************************************************************************/
+
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -428,6 +451,13 @@ namespace RobobuilderLib
             AboutBox1 n = new AboutBox1(version);
             n.Show();
         }
+
+        /********************************************************************************************
+         * 
+         *   Editor and OUtputa TABS
+         * 
+         * 
+         * ******************************************************************************************/
 
         private void syntaxcheck()
         {
@@ -584,23 +614,6 @@ namespace RobobuilderLib
 
         }
 
-        private void simulatorToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (sim == null)
-            {
-                sim = new ServoSim();
-                sim.bfn = bfn;
-                sim.Disposed += new EventHandler(sim_Disposed);
-            }
-            sim.Show();
-        }
-
-        void sim_Disposed(object sender, EventArgs e)
-        {
-            sim = null;
-        }
-
-
         void Basic_frm_SizeChanged(object sender, System.EventArgs e)
         {
             tabControl1.Width = this.Width - 18;
@@ -753,6 +766,13 @@ namespace RobobuilderLib
                 fname.Text = "";
             }
         }
+
+        /********************************************************************************************
+         * 
+         *    Image tools
+         * 
+         * 
+         * ******************************************************************************************/
 
         Bitmap n = null;
         int minR, minG, minB;
@@ -976,6 +996,13 @@ namespace RobobuilderLib
             editfl = false;
         }
 
+        /********************************************************************************************
+         * 
+         *   REMOTE control simulator
+         * 
+         * 
+         * ******************************************************************************************/
+
         private void button23_Click(object sender, EventArgs e)
         {
             if (bm) return;
@@ -1168,6 +1195,12 @@ namespace RobobuilderLib
             // # pushed
             hash_push = true;
         }
+        /********************************************************************************************
+         * 
+         *   BASIC TAB
+         * 
+         * 
+         * ******************************************************************************************/
 
         private Thread _myThread;
  
@@ -1209,6 +1242,8 @@ namespace RobobuilderLib
             }
         }
 
+
+
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (btf != null && progressBar1.Visible)
@@ -1247,7 +1282,6 @@ namespace RobobuilderLib
                         }
                     }
                     basicio.AppendText(rx);
-
                 }
 
                 //servos
@@ -1280,6 +1314,74 @@ namespace RobobuilderLib
         {
             basic_setibuf(e.KeyChar.ToString());
         }
+
+        private void storefn()
+        {
+            sv[svp].id = servoUC1.id;
+            sv[svp].val = servoUC1.val;
+            sv[svp].pm = servoUC1.pm;
+            sv[svp].io = servoUC1.io;
+
+            sv[svp + 1].id = servoUC2.id;
+            sv[svp + 1].val = servoUC2.val;
+            sv[svp + 1].pm = servoUC2.pm;
+            sv[svp + 1].io = servoUC2.io;
+
+            sv[svp + 2].id = servoUC3.id;
+            sv[svp + 2].val = servoUC3.val;
+            sv[svp + 2].pm = servoUC3.pm;
+            sv[svp + 2].io = servoUC3.io;
+        }
+
+        private void copyfn()
+        {
+            servoUC1.id = sv[svp].id;
+            servoUC1.val = sv[svp].val;
+            servoUC1.pm = sv[svp].pm;
+            servoUC1.io = sv[svp].io;
+            servoUC1.Update();
+
+            servoUC2.id = sv[svp + 1].id;
+            servoUC2.val = sv[svp + 1].val;
+            servoUC2.pm = sv[svp + 1].pm;
+            servoUC2.io = sv[svp + 1].io;
+            servoUC2.Update();
+
+            servoUC3.id = sv[svp + 2].id;
+            servoUC3.val = sv[svp + 2].val;
+            servoUC3.pm = sv[svp + 2].pm;
+            servoUC3.io = sv[svp + 2].io;
+            servoUC3.Update();
+        }
+
+        private void button25_Click(object sender, EventArgs e)
+        {
+            // <<
+            storefn();
+
+            if (svp > 0) svp -= 1;
+
+            copyfn();
+        }
+
+        private void button27_Click(object sender, EventArgs e)
+        {
+            // >>
+
+            storefn();
+
+            if (svp < sv.Length - 3) svp += 1;
+
+            copyfn();
+        }
+
+
+        /********************************************************************************************
+         * 
+         *    Video Tools (Part of Image tab)
+         * 
+         * 
+         * ******************************************************************************************/
 
         private LiveJob _job;
 
@@ -1443,78 +1545,7 @@ namespace RobobuilderLib
             this.Width = (groupBox1.Visible) ? 1028 : 868;
         }
 
-        private void storefn()
-        {
-            sv[svp].id  = servoUC1.id;
-            sv[svp].val = servoUC1.val;
-            sv[svp].pm  = servoUC1.pm;
-            sv[svp].io  = servoUC1.io;
 
-            sv[svp+1].id  = servoUC2.id;
-            sv[svp+1].val = servoUC2.val;
-            sv[svp+1].pm  = servoUC2.pm;
-            sv[svp+1].io  = servoUC2.io;
-
-            sv[svp+2].id  = servoUC3.id;
-            sv[svp+2].val = servoUC3.val;
-            sv[svp+2].pm  = servoUC3.pm;
-            sv[svp+2].io  = servoUC3.io;
-
-
-        }
-
-        private void copyfn()
-        {
-            servoUC1.id = sv[svp].id;
-            servoUC1.val = sv[svp].val;
-            servoUC1.pm = sv[svp].pm;
-            servoUC1.io = sv[svp].io;
-            servoUC1.Update();
-
-            servoUC2.id = sv[svp + 1].id;
-            servoUC2.val = sv[svp + 1].val;
-            servoUC2.pm = sv[svp + 1].pm;
-            servoUC2.io = sv[svp+1].io;
-            servoUC2.Update();
-
-            servoUC3.id = sv[svp + 2].id;
-            servoUC3.val = sv[svp + 2].val;
-            servoUC3.pm = sv[svp + 2].pm;
-            servoUC3.io = sv[svp+2].io;
-            servoUC3.Update();
-        }
-
-        private void button25_Click(object sender, EventArgs e)
-        {
-            // <<
-           storefn() ;
-
-            if (svp>0) svp-=1;
-
-            copyfn();
-        }
-
-        private void button27_Click(object sender, EventArgs e)
-        {
-            // >>
-
-            storefn();
-
-            if (svp <sv.Length-3 ) svp += 1;
-
-            copyfn();
-        }
-
-        private void Basic_frm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            basic_stop();
-            this.Dispose();
-        }
-
-        private void Basic_frm_Load(object sender, EventArgs e)
-        {
-
-        }
 
         private void uploadToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1540,10 +1571,12 @@ namespace RobobuilderLib
             set_servo(35, hScrollBar4.Value);
         }
 
-        private void button28_Click(object sender, EventArgs e)
-        {
-            rm.UpdateDisplay();
-        }
+        /********************************************************************************************
+         * 
+         *    Model Tab - Display wireframe model of Robobuilder
+         * 
+         * 
+         * ******************************************************************************************/
 
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         {
@@ -1583,5 +1616,78 @@ namespace RobobuilderLib
             rm.UpdateDisplay();
         }
 
+        private void button28_Click(object sender, EventArgs e)
+        {
+            rm.SpinDisplay();
+        }
+
+        private void textBox4_TextChanged(object sender, EventArgs e)
+        {
+            int n = Convert.ToInt32(textBox4.Text);
+            if (n < 0 || n > 31)
+            {
+                n = 0;
+                textBox4.Text = "0";
+            }
+            hScrollBar5.Value = rm.servos[n];
+            label20.Text = "" + rm.servos[n];
+        }
+
+        private void button31_Click(object sender, EventArgs e)
+        {
+            if (button31.Text == "Query" && checkBox6.Checked)
+            {
+                button31.Text = "Stop";
+
+                //assumes DCMP mode
+                wckMotion wm = new wckMotion(s);
+
+                if (!dcmp)
+                {
+                    s.Write("M");
+                    dcmp = true;
+                }
+
+                while (button31.Text == "Stop")
+                {
+                    System.Threading.Thread.Sleep(50);
+                    Application.DoEvents();
+
+                    for (int i = 0; i < 16; i++)
+                    {
+                        if ((rm.showleftarm && (i == 13 || i == 14 || i == 15)) || (rm.showrightarm && (i == 10 || i == 11 || i == 12)))
+                        {
+                            if (wm.wckReadPos(i))
+                            {
+                                Console.WriteLine("val=" + wm.respnse[0] + ":" + wm.respnse[1]);
+                                rm.servos[i] = wm.respnse[1];
+                            }
+                            else
+                                Console.WriteLine("err=" + wm.Message);
+                        }
+                    }
+                  
+                    rm.UpdateDisplay();
+                }
+                Console.WriteLine("done");
+            }
+            else
+            {
+                button31.Text = "Query";
+            }
+        }
+
+        /********************************************************************************************
+         * 
+         *  FORM Close 
+         * 
+         * 
+         * ******************************************************************************************/
+
+        private void Basic_frm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            basic_stop();
+            this.Dispose();
+        }
     }
 }
