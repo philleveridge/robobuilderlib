@@ -72,6 +72,8 @@ BYTE 	outbc;
 BYTE	gCNT;
 BYTE	gAddr;
 
+int flag=1;
+
 void dcmp_recv();
 
 int dcmp_mode() 
@@ -79,7 +81,7 @@ int dcmp_mode()
 	int b;	
 	rprintfProgStr (PSTR("DCMP MODE\r\n"));
 
-	while (1)
+	while (flag)
 	{ 
 		if ((b=uartGetByte())>=0)
 		{
@@ -94,6 +96,8 @@ int dcmp_mode()
 		}
 		delay_ms(1);
 	}
+
+	rprintfProgStr (PSTR("DCMP EXIT\r\n"));
 }
 
 void dcmp_recv(int ch) 
@@ -321,6 +325,9 @@ void dcmp_recv(int ch)
 					break;
 				case 0x13: // Lights on
 					//gNHB=1;
+					break;
+				case 0x14: // Exit DCMP
+					flag=1;
 					break;
 
 				}			

@@ -14,6 +14,7 @@
 #endif
 
 #ifdef LINUX
+#include "macro.h"
 #include "linux.h"
 #endif
 

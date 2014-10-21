@@ -4,7 +4,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-//#include "avrlibtypes.h"
+#ifdef AVR
+#include "avrlibtypes.h"
+#endif
 
 #include "macro.h"
 
