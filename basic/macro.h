@@ -4,6 +4,8 @@
 //==============================================================================
 // DATA TYPE
 //==============================================================================
+
+#ifdef LINUX || WIN32
 #define	BYTE	unsigned char
 #define	WORD	unsigned int
 #define	DWORD	unsigned long
@@ -11,6 +13,7 @@
 #define	WORDP	unsigned int*
 #define	SBYTE	signed char
 #define	SWORD	signed int
+#endif
 //==============================================================================
 // BIT SET
 //==============================================================================

@@ -3,6 +3,7 @@
 //==============================================================================
 
 #include "avrlibtypes.h"
+#include "macro.h"
 
 extern volatile BYTE	gIRReady;				// IR message received
 extern volatile BYTE	gIRData;				// Data from IR
