@@ -327,7 +327,7 @@ void dcmp_recv(int ch)
 					//gNHB=1;
 					break;
 				case 0x14: // Exit DCMP
-					flag=1;
+					flag=0;
 					break;
 
 				}			
