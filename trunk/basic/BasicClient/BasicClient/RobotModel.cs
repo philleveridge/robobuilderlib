@@ -306,12 +306,30 @@ namespace RobobuilderLib
 
         }
 
+        public void addtext(float x, float y, string s)
+        {
+            System.Drawing.Font drawFont = new System.Drawing.Font("Arial", 16);
+            System.Drawing.SolidBrush drawBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Black);
+            System.Drawing.StringFormat drawFormat = new System.Drawing.StringFormat();
+            g.DrawString(s, drawFont, drawBrush, x, y, drawFormat);
+        }
+
+        public void showservoangles()
+        {
+            for (int i=0; i<16; i++)
+            {
+                addtext(450f, 30f + i * 20, String.Format("{0:d2} : {1:d3}", i, servos[i]));
+            }
+        }
+
         public void UpdateDisplay()
         {
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
             using (CPI.Plot3D.Plotter3D p = new CPI.Plot3D.Plotter3D(g, new Point3D(x, y, z)))
             {
                 g.Clear(Color.Beige);
+
+                showservoangles();
 
                 if (showaxis) axis(p);
 
@@ -324,16 +342,19 @@ namespace RobobuilderLib
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
             using (CPI.Plot3D.Plotter3D p = new CPI.Plot3D.Plotter3D(g, new Point3D(x, y, z)))
             {
+
                 for (int angle = 0; angle <= 360; angle += 10)
                 {
                     System.Threading.Thread.Sleep(50);
                     g.Clear(Color.Beige);
+                    addtext(450f, 30f, "Angle: " + angle);
 
                     if (showaxis) axis(p); 
                     p.TurnUp(angle);
                     DrawRobot(p);
                 }
             }
+            UpdateDisplay();
         }
     }
 }

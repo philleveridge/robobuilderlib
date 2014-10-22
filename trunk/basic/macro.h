@@ -5,7 +5,7 @@
 // DATA TYPE
 //==============================================================================
 
-#ifdef LINUX || WIN32
+#if defined(LINUX) || defined(WIN32)
 #define	BYTE	unsigned char
 #define	WORD	unsigned int
 #define	DWORD	unsigned long

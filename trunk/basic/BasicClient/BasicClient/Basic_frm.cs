@@ -211,8 +211,6 @@ namespace RobobuilderLib
          * 
          * ******************************************************************************************/
 
-
-
         private void button1_Click(object sender, EventArgs e)
         {
             try
@@ -409,7 +407,7 @@ namespace RobobuilderLib
 
         /********************************************************************************************
          * 
-         *   MENUS
+         *   MENUS  exit, load, about
          * 
          * 
          * ******************************************************************************************/
@@ -1197,12 +1195,10 @@ namespace RobobuilderLib
         }
         /********************************************************************************************
          * 
-         *   BASIC TAB
+         *   Local BASIC TAB
          * 
          * 
          * ******************************************************************************************/
-
-        private Thread _myThread;
  
         private void SomeThreadMethod()
         {
@@ -1241,8 +1237,6 @@ namespace RobobuilderLib
                 //KillThatThread();
             }
         }
-
-
 
         private void timer1_Tick(object sender, EventArgs e)
         {
@@ -1358,20 +1352,15 @@ namespace RobobuilderLib
         {
             // <<
             storefn();
-
             if (svp > 0) svp -= 1;
-
             copyfn();
         }
 
         private void button27_Click(object sender, EventArgs e)
         {
             // >>
-
             storefn();
-
             if (svp < sv.Length - 3) svp += 1;
-
             copyfn();
         }
 
@@ -1383,12 +1372,11 @@ namespace RobobuilderLib
          * 
          * ******************************************************************************************/
 
-        private LiveJob _job;
-
         /// <summary>
         /// Device for live source
         /// </summary>
         private LiveDeviceSource _deviceSource;
+        private LiveJob _job;
 
         void StopJob()
         {
@@ -1578,6 +1566,8 @@ namespace RobobuilderLib
          * 
          * ******************************************************************************************/
 
+        wckMotion wm = null;
+
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         {
             rm.showrightarm = checkBox3.Checked;
@@ -1611,9 +1601,17 @@ namespace RobobuilderLib
                 n = 0;
                 textBox4.Text = "0";
             }
+            else
+            {
+                rm.servos[n] = v;
+                rm.UpdateDisplay();
 
-            rm.servos[n] = v;
-            rm.UpdateDisplay();
+                if (dcmp && wm != null)
+                {
+                    wm.wckMovePos(n,v,4);
+                    wm.wckPassive(n);
+                }
+            }
         }
 
         private void button28_Click(object sender, EventArgs e)
@@ -1635,12 +1633,12 @@ namespace RobobuilderLib
 
         private void button31_Click(object sender, EventArgs e)
         {
-            if (button31.Text == "Query" && checkBox6.Checked)
+            if (button31.Text == "Query" && checkBox6.Checked && s.IsOpen)
             {
                 button31.Text = "Stop";
 
                 //assumes DCMP mode
-                wckMotion wm = new wckMotion(s);
+                if (wm == null) wm = new wckMotion(s);
 
                 if (!dcmp)
                 {
@@ -1653,20 +1651,27 @@ namespace RobobuilderLib
                     System.Threading.Thread.Sleep(50);
                     Application.DoEvents();
 
+                    label20.Text = "";
+
                     for (int i = 0; i < 16; i++)
                     {
-                        if ((rm.showleftarm && (i == 13 || i == 14 || i == 15)) || (rm.showrightarm && (i == 10 || i == 11 || i == 12)))
+
+                        if ((rm.showleftarm && (i == 13 || i == 14 || i == 15)) || (rm.showrightarm && (i == 10 || i == 11 || i == 12))
+                            || (rm.showleftleg && (i == 5 || i == 6 || i == 7 || i == 8 || i==9 )) || (rm.showrightleg && (i == 0 || i == 1 || i == 2 || i==3 || i==4)) )
                         {
                             if (wm.wckReadPos(i))
                             {
                                 Console.WriteLine("val=" + wm.respnse[0] + ":" + wm.respnse[1]);
                                 rm.servos[i] = wm.respnse[1];
+                                label20.Text += wm.respnse[1] + " ";
                             }
                             else
+                            {
                                 Console.WriteLine("err=" + wm.Message);
+                                label20.Text += wm.Message;
+                            }
                         }
-                    }
-                  
+                    }               
                     rm.UpdateDisplay();
                 }
                 Console.WriteLine("done");
