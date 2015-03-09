@@ -401,7 +401,7 @@ extern void init_extend(char *);
 int main(int argc, char *argv[])
 {
 	int lf=0,rf=0,cf=0;
-	int sf=0,lm=0;
+	int sf=0,lm=0, httpf=0;
 	char *fn=NULL;
 
 	PORTA=3;
@@ -462,6 +462,12 @@ int main(int argc, char *argv[])
 			initbpfromscene();
 		}
 
+		if (!strcmp(argv[i],"WEB"))
+		{
+			httpf=1;
+			continue;
+		}
+
 		if (!strcmp(argv[i],"COM") && i<argc-1)
 		{
 			// pick up portname
@@ -508,6 +514,12 @@ int main(int argc, char *argv[])
 #endif
 	initfirmware();
 	basic_zero();
+
+	if (httpf)
+	{
+		tws();
+		exit(0);
+	}
 
 	if (lm) {		
 		init_extend(fn);
