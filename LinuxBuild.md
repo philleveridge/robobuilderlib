@@ -1,0 +1,101 @@
+# Introduction #
+
+The is a linux build of the Basic interpreter. At start up it will test on serial port /dev/ttyUSB0 for a connection to Robobuilder running DCMP. If it can connect it will display version. Any robot/RBC specific functions can then be carried using the remote link.
+
+# Command line options #
+
+  * DEBUG - verbose debug statement
+  * LOAD  - this will auto-load bindata.txt
+  * FAST  - this attempts to connect at 232400B to DCMP
+  * IR    - this switches on polling the IR status - this puts a load on the comms hence it optional - default is off
+  * REMOTE - connect to robot running DCMP
+  * COM     - COM port to connect to i.e. /dev/ttyA
+  * COMPILE - put basic in input mode and read from stdio. Last line of input should be a '.'
+  * RUN     - Load bindata.txt and run immediately
+  * STAND   - Load stand.txt - set default stand up values
+
+
+# BASIC differences #
+
+Commands
+  * Z - this will store the current program to local folder (bindata.txt)
+  * z - this loads bindata.txt (rather than attempting file transfer)
+  * m - load array ! with data from data.txt
+  * M - store ! in to file data.txt
+
+A range of ExtendedCommands - (commands that start with !) are also available.
+
+# Example Session #
+
+```
+phil@phil-linux:~$ ./Basic REMOTE COM /dev/ttyUSB0
+Running Unix emulator ...
+DCMP v=3.12
+Clear Program 
+Basic v=$Revision: 452 $
+Commands: i r l c z q s V R F $
+19 servos connected
+0 lines in memory
+: i
+Enter Program '.' to Finish
+> 10 FOR I=1 TO 1000000
+> 20 LET A=A+1
+> 30 NEXT I
+> 
+3 lines entered, [45/3072] Bytes
+: r
+Run Program 
+Elapsed Time 00:04-020
+: 
+```
+Another clear difference is the speed! 4s for 2M operation, or 2uS per instruction.
+
+Example using **COMPILE** option takes program from "echo" and pipes it into Basic where its compiled and stored as a bindata.txt file
+
+```
+$ echo -e '10 print "hello"\n20 !exit\n.' | ./Basic COMPILE
+Unix Basic ...
+Compiling ...Clear Program 
+Enter Program '.' to Finish
+> 10 PRINT "hello"
+> 20 !EXIT
+> 
+2 lines entered, [32/3072] Bytes
+```
+
+Assuming we have bindata.txt in current directory then we can **RUN** it automatically on startup. Note use of !Exit to return to Unix
+```
+$ ./Basic RUN
+Unix Basic ...
+failed to open port
+Clear Program 
+Loaded - bindata.txt
+Run Program 
+hello
+Exit - you typed control - C
+```
+If you don't want exit to Unix you use "End" as per normal.
+
+Example running Basic and loading using 'z' option and then 'r' to run
+```
+$ Basic
+Unix Basic ...
+failed to open port
+Clear Program 
+Basic v=$Revision: 523 $
+Commands: i r l c z q s V R F $
+31 servos connected
+0 lines in memory
+: z
+Clear Program 
+Loaded - bindata.txt
+2 lines loaded
+: l
+List Program 
+10 PRINT "hello"
+20 ! EXIT
+: r
+Run Program 
+hello
+Exit - you typed control - C
+```

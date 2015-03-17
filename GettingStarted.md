@@ -1,0 +1,95 @@
+# Getting started #
+
+  * Download firmware and manual
+  * Restart robot with terminal connected
+  * [Start in Command mode](CommandMode.md)
+  * [Input](InputMode.md) your program
+  * Look through examples
+
+# Details #
+
+## Get and download firmware ##
+Download latest firmware (Basic.hex) and upload on to the Robots RBC module using the  RBCUpgrade tool as per Robobuilder [manual pg 70](http://robosavvy.com/RoboSavvyPages/Robobuilder/UsersManual/Robobuilder_User_Guide_EN.pdf).
+
+![http://robobuilderlib.googlecode.com/files/rbctool.jpg](http://robobuilderlib.googlecode.com/files/rbctool.jpg)
+
+If you're not using Windows, you can still download the custom firmware into your bot using the http://www.strout.net/info/robotics/utilities/avrbl-downloader/index.html. Or there's a Java based tool available in the source tree.
+
+If you want just to try it out (and not load on to Robot) then there are  windows and Linux OS builds is available  (basic.exe). It input/outputs using console. Some Robot hardware functions are available if the robot is running DCMP firmware connected om serial port.
+
+## Connect terminal ##
+
+So assuming you have downloaded the program (and installed the firmware) - reset the power on the RBC and connect a [VT100 terminal emulator](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html) on the serial port (i.e. COM1 at 115200). You should see the following:
+```
+Basic v=$Revision: 710 $
+Commands: i r l c z q s V R F $
+
+16 servos connected
+0 lines in memory
+```
+
+## Now in command mode ##
+
+You start in [Command Mode](CommandMode.md). Now to enter program you type 'i' to get into [input mode](InputMode.md) and then return to command mode to run. If the program ever gets into a recurring loop (either accidentally or deliberately) then press 'Esc' on the PC keyboard. If that fails then hit the 'OFF' button (on the robot!)
+
+To enter a simple "Hello world" program - type following:
+```
+: i
+Enter Program '.' to Finish
+> 10 PRINT "Hello world"
+> 
+
+1 lines entered, [25/3072] Bytes
+```
+To list the program type 'l':
+```
+: l
+List Program 
+10 PRINT "Hello world"
+```
+
+And run the program:
+```
+: r
+Run Program 
+Hello world
+End
+Elapsed Time 00:00-000
+: 
+```
+You can now enter more lines by going back into [input mode](#InputMode.md). If you want to start over then press 'c.
+
+## First program ##
+
+Writing first _real_ program, one that controls the robot. Lets get to robot to stand up.
+```
+: c
+Clear Program 
+: i
+Enter Program '.' to Finish
+> 10 STAND
+> .
+1 lines entered, [12/3072] Bytes
+:
+```
+
+Try and run this. Now make it wave by going into input mode and adding
+```
+: r
+Run Program 
+End
+Elapsed Time 00:01-097
+: i
+> 20 WAIT KEY
+> 30 RUN 17
+>
+2 lines entered, [35/3072] Bytes
+:
+```
+
+You can run this, it will stand, wait for a key and then wave. Lets add a loop with a wait for key press
+```
+40 GOTO 20
+```
+
+Now run this. You can also run the program by pressing square/Red button on the controller. To exit press Esc.

@@ -1,0 +1,33 @@
+# Introduction #
+
+## Modify RBC Serial Number ##
+
+Some times the firmware can get corrupted and the serial number is lost. When this happens the standard firmware won't download programs from the internet as they won't match the serial number. So to inspect the firmware you need to read the Flash memory using the $ROM() function. Type 'i' and enter the following program:
+
+```
+10 FOR I=1 to 13
+20 OUT $ROM(I);
+30 NEXT I
+40 PRINT
+```
+
+If you see 13 digits all is well. If not find your serial number (its printed on the RBC unit) and update the ROM from interactive /input mode using for example:
+
+```
+POKE 1,`0
+POKE 2,`1
+etc ...
+```
+
+Note the "Back-quote" which converts the from Ascii character to numeric value. So `0 become 48.
+
+**Use this with CAUTION !!!!!**
+
+
+---
+
+
+### Please Note ###
+_Basic programs are stored in flash - it will overwrite any action or motion scripts you have created. If / when you revert to standard firmware you will need to reload them._
+
+It is possible (hopefully unlikely) that if the firmware goes wildly wrong it could overwrite your serial number and/or zero positions - these are recoverable but with some effort (see above)

@@ -1,0 +1,168 @@
+# Introduction #
+
+Add your content here.
+
+
+# Language Specification #
+
+## syntax ##
+```
+
+VAR    A-Z  (integer only)
+OPER   + - * \ ( ) = < > % <= >= <> & | 
+CMD    LET:FOR:NEXT:GOTO:IF:THEN:ELSE:PRINT:END:SET:RUN:POKE
+       WAIT:STEP:PUT:SERVO:MOVE:GOSUB:RETURN:LIST:STAND:OUT
+       I2CI:I2CO:OFFSET:SCALE:MAT:DIM
+STRING " ... "
+EXPR1  VAR | LITERAL
+EXPR2  EXPR1 | STRING
+LIST   EXPR2 [,EXPR2], ARRAY
+EXPR   EXPR1 OPER EXPR1 
+ARRAY  @A-Z  | @{n,..}
+AEXPR  ARRAY | ARRAY [+/*-.] ARRAY
+```
+
+## Detail ##
+```
+[LINE no] [LET] VAR '=' EXPR 
+[LINE no] [LET] VAR[EXPR] '=' EXPR
+[LINE no] GOTO [Line No]
+[LINE no] PRINT LIST [;]
+[LINE No] END
+[LINE no] IF  EXPR THEN LINE no ELSE Line No
+[LINE No] FOR VAR '=' EXPR 'To' EXPR 'By' Expr
+[LINE No] FOR VAR '=' EXPR 'in' LIST
+[LINE No] NEXT VAR
+[LINE No] WAIT number
+[Line No] SERVO ID=EXPR | '@' | '~'
+[LINE No] LIST [VAR]=N,1,2,3 ..
+[LINE No] LIST [VAR]=AEXPR
+[LINE No] MOVE @[VAR],c,d | @[Var] | a,b,c,d
+[Line No] GOSUB [Line No]
+[Line No] RETURN
+[Line No] STAND [16 | 18]  
+[LINE No] PUT VAR '=' $PORTA|B|C:0-7
+[LINE No] OUT EXPR,EXPR or OUT ARRAY[:n]
+[Line No] RUN number
+[Line No] PLAY number
+[Line No] OFFSET [# | List | "blank"]
+[Line No] IC2O number,List
+[Line No] IC2I number,number,List
+[Line No] STEP ID=number,number,number
+[Line No] SAMPLE a,b[,c[,d]]
+[Line No] FFT list,scale
+[Line No] SCALE list,scale
+[Line No] SORT @array  | SORT #a,b,c
+[Line No] SET @L,index,value or SET @L[index]=value
+[Line No] INSERT @L,index,value or INSERT @L[index]=value
+[Line No] DELETE @L,index
+[Line No] SELECT @,index,index
+[Line No] GEN No_Gn,length,Mute rate%,Mute rnge,Val[min,max],type
+[Line No] NETWOR No input,No outputs,flag,no lay 1,no lay 2, no lay3
+[Line No] MAT [PRINT|LET] [args;args;...]
+[Line No] DIM A-Z '(' EXPR [, EXPR ')' [, ...]
+```
+
+## Example syntax ##
+
+|Command|Description|
+|:------|:----------|
+|SERVO ID=POS  |set servo id to position POS / @ / ~|
+|LIST v=n,1,2,..n   |Set V to a list of n elements |
+|DATA v=1,2,..n   |Set V to a list of BYTES (less storage space) |
+|MOVE @P,c,d    |sends a Scene of servos position in array P,c steps in total of d ms (i.e. @A,10,1000 each step is 100ms|
+|MOVE a,b,c,d    |sends a Scene of servos position in @![a,a+b] c steps d ms so each step d/c >25ms|
+|POKE 10,A     |Put A into Byte 10|
+|PUT PORT:A:8 = 3 |set DDR of Port A = 3 (PIN0,PIN1 readable)|
+|PUT PORT:A:2 = 1 |set Port A bit 2 =1 (assuming writeable)|
+|WAIT 200       |Wait for a an amount of time in ms i.e. 200ms|
+|STAND      |set servos to basic posture |
+|OFFSET        |Defines a numeric offset array to be applied to MOVE and PLAY commands|
+|RUN n         |Call Built in action using code i.e. RUN 0, would punch left See built in motion list|
+|I2CO 51,@{3,1,2,3}|will send 3 bytes to I2C address 51 |
+|I2CI 52,5,@{2,1,1}|will read 5 bytes from address 52 after first send 2 bytes (1,1) to the same address.|
+|SET SP n|Speed torque setting on Move 0-4 (0 maximum, 4 minimum) |
+|SET MT n|Set Motion type 0: Acc, 1=Deacc, 2=AccDeac, 3=Linear |
+|SET BASE n|Set n=0 or 1 as initial list index |
+|STEP 5=30,50,5|STEP servo 5 from position 30 to position 50 in increments of 5 checking progress and stopping if obstruction|
+|SORT #a,b,c|specialised sort for use with GEN- tbc|
+|GEN 8,6,0,0,0,5,2|GENerate array,|
+|NETWOR  2,1,4,2,0,1|creates a 3 neuron network (2 input 1 output) |
+|SCALE | Scale command will scale a list or threshold a list |
+|MAT | Matrix commands options DIM, LET, PRINT|
+
+## Functions and Special variables ##
+Functions an variables can be used in an expression, for example LET A=$X would set A to the current value of X accelerometer. The value of $X changes in real time.
+
+|Specials ($)|Description|
+|:-----------|:----------|
+|$X, $Y, $Z   |accelerometer values|
+|IR          |wait for IR remote and get button pressed LET A=$IR|
+|KBD         |wait for keyboard press|
+|KIR         |Scan keyboard and IR port return immediate -1 if nothing pressed|
+|PSD         |PSD sensor value|
+|VOLT        |Battery voltage|
+|TICK        |Number of tenths of a second|
+|$PORT        |Read Bit 6 of Port A .. LET A=$PORT:A:6 |
+|RND         |Random numbers - different number each time called |
+|RND(x,y,z)  |List of x Random numbers - values between y and z |
+|MIC         |Microphone level|
+|SERVO(id)   |position of servo id, i.e.  LET A=$SERVO(5) get Servo ID 5 position |
+|ABS(x)      |Absolute value of x returned|
+|ROM(x)      |Contents of ROM location x, i.e. LET A=$ROM(10)|
+|MAPIR(x)    |Maps value from IR to built in action code|
+|FIND(x, @A) |Look for item less than or equal to X and return index|
+|CVB2I(x)    |Converts byte to int, i.e. 4 -> 4 and 254 -> -2|
+|MAX(@n)|return maximum element value in array n |
+|MIN(@n)| return minimum element value in array n    |
+|NORM|   |
+|HAM(@b,@b| Hamming distance between too list (i.e. no. of exact matches)  |
+|SUM(@n)| return sum of element values in array n    |
+|SIN(x)|Sine of X where X 0-255 and return is +/-32K|
+|COS(x)|Cosine of X where X 0-255 and return is +/-32K|
+|RANGE(a,b,c)|return b < a < c |
+|STAND(x)|return an array of positions related to stand  |
+|ZEROS(x)|return an array of zeros  |
+|SHUF(x)|create a list of shuffled numbers from 1-X |
+|MAP(@x,@y)|Map array X using array Y |
+|SCALE(@A,x[,y,z]|Scale array A by X or Threshold A where A(i)>=x y else z|
+|REV(@x)|return a list of elements from @X in reverse |
+|SORT(@x)|return a list of sorted numbers from list lowest first |
+|INPUT|wait for input and return an integer number (keyboard or IR) |[LINE no] [LET] VAR '=' EXPR 
+[LINE no] [LET] VAR[EXPR] '=' EXPR
+[LINE no] GOTO [Line No]
+[LINE no] PRINT LIST [;]
+[LINE No] END
+[LINE no] IF  EXPR THEN LINE no ELSE Line No
+[LINE No] FOR VAR '=' EXPR 'To' EXPR 'By' Expr
+[LINE No] FOR VAR '=' EXPR 'in' LIST
+[LINE No] NEXT VAR
+[LINE No] WAIT number
+[Line No] SERVO ID=EXPR | '@' | '~'
+[LINE No] LIST [VAR]=N,1,2,3 ..
+[LINE No] LIST [VAR]=AEXPR
+[LINE No] MOVE @[VAR],c,d | @[Var] | a,b,c,d
+[Line No] GOSUB [Line No]
+[Line No] RETURN
+[Line No] STAND [16 | 18]  
+[LINE No] PUT VAR '=' $PORTA|B|C:0-7
+[LINE No] OUT EXPR,EXPR or OUT ARRAY[:n]
+[Line No] RUN number
+[Line No] PLAY number
+[Line No] OFFSET [# | List | "blank"]
+[Line No] IC2O number,List
+[Line No] IC2I number,number,List
+[Line No] STEP ID=number,number,number
+[Line No] SAMPLE a,b[,c[,d]]
+[Line No] FFT list,scale
+[Line No] SCALE list,scale
+[Line No] SORT @array  | SORT #a,b,c
+[Line No] SET @L,index,value or SET @L[index]=value
+[Line No] INSERT @L,index,value or INSERT @L[index]=value
+[Line No] DELETE @L,index
+[Line No] SELECT @,index,index
+[Line No] GEN No_Gn,length,Mute rate%,Mute rnge,Val[min,max],type
+[Line No] NETWOR No input,No outputs,flag,no lay 1,no lay 2, no lay3
+[Line No] MAT [PRINT|LET] [args;args;...]
+[Line No] DIM A-Z '(' EXPR [, EXPR ')' [, ...]
+}}}```

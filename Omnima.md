@@ -1,0 +1,32 @@
+# Introduction #
+
+Basic built for Openwrt. See Linux wiki for details. Can connect via serial to DCMP firmware. Default attempts to connect to RBC unit running DCMP firmware on /dev/ttyS1.
+
+So ExtendedCommands for details on Linux/Omnima only extensions.
+
+# Installation #
+
+```
+opkg install http://robobuilderlib.googlecode.com/files/rbasic_527M-1_ramips.ipk
+```
+
+# Run #
+
+```
+root@OpenWrt:~# opkg install rbasic
+Removing package rbasic from root...
+Installing rbasic (500M-1) to root...
+Downloading rbasic_500M-1_ramips.ipk.
+Configuring rbasic.
+
+root@OpenWrt:~# rbasic
+Basic on RAMIPS ...
+DCMP v=3.12
+Clear Program
+Loaded - bindata.txt
+Basic v=$Revision: 500 $
+Commands: i r l c z q s V R F $
+19 servos connected
+10 lines in memory
+:
+```

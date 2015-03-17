@@ -1,0 +1,155 @@
+# Introduction #
+
+Based on : http://www.codeproject.com/Articles/26280/Hands-Gesture-Recognition.
+
+Use a statistical approach to determine body/arm positions. Requires latest build of Basic including extended commands and hence will only work on Linux/Omnima.
+
+Basic process
+  1. Load a background Image
+  1. Wait for signal and then Load a image (test.jpg)
+  1. Subtract background and threshold
+  1. Use a horizontal historgram to determine arm and torso dimensions
+  1. Use a vertical histogram of a sub area to determine left arm elevation
+  1. Repeat for right arm
+  1. Get robot to take up robot arm position
+  1. Repeat from Step 2
+
+Still work in progress
+
+Latest code: http://robobuilderlib.googlecode.com/svn/trunk/basic/examples/guesture.rbas
+
+# Details #
+
+Image Grab code. Z is the image size required. So Z=32 in the demo program and hence the image is a grey scale 32x32 array. If F=1 it returns only when consecutive images are different and F=0 if images are the same. This code basically does motion detection.
+
+```vb
+
+camgrab:
+!wait image
+!image load z
+LIST A=@!            'initialise prev image
+loop:
+!wait image
+!image load z      'load next image
+LIST B=@!
+S=$abs($sum(@B-@A))  'compare with prev & next images
+print S
+if ((f=1) and (s>60)) or  ( (f=0) and (s<60)) then done    'if difference > threshold done
+LIST A=@B            'else prev = next
+GOTO loop            'go round again
+done:
+RETURN
+```
+
+Locate torso and arms using a horizontal histogram. Assumes the image is in Array B of size ZxZ.
+
+```vb
+
+!MAT HIST 2;b  'Horizontal Intensity Histo
+L=0
+M=0
+R=0
+S=0
+P=3  'threshold arm
+Q=10 'threshol body
+
+FOR I=0 TO 31
+IF (@![i]>=P) and (L=0) THEN
+L=i
+ENDIF
+IF (@![i]>=Q) and (m=0) THEN
+m=i
+ENDIF
+IF (@![i]<Q) and (M>0) and (s=0) THEN
+S=i
+ENDIF
+IF (@![i]<P) and (S>0) and (r=0) THEN
+R=i
+ENDIF
+NEXT I
+W=S-M
+L=M-L
+R=R-S
+N=S
+PRINT "Torso Width=";W
+PRINT "L hand=     ";L
+PRINT "R hand=     ";R
+```
+
+Determine an Arms position using vertical histogram masked using info from torso dimensions. The masked threshold image is contained in List T. Its sets K to be the arm position detected.
+
+```vb
+
+processarm:
+!MAT HIST 1;T  'Vertical Intensity Histo
+k=0 ' return arm position
+M=0
+S=0
+P=1 'threshold arm
+FOR I=0 TO 31
+IF (@![i]>=P) and (M=0) THEN
+M=i
+ENDIF
+IF (@![i]<P) and (s=0) and (m>0) THEN
+S=i
+ENDIF
+NEXT I
+P=$MAX(@!)
+IF p=0 then
+print "nothing detected"
+return
+ENDIF
+PRINT "Width=   ";S-M
+PRINT "Max=     ";
+
+IF (s-m)/p > 1 THEN
+k=1
+ELSE
+'diagonal arms
+p=$IMAX(@!);l
+PRINT p
+IF P<10 THEN
+k=2
+ELSE
+k=3
+ENDIF
+ENDIF
+RETURN
+```
+
+Move arm code - this is for the robot in "dance hands" configuration. Alternative look at ArmsMoving wiki. The code uses a list V containing the arm positions which must be first initialised. Then the arm changes are applied and the final List V is then used in a move command to gradually cause the robot to take up new position of 1s.
+
+```vb
+
+initarm:
+LIST v=16,141,86,248,41,103,103,161,0,206,144, 93, 95, 65,155,156,183
+return
+movearm:
+print @v
+move @v,10,1000
+return
+larmdown:
+set @v,11,95   '-1
+set @v,12,109  '+45
+return
+larmout:
+set @v,11,142   '+47
+set @v,12,109   '+45
+return
+larmup:
+set @v,11,195   '+100
+set @v,12,93    '+28
+return
+rarmdown:
+set @v,14,157   '1
+set @v,15,138   '-45
+return
+rarmout:
+set @v,14,110   '-47
+set @v,15,138   '-45
+return
+rarmup:
+set @v,14,56    '-100
+set @v,15,155   '-28
+return
+```

@@ -1,0 +1,98 @@
+# Introduction #
+
+Inverse kinematic.
+
+This attempts to find best fit solution .
+
+It assumes two connected rods of 100mm and 150mm with a common joint.
+
+Starting from a angle of each at 0 it tries to find the angle that get the end point closest to the XY co-ordinate 160,100 by successive approximation.
+
+The angles O & S found can then be turned in to servo position by applying appropriate offset and scaling.
+
+Try different X Y values and see result. By varying X value you can make an arm move in a straight line.
+
+Source : http://code.google.com/p/robobuilderlib/source/browse/trunk/basic/examples/ik.rbas
+
+# Details #
+
+```vb
+
+'simple inverse kienmatics
+'
+L=100
+M=150 'mm
+P=0
+S=0
+X=160 'TX
+Y=100 'TY
+N=0
+
+PRINT "Target X=";x;" Y=";y
+
+Grad:
+N=N+1
+P=P+1
+GOSUB calcd
+T=R
+P=P-2
+GOSUB calcd
+T=T-R
+
+P=P+1
+S=S+1
+GOSUB calcd
+Q=R
+S=S-2
+GOSUB calcd
+Q=Q-R
+
+P=P-T
+S=S-Q+1
+
+GOSUB calcd
+
+PRINT P;",";S;",";R;",";T;",";Q;",";E;",";D
+IF (R>25) AND (N<15) THEN grad
+END
+
+
+' calc
+' L, M length
+' P,S   angles
+calcd:
+D=L*$SIN(p)/32768
+D=D+M*$SIN(s)/32768
+E=L*$COS(p)/32768
+E=E+M*$COS(s)/32768
+R=$SQRT((D-Y)*(D-Y)+(E-X)*(E-X))
+RETURN
+```
+
+
+
+# Output #
+
+```
+Run Program 
+Target X=160 Y=100
+2,3,122,-2,-3,248,15
+5,9,100,-3,-6,243,44
+8,14,82,-3,-5,236,69
+10,19,68,-2,-5,228,91
+13,23,59,-3,-4,218,111
+13,26,55,0,-3,212,120
+13,28,53,0,-2,207,126
+12,29,51,1,-1,205,126
+10,30,50,2,-1,204,124
+9,32,48,1,-2,200,127
+7,34,44,2,-2,195,128
+5,35,41,2,-1,193,125
+3,36,38,2,-1,191,122
+0,38,32,3,-2,185,120
+-1,40,30,1,-2,179,124
+Angle P=-1 Angle S=40
+Distance to target=30
+End of program
+Elapsed Time 00:00-001
+```

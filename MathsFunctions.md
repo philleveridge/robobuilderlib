@@ -1,0 +1,67 @@
+# Introduction #
+
+Simple integer functions. Use angle 0-255 to represent 0 - 2Pi
+
+Values will be +/- 32768
+
+# Details #
+
+```
+SIN(X) - Sine of Angle X
+COS(X) - Cosine of angle X
+```
+
+For a example of use see -[generating a walking gate](Walking#Generating_a_walking_gait.md) or [Kinematics](Kinematics.md) example
+
+# Example #
+```
+: l
+List Program
+10 FOR I = 0 TO 10
+20 PRINT I,SIN(I),COS(I)
+30 NEXT I
+: r
+Run Program 
+0 0 32758
+1 804 32728
+2 1608 32679
+3 2410 32610
+4 3212 32521
+5 4011 32413
+6 4808 32285
+7 5602 32138
+8 6393 31972
+9 7179 31786
+10 7962 31581
+```
+
+More complex demo generating 16 values
+Using initial value of A=25 B=50, C=0
+
+```
+List Program
+10 FOR X = 0 TO 15
+20 LET P =  B + (A*SIN((X + C)*16)/32)/1024
+25 OUT 32,P
+26 OUT 42
+27 PRINT 
+30 NEXT X
+: r
+Run Program 
+                                                  *
+                                                           *
+                                                                   *
+                                                                         *
+                                                                          *
+                                                                        *
+                                                                   *
+                                                          *
+                                                  *
+                                         *
+                                 *
+                           *
+                          *
+                            *
+                                 *
+                                          *
+```

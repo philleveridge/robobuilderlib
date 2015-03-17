@@ -1,0 +1,76 @@
+# Introduction #
+
+Add your content here.
+
+## Simple Matrices ##
+Matrix values are stored in LIST of the same name. Its up to the programmer to ensure list size matches the matrix size. So a 3x2 matrix is represented by a list of 6 elements. The matrix command will check and throw an error if size doesn't match.
+
+
+  * MAT PRINT M           Simple Print
+  * MAT LET M=A op B      LET is option. op = +-/.`*`()^
+    * Transpose           (^)
+    * [Convolve](Convolve.md)          (#)
+    * Matrix product     `(*)`
+    * Element by element  (+/-.)
+    * M=ZER(x1,y1,x2,y2)  Zero matrix elements (or parts there off)
+    * M=ZER               Zero matrix diagonal
+    * M=REP(X,a,b)        Create a matrix by replicating X by axrowx, bxcolumns
+    * M=SUM(X,n)          Create a matrix of a sum of X in either row or columns
+    * M=SUM2(X,n)         Create a matrix of a sum of squares of X in either row or columns
+    * MAT HIST  M,n         Returns in @! a histogram of matrix M (Depracted use SUM)
+
+# Examples #
+
+Example defining a simple matrix
+
+```
+> DIM Z(4,5)
+Create matrix 'Z' 4x5
+> LIST Z=20,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0
+> MAT PRINT Z
+matrix 'Z' 4x5
+  1   2   3   4 
+  5   6   7   8 
+  9   0   1   2 
+  3   4   5   6 
+  7   8   9   0 
+> DIM A(3,2)
+Create matrix 'A' 3x2
+> LIST A=6,1,2,3,4,5,6
+> MAT PRINT A
+matrix 'A' 3x2
+  1   2   3 
+  4   5   6 
+> MAT A=ZER(1,0,2,1)
+> MAT PRINT A
+matrix 'A' 3x2
+  1   0   0 
+  4   0   0
+
+> DIM A(3,3)
+> LIST A=9,1,2,3,4,5,6,7,8,9
+> MAT PRINT A
+matrix 'A' 3x3
+  1   2   3 
+  4   5   6 
+  7   8   9
+> MAT B=SUM(A,1)
+> MAT PRINT B
+matrix 'B' 1x3
+  6 
+ 15 
+ 24 
+> MAT C=SUM2(A,2)
+> MAT PRINT C
+matrix 'C' 3x1
+ 66  93 126 
+> MAT D=REP(B,5,1)
+> MAT PRINT D
+matrix 'D' 5x3
+  6   6   6   6   6 
+ 15  15  15  15  15 
+ 24  24  24  24  24 
+```
+
+For examples using Convolve see [wiki page](Convolve.md)
+Also see [Neural network](AutoAssocNets.md) example that uses matrix commands and [Hopfield network](HopfieldNetwork.md) example

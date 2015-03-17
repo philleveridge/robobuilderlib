@@ -1,0 +1,102 @@
+# Introduction #
+
+Writing your first program couldn't be easier, after downloading the firmware and uploading on to the robot using the RBC upgrade tool, connect a terminal program such as hyper terminal or putty and reset the power.
+
+The firmware has 19 built-in motions to try out, including football kicks. Full access to all sensor such as PSD, accelerometer and IR port. Its fast enough to program in continuous walking and auto balance.
+
+# Demos #
+
+  * [One arm mirroring other arm moving](#Mirror_moves.md)
+  * [Arm reacting to object proximity](#Dynamic_distance_sensor.md)
+  * [Auto setting passive mode of joint](#Passify.md)
+
+  * [Want more ?](AdvancedDemos.md) - see for even more demos, requires IDE
+
+
+---
+
+
+## Mirror moves ##
+
+Run the program and then move the right arm - and watch the left arm follow!
+
+  * line 10-30 puts servos 13,14,15 into passive mode, this makes them free to move. These servos form the right arm of the robot.
+  * line 60-80  reading servos current position .
+  * line 90-110 moves the left arm by corresponding amount. Because the left arm servos are reverse they move in the opposite direction, hence the 254-a.
+
+```
+5 stand 16
+10 servo 13=@
+20 servo 14=@
+30 servo 15=@
+40 print "ready"
+50 if $kir<0 then 50
+60 let a=$servo(13)
+70 let b=$servo(14)
+80 let c=$servo(15)
+90 servo 10=254-a
+100 servo 11=254-b
+110 servo 12=254-c
+120 wait 50
+130 goto 60
+```
+
+
+
+---
+
+
+## Passify ##
+
+In this demo the robot will stand up and then hold position. But by applying pressure to a joint,  cause it to be and move and the change detected and so the joint is set to passive mode.
+
+  * Line 10 stores all current servo positions in List A
+  * Line 20 now wait 100ms
+  * Line 30 stores all current servo positions in List B
+  * Line 40-100 Now loop through looking for difference
+  * Line 65 set servo passive
+  * Line 70 copy current position back to original list A
+
+```
+5 STAND 16
+10 LIST A=@?
+20 WAIT 100
+30 LIST B=@?
+40 for i=0 to 15
+50 if $abs(@a[i]-@b[i])>1 then 60 else 100
+60 print "servo ";i;" = ";$servo(i)
+65 servo i=@
+70 list a=@b
+100 next i
+110 goto 30
+```
+
+
+---
+
+
+## Dynamic distance sensor ##
+
+The arms dynamically move as the distance sensor detects your presence !!
+
+The value of the PSD sensor (always between 10 and 50) is used to set the position of servo 10 and 13 (the shoulders). These will move in unison based on the value:
+```
+If nothing in range PSD will return 50, so 
+  servo 13 is set to 200 and 
+  servo 10 is set to 50, 
+whilst at closet approach PSD will be 10, so
+  Servo 13=240 and 
+  servo 10=10.
+```
+
+```
+10 stand 16
+20 servo 13=200
+30 servo 10=50
+40 let a=$psd
+45 print "Psd=";$PSD
+50 servo 13=250-a
+60 servo 10=a
+70 wait 200
+80 goto 40
+```

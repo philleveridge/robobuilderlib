@@ -1,0 +1,136 @@
+# Introduction #
+
+Examples of matrix convolution. The uses the new MAT LET format. (i.e. MAT C=A#B)
+
+# Details #
+
+### 1-D convolve using (2x1) kernel ###
+
+Enter using 'i' mode:
+```
+> DIM A(10),C(10),B(2)
+> LIST A=10,0,0,0,0,1,1,1,1,0,0
+> LIST B=2,1,-1
+> MAT PRINT A,B
+matrix 'A' 10x1
+  0   0   0   0   1   1   1   1   0   0 
+matrix 'B' 2x1
+  1  -1 
+> MAT C=A#B
+> MAT PRINT C
+matrix 'C' 10x1
+  0   0   0   1   0   0   0   1   0   0
+```
+
+
+## 2D convolve using 1x2 and 2x1 convole ##
+
+  * @A contains the Matrix (4x4)
+  * @B contains the Kernel (2x1)
+  * @C set to convolve
+
+```
+> DIM A(4,4),B(2)
+> LIST A=16,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1
+> LIST B=2,1,-1
+> MAT PRINT A,B
+matrix 'A' 4x4
+  0   0   1   1 
+  0   0   1   1 
+  0   0   1   1 
+  0   0   1   1 
+matrix 'B' 2x1
+  1  -1 
+```
+
+Use the the 2x1 to detect horizontal lines
+```
+> DIM C(4,4)
+> MAT C=A#B
+> MAT PRINT C
+matrix 'C' 4x4
+  0   1   0   0 
+  0   1   0   0 
+  0   1   0   0 
+  0   1   0   0 
+```
+
+If we look use 1x2 kernel it can't detect vertical line
+
+```
+> DIM B(1,2)
+matrix 'B' 1x2
+  1 
+ -1 
+> MAT C=A#B
+> MAT PRINT C
+matrix 'C' 4x4
+  0   0   0   0 
+  0   0   0   0 
+  0   0   0   0 
+  0   0   0   0 
+```
+
+Using a 1x2 operator to detect horizontal lines
+```
+> LIST A=16,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0
+> MAT C=A#B
+> MAT PRINT A,B,C
+matrix 'A' 4x4
+  1   1   1   1 
+  1   1   1   1 
+  0   0   0   0 
+  0   0   0   0 
+matrix 'B' 1x2
+  1 
+ -1 
+matrix 'C' 4x4
+  0   0   0   0 
+  1   1   1   1 
+  0   0   0   0 
+  0   0   0   0 
+```
+
+## 2D convolve using 3x3 kernel ##
+
+Initialises @A using for loop - this enable easy changes to different pattern and sizes.
+
+```
+5 DIM A(8,8),D(3,3),F(8,8)
+10 LIST A = $ZEROS(64)
+20 FOR I = 0 TO 63
+30 A[I]=(I<32)
+40 NEXT I
+60 MAT PRINT A
+80 LIST D = 9,-1,-1,-1,2,2,2,-1,-1,-1
+90 MAT PRINT D
+110 MAT F=A#D
+120 MAT PRINT F
+```
+
+### Output ###
+
+```
+matrix 'A' 8x8
+  1   1   1   1   1   1   1   1 
+  1   1   1   1   1   1   1   1 
+  1   1   1   1   1   1   1   1 
+  1   1   1   1   1   1   1   1 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+matrix 'D' 3x3
+ -1  -1  -1 
+  2   2   2 
+ -1  -1  -1 
+matrix 'F' 8x8
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+  0   3   3   3   3   3   3   0 
+  0   3   3   3   3   3   3   0 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+  0   0   0   0   0   0   0   0 
+```

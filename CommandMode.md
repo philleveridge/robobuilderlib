@@ -1,0 +1,151 @@
+# Introduction #
+
+When you fist power on the robot with basic firmware loaded it starts in Command mode after first displaying an initial introductory greeting.
+
+```
+Basic v=$Revision: 710 $
+Commands: i r l c z q s V R F $
+16 servos connected
+4 lines in memory
+: 
+```
+
+This shows the current version number, how many servos it can detect and how many lines are stored in memory.
+
+Command mode signified by ':'. Press a key or use Remote control (for some options)  and select one of the following options:
+
+## Detail ##
+
+| **Type** | **Description** |
+|:---------|:----------------|
+|r | Run program - also press Square on Remcon|
+|R |Run program [trace mode](#R_-_trace_mode.md) - will run one line at a time |
+|g |Run from (Goto) line number|
+|G |As G but in [trace mode](#R_-_trace_mode.md)|
+|i |[Input  mode](InputMode.md)|
+|I |Input mode but show time for each command to run|
+|l |List program|
+|L |List program and show variable values and list contents|
+|V |Show Version|
+|c |Clear program|
+|q |query servo status|
+|Q |[Query](#Q_command.md) and show values|
+|X |[Enter Battery Charge mode](#X_charge_mode.md)|
+|M |[Enter DCMP mode](#M_-_DCMP_mode.md) (for remote serial control)|
+|p |set all servos passive (i.e. free rotate)|
+|s |robot to take stand position|
+|$ |[Enter Demo mode](#$_-_Demo_mode.md) (also can use `*B` on remcon) - press Square to exit|
+|d |[dump eprom](#dump_memory.md) - D for widemode|
+|F |[dump firmware](#dump_memory.md)|
+|B |Set breakpoint - type line number or zero to unset. Only 1 BP available|
+|Y |customise the "stand" position |
+|y |Reset stand to default]|
+
+For more details and programming guide see the PDF manual.
+
+## $ - Demo mode ##
+
+This allows pre-built motions to be played by using the remote control
+esc or red button to exit back to command mode
+
+## R - trace mode ##
+
+Lets assume we have a small program
+```
+: l
+List Program 
+10 STAND 
+20 WAIT KEY
+30 RUN 17
+40 GOTO 20
+: 
+```
+
+Now enter trace mode.  The command is displayed BEFORE execution. Press any key to execute line or  Esc to go back to command mode.
+```
+: R
+Run Program 
+TRACE :: 10 - STAND ** User Break
+
+```
+
+## Q command ##
+
+```
+: Q
+16 servos connected
+4 lines stored
+Uptime: 00:03:11-604
+117, 85, 242, 39, 99, 126, 163, 3, 207, 146, 52, 54, 48, 200, 205, 205
+: 
+```
+
+## X charge mode ##
+
+Enter batter charging mode (also available by pressing PF1 at start up). It firsts test current voltage to determine if plugged in. i.e.
+
+```
+: X
+testing charge
+charge mode 
+8550 mV
+8664 mV
+8664 mV
+8721 mV
+8721 mV
+8721 mV
+8721 mV
+8721 mV
+8664 mV
+8664 mV
+Not plugged in
+: 
+```
+
+It will go on to charge (if plugged in) or return to command. Whilst charging any key will return to command mode.
+
+## M - DCMP mode ##
+
+This now enters Direct control mode (also available by pressing PF2 at start up). To exit DCMP requires power reset.
+
+```
+: M
+DCMP MODE
+```
+
+## Dump memory ##
+Really only for debugging
+
+dump program eprom space (shows how Basic has encode program)
+```
+: d
+00 aa 03 00 0a 00 06 00 00 ........
+08 00 19 00 22 48 65 6c 6c ..."Hell
+10 6f 20 77 6f 72 6c 64 22 o world"
+18 00 14 00 09 00 00 00 22 ......."
+20 00 00 cc 00 00 00 00 00 ........
+
+```
+
+Dump in wide mode
+```
+: D
+00 aa 03 00 0a 00 06 00 00 00 19 00 22 48 65 6c 6c 6f 20 77 6f 72 6c 64 22 
+18 00 14 00 09 00 00 00 22 00 00 cc 00 00 00 00 00 00 00 00 00 00 00 00 00 
+30 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+48 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+: 
+```
+
+Firmware - shows serial number etc ...
+```
+: F
+00 00 31 30 34 32 31 30 31 .1042101
+08 30 31 30 36 39 31 00 00 010691..
+10 00 00 00 00 00 00 00 00 ........
+18 00 00 00 00 00 00 00 00 ........
+20 00 00 00 00 00 00 00 00 ........
+28 00 00 00 00 00 00 00 00 ........
+30 00 00 00 00 00 00 00 00 ........
+38 00 00 00 00 00 00 00 00 ........
+```

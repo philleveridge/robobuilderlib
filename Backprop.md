@@ -1,0 +1,121 @@
+# Introduction #
+
+Used as a test case for floating point matrix extended commands (only available on Linux and Omnima version)
+
+From [Introduction to neural networks with matlab 6.0](http://books.google.co.uk/books?id=jJTN8RPgyXgC&lpg=PA181&ots=h_dBNKPDSJ&dq=hopfield%20network%20using%20matlab&pg=PA194#v=onepage&q&f=false) Example 8.1 pg 194
+
+
+# Details #
+
+```
+
+!mat def w=4;1
+!mat def x=4;1
+!mat def v=3;4
+
+print "Step 1&3) set up"
+
+!mat let w=-1.0;1.0;2.0;-1.0
+!mat let x=0.6;0.8;0.0;1.0
+!mat let v=2.0;1.0;0.0;1.0;2.0;2.0;0.0;3.0;1.0;0.0;0.0;-1.0
+
+!mat print w;x;v
+
+print "Feed forward"
+print "Step 4) input layer"
+!MAT let R=X*V
+!MAT APPL R=SIG(ME)
+!mat print r
+
+print "Step 5) hidden layer"
+!mat def s=4;1
+
+!mat let s=r;1.0
+!mat let y=w*s^
+!MAT APPL y=SIG(ME)
+!mat print y
+
+print "back propagate"
+print "Step 6) output layer"
+
+!LET ERR=0.9
+!MAT APPLY y=(ERR-ME)*DSIG(ME)
+!mat print y
+
+print "Step 7) hidden layer"
+!mat let g=y*w
+
+!MAT APPLY S=DSIG(ME)
+
+!MAT let Z=G.S^
+!MAT PRINT Z
+
+print "Step  8) update weights"
+
+!LET ALP=0.3
+
+!MAT let P=X^*Z
+!MAT APPLY P=ALP*ME
+!MAT PRINT P
+
+!mat let v=v+p^
+
+print "new weights"
+!mat print v
+
+!MAT let R=Y*R
+!MAT APPLY R=0.3*ME
+!MAT let W=W+R
+
+!MAT PRINT W
+```
+
+# Output #
+
+```
+: r
+Run Program 
+forward propagate
+Step 1&3) set up
+matrix 'W' 4x1
+-1.000000 1.000000 2.000000 -1.000000 
+matrix 'X' 4x1
+0.600000 0.800000 0.000000 1.000000 
+matrix 'V' 3x4
+2.000000 1.000000 0.000000 
+1.000000 2.000000 2.000000 
+0.000000 3.000000 1.000000 
+0.000000 0.000000 -1.000000 
+Feed forward
+Step 4) input layer
+matrix 'R' 3x1
+0.880797 0.900250 0.645656 
+Step 5) hidden layer
+matrix 'Y' 1x1
+0.577072 
+back propagate
+Step 6) output layer
+matrix 'Y' 1x1
+0.078814 
+Step 7) hidden layer
+matrix 'Z' 4x1
+-0.008275 0.007078 0.036063 -0.000000 
+Step  8) update weights
+create array P
+matrix 'P' 4x4
+-0.001489 -0.001986 0.000000 -0.002482 
+0.001274 0.001699 0.000000 0.002123 
+0.006491 0.008655 0.000000 0.010819 
+0.000000 0.000000 0.000000 0.000000 
+new weights
+matrix 'V' 3x4
+1.998510 1.001274 0.006491 
+0.998014 2.001698 2.008655 
+0.000000 3.000000 1.000000 
+-0.002482 0.002123 -0.989181
+matrix 'W' 4x1
+-0.979174 1.021286 2.015266 -1.000000 
+End
+Elapsed Time 00:00-001
+: 
+```

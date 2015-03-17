@@ -1,0 +1,177 @@
+# Introduction #
+
+Demos - require new matrix capability -
+Based on book :
+http://books.google.co.uk/books?id=jJTN8RPgyXgC&pg=PA181&lpg=PA181#v=onepage&q&f=false
+
+# Details #
+
+Simple menu system to choose demo
+
+```vb
+
+loop:
+PRINT "Test"
+PRINT "1: Hebbs Rule 1 vector"
+PRINT "2: Hebbs rule 2 vectors"
+PRINT "3: BAM - H and E"
+PRINT "Test [1-3]?";
+LET k=$KBD
+IF k=49 THEN test1
+IF k=50 THEN test2
+IF k=51 THEN test3
+IF k=`q THEN done
+PRINT "? input"
+GOTO loop
+done:
+PRINT "done"
+END
+```
+
+## Demo 1 ##
+Hebb rule to store and retrieve a 4 input vector
+Auto associative memory example from book "Intro to neural net with matlab 6.0" From section 6.4 example 6.10
+
+```vb
+
+test1:
+DIM a(4,1)
+LIST a=4,1,1,-1,-1
+MAT b=a^
+MAT PRINT a
+MAT PRINT b
+MAT w=b*a
+
+PRINT "test same input"
+LIST a=4,1,1,-1,-1
+MAT y=a*w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+PRINT "test one mistake input"
+LIST a=4,-1,1,-1,-1
+MAT y=a*w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+PRINT "test one missing input"
+LIST a=4,0,1,-1,-1
+MAT y=a*w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+PRINT "test one missing input"
+LIST a=4,1,1,0,-1
+MAT y=a*w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+PRINT "test two missing inputs"
+LIST a=4,0,1,0,-1
+MAT y=a*w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+GOTO loop
+```
+
+## Demo 2 ##
+```vb
+
+test2:
+'example 6.13
+LIST a=4,1,-1,1,-1
+MAT b=a^
+MAT w=b*a
+MAT PRINT w
+LIST y=@w
+PRINT @y
+
+LIST a=4,-1,1,1,-
+MAT b=a^
+MAT w=b*a
+LIST y=@y+@w
+PRINT @y
+
+LIST a=4,1,1,-1,-1
+MAT b=a^
+MAT w=b*a
+LIST w=@y+@w
+MAT w=ZER
+MAT PRINT w
+
+PRINT "test 1st input"
+LIST a=4,1,-1,1,-1
+MAT y=a*w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+
+PRINT "test 2nd input"
+LIST a=4,-1,1,1,-1
+MAT y=a*w
+PRINT "Output=";$SCALE(@y,1,1,-1)
+GOTO loop
+```
+
+## Demo 3 ##
+BAM - bi-direction associative memory - section 6.5
+
+Note the new OUT @A:n feature to display network
+Stores two letters representing 'E' and 'H' as 3x5 array which is then converted into 1x15 bipolar array.
+
+```
+o o    ooo
+o o    o
+ooo    ooo
+o o    o
+o o    ooo
+
+1,1   -1,1
+```
+
+The letters can then be recovered using either the pattern - converted to a 1x15 Bipolar (-1,1) vector or using the alternate input vector.
+
+```vb
+
+test3:
+'training
+DIM a(1,15)
+DIM b(2,1)
+
+PRINT "store letter E"
+LIST a=$SCALE(@{15,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1},1,1,-1)
+PRINT @a:3
+LIST b=2,-1,1
+MAT w=a*b
+MAT PRINT w
+OUT $SCALE(@a,1,`*,` ):3
+PRINT
+LIST y=@w
+
+PRINT "store letter H"
+LIST a=$SCALE(@{15,1,0,1,1,0,1,1,1,1,1,0,1,1,0,1},1,1,-1)
+PRINT @a:3
+LIST b=2,1,1
+MAT w=a*b
+OUT @$SCALE(@a,1,`*,` ):3
+PRINT
+
+LIST w=@y+@w
+MAT PRINT w 'combined weight matrix
+
+'retrieving
+DIM a(15,1)
+PRINT "test response E"
+LIST a=$SCALE(@{15,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1},1,1,-1)
+MAT y=a*w
+PRINT $SCALE(@y,1,1,-1)
+MAT t=w^
+
+LIST b=2,-1,1
+MAT z=b*t
+PRINT $SCALE(@z,1,1,0):3
+
+PRINT "test response H"
+LIST a=$SCALE(@{15,1,0,1,1,0,1,1,1,1,1,0,1,1,0,1},1,1,-1)
+MAT y=a*w
+PRINT $SCALE(@y,1,1,-1)
+GOTO loop
+```
+
+# Output #
+```
+```
